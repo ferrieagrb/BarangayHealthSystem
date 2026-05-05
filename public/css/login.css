@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+
+body {
+    background-image: url("../images/mg.png");
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+}
+
+h2{
+    color:brown;
+}
+
+#logIn{
+    border: 1px solid;
+    border-color: black;
+    padding: 5%;
+    width: 420px;
+    height: 20px;
+}
+
+.login-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+.left-side {
+    flex: 2;
+    background: url("../images/taal.jpg") no-repeat center center;
+    background-size: cover;
+    position: relative;
+}
+
+/* The gradient fade effect */
+.left-side::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(255,255,255,0) 50%, #ffffff 100%);
+}
+
+.right-side {
+    flex: 1;
+    background-color: #fff;
+    padding: 80x;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10em;
+    position: relative;
+}
+
+.right-side h2 {
+    color: #222;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    margin-bottom: 10px;
+}
+
+.right-side p {
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.right-side form {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 400px;
+}
+
+.right-side .password-label label {
+    color: #333;
+    font-weight: 500;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.right-side input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 20px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.password-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 5px;
+}
+
+.password-label .forgot-password {
+    align-self: flex-end;
+    color: #0077b6;
+    font-size: 0.9em;
+    text-decoration: none;
+    margin-bottom: 5px;
+}
+
+.password-label .forgot-password:hover {
+    text-decoration: underline;
+}
+
+.right-side button {
+    width: 50%;
+    padding: 10px;
+    background-color: #023e8a;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.right-side button:hover {
+    background-color: #0077b6;
+}
+
+.admin-login {
+    position: absolute;
+    bottom: 20px;
+    right: 40px;
+    font-size: 1.2em;
+    color: #023e8a;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.admin-login:hover {
+    color: #0077b6;
+    text-decoration: underline;
+}
+
+.error-message{
+    color: #cc1818;
+    margin-bottom: 20px;
+}
+
+@media screen and (max-width: 1024px) {
+    /* Tablet: reduce padding and column widths */
+    .login-container {
+        flex-direction: column;
+    }
+
+    .left-side {
+        flex: 1;
+        min-height: 250px;
+        background-size: cover;
+    }
+
+    .right-side {
+        flex: 1;
+        padding-left: 3em;
+        padding-right: 3em;
+        padding-top: 50px;
+        padding-bottom: 50px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .right-side form {
+        width: 100%;
+        max-width: 350px;
+    }
+
+    .right-side button {
+        width: 100%;
+    }
+}
+
+.admin-login {
+    position: absolute;
+    bottom: 20px;
+    right: 40px;
+    font-size: 1.2em;
+    color: #023e8a;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+@media screen and (max-width: 768px) {
+    /* Mobile: stack vertically, full-width form */
+    .login-container {
+        flex-direction: column;
+    }
+
+    .left-side {
+        flex: none;
+        width: 100%;
+        min-height: 200px;
+    }
+
+    .right-side {
+        padding-left: 2em;
+        padding-right: 2em;
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    .right-side form {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .password-label {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .password-label .forgot-password {
+        margin-top: 5px;
+        align-self: flex-start;
+    }
+
+    .admin-login {
+        position: static;
+        margin-top: 20px;
+        text-align: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    /* Small mobile screens */
+    .right-side h2 {
+        font-size: 1.5em;
+    }
+
+    .right-side p {
+        font-size: 0.9em;
+    }
+
+    .right-side input {
+        padding: 8px;
+    }
+
+    .right-side button {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+}

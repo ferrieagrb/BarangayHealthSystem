@@ -1,0 +1,96 @@
+/* PAGE TITLE */
+h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
+/* SUCCESS MESSAGE */
+p {
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+/* FORM CONTAINER (CARD STYLE) */
+form.form-container {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* GRID SYSTEM */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+/* FORM GROUP */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* LABEL */
+.form-group label {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+/* INPUT + SELECT */
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+/* FOCUS STATE */
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+
+/* BUTTON */
+form button {
+    padding: 10px 14px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    /* FULL WIDTH BY DEFAULT IN GRID */
+    grid-column: span 2;
+}
+
+/* BUTTON HOVER */
+form button:hover {
+    background: #2563eb;
+}
+
+/* FULL WIDTH UTILITY */
+.full-width {
+    grid-column: span 2;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    form button,
+    .full-width {
+        grid-column: span 1;
+    }
+}

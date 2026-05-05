@@ -1,0 +1,280 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background: #f5f6fa;
+}
+
+/* TOP BAR */
+.topbar {
+    background: #e5e5e5;
+    padding: 1.4%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(rgba(0,0,80,0.8), rgba(0,0,120,0.8)), url('https://via.placeholder.com/1200x500');
+    background-size: cover;
+    color: white;
+    padding: 30px 40px 60px;
+}
+
+.nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav ul {
+    display: flex;
+    list-style: none;
+    gap: 200px;
+    margin-left: 25%;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.hero{
+    background-size: cover;
+    background-position: center;
+    background: linear-gradient(rgba(27, 0, 150, 0.8), rgba(27, 0, 150, 0.8)), url("../images/mission.jpg");
+}
+
+.hero h1 {
+    font-size: 36px;
+    max-width: 400px;
+}
+
+.tagline {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: 10%;
+}
+
+.actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15%;
+}
+
+.action-box {
+    text-align: center;
+    border-radius:20px;
+    padding:1%;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.action-box:hover {
+    translate: translateY(-5px);
+    background: #ffffff;
+    color:#0f2a6b;
+
+}
+
+/* SECTION */
+.section {
+    padding: 40px;
+}
+
+.section h2 {
+    margin-bottom: 20px;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 10%;
+}
+
+.card {
+    width: 350px;
+    background: white;
+    padding-bottom: 3%;
+    transition: 3s;
+}
+
+.card:hover{
+    translate: translateY(-5px);
+}
+
+.card img {
+    width: 100%;
+}
+
+.card p {
+    padding: 5%;
+    font-size: 12px;
+}
+
+.divider {
+    margin: 70px 0;
+    height: 2px;
+    background: #1e3a8a;
+}
+
+.announcements {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+}
+
+.announcement {
+    background: #eaeaea;
+    padding: 20px;
+    border-radius: 10px;
+    flex: 1;
+}
+
+/* FOOTER */
+.footer {
+    background: #0f2a6b;
+    color: white;
+    padding: 30px 40px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.footer ul {
+    list-style: none;
+}
+
+/* SCROLL */
+html {
+    scroll-behavior: smooth;
+}
+
+
+
+/* =========================
+   TABLET (1024px)
+========================= */
+@media (max-width: 1024px) {
+
+    .nav ul {
+        gap: 80px;
+        margin-left: 0;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+        max-width: 100%;
+    }
+
+    .cards {
+        gap: 5%;
+    }
+
+    .card {
+        width: 300px;
+    }
+
+    .actions {
+        gap: 8%;
+    }
+}
+
+/* =========================
+   MOBILE (768px)
+========================= */
+@media (max-width: 768px) {
+
+    .topbar {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        font-size: 11px;
+    }
+
+    .nav {
+        flex-direction: column;
+    }
+
+    .nav ul {
+        flex-direction: column;
+        gap: 15px;
+        margin-left: 0;
+        padding: 10px 0;
+    }
+
+    .hero {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 26px;
+    }
+
+    .tagline {
+        margin: 20px 0;
+    }
+
+    .actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .cards {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    .announcements {
+        flex-direction: column;
+    }
+
+    .announcement {
+        width: 100%;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+}
+
+/* =========================
+   SMALL PHONES (480px)
+========================= */
+@media (max-width: 480px) {
+
+    .hero h1 {
+        font-size: 22px;
+    }
+
+    .action-box {
+        width: 90%;
+    }
+
+    .card p {
+        font-size: 11px;
+    }
+
+    .footer {
+        text-align: center;
+    }
+}

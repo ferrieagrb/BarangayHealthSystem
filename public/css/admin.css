@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+}
+
+/* =========================
+   DASHBOARD LAYOUT
+========================= */
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* =========================
+   SIDEBAR BASE
+========================= */
+
+.sidebar {
+    width: 340px;
+    min-width: 340px;
+    max-width: 340px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #fff;
+    padding: 0.4rem;
+
+    transition:  0.4s ease;
+    overflow: hidden;
+}
+
+/* COLLAPSED WIDTH ONLY */
+.sidebar.collapsed {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+}
+
+/* =========================
+   TOP SECTION
+========================= */
+
+.sidebar .top {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-right: 15px;
+}
+
+.sidebar .top .topbutton i {
+    font-size: 28px;
+    color: #0E42B1;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.tpro {
+    text-align: center;
+    width: 100%;
+}
+
+.tpro h2 {
+    font-size: 35px;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.sidebar ul {
+    margin-top: 100px;
+    list-style: none;
+    width: 100%;
+}
+
+.sidebar ul li {
+    height: 60px;
+    width: 100%;
+}
+
+/* LINK BASE */
+.sidebar ul li a {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    height: 100%;
+    width: 100%;
+
+    text-decoration: none;
+    color: #0E42B1;
+
+    padding-left: 25px;
+    gap: 20px;
+
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* ICON FIX (NO SHIFT EVER) */
+.sidebar ul li a i {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* TEXT */
+.sidebar ul li a span {
+    white-space: nowrap;
+    transition: 0.3s ease;
+}
+
+/* HOVER EFFECT */
+.sidebar ul li a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: #00BCB2;
+    transition: 0.3s ease;
+}
+
+.sidebar ul li a:hover::before {
+    width: 6px;
+}
+
+.sidebar ul li a:hover {
+    background: rgba(0, 188, 178, 0.08);
+}
+
+/* =========================
+   COLLAPSED STATE FIX (CENTER ICONS ONLY)
+========================= */
+
+.sidebar.collapsed ul li a {
+    justify-content: center;
+    padding-left: 0;
+}
+
+.sidebar.collapsed .top {
+    justify-content: center;
+    padding-right: 0;
+}
+
+/* hide text WITHOUT affecting layout */
+.sidebar.collapsed ul li a span {
+    opacity: 0;
+    width: 0;
+    position: absolute;
+    overflow: hidden;
+}
+
+/* PERFECT CENTER ICON */
+.sidebar.collapsed ul li a i {
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+}
+
+/* =========================
+   USER SECTION
+========================= */
+
+.user {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.user-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 15px;
+    border-radius: 10px;
+
+    transition: 0.3s ease;
+}
+
+/* COLLAPSED USER CENTER */
+.sidebar.collapsed .user {
+    justify-content: center;
+}
+
+.sidebar.collapsed .user-mini {
+    justify-content: center;
+}
+
+/* HIDE NAME */
+.sidebar.collapsed .mini-name {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+/* PROFILE IMAGE */
+.mini-pfp {
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    background: #f2f3f8;
+}
+
+/* =========================
+   POPUP
+========================= */
+
+.user-popup {
+    position: absolute;
+    bottom: 90px;
+    left: 30px;
+
+    width: 300px;
+    background: #fff;
+    padding: 20px;
+
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+    display: none;
+    animation: fadeIn 0.2s ease;
+    z-index: 200;
+}
+
+/* =========================
+   ANIMATION
+========================= */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* TOP BAR */
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* LOGOUT BUTTON */
+.btn-logout {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-logout:hover {
+    background: #dc2626;
+}
+
+.bx {
+    font-family: boxicons !important;
+}
