@@ -312,10 +312,11 @@ Route::get('/admin/users', function () {
 
 Route::prefix('admin')->group(function () {
 
+    Route::get('/users', [AdminUserManagementController::class, 'index'])
+        ->name('admin.users');
 
-    Route::get('/users/create', function () {
-    return 'working';
-})->name('admin.users.create');
+    Route::get('/users/create', [AdminUserManagementController::class, 'create'])
+        ->name('admin.users.create');
 
     Route::post('/users', [AdminUserManagementController::class, 'store'])
         ->name('admin.users.store');
