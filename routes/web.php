@@ -309,37 +309,81 @@ Route::get('/admin/users', function () {
 })->name('admin.users');
 
 
-Route::prefix('admin')->group(function () {
+Route::get('/admin/users', function ($id) {
 
-    Route::get('/users', [AdminUserManagementController::class, 'index'])
-        ->name('admin.users');
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    Route::get('/users/create', [AdminUserManagementController::class, 'create'])
-        ->name('admin.users.create');
+    return app(AdminUserManagementController::class)->index(request());
 
-    Route::post('/users', [AdminUserManagementController::class, 'store'])
-        ->name('admin.users.store');
+})->name('admin.users');
 
-    Route::get('/users/{id}', [AdminUserManagementController::class, 'show'])
-        ->name('admin.users.view');
 
-    Route::delete('/users/{id}', [AdminUserManagementController::class, 'destroy'])
-        ->name('admin.users.delete');
+Route::get('/admin/users/create', function ($id) {
 
-    Route::get('/analytics', [AdminAnalytics::class, 'index'])
-    ->name('admin.analytics');
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    Route::get('/logs', function () {
+    return app(AdminUserManagementController::class)->create();
 
-        if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+})->name('admin.users.create');
 
-        return app(AdminLogController::class)->index();
 
-    })->name('admin.logs');
+Route::get('/admin/users', function ($id) {
 
-    Route::get('/settings', [AdminSettings::class, 'index'])
-    ->name('admin.settings');
-});
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->store(request());
+
+})->name('admin.users.store');
+
+
+Route::get('/admin/users', function ($id) {
+
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->show(request());
+
+})->name('admin.users.view');
+
+
+
+Route::get('/admin/users', function ($id) {
+
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->destroy(request());
+
+})->name('admin.users.destroy');
+
+
+
+Route::get('/admin/analytics', function ($id) {
+
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->index(request());
+
+})->name('admin.analytics');
+
+
+Route::get('/admin/logs', function ($id) {
+
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->index(request());
+
+})->name('admin.logs');
+
+
+Route::get('/admin/settings', function ($id) {
+
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return app(AdminUserManagementController::class)->index(request());
+
+})->name('admin.settings');
+
+   
+
 
 
 
