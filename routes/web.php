@@ -315,7 +315,7 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/users/create', function () {
     return 'working';
-});
+})->name('admin.users.create');
 
     Route::post('/users', [AdminUserManagementController::class, 'store'])
         ->name('admin.users.store');
