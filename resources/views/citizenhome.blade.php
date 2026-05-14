@@ -36,7 +36,7 @@
 
     <div class="actions">
         <div class="action-box">Check Schedules</div>
-        <div class="action-box">Contact Directory</div>
+        <div class="action-box" href="/contactdirectory">Contact Directory</div>
         <div class="action-box">QR Scanner</div>
     </div>
 </div>
