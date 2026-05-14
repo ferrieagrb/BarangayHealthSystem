@@ -20,9 +20,9 @@
         <img src="../images/amuyong.png" height="75px" width="75px">
         <h2>BARANGAY AMUYONG</h2>
         <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Calendar</a></li>
-            <li><a href="#">Announcements</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/publiccalendar">Calendar</a></li>
+            <li><a href="/publicannouncements">Announcements</a></li>
             <li><a href="/login">Login</a></li>
         </ul>
     </div>
@@ -36,7 +36,6 @@
 
     <div class="actions">
         <div class="action-box">Check Schedules</div>
-        <div class="action-box"></div>
         <div class="action-box">Contact Directory</div>
         <div class="action-box">QR Scanner</div>
     </div>
