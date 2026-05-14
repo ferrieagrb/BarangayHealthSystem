@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\HealthRecordController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -169,22 +170,11 @@ Route::put('/citizen/{id}', function ($id) {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/healthrecord', function () {
+Route::post('/health-record/store', [HealthRecordController::class, 'store'])
+    ->name('health.record.store');
 
-    if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
-
-    return app(CitizenController::class)->healthIndex();
-
-})->name('healthrecord');
-
-Route::post('/health-record/store', function () {
-
-    if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
-
-    return app(CitizenController::class)->storeHealthRecord(request());
-
-})->name('health.record.store');
-
+Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])
+    ->name('health.record.show');
 /*
 |--------------------------------------------------------------------------
 | SUPPLIES
