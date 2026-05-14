@@ -26,7 +26,7 @@ Route::get('/', fn () => view('citizenhome'))->name('landing');
 
 Route::get('/publiccalendar', function () {
 
-    return app(EventController::class)->index();
+    return app(EventController::class)->publicindex();
 
 })->name('citizen.add');
 

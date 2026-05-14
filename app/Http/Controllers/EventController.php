@@ -15,6 +15,11 @@ class EventController extends Controller
         return view('bhw.calendar');
     }
 
+    public function publicindex()
+    {
+        return view('publiccalendar');
+    }
+
     /**
      * Fetch all events for FullCalendar
      */
