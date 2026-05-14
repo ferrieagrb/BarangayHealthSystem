@@ -59,7 +59,7 @@ td {
 <!-- TABS -->
 <div class="tabs">
     <!--<button class="tab active" onclick="openTab(event, 'citizens')">Citizens</button>-->
-    <button class="tab" onclick="openTab(event, 'supplies')">Supplies</button>
+    <button class="tab active" onclick="openTab(event, 'supplies')">Supplies</button>
     <button class="tab" onclick="openTab(event, 'health')">Health Records</button>
     <button class="tab" onclick="openTab(event, 'vehicle')">Vehicle Borrowing</button>
     <!--
