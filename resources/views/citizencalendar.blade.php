@@ -43,9 +43,9 @@
 </div>
 
 <div class="section">
-    <h2>RECENT EVENTS</h2>
+    <h2>Calendar</h2>
 
-    
+
 
 </div>
 

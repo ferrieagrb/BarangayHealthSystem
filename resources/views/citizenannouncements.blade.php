@@ -43,45 +43,7 @@
 </div>
 
 <div class="section">
-    <h2>RECENT EVENTS</h2>
-
-    <div class="cards">
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SILANG LGU MEDICAL MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>OPLAN BAKUNA DENGUE</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SIGURADO KA MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-    </div>
-
-    <div class="divider"></div>
-
-    
-
-    <div class="announcements">
-        <h2>ANNOUNCEMENTS</h2>
-        <div class="announcement">AYUDA SA MGA SENIOR CITIZEN</div>
-        <div class="announcement">LIBRENG CHECKUP</div>
-        
-    </div>
+    <h2>Announcements</h2>
 </div>
 
 <div class="footer">
