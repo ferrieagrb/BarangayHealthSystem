@@ -1,5 +1,5 @@
 /* =========================
-   General Styles
+   Global
 ========================= */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
 
@@ -7,16 +7,16 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    background: #f2f3f8;
+    background-color: #f2f3f8;
     color: #0f172a;
 }
 
 /* =========================
-   Page Top
+   Page Header
 ========================= */
 .page-top {
     display: flex;
@@ -31,7 +31,7 @@ body {
 }
 
 .page-top .right a.btn-secondary {
-    background: #e2e8f0;
+    background-color: #e2e8f0;
     color: #0f172a;
     text-decoration: none;
     padding: 8px 16px;
@@ -41,14 +41,14 @@ body {
 }
 
 .page-top .right a.btn-secondary:hover {
-    background: #cbd5e1;
+    background-color: #cbd5e1;
 }
 
 /* =========================
-   Info Card
+   Citizen Info Card
 ========================= */
 .info-card .card {
-    background: white;
+    background: #fff;
     padding: 22px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -81,7 +81,7 @@ body {
 
 .tabs li {
     padding: 10px 20px;
-    background: #f1f5f9;
+    background-color: #f1f5f9;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
@@ -89,7 +89,7 @@ body {
 }
 
 .tabs li.current {
-    background: #0e42b1;
+    background-color: #0e42b1;
     color: white;
 }
 
@@ -102,14 +102,14 @@ body {
 }
 
 /* =========================
-   Health Record / Vaccination Cards
+   Health Records & Vaccination Cards
 ========================= */
 .diagnosis, .vaccine {
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     margin-bottom: 12px;
-    background: white;
+    background-color: #fff;
 }
 
 .diagnosis p, .vaccine p {
@@ -118,10 +118,10 @@ body {
 }
 
 /* =========================
-   Form Styles
+   Forms
 ========================= */
 form {
-    background: #ffffff;
+    background-color: #ffffff;
     padding: 18px;
     border-radius: 12px;
     margin-top: 15px;
@@ -130,8 +130,8 @@ form {
 
 form label {
     font-size: 14px;
-    margin-top: 10px;
     display: block;
+    margin-top: 10px;
     margin-bottom: 6px;
 }
 
@@ -151,8 +151,8 @@ form textarea {
 }
 
 form button {
-    background: #0E42B1;
-    color: white;
+    background-color: #0E42B1;
+    color: #fff;
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
@@ -166,11 +166,11 @@ form button:hover {
 }
 
 /* =========================
-   Buttons inside tabs
+   Buttons
 ========================= */
 .btn-primary {
-    background: #0E42B1;
-    color: white;
+    background-color: #0E42B1;
+    color: #fff;
     text-decoration: none;
     padding: 6px 14px;
     border-radius: 6px;
@@ -183,7 +183,7 @@ form button:hover {
 }
 
 .btn-secondary {
-    background: #e2e8f0;
+    background-color: #e2e8f0;
     color: #0f172a;
     text-decoration: none;
     padding: 6px 14px;
@@ -193,14 +193,14 @@ form button:hover {
 }
 
 .btn-secondary:hover {
-    background: #cbd5e1;
+    background-color: #cbd5e1;
 }
 
 /* =========================
    Alerts
 ========================= */
 .alert-success {
-    background: #dcfce7;
+    background-color: #dcfce7;
     color: #166534;
     padding: 12px 14px;
     border-radius: 10px;
@@ -208,7 +208,7 @@ form button:hover {
 }
 
 .alert-error {
-    background: #fee2e2;
+    background-color: #fee2e2;
     color: #991b1b;
     padding: 12px 14px;
     border-radius: 10px;
@@ -222,8 +222,12 @@ form button:hover {
     .tabs {
         flex-direction: column;
     }
-
+    
     .tabs li {
         text-align: center;
+    }
+    
+    form input, form textarea {
+        font-size: 13px;
     }
 }
