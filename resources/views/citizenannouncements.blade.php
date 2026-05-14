@@ -20,9 +20,9 @@
         <img src="../images/amuyong.png" height="75px" width="75px">
         <h2>BARANGAY AMUYONG</h2>
         <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Calendar</a></li>
-            <li><a href="#">Announcements</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/publiccalendar">Calendar</a></li>
+            <li><a href="/publicannouncements">Announcements</a></li>
             <li><a href="/login">Login</a></li>
         </ul>
     </div>
