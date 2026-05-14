@@ -32,56 +32,14 @@
         <h1>AKSYON SA</h1>
         <h1>    IYONG KALUSUGAN</h1>
     </div>
-    
-
-    <div class="actions">
-        <div class="action-box">Check Schedules</div>
-        <div class="action-box">Apply as Volunteer</div>
-        <div class="action-box">Contact Directory</div>
-        <div class="action-box">Transparency</div>
-    </div>
 </div>
 
 <div class="section">
-    <h2>RECENT EVENTS</h2>
+    <h2>CALENDAR</h2>
 
-    <div class="cards">
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SILANG LGU MEDICAL MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>OPLAN BAKUNA DENGUE</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SIGURADO KA MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-    </div>
 
-    <div class="divider"></div>
 
-    
 
-    <div class="announcements">
-        <h2>ANNOUNCEMENTS</h2>
-        <div class="announcement">AYUDA SA MGA SENIOR CITIZEN</div>
-        <div class="announcement">LIBRENG CHECKUP</div>
-        
-    </div>
 </div>
 
 <div class="footer">

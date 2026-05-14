@@ -28,7 +28,7 @@
     </div>
 
     <div class="tagline">
-        <h1>TESTING </h1>
+        <h1>AGARANG </h1>
         <h1>AKSYON SA</h1>
         <h1>    IYONG KALUSUGAN</h1>
     </div>
@@ -36,9 +36,9 @@
 
     <div class="actions">
         <div class="action-box">Check Schedules</div>
-        <div class="action-box"></div>
+        <div class="action-box">Apply as Volunteer</div>
         <div class="action-box">Contact Directory</div>
-        <div class="action-box">QR Scanner</div>
+        <div class="action-box">Transparency</div>
     </div>
 </div>
 

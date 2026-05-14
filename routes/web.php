@@ -22,6 +22,12 @@ use App\Http\Controllers\Admin\AdminSettings;
 
 Route::get('/', fn () => view('citizenhome'))->name('landing');
 
+Route::get('/calendar', fn () => view('citizencalendar'))->name('calendar');
+
+Route::get('/announcements', fn () => view('citizenannouncements'))->name('announcements');
+
+Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
+
 Route::get('/login', fn () => view('login'))->name('login');
 
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
