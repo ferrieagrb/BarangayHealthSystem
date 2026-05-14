@@ -33,13 +33,6 @@
         <h1>    IYONG KALUSUGAN</h1>
     </div>
     
-
-    <div class="actions">
-        <div class="action-box">Check Schedules</div>
-        <div class="action-box"></div>
-        <div class="action-box">Contact Directory</div>
-        <div class="action-box">QR Scanner</div>
-    </div>
 </div>
 
 <div class="section">
