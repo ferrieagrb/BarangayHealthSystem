@@ -14,6 +14,7 @@ use App\Http\Controllers\AdminAnalytics;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
+use App\Http\Controllers\AdminUserManagementController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
