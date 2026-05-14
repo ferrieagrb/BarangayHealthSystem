@@ -17,7 +17,7 @@ class EventController extends Controller
 
     public function publicindex()
     {
-        return view('publiccalendar');
+        return view('citizencalendar');
     }
 
     /**
