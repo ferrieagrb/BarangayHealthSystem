@@ -35,10 +35,8 @@
     
 
     <div class="actions">
-        <div class="action-box">Check Schedules</div>
-        <div class="action-box">Apply as Volunteer</div>
-        <div class="action-box">Contact Directory</div>
-        <div class="action-box">Transparency</div>
+        <div class="action-box">Check Inventory</div>
+        <div class="action-box"><a href="/contactdirectory">Contact Directory</a></div>
     </div>
 </div>
 
