@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
         initialView: 'dayGridMonth',
 
         events: function(fetchInfo, successCallback) {
-            fetch('/events')
+            fetch('/publicevents')
                 .then(res => res.json())
                 .then(data => successCallback(data));
         },
