@@ -35,7 +35,7 @@ Route::get('/publiccalendar', function () {
 
     return app(EventController::class)->publicindex();
 
-})->name('citizen.add');
+})->name('publiccalendar');
 
 Route::get('/publicevents', function () {
 
