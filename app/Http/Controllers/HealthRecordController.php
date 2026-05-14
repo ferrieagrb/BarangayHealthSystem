@@ -50,9 +50,9 @@ class HealthRecordController extends Controller
 
     // Load citizen with health records and vaccinations
     $citizen = citizens::with([
-        'healthRecords' => fn($q)=>$q->latest(),
-        'vaccinations' => fn($q)=>$q->latest()
-    ])->findOrFail($id);
+    'healthRecords' => fn($q) => $q->latest(),
+    'vaccinations' => fn($q) => $q->latest()
+])->findOrFail($id);
 
     return view('bhw.citizen_show', compact('citizen'));
 }

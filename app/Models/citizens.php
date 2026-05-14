@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\HealthRecord;
+use App\Models\Vaccination;
 
 class citizens extends Authenticatable
 {
@@ -53,6 +54,11 @@ class citizens extends Authenticatable
     public function healthRecords()
 {
     return $this->hasMany(HealthRecord::class, 'citizen_id', 'id');
+}
+
+public function vaccinations()
+{
+    return $this->hasMany(Vaccination::class, 'citizen_id', 'id');
 }
 }
 
