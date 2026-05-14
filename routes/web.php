@@ -286,11 +286,17 @@ Route::get('/qr-scanner', function () {
 
 })->name('qr.scanner');
 
+
+
+
 /*
 |--------------------------------------------------------------------------
 | ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
+
+
+
 
 Route::get('/admin/home', function () {
 
@@ -300,16 +306,14 @@ Route::get('/admin/home', function () {
 
 })->name('admin.home');
 
+
+/*
+|--------------------------
+| ADMIN USERS (FIXED)
+|--------------------------
+*/
+
 Route::get('/admin/users', function () {
-
-    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
-
-    return view('admin.admin_users');
-
-})->name('admin.users');
-
-
-Route::get('/admin/users', function ($id) {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
@@ -318,7 +322,7 @@ Route::get('/admin/users', function ($id) {
 })->name('admin.users');
 
 
-Route::get('/admin/users/create', function ($id) {
+Route::get('/admin/users/create', function () {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
@@ -327,7 +331,7 @@ Route::get('/admin/users/create', function ($id) {
 })->name('admin.users.create');
 
 
-Route::get('/admin/users', function ($id) {
+Route::post('/admin/users', function () {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
@@ -336,23 +340,22 @@ Route::get('/admin/users', function ($id) {
 })->name('admin.users.store');
 
 
-Route::get('/admin/users', function ($id) {
+Route::get('/admin/users/{id}', function ($id) {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    return app(AdminUserManagementController::class)->show(request());
+    return app(AdminUserManagementController::class)->show($id);
 
 })->name('admin.users.view');
 
 
-
-Route::get('/admin/users', function ($id) {
+Route::delete('/admin/users/{id}', function ($id) {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    return app(AdminUserManagementController::class)->destroy(request());
+    return app(AdminUserManagementController::class)->destroy($id);
 
-})->name('admin.users.destroy');
+})->name('admin.users.delete');
 
 
 
