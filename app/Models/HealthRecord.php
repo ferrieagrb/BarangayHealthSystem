@@ -10,7 +10,8 @@ class HealthRecord extends Model
     protected $fillable = [
         'citizen_id',
         'diagnosis',
-        'notes'
+        'record_date',
+        'comments'
     ];
 
     public function citizen()
