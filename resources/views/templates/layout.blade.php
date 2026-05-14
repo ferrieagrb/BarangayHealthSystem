@@ -62,13 +62,14 @@
                     <span class="nav-item">Calendar</span>
                 </a>
             </li>
-
-            <li>
+        <!--
+             <li>
                 <a href="/calendar">
                     <i class="bx bx-calendar"></i>
                     <span class="nav-item">Schedule</span>
                 </a>
-            </li>
+        </li>
+            -->
 
             <li>
                 <a href="/logs">
