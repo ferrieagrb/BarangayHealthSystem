@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+}
+
+.main {
+    flex: 1;
+    padding: 40px;
+    background: #f2f3f8;
+    min-height: 100vh;
+}
+
+.page-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-title-group h1 {
+    font-size: 30px;
+    color: #0f172a;
+}
+
+.page-title-group p {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.summary-card span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.summary-card strong {
+    font-size: 22px;
+    color: #0f172a;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.full-card {
+    grid-column: span 2;
+}
+
+.card-header {
+    margin-bottom: 15px;
+}
+
+.card-header h2 {
+    font-size: 20px;
+    color: #0f172a;
+}
+
+.card-header p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.list-item strong {
+    display: block;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.list-item span {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.empty-text {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-monitoring {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+table th,
+table td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+table th {
+    color: #0f172a;
+}
+
+table td {
+    color: #334155;
+}
+
+@media (max-width: 992px) {
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-card {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .main {
+        padding: 20px;
+    }
+}
