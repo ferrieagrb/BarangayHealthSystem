@@ -14,7 +14,6 @@ use App\Http\Controllers\AdminAnalytics;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
-use App\Http\Controllers\AdminUserManagementController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -359,29 +358,29 @@ Route::delete('/admin/users/{id}', function ($id) {
 
 
 
-Route::get('/admin/analytics', function ($id) {
+Route::get('/admin/analytics', function () {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    return app(AdminAnalytics::class)->index(request());
+    return app(AdminAnalytics::class)->index();
 
 })->name('admin.analytics');
 
 
-Route::get('/admin/logs', function ($id) {
+Route::get('/admin/logs', function () {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    return app(AdminLogController::class)->index(request());
+    return app(AdminLogController::class)->index();
 
 })->name('admin.logs');
 
 
-Route::get('/admin/settings', function ($id) {
+Route::get('/admin/settings', function () {
 
     if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
 
-    return app(AdminSettings::class)->index(request());
+    return app(AdminSettings::class)->index();
 
 })->name('admin.settings');
 
