@@ -22,9 +22,9 @@ use App\Http\Controllers\Admin\AdminSettings;
 
 Route::get('/', fn () => view('citizenhome'))->name('landing');
 
-Route::get('/calendar', fn () => view('citizencalendar'))->name('calendar');
+Route::get('/publiccalendar', fn () => view('citizencalendar'))->name('calendar');
 
-Route::get('/announcements', fn () => view('citizenannouncements'))->name('announcements');
+Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('announcements');
 
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
