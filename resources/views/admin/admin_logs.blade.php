@@ -62,8 +62,10 @@ td {
     <button class="tab" onclick="openTab(event, 'supplies')">Supplies</button>
     <button class="tab" onclick="openTab(event, 'health')">Health Records</button>
     <button class="tab" onclick="openTab(event, 'vehicle')">Vehicle Borrowing</button>
+    <!--
     <button class="tab" onclick="openTab(event, 'Immunization')">Immunization Recording</button>
     <button class="tab" onclick="openTab(event, 'HomeVisit')">Home Visit Recording</button>
+    -->
 </div>
 <div class="tabs">
     <button class="tab" onclick="openTab(event, 'Schedule')">Schedule Logs</button>
