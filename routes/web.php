@@ -35,7 +35,7 @@ Route::get('/publicevents', function () {
 
 })->name('publicevents');
 
-Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('announcements');
+Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('publicannouncements');
 
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
