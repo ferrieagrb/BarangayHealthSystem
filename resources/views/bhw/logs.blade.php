@@ -68,7 +68,7 @@ td {
     -->
 </div>
 
-<!-- CITIZEN LOGS -->
+<!-- CITIZEN LOGS 
 <div id="citizens" class="tab-content active">
     <table>
         @foreach($citizenLogs as $log)
@@ -81,9 +81,10 @@ td {
         @endforeach
     </table>
 </div>
+-->
 
 <!-- SUPPLY LOGS -->
-<div id="supplies" class="tab-content">
+<div id="supplies" class="tab-content active">
     <table>
         @foreach($supplyLogs as $log)
         <tr>
