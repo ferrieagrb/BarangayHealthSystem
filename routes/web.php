@@ -13,6 +13,8 @@ use App\Http\Controllers\QRScannerController;
 use App\Http\Controllers\Admin\AdminAnalytics;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminSettings;
+use App\Http\Controllers\VehicleLogController;
+use App\Http\Controllers\Admin\AdminUserManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +24,11 @@ use App\Http\Controllers\Admin\AdminSettings;
 
 Route::get('/', fn () => view('citizenhome'))->name('landing');
 
-Route::get('/publiccalendar', fn () => view('citizencalendar'))->name('calendar');
+Route::get('/publiccalendar', function () {
+
+    return app(EventController::class)->index();
+
+})->name('citizen.add');
 
 Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('announcements');
 
@@ -256,7 +262,7 @@ Route::delete('/events/{id}', function ($id) {
 
 });
 
-use App\Http\Controllers\VehicleLogController;
+
 
 Route::post('/vehicle-logs', [VehicleLogController::class, 'store'])
     ->name('vehicle.logs.store');
@@ -297,8 +303,6 @@ Route::get('/admin/users', function () {
 
 })->name('admin.users');
 
-
-use App\Http\Controllers\Admin\AdminUserManagementController;
 
 Route::prefix('admin')->group(function () {
 
