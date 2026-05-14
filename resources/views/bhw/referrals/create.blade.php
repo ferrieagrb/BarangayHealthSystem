@@ -6,52 +6,114 @@
 
 @section('content')
 
-<h2>Create Referral</h2>
+<div class="main">
 
-<form action="{{ route('referrals.store') }}" method="POST">
-    @csrf
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>Create Referral</h1>
+            <p>Create and generate barangay health referral forms.</p>
+        </div>
+    </div>
 
-    <label>Date of Referral</label>
-    <input type="date" name="date_of_referral" required>
+    @if(session('success'))
+        <div class="alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    <label>Name</label>
-    <input type="text" name="name" required>
+    @if ($errors->any())
+        <div class="alert-error">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-    <label>Age</label>
-    <input type="number" name="age" required>
+    <div class="referral-form-card">
 
-    <label>Gender</label>
-    <select name="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-    </select>
+        <form action="{{ route('referrals.store') }}" method="POST">
+            @csrf
 
-    <label>Address</label>
-    <textarea name="address" required></textarea>
+            <div class="form-grid">
 
-    <label>Request/s For</label>
-    <textarea name="requests_for" required></textarea>
+                <div class="form-group">
+                    <label>Date of Referral</label>
+                    <input type="date" name="date_of_referral" required>
+                </div>
 
-    <label>Vital Signs</label>
-    <textarea name="vital_signs"></textarea>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" required>
+                </div>
 
-    <label>Treatment / Intervention Given</label>
-    <textarea name="treatment_given"></textarea>
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" name="age" required>
+                </div>
 
-    <label>Name of Medication Given</label>
-    <textarea name="medication_given"></textarea>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
 
-    <label>If Self-Medication</label>
-    <textarea name="self_medication"></textarea>
+                <div class="form-group full">
+                    <label>Address</label>
+                    <textarea name="address" required></textarea>
+                </div>
 
-    <label>Maintenance Schedule/s</label>
-    <textarea name="maintenance_schedule"></textarea>
+                <div class="form-group full">
+                    <label>Request/s For</label>
+                    <textarea name="requests_for" required></textarea>
+                </div>
 
-    <label>Referred By</label>
-    <input type="text" name="referred_by" required>
+                <div class="form-group">
+                    <label>Vital Signs</label>
+                    <textarea name="vital_signs"></textarea>
+                </div>
 
-    <button type="submit">Generate Referral</button>
-</form>
+                <div class="form-group">
+                    <label>Treatment / Intervention Given</label>
+                    <textarea name="treatment_given"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Name of Medication Given</label>
+                    <textarea name="medication_given"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>If Self-Medication</label>
+                    <textarea name="self_medication"></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label>Maintenance Schedule/s</label>
+                    <textarea name="maintenance_schedule"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Referred By</label>
+                    <input type="text" name="referred_by" required>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    Generate Referral
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 @endsection
