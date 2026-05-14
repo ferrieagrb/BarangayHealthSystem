@@ -10,7 +10,7 @@
     font-family: "Poppins", sans-serif;
 }
 
-.main, body {
+body {
     background: #f2f3f8;
     color: #0f172a;
 }
@@ -28,12 +28,6 @@
 .page-title h1 {
     font-size: 28px;
     color: #0f172a;
-}
-
-.page-title p {
-    font-size: 14px;
-    color: #64748b;
-    margin-top: 4px;
 }
 
 .page-top .right a.btn-secondary {
@@ -108,7 +102,7 @@
 }
 
 /* =========================
-   Health Record & Vaccination Cards
+   Health Record / Vaccination Cards
 ========================= */
 .diagnosis, .vaccine {
     padding: 12px;
@@ -172,7 +166,7 @@ form button:hover {
 }
 
 /* =========================
-   Buttons inside Tabs
+   Buttons inside tabs
 ========================= */
 .btn-primary {
     background: #0E42B1;
