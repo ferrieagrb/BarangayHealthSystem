@@ -17,7 +17,12 @@ use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
 
-
+use App\Models\citizens;
+use App\Models\HealthRecord;
+use App\Models\Event;
+use App\Models\Supply;
+use App\Models\Referral;
+use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -60,7 +65,45 @@ Route::get('/home', function () {
         abort(403);
     }
 
-    return view('bhw.home');
+    $totalCitizens = citizens::count();
+
+    $popularDisease = HealthRecord::select('diagnosis', DB::raw('COUNT(*) as total'))
+        ->groupBy('diagnosis')
+        ->orderByDesc('total')
+        ->first();
+
+    $popularDisease = $popularDisease ? $popularDisease->diagnosis : 'N/A';
+
+    $upcomingEvents = Event::whereDate('start', '>=', now())
+        ->orderBy('start', 'asc')
+        ->take(5)
+        ->get();
+
+    $upcomingEventsCount = Event::whereDate('start', '>=', now())->count();
+
+    $lowStockSupplies = Supply::whereColumn('quantity', '<=', 'min_stock')
+        ->orderBy('quantity', 'asc')
+        ->take(5)
+        ->get();
+
+    $totalInventory = Supply::count();
+
+    $recentReferrals = Referral::latest()
+        ->take(5)
+        ->get();
+
+    $recentReferralsCount = Referral::count();
+
+    return view('bhw.home', compact(
+        'totalCitizens',
+        'popularDisease',
+        'upcomingEvents',
+        'upcomingEventsCount',
+        'lowStockSupplies',
+        'totalInventory',
+        'recentReferrals',
+        'recentReferralsCount'
+    ));
 
 })->name('home');
 
