@@ -460,3 +460,9 @@ Route::get('/referrals/create', [ReferralController::class, 'create'])->name('re
 Route::post('/referrals/store', [ReferralController::class, 'store'])->name('referrals.store');
 Route::patch('/referrals/{referral}/status', [ReferralController::class, 'updateStatus'])->name('referrals.status');
 Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');
+
+use App\Http\Controllers\HealthRecordController;
+
+Route::get('/citizen/{id}/records', [HealthRecordController::class, 'show'])->name('citizen.show');
+
+Route::post('/vaccination/store', [HealthRecordController::class, 'storeVaccination'])->name('vaccination.store');

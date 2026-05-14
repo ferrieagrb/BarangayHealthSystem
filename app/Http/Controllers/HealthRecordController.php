@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\HealthRecord;
+use App\Models\Vaccination;
 use App\Models\citizens;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,14 +45,29 @@ class HealthRecordController extends Controller
     */
 
     public function show($id)
-    {
-        if (!Auth::check() || Auth::user()->role !== 'bhw') {
-            abort(403);
-        }
+{
+    if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
 
-        $citizen = citizens::with('healthRecords')
-            ->findOrFail($id);
+    // Load citizen with health records and vaccinations
+    $citizen = citizens::with([
+        'healthRecords' => fn($q)=>$q->latest(),
+        'vaccinations' => fn($q)=>$q->latest()
+    ])->findOrFail($id);
 
-        return view('bhw.citizen_show', compact('citizen'));
-    }
+    return view('bhw.citizen_show', compact('citizen'));
+}
+
+public function storeVaccination(Request $request)
+{
+    $request->validate([
+        'citizen_id' => 'required|exists:citizens,id',
+        'vaccine_name' => 'required|string|max:255',
+        'date_administered' => 'required|date',
+        'notes' => 'nullable|string',
+    ]);
+
+    Vaccination::create($request->all());
+
+    return redirect()->back()->with('success', 'Vaccination added successfully.');
+}
 }
