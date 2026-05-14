@@ -64,7 +64,7 @@
             </li>
 
             <li>
-                <a href="/citizenlist">
+                <a href="#">
                     <i class="bx bx-shield"></i>
                     <span class="nav-item">Security</span>
                 </a>

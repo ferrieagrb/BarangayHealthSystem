@@ -170,11 +170,20 @@ Route::put('/citizen/{id}', function ($id) {
 |--------------------------------------------------------------------------
 */
 
+Route::get('/healthrecord', function () {
+
+    if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
+
+    return app(CitizenController::class)->healthIndex();
+
+})->name('healthrecord');
+
 Route::post('/health-record/store', [HealthRecordController::class, 'store'])
     ->name('health.record.store');
 
 Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])
     ->name('health.record.show');
+
 /*
 |--------------------------------------------------------------------------
 | SUPPLIES
