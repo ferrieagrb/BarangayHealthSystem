@@ -15,6 +15,9 @@ use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
+use App\Http\Controllers\ReferralController;
+
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -406,7 +409,12 @@ Route::get('/nurse/home', function () {
 
 /*
 |--------------------------------------------------------------------------
-| CITIZEN ROUTES
+| REFERRAL ROUTES
 |--------------------------------------------------------------------------
 */
 
+Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
+Route::get('/referrals/create', [ReferralController::class, 'create'])->name('referrals.create');
+Route::post('/referrals/store', [ReferralController::class, 'store'])->name('referrals.store');
+Route::patch('/referrals/{referral}/status', [ReferralController::class, 'updateStatus'])->name('referrals.status');
+Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');

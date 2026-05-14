@@ -78,7 +78,7 @@
             </li>
 
             <li>
-                <a href="/referral">
+                <a href="/referrals">
                     <i class="bx bx-heart"></i>
                     <span class="nav-item">Referrals</span>
                 </a>
