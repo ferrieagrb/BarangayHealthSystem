@@ -12,7 +12,7 @@
 
 <div class="topbar">
     <div>BARANGAY HOTLINE: (+63) 958 789 1234</div>
-    <div>EMERGENCY HOTLINE: (+63) 958 789 1234</div>
+    <div>EMERGENCY HOTLINE: (+63) 958 789 12341123123131</div>
 </div>
 
 <div class="hero">
