@@ -301,13 +301,17 @@ Route::get('/admin/home', function () {
 
 })->name('admin.home');
 
+Route::get('/admin/users', function () {
 
+    if (!Auth::check() || Auth::user()->role !== 'admin') abort(403);
+
+    return view('admin.admin_users');
+
+})->name('admin.users');
 
 
 Route::prefix('admin')->group(function () {
 
-    Route::get('/users', [AdminUserManagementController::class, 'index'])
-        ->name('admin.users');
 
     Route::get('/users/create', [AdminUserManagementController::class, 'create'])
         ->name('admin.users.create');
