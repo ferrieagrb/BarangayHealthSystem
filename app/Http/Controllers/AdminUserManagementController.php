@@ -31,7 +31,7 @@ class AdminUserManagementController extends Controller
             'users' => $users,
             'totalUsers' => User::count(),
             'admins' => User::where('role', 'admin')->count(),
-            'staff' => User::where('role', 'staff')->count(),
+            'staff' => User::where('role', 'bhw')->count(),
         ]);
     }
 

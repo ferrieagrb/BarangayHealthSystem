@@ -29,7 +29,7 @@
     </div>
 
     <div class="summary-card">
-        <span>Staff</span>
+        <span>BHW</span>
         <strong>{{ $staff }}</strong>
     </div>
 </div>
