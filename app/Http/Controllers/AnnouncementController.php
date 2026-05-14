@@ -24,6 +24,14 @@ class AnnouncementController extends Controller
         ));
     }
 
+    public function publicIndex()
+{
+    // Fetch all announcements ordered by latest
+    $announcements = Announcement::latest()->get();
+
+    return view('citizenannouncements', compact('announcements'));
+}
+
     // STORE DATA
     public function store(Request $request)
 {

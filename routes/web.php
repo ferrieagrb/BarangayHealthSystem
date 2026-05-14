@@ -44,7 +44,8 @@ Route::get('/publicevents', function () {
 
 })->name('publicevents');
 
-Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('publicannouncements');
+
+Route::get('/publicannouncements', [AnnouncementController::class, 'publicIndex'])->name('public.announcements');
 
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
