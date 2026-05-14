@@ -20,6 +20,31 @@
     min-height: 80vh;
 }
 
+/* Bigger calendar day cells */
+.fc .fc-daygrid-day-frame {
+    min-height: 140px;
+    padding: 6px;
+}
+
+/* Make events larger too */
+.fc .fc-daygrid-event {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    min-height: 36px;
+
+    display: flex;
+    align-items: center;
+
+    white-space: normal !important;
+}
+
+/* Allow event text wrapping */
+.fc-event-title {
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
 /* =========================
    BUTTON STYLES (NEW)
 ========================= */
