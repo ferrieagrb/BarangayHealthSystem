@@ -1,142 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main {
+    flex: 1;
+    padding: 40px;
+    background: #f2f3f8;
+    min-height: 100vh;
+}
+
+/* =========================
+   PAGE TOP
+========================= */
+
 .page-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+}
 
-        .page-title h1 {
-            margin: 0;
-            font-size: 30px;
-        }
+.page-title-group h1 {
+    font-size: 30px;
+    color: #0f172a;
+}
 
-        .page-title p {
-            margin: 5px 0 0;
-            color: #64748b;
-            font-size: 14px;
-        }
+.page-title-group p {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+}
 
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+/* =========================
+   BUTTONS
+========================= */
 
-        .summary-card {
-            background: white;
-            padding: 18px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
+.btn-primary {
+    background: #0E42B1;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
 
-        .summary-card span {
-            font-size: 13px;
-            color: #64748b;
-        }
+.btn-primary:hover {
+    opacity: 0.9;
+}
 
-        .summary-card strong {
-            display: block;
-            font-size: 24px;
-            margin-top: 6px;
-        }
+/* =========================
+   TOOLBAR
+========================= */
 
-        .toolbar {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .toolbar input,
-        .toolbar select {
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-        }
-
-        .badge {
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .approved {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .completed {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .priority-high {
-            color: #ef4444;
-            font-weight: bold;
-        }
-
-        .priority-medium {
-            color: #f59e0b;
-            font-weight: bold;
-        }
-
-        .priority-low {
-            color: #22c55e;
-            font-weight: bold;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        @media (max-width: 992px) {
-            .summary {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 640px) {
-            .summary {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* TABLE */
-.table-container {
-    margin-top: 20px;
+.toolbar {
     background: white;
-    padding: 20px;
-    border-radius: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    width: 260px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-container {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 table {
@@ -145,49 +102,75 @@ table {
 }
 
 table th {
-    background: #f1f5f9;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
     text-align: left;
-    padding: 10px;
+    padding: 15px;
 }
 
 table td {
-    padding: 10px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 15px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 14px;
 }
 
-/* BUTTONS */
-button {
+/* =========================
+   STATUS BADGES
+========================= */
+
+.status-badge {
+    display: inline-block;
     padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.btn-primary {
-    background: #3b82f6;
-    color: white;
+.status-approved {
+    background: #dcfce7;
+    color: #166534;
 }
 
-.btn-danger {
-    background: #ef4444;
-    color: white;
+.status-released {
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 
-.header {
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 20px;
+.status-returned {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+/* =========================
+   STATUS SELECT
+========================= */
+
+.status-select {
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
 }
 
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+/* =========================
+   ACTIONS
+========================= */
+
+.action-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* =========================
+   ALERTS
+========================= */
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 15px;
 }

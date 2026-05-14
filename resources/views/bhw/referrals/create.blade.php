@@ -1,7 +1,7 @@
 @extends('templates.layout')
 
 @section('CSSown')
-
+<link rel="stylesheet" href="{{ asset('css/bhw/referral_create.css') }}">
 @endsection
 
 @section('content')
