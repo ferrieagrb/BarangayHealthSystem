@@ -30,6 +30,12 @@ Route::get('/publiccalendar', function () {
 
 })->name('citizen.add');
 
+Route::get('/publicevents', function () {
+
+    return app(EventController::class)->fetchEvents();
+
+})->name('publicevents');
+
 Route::get('/publicannouncements', fn () => view('citizenannouncements'))->name('announcements');
 
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
