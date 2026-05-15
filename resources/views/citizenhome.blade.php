@@ -12,31 +12,30 @@
 
 <div class="topbar">
     <div>BARANGAY HOTLINE: (+63) 958 789 1234</div>
-    <div>EMERGENCY HOTLINE: (+63) 958 789 12341123123131</div>
+    <div>EMERGENCY HOTLINE: (+63) 958 789 1234</div>
 </div>
 
 <div class="hero">
     <div class="nav">
-        <img src="../images/amuyong.png" height="75px" width="75px">
+        <img src="{{ asset('images/amuyong.png') }}" height="75px" width="75px">
         <h2>BARANGAY AMUYONG</h2>
         <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/publiccalendar">Calendar</a></li>
-            <li><a href="/publicannouncements">Announcements</a></li>
-            <li><a href="/login">Login</a></li>
+            <li><a href="{{ url('/') }}">Home</a></li>
+            <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
+            <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
+            <li><a href="{{ route('login') }}">Login</a></li>
         </ul>
     </div>
 
     <div class="tagline">
-        <h1>TESTING </h1>
+        <h1>TESTING</h1>
         <h1>AKSYON SA</h1>
-        <h1>    IYONG KALUSUGAN</h1>
+        <h1>IYONG KALUSUGAN</h1>
     </div>
-    
 
     <div class="actions">
         <div class="action-box">Check Inventory</div>
-        <div class="action-box"><a href="/contactdirectory">Contact Directory</a></div>
+        <div class="action-box"><a href="{{ url('/contactdirectory') }}">Contact Directory</a></div>
     </div>
 </div>
 
@@ -44,41 +43,31 @@
     <h2>RECENT EVENTS</h2>
 
     <div class="cards">
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SILANG LGU MEDICAL MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>OPLAN BAKUNA DENGUE</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
-        <div class="card">
-            <img src="../images/mission.jpg">
-            <p>SIGURADO KA MISSION</p>
-            <p>This event brings participants together to engage, collaborate, 
-                and share meaningful experiences. It aims to create a memorable and 
-                enjoyable atmosphere while achieving its intended goals.
-            </p>
-        </div>
+        @forelse($recentEvents as $event)
+            <div class="card">
+                <img src="{{ asset($event->image ?? 'images/mission.jpg') }}" alt="{{ $event->title }}">
+                <p><strong>{{ $event->title }}</strong></p>
+                <p>{{ \Illuminate\Support\Str::limit($event->description ?? 'No description available', 150) }}</p>
+                <p><em>{{ \Carbon\Carbon::parse($event->start)->format('M d, Y') }}</em></p>
+            </div>
+        @empty
+            <p>No recent events available.</p>
+        @endforelse
     </div>
 
     <div class="divider"></div>
 
-    
-
     <div class="announcements">
         <h2>ANNOUNCEMENTS</h2>
-        <div class="announcement">AYUDA SA MGA SENIOR CITIZEN</div>
-        <div class="announcement">LIBRENG CHECKUP</div>
-        
+        @forelse($recentAnnouncements as $announcement)
+            <div class="announcement">
+                <strong>{{ $announcement->title }}</strong> 
+                - {{ \Illuminate\Support\Str::limit($announcement->description, 120) }}
+                <span style="float:right; font-size:0.8em;">{{ \Carbon\Carbon::parse($announcement->created_at)->format('M d, Y') }}</span>
+            </div>
+        @empty
+            <p>No announcements at the moment.</p>
+        @endforelse
     </div>
 </div>
 
@@ -108,7 +97,6 @@
 </div>
 
 <script>
-// Simple scroll effect for navbar
 window.addEventListener('scroll', function() {
     const nav = document.querySelector('.hero');
     if (window.scrollY > 50) {

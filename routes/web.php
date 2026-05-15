@@ -23,6 +23,7 @@ use App\Models\HealthRecord;
 use App\Models\Event;
 use App\Models\Supply;
 use App\Models\Referral;
+use App\Models\Announcement;
 use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +31,12 @@ use Illuminate\Support\Facades\DB;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn () => view('citizenhome'))->name('landing');
+Route::get('/', function () {
+    $recentEvents = Event::latest()->take(5)->get();
+    $recentAnnouncements = Announcement::latest()->take(5)->get();
+
+    return view('landing', compact('recentEvents', 'recentAnnouncements'));
+})->name('landing');
 
 Route::get('/publiccalendar', function () {
 
