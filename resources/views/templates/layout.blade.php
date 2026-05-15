@@ -87,7 +87,7 @@
 
             <li>
                 <a href="/announcements">
-                    <i class="bx bx-newspaper"></i>
+                    <i class="bx bx-megaphone"></i>
                     <span class="nav-item">Announcements</span>
                 </a>
             </li>
