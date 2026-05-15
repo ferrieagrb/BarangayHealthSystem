@@ -70,4 +70,24 @@ public function storeVaccination(Request $request)
 
     return redirect()->back()->with('success', 'Vaccination added successfully.');
 }
+
+public function index(Request $request)
+{
+    $search = $request->input('search');
+
+    $citizens = citizens::with('healthRecords')
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('Citizen_FName', 'like', "%{$search}%")
+                  ->orWhere('Citizen_LName', 'like', "%{$search}%")
+                  ->orWhereHas('healthRecords', function ($qr) use ($search) {
+                      $qr->where('diagnosis', 'like', "%{$search}%");
+                  });
+            });
+        })
+        ->latest()
+        ->paginate(10); // pagination
+
+    return view('bhw.healthrecords', compact('citizens'));
+}
 }

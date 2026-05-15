@@ -69,13 +69,16 @@
             <div class="list-tab">
 
                 <div class="toolbar">
-                    <input type="text" placeholder="Search citizen or diagnosis">
-                    <select>
-                        <option>All Records</option>
-                        <option>With Records</option>
-                        <option>No Records</option>
-                    </select>
-                </div>
+    <form method="GET" action="{{ route('healthrecords.index') }}">
+        <input type="text" name="search" placeholder="Search citizen or diagnosis" value="{{ request('search') }}">
+        <button type="submit">Search</button>
+    </form>
+    <select>
+        <option>All Records</option>
+        <option>With Records</option>
+        <option>No Records</option>
+    </select>
+</div>
 
                 <div class="table-container">
                     <table>
