@@ -35,7 +35,7 @@ Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
     $recentAnnouncements = Announcement::latest()->take(5)->get();
 
-    return view('landing', compact('recentEvents', 'recentAnnouncements'));
+    return view('citizenhome', compact('recentEvents', 'recentAnnouncements'));
 })->name('landing');
 
 Route::get('/publiccalendar', function () {
