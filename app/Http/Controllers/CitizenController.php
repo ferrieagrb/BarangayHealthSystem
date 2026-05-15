@@ -18,35 +18,45 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function index(Request $request)
-    {
-        Auth::id();
+{
+    Auth::id();
 
-        $query = citizens::query();
+    $query = citizens::query();
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('Citizen_FName', 'like', '%' . $request->search . '%')
-                  ->orWhere('Citizen_LName', 'like', '%' . $request->search . '%')
-                  ->orWhere('id', $request->search);
-            });
-        }
-
-        if ($request->purok && $request->purok != 'all') {
-            $query->where('Citizen_Purok', $request->purok);
-        }
-
-        $citizens = $query->paginate(10);
-
-        $base = citizens::query();
-
-        return view('bhw.citizen', [
-            'citizens' => $citizens,
-            'totalCitizens' => $base->count(),
-            'kids' => (clone $base)->where('Citizen_Age', '<=', 17)->count(),
-            'adults' => (clone $base)->whereBetween('Citizen_Age', [18, 59])->count(),
-            'seniors' => (clone $base)->where('Citizen_Age', '>=', 60)->count(),
-        ]);
+    // SEARCH CITIZENS (by first name, last name, ID, or diagnosis)
+    if ($request->search) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('Citizen_FName', 'like', '%' . $search . '%')
+              ->orWhere('Citizen_LName', 'like', '%' . $search . '%')
+              ->orWhere('id', $search)
+              ->orWhereHas('healthRecords', function ($q2) use ($search) {
+                  $q2->where('diagnosis', 'like', '%' . $search . '%');
+              });
+        });
     }
+
+    // FILTER BY PUROK
+    if ($request->purok && $request->purok != 'all') {
+        $query->where('Citizen_Purok', $request->purok);
+    }
+
+    // PAGINATE AND PRESERVE SEARCH PARAMETERS
+    $citizens = $query->paginate(10)->appends([
+        'search' => $request->search,
+        'purok' => $request->purok
+    ]);
+
+    $base = citizens::query();
+
+    return view('bhw.citizen', [
+        'citizens' => $citizens,
+        'totalCitizens' => $base->count(),
+        'kids' => (clone $base)->where('Citizen_Age', '<=', 17)->count(),
+        'adults' => (clone $base)->whereBetween('Citizen_Age', [18, 59])->count(),
+        'seniors' => (clone $base)->where('Citizen_Age', '>=', 60)->count(),
+    ]);
+}
 
     /*
     |--------------------------------------------------------------------------

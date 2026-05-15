@@ -55,7 +55,6 @@
                         ->filter(fn($r) => $r->created_at->isCurrentMonth())
                         ->count();
                 @endphp
-
                 {{ $thisMonthCount }}
             </strong>
         </div>
@@ -69,12 +68,19 @@
             <div class="list-tab">
 
                 <div class="toolbar">
-                    <input type="text" placeholder="Search citizen or diagnosis">
-                    <select>
-                        <option>All Records</option>
-                        <option>With Records</option>
-                        <option>No Records</option>
-                    </select>
+                    <form method="GET" action="{{ route('citizenlist') }}" class="d-flex gap-2">
+                        <input type="text" name="search" placeholder="Search citizen or diagnosis" 
+                            value="{{ request('search') }}" class="form-control">
+
+                        <select name="purok" class="form-select">
+                            <option value="all" {{ request('purok') == 'all' ? 'selected' : '' }}>All Puroks</option>
+                            <option value="1" {{ request('purok') == '1' ? 'selected' : '' }}>Purok 1</option>
+                            <option value="2" {{ request('purok') == '2' ? 'selected' : '' }}>Purok 2</option>
+                            <!-- Add other puroks here -->
+                        </select>
+
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
                 </div>
 
                 <div class="table-container">
