@@ -32,12 +32,12 @@
 
             <div class="form-group">
                 <label>Age</label>
-                <input type="number" name="Citizen_Age" required>
+                <input type="number" name="Citizen_Age" id="age" min="0" required>
             </div>
 
             <div class="form-group">
                 <label>Birth Date</label>
-                <input type="date" name="Citizen_BirthDate" required>
+                <input type="date" name="Citizen_BirthDate" id="birthdate" required>
             </div>
 
             <div class="form-group">
@@ -64,5 +64,41 @@
 
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ageInput = document.getElementById('age');
+    const birthdateInput = document.getElementById('birthdate');
+
+    // When Age changes → update Birth Date
+    ageInput.addEventListener('input', function() {
+        const age = parseInt(this.value);
+        if (!isNaN(age)) {
+            const today = new Date();
+            const birthYear = today.getFullYear() - age;
+            const birthMonth = today.getMonth() + 1; // JS month is 0-indexed
+            const birthDay = today.getDate();
+            // Format as YYYY-MM-DD
+            const monthStr = birthMonth < 10 ? '0'+birthMonth : birthMonth;
+            const dayStr = birthDay < 10 ? '0'+birthDay : birthDay;
+            birthdateInput.value = `${birthYear}-${monthStr}-${dayStr}`;
+        }
+    });
+
+    // When Birth Date changes → update Age
+    birthdateInput.addEventListener('input', function() {
+        const birth = new Date(this.value);
+        const today = new Date();
+        if (!isNaN(birth.getTime())) {
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            ageInput.value = age;
+        }
+    });
+});
+</script>
 
 @endsection
