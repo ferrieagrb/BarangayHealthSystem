@@ -16,19 +16,21 @@ class CheckRole
             return redirect()->route('login');
         }
 
+        // Global superadmin bypass: allow superadmin to access any route automatically
+        if (method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : $user->role === 'superadmin') {
+            return $next($request);
+        }
+
         foreach ($roles as $role) {
             switch ($role) {
-                case 'superadmin':
-                    if ($user->isSuperAdmin()) return $next($request);
-                    break;
                 case 'admin':
-                    if ($user->isAdmin()) return $next($request);
+                    if (method_exists($user, 'isAdmin') ? $user->isAdmin() : $user->role === 'admin') return $next($request);
                     break;
                 case 'bhw':
-                    if ($user->isBhw()) return $next($request);
+                    if (method_exists($user, 'isBhw') ? $user->isBhw() : $user->role === 'bhw') return $next($request);
                     break;
                 case 'citizen':
-                    if ($user->isCitizen()) return $next($request);
+                    if (method_exists($user, 'isCitizen') ? $user->isCitizen() : $user->role === 'citizen') return $next($request);
                     break;
             }
         }
