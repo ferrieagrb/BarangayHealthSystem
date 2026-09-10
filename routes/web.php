@@ -228,6 +228,20 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:citizen'])->prefix('citizen')->name('citizen.')->group(function () {
-    Route::get('/dashboard', fn () => view('citizen.dashboard'))->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| CITIZEN ROUTES
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function () {
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+
+        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('citizen.dashboard');
+    })->name('dashboard');
 });
