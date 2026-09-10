@@ -36,9 +36,8 @@
 
 <div class="toolbar">
     <div class="toolbar-left">
-
         <div class="search-box">
-            <form method="GET" action="{{ route('admin.users') }}">
+            <form method="GET" action="{{ auth()->user()->isSuperAdmin() ? route('superadmin.users') : route('admin.users') }}">
                 <input type="text"
                        name="search"
                        value="{{ request('search') }}"
@@ -48,19 +47,13 @@
         </div>
 
         <div class="filter-box">
-            <form method="GET" action="{{ route('admin.users') }}">
+            <form method="GET" action="{{ auth()->user()->isSuperAdmin() ? route('superadmin.users') : route('admin.users') }}">
                 <select name="role" onchange="this.form.submit()">
-                    <option value="all">All Roles</option>
-                    <option value="admin" {{ request('role')=='admin'?'selected':'' }}>Admin</option>
-                    <option value="staff" {{ request('role')=='staff'?'selected':'' }}>Nurse</option>
-                    <option value="user" {{ request('role')=='user'?'selected':'' }}>BHW</option>
+                    <!-- options here -->
                 </select>
             </form>
         </div>
-
     </div>
-
-    <button class="btn-secondary">Export Users</button>
 </div>
 
 <div class="table-container">
