@@ -35,41 +35,6 @@
                 </a>
             </li>
 
-            <li>
-                <a href="/admin/users">
-                    <i class="bx bx-user"></i>
-                    <span class="nav-item">Users</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/admin/analytics">
-                    <i class="bx bx-network-chart"></i>
-                    <span class="nav-item">Analytics</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/admin/logs">
-                    <i class="bx bx-folder"></i>
-                    <span class="nav-item">System Logs</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="/admin/settings">
-                    <i class="bx bx-cog"></i>
-                    <span class="nav-item">System Settings</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <i class="bx bx-shield"></i>
-                    <span class="nav-item">Security</span>
-                </a>
-            </li>
-
         </ul>
 
     </div>
