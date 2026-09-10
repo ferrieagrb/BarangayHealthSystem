@@ -160,7 +160,7 @@
                         <select id="add_role" name="role" required>
                             <option value="superadmin">Super Admin</option>
                             <option value="admin">Admin</option>
-                            <option value="bhw">Community Health Worker</option>
+                            <option value="bhw">Barangay Health Worker</option>
                             <option value="nurse">Nurse</option>
                         </select>
                     </div>
