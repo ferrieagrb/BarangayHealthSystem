@@ -1,7 +1,7 @@
 @extends('templates.superadmin')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/superadmin/users.css') }}">
 @endsection
     
 @section('content')
