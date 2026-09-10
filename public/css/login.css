@@ -7,11 +7,9 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-body {
-    background-color: #f8fafc;
-    color: #1e293b;
-    height: 100vh;
-    width: 100vw;
+body, html {
+    height: 100%;
+    width: 100%;
     overflow: hidden;
 }
 
@@ -22,7 +20,7 @@ body {
     background: #ffffff;
 }
 
-/* Left Side Styling - Immersive Hero Banner */
+/* Left Side Hero Banner */
 .left-side {
     flex: 1.2;
     background: linear-gradient(135deg, rgba(2, 62, 138, 0.85), rgba(0, 119, 182, 0.85)), url("../images/taal.jpg") no-repeat center center;
@@ -55,7 +53,7 @@ body {
 }
 
 .left-side h1 {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: 1rem;
@@ -63,17 +61,17 @@ body {
 
 .left-side h1 span {
     font-weight: 400;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     opacity: 0.9;
 }
 
 .left-side p {
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.6;
     opacity: 0.85;
 }
 
-/* Right Side Styling - Clean Modern Form */
+/* Right Side Form */
 .right-side {
     flex: 1;
     background-color: #ffffff;
@@ -245,24 +243,12 @@ body {
     color: #94a3b8;
 }
 
-/* Responsive Breakpoints */
 @media screen and (max-width: 1024px) {
     .left-side {
-        display: none; /* Hide hero banner on tablets/smaller screens to prioritize login card */
+        display: none;
     }
-    
     .right-side {
         flex: 1;
         padding: 2rem;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .right-side {
-        padding: 1.5rem;
-    }
-    
-    .welcome-header h2 {
-        font-size: 1.5rem;
     }
 }
