@@ -17,6 +17,7 @@ use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\HealthRecordController;
+use App\Http\Controllers\SuperAdminController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -71,7 +72,7 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->isSuperAdmin()) {
-        return redirect()->route('admin.home'); // Or a dedicated superadmin route if created
+        return redirect()->route('superadmin.dashboard'); // Or a dedicated superadmin route if created
     } elseif ($user->isAdmin()) {
         return redirect()->route('admin.home');
     } elseif ($user->isBhw()) {
@@ -220,4 +221,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/citizen/{id}/records', [HealthRecordController::class, 'show'])->name('citizen.show');
     Route::post('/vaccination/store', [HealthRecordController::class, 'storeVaccination'])->name('vaccination.store');
+});
+
+
+Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('dashboard');
 });
