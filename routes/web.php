@@ -187,8 +187,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
-    Route::get('/users/create', fn () => app(AdminUserManagementController::class)->create())->name('users.create');
-    Route::get('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->show($id))->name('users.view');
+    Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
+    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 });
 
