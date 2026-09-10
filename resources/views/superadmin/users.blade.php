@@ -149,7 +149,7 @@
                     </div>
                     <div class="input-group">
                         <label for="add_username">Username</label>
-                        <input type="text" id="add_username" name="username" required>
+                        <input type="text" id="add_username" name="username">
                     </div>
                     <div class="input-group">
                         <label for="add_password">Password</label>
