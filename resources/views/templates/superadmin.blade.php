@@ -29,35 +29,35 @@
 
         <ul>
             <li>
-                <a href="/admin/home">
+                <a href="{{ auth()->user()->isSuperAdmin() ? route('superadmin.dashboard') : route('admin.home') }}">
                     <i class="bx bx-home"></i>
                     <span class="nav-item">Home</span>
                 </a>
             </li>
 
-            <li class="{{ request()->routeIs('superadmin.users') ? 'active' : '' }}">
-                <a href="{{ route('superadmin.users') }}">
+            <li class="{{ request()->routeIs('superadmin.users') || request()->routeIs('admin.users') ? 'active' : '' }}">
+                <a href="{{ auth()->user()->isSuperAdmin() ? route('superadmin.users') : route('admin.users') }}">
                     <i class="bx bx-user"></i>
                     <span class="nav-item">Users</span>
                 </a>
             </li>
 
             <li>
-                <a href="/admin/analytics">
+                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.analytics') }}">
                     <i class="bx bx-network-chart"></i>
                     <span class="nav-item">System Analytics</span>
                 </a>
             </li>
 
             <li>
-                <a href="/admin/logs">
+                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.logs') }}">
                     <i class="bx bx-folder"></i>
                     <span class="nav-item">System Logs</span>
                 </a>
             </li>
 
             <li>
-                <a href="/admin/settings">
+                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.settings') }}">
                     <i class="bx bx-cog"></i>
                     <span class="nav-item">System Settings</span>
                 </a>
@@ -69,7 +69,6 @@
                     <span class="nav-item">Security</span>
                 </a>
             </li>
-
         </ul>
 
     </div>

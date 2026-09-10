@@ -11,29 +11,35 @@ use Illuminate\Http\Request;
 class AdminUserManagementController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = User::query();
+{
+    $query = User::query();
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('email', 'like', "%{$request->search}%");
-            });
-        }
-
-        if ($request->filled('role') && $request->role !== 'all') {
-            $query->where('role', $request->role);
-        }
-
-        $users = $query->latest()->paginate(10);
-
-        return view('admin.admin_users', [
-            'users' => $users,
-            'totalUsers' => User::count(),
-            'admins' => User::where('role', 'admin')->count(),
-            'staff' => User::where('role', 'bhw')->count(),
-        ]);
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', "%{$request->search}%")
+              ->orWhere('email', 'like', "%{$request->search}%");
+        });
     }
+
+    if ($request->filled('role') && $request->role !== 'all') {
+        $query->where('role', $request->role);
+    }
+
+    $users = $query->latest()->paginate(10);
+
+    $viewData = [
+        'users' => $users,
+        'totalUsers' => User::count(),
+        'admins' => User::where('role', 'admin')->count(),
+        'staff' => User::where('role', 'bhw')->count(),
+    ];
+
+    if ($request->is('superadmin*')) {
+        return view('superadmin.users', $viewData);
+    }
+
+    return view('admin.admin_users', $viewData);
+}
 
     public function show($id)
     {
