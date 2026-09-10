@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,71 +12,55 @@
 </head>
 <body>
 
-    <div class="login-container">
-        <!-- Left Banner Side -->
-        <div class="left-side">
-            <div class="overlay-content">
-                <div class="badge">
-                    <i class="fa-solid fa-shield-halved"></i> Official Portal
-                </div>
-                <h1>Barangay Amuyong<br><span>Health Information System</span></h1>
-                <p>Streamlining community healthcare services, patient records, and medical inventories securely.</p>
-            </div>
+    <div class="login-card">
+        <div class="top-nav">
+            <a href="{{ route('landing') }}" class="back-home">
+                <i class="fa-solid fa-arrow-left"></i> Home Page
+            </a>
         </div>
 
-        <!-- Right Form Side -->
-        <div class="right-side">
-            <div class="form-wrapper">
-                <div class="top-nav">
-                    <a href="{{ route('landing') }}" class="back-home">
-                        <i class="fa-solid fa-arrow-left"></i> Home Page
-                    </a>
+        <div class="welcome-header">
+            <h2>Barangay Amuyong<br><span style="font-size: 1.1rem; font-weight: 500; color: #64748b;">Health Information System</span></h2>
+            <p>Please enter your credentials to access your dashboard</p>
+        </div>
+
+        <form action="{{ route('login.submit') }}" method="POST"> 
+            @csrf  
+            
+            @if (session('error'))
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
-
-                <div class="welcome-header">
-                    <h2>Welcome Back</h2>
-                    <p>Please enter your credentials to access your dashboard.</p>
-                </div>
-
-                <form action="{{ route('login.submit') }}" method="POST"> 
-                    @csrf  
-                    
-                    @if (session('error'))
-                        <div class="alert-error">
-                            <i class="fa-solid fa-circle-exclamation"></i>
-                            <span>{{ session('error') }}</span>
-                        </div>
-                    @endif
-                    
-                    <div class="input-group">
-                        <label for="Username">Username or Email</label>
-                        <div class="input-field-wrapper">
-                            <i class="fa-regular fa-user"></i>
-                            <input type="text" id="Username" placeholder="Enter your username" name="Username" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="password-label">
-                            <label for="Password">Password</label>
-                            <a href="#" class="forgot-password">Forgot password?</a>
-                        </div>
-                        <div class="input-field-wrapper">
-                            <i class="fa-lock fa-solid"></i>
-                            <input type="password" id="Password" placeholder="Enter your password" name="Password" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn">
-                        <span>Sign In</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </form>
-
-                <div class="portal-footer">
-                    <p>&copy; 2026 Barangay Amuyong. All rights reserved.</p>
+            @endif
+            
+            <div class="input-group">
+                <label for="Username">Username or Email</label>
+                <div class="input-field-wrapper">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="Username" placeholder="Enter your username" name="Username" required>
                 </div>
             </div>
+
+            <div class="input-group">
+                <div class="password-label">
+                    <label for="Password">Password</label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                <div class="input-field-wrapper">
+                    <i class="fa-lock fa-solid"></i>
+                    <input type="password" id="Password" placeholder="Enter your password" name="Password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span>Sign In</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="portal-footer">
+            <p>&copy; 2026 Barangay Amuyong. All rights reserved.</p>
         </div>
     </div> 
 
