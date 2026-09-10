@@ -71,19 +71,13 @@ Route::get('/dashboard', function () {
         return redirect()->route('login');
     }
 
-    if ($user->isSuperAdmin()) {
-        return redirect()->route('superadmin.dashboard');
-    } 
-    
-    if ($user->isAdmin()) {
-        return redirect()->route('admin.home');
-    } 
-    
-    if ($user->isBhw()) {
-        return redirect()->route('home');
-    }
-
-    return redirect()->route('citizen.dashboard');
+    return match (strtolower(trim($user->role))) {
+        'superadmin' => redirect()->route('superadmin.dashboard'),
+        'admin' => redirect()->route('admin.home'),
+        'bhw' => redirect()->route('home'),
+        'citizen' => redirect()->route('citizen.dashboard'),
+        default => redirect()->route('landing'),
+    };
 })->middleware(['auth'])->name('dashboard');
 
 /*
