@@ -8,8 +8,9 @@
 }
 
 body {
-    background-color: #f1f5f9;
-    background-image: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("../images/hall.jpg") no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,13 +22,13 @@ body {
     background: #ffffff;
     padding: 2.5rem;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.08);
     width: 100%;
     max-width: 440px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .top-nav {
