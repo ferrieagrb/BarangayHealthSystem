@@ -12,7 +12,7 @@
         <p>Manage system users, roles, and access permissions.</p>
     </div>
 
-    <a href="{{ route('admin.users.create') }}" class="btn-primary">
+    <a href="{{ route('superadmin.users.create') }}" class="btn-primary">
         + Add User
     </a>
 </div>
