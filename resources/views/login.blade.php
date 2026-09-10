@@ -20,7 +20,7 @@
         </div>
 
         <div class="welcome-header">
-            <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong Logo" class="logo">
+            <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong Logo" class="logo" height="100" width="100">
             <h2>Barangay Amuyong<br><span style="font-size: 1.1rem; font-weight: 500; color: #64748b;">Health Information System</span></h2>
             <p>Please enter your credentials to access your dashboard</p>
         </div>
