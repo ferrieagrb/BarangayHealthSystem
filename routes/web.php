@@ -226,4 +226,9 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('dashboard');
+
+    // Superadmin User Management Routes
+    Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
+    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
+    Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 });
