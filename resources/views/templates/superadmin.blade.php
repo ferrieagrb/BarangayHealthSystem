@@ -35,8 +35,8 @@
                 </a>
             </li>
 
-            <li>
-                <a href="/admin/users">
+            <li class="{{ request()->routeIs('superadmin.users') ? 'active' : '' }}">
+                <a href="{{ route('superadmin.users') }}">
                     <i class="bx bx-user"></i>
                     <span class="nav-item">Users</span>
                 </a>
