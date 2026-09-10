@@ -240,6 +240,6 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
 
 
 Route::middleware(['auth', 'role:citizen'])->prefix('citizen')->name('citizen.')->group(function () {
-    Route::get('/dashboard/user/{id}', fn () => view('citizen.dashboard'))->name('dashboard');
+    Route::get('/dashboard', fn () => view('citizen.dashboard'))->name('dashboard');
     // Add other citizen-specific views/actions here
 });
