@@ -48,6 +48,7 @@ class UserController extends Controller
             'superadmin' => redirect()->route('superadmin.dashboard'),
             'admin' => redirect()->route('admin.home'),
             'bhw' => redirect()->route('home'),
+            'citizen' => redirect()->route('citizen.dashboard'),
             default => redirect()->route('landing'),
         };
     }
