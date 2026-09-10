@@ -73,12 +73,14 @@ Route::get('/dashboard', function () {
 
     if ($user->isSuperAdmin()) {
         return redirect()->route('superadmin.dashboard');
-    } elseif ($user->isAdmin()) {
+    } 
+    
+    if ($user->isAdmin()) {
         return redirect()->route('admin.home');
-    } elseif ($user->isBhw()) {
+    } 
+    
+    if ($user->isBhw()) {
         return redirect()->route('home');
-    } elseif ($user->role === 'citizen' || (method_exists($user, 'isCitizen') && $user->isCitizen())) {
-        return redirect()->route('citizen.dashboard');
     }
 
     return redirect()->route('citizen.dashboard');
