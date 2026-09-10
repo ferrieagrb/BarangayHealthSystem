@@ -79,6 +79,11 @@ Route::get('/dashboard', function () {
         return redirect()->route('home');
     } elseif ($user->isNurse()) {
         return redirect()->route('nurse.home');
+    } elseif (
+        (method_exists($user, 'isCitizen') && $user->isCitizen()) || 
+        (property_exists($user, 'role') && $user->role === 'citizen')
+    ) {
+        return redirect()->route('citizen.dashboard');
     }
 
     return redirect()->route('landing');
