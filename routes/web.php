@@ -77,16 +77,11 @@ Route::get('/dashboard', function () {
         return redirect()->route('admin.home');
     } elseif ($user->isBhw()) {
         return redirect()->route('home');
-    } elseif ($user->isNurse()) {
-        return redirect()->route('nurse.home');
-    } elseif (
-        (method_exists($user, 'isCitizen') && $user->isCitizen()) || 
-        (property_exists($user, 'role') && $user->role === 'citizen')
-    ) {
+    } elseif ($user->role === 'citizen' || (method_exists($user, 'isCitizen') && $user->isCitizen())) {
         return redirect()->route('citizen.dashboard');
     }
 
-    return redirect()->route('landing');
+    return redirect()->route('citizen.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
 /*
