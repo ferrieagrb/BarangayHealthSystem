@@ -196,16 +196,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 /*
 |--------------------------------------------------------------------------
-| NURSE ROUTES
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:nurse'])->group(function () {
-    Route::get('/nurse/home', fn () => view('nurse.home'))->name('nurse.home');
-});
-
-/*
-|--------------------------------------------------------------------------
 | REFERRAL ROUTES & GENERAL HEALTH ACTIONS
 |--------------------------------------------------------------------------
 */
@@ -238,8 +228,12 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 });
 
+/*
+|--------------------------------------------------------------------------
+| CITIZEN ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:citizen'])->prefix('citizen')->name('citizen.')->group(function () {
     Route::get('/dashboard', fn () => view('citizen.dashboard'))->name('dashboard');
-    // Add other citizen-specific views/actions here
 });
