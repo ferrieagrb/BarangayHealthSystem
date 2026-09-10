@@ -76,7 +76,7 @@ Route::get('/dashboard', function () {
     } elseif ($user->isAdmin()) {
         return redirect()->route('admin.home');
     } elseif ($user->isBhw()) {
-        return redirect()->route('home');
+        return redirect()->route('citizen.home');
     } elseif ($user->role === 'citizen' || (method_exists($user, 'isCitizen') && $user->isCitizen())) {
         return redirect()->route('citizen.dashboard');
     }
