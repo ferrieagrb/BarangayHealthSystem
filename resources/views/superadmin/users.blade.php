@@ -70,7 +70,7 @@
                                         <button class="btn-icon edit" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username }}', '{{ $user->role }}')" title="Edit User">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
-                                        <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');" style="display:inline;">
+                                        <form action="{{ route('superadmin.users.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-icon delete" title="Delete User">
@@ -134,7 +134,7 @@
             const modal = document.getElementById('editModal');
             const form = document.getElementById('editUserForm');
             
-            // Set form action route dynamically
+            // Set form action route dynamically to match superadmin prefix
             form.action = `/superadmin/users/${id}`;
             
             // Populate fields
