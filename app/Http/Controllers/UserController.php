@@ -45,9 +45,10 @@ class UserController extends Controller
 
         // Redirect based on role
         return match ($user->role) {
+            'superadmin' => redirect()->route('superadmin.dashboard'),
             'admin' => redirect()->route('admin.home'),
-            'nurse' => redirect()->route('nurse.home'),
-            default => redirect()->route('home'),
+            'bhw' => redirect()->route('home'),
+            default => redirect()->route('landing'),
         };
     }
 
