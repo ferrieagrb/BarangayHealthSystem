@@ -77,6 +77,6 @@ public function store(Request $request)
         'role' => $request->role
     ]);
 
-    return redirect()->route('admin.users.create')->with('success', 'User created successfully.');
+    return redirect()->route(auth()->user()->isSuperAdmin() ? 'superadmin.users' : 'admin.users')->with('success', 'User created successfully.');
 }
 }
