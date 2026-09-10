@@ -1,4 +1,4 @@
-@extends('templates.admin')
+@extends('templates.superadmin')
 
 @section('CSSown')
 
