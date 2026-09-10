@@ -82,6 +82,24 @@ Route::get('/dashboard', function () {
 
 /*
 |--------------------------------------------------------------------------
+| CITIZEN ROUTES (Placed first to avoid wildcard URI collisions)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function () {
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+
+        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('citizen.dashboard');
+    })->name('dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
 | BHW ROUTES
 |--------------------------------------------------------------------------
 */
@@ -220,28 +238,4 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
-});
-
-/*
-|--------------------------------------------------------------------------
-| CITIZEN ROUTES
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
-| CITIZEN ROUTES
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function () {
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-
-        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        return view('citizen.dashboard');
-    })->name('dashboard');
 });
