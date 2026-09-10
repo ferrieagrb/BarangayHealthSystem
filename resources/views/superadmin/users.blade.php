@@ -135,7 +135,7 @@
             const form = document.getElementById('editUserForm');
             
             // Set form action route dynamically
-            form.action = `/admin/users/${id}`;
+            form.action = `/superadmin/users/${id}`;
             
             // Populate fields
             document.getElementById('edit_name').value = name;
