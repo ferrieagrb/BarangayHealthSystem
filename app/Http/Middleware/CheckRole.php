@@ -16,25 +16,36 @@ class CheckRole
             return redirect()->route('login');
         }
 
-        // Global superadmin bypass: allow superadmin to access any route automatically
-        if (method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : $user->role === 'superadmin') {
+        // Normalize database role to lowercase and trim spaces
+        $userRole = strtolower(trim($user->role ?? ''));
+
+        // Global superadmin bypass
+        if ($userRole === 'superadmin' || (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin())) {
             return $next($request);
         }
 
         foreach ($roles as $role) {
-            switch ($role) {
+            $targetRole = strtolower(trim($role));
+            
+            if ($userRole === $targetRole) {
+                return $next($request);
+            }
+
+            // Fallback to model methods if available
+            switch ($targetRole) {
                 case 'admin':
-                    if (method_exists($user, 'isAdmin') ? $user->isAdmin() : $user->role === 'admin') return $next($request);
+                    if (method_exists($user, 'isAdmin') && $user->isAdmin()) return $next($request);
                     break;
                 case 'bhw':
-                    if (method_exists($user, 'isBhw') ? $user->isBhw() : $user->role === 'bhw') return $next($request);
+                    if (method_exists($user, 'isBhw') && $user->isBhw()) return $next($request);
                     break;
                 case 'citizen':
-                    if (method_exists($user, 'isCitizen') ? $user->isCitizen() : $user->role === 'citizen') return $next($request);
+                    if (method_exists($user, 'isCitizen') && $user->isCitizen()) return $next($request);
                     break;
             }
         }
 
-        abort(403, 'Unauthorized action.');
+        // This will show you the exact string stored in your database if it fails again
+        abort(403, 'Unauthorized action. Database role found was: "' . ($user->role ?? 'null') . '"');
     }
 }
