@@ -117,7 +117,7 @@
                             <option value="superadmin">Super Admin</option>
                             <option value="admin">Admin</option>
                             <option value="bhw">Barangay Health Worker</option>
-                            <option value="volunteer">Volunteer</option>
+                            <option value="citizen">Citizen</option>
                         </select>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
                             <option value="superadmin">Super Admin</option>
                             <option value="admin">Admin</option>
                             <option value="bhw">Barangay Health Worker</option>
-                            <option value="nurse">Nurse</option>
+                            <option value="citizen">Citizen</option>
                         </select>
                     </div>
                 </div>

@@ -1,13 +1,13 @@
-@extends('templates.nurse')
+@extends('templates.superadmin')
 
 @section('CSSown')
 
 @endsection
-
+    
 @section('content')
 
 <h1>
-    NURSE HOME
+    Citizen Home
 </h1>
 
 @endsection

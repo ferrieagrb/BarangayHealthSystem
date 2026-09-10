@@ -32,6 +32,7 @@ class AdminUserManagementController extends Controller
         'totalUsers' => User::count(),
         'admins' => User::where('role', 'admin')->count(),
         'staff' => User::where('role', 'bhw')->count(),
+        'citizens' => User::where('role', 'citizen')->count(),
     ];
 
     if ($request->is('superadmin*')) {

@@ -165,6 +165,7 @@
                     <select id="add_role" name="role" required style="width: 100%;">
                         <option value="admin">Admin</option>
                         <option value="bhw">Barangay Health Worker</option>
+                        <option value="citizen">Citizen</option>
                     </select>
                 </div>
             </div>
@@ -204,6 +205,7 @@
                     <select id="edit_role" name="role" required style="width: 100%;">
                         <option value="admin">Admin</option>
                         <option value="bhw">Barangay Health Worker</option>
+                        <option value="citizen">Citizen</option>
                     </select>
                 </div>
             </div>
