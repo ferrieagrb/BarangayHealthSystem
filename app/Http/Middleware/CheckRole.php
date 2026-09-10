@@ -16,7 +16,6 @@ class CheckRole
             return redirect()->route('login');
         }
 
-        // Normalize database role to lowercase and trim spaces
         $userRole = strtolower(trim($user->role ?? ''));
 
         // Global superadmin bypass
@@ -24,28 +23,30 @@ class CheckRole
             return $next($request);
         }
 
+        // Flatten and normalize allowed roles
+        $allowedRoles = [];
         foreach ($roles as $role) {
-            $targetRole = strtolower(trim($role));
-            
-            if ($userRole === $targetRole) {
-                return $next($request);
-            }
-
-            // Fallback to model methods if available
-            switch ($targetRole) {
-                case 'admin':
-                    if (method_exists($user, 'isAdmin') && $user->isAdmin()) return $next($request);
-                    break;
-                case 'bhw':
-                    if (method_exists($user, 'isBhw') && $user->isBhw()) return $next($request);
-                    break;
-                case 'citizen':
-                    if (method_exists($user, 'isCitizen') && $user->isCitizen()) return $next($request);
-                    break;
+            foreach (explode(',', $role) as $r) {
+                $allowedRoles[] = strtolower(trim($r));
             }
         }
 
-        // This will show you the exact string stored in your database if it fails again
-        abort(403, 'Unauthorized action. Database role found was: "' . ($user->role ?? 'null') . '"');
+        // Check if user's role is permitted
+        if (in_array($userRole, $allowedRoles, true)) {
+            return $next($request);
+        }
+
+        // Model method fallbacks
+        if ($userRole === 'citizen' && method_exists($user, 'isCitizen') && $user->isCitizen()) {
+            return $next($request);
+        }
+        if ($userRole === 'admin' && method_exists($user, 'isAdmin') && $user->isAdmin()) {
+            return $next($request);
+        }
+        if ($userRole === 'bhw' && method_exists($user, 'isBhw') && $user->isBhw()) {
+            return $next($request);
+        }
+
+        abort(403, 'Unauthorized action. User role: "' . $userRole . '", Expected roles: ' . json_encode($allowedRoles));
     }
 }
