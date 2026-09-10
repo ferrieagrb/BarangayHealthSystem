@@ -129,7 +129,59 @@
         </div>
     </div>
 
+    <!-- Add User Modal -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add New User</h3>
+                <button class="close-btn" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form action="{{ route('superadmin.users.store') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="add_name">Full Name</label>
+                        <input type="text" id="add_name" name="name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="add_email">Email Address</label>
+                        <input type="email" id="add_email" name="email" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="add_username">Username</label>
+                        <input type="text" id="add_username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="add_password">Password</label>
+                        <input type="password" id="add_password" name="password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="add_role">User Role</label>
+                        <select id="add_role" name="role" required>
+                            <option value="superadmin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="bhw">Community Health Worker</option>
+                            <option value="nurse">Nurse</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="primary-btn">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
         function openEditModal(id, name, email, username, role) {
             const modal = document.getElementById('editModal');
             const form = document.getElementById('editUserForm');
@@ -150,11 +202,16 @@
             document.getElementById('editModal').style.display = 'none';
         }
 
-        // Close modal when clicking outside of card content
+        // Close modals when clicking outside of card content
         window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
+            const editModal = document.getElementById('editModal');
+            const addModal = document.getElementById('addModal');
+            
+            if (event.target === editModal) {
                 closeEditModal();
+            }
+            if (event.target === addModal) {
+                closeAddModal();
             }
         }
     </script>
