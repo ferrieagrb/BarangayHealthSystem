@@ -76,7 +76,7 @@ Route::get('/dashboard', function () {
     } elseif ($user->isAdmin()) {
         return redirect()->route('admin.home');
     } elseif ($user->isBhw()) {
-        return redirect()->route('citizen.home');
+        return redirect()->route('home');
     } elseif ($user->role === 'citizen' || (method_exists($user, 'isCitizen') && $user->isCitizen())) {
         return redirect()->route('citizen.dashboard');
     }
@@ -238,6 +238,6 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
 
 
 Route::middleware(['auth', 'role:citizen'])->prefix('citizen')->name('citizen.')->group(function () {
-    Route::get('/dashboard', fn () => view('citizen.dashboard'))->name('dashboard');
+    Route::get('/dashboard/user/{id}', fn () => view('citizen.dashboard'))->name('dashboard');
     // Add other citizen-specific views/actions here
 });
