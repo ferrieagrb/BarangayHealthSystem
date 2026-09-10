@@ -72,7 +72,7 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->isSuperAdmin()) {
-        return redirect()->route('superadmin.dashboard'); // Or a dedicated superadmin route if created
+        return redirect()->route('superadmin.dashboard');
     } elseif ($user->isAdmin()) {
         return redirect()->route('admin.home');
     } elseif ($user->isBhw()) {
@@ -176,24 +176,15 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN ROUTES (Supports admin and superadmin via model checks)
+| ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-
-    Route::get('/home', fn () => view('admin.admin_home'))->name('admin.home');
-
-    // Admin Users Management
-    Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('admin.users');
-    Route::get('/users/create', fn () => app(AdminUserManagementController::class)->create())->name('admin.users.create');
-    Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('admin.users.store');
-    Route::get('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->show($id))->name('admin.users.view');
-    Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('admin.users.delete');
-
-    Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('admin.analytics');
-    Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('admin.logs');
-    Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('admin.settings');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/home', fn () => view('admin.admin_home'))->name('home');
+    Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
+    Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
+    Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
 });
 
 /*
@@ -223,12 +214,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/vaccination/store', [HealthRecordController::class, 'storeVaccination'])->name('vaccination.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| SUPERADMIN ROUTES (Includes User Management)
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('dashboard');
 
     // Superadmin User Management Routes
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
+    Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 });
