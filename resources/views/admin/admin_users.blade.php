@@ -37,19 +37,19 @@
 <div class="toolbar">
     <div class="toolbar-left">
         <div class="search-box">
-            <form method="GET" action="{{ auth()->user()->isSuperAdmin() ? route('superadmin.users') : route('admin.users') }}">
+            <form method="GET" action="{{ route(Route::is('superadmin.*') ? 'superadmin.users' : 'admin.users') }}">
                 <input type="text"
-                       name="search"
-                       value="{{ request('search') }}"
-                       placeholder="Search user name or email"
-                       oninput="this.form.submit()">
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search user name or email"
+                    oninput="this.form.submit()">
             </form>
         </div>
 
         <div class="filter-box">
-            <form method="GET" action="{{ auth()->user()->isSuperAdmin() ? route('superadmin.users') : route('admin.users') }}">
+            <form method="GET" action="{{ route(Route::is('superadmin.*') ? 'superadmin.users' : 'admin.users') }}">
                 <select name="role" onchange="this.form.submit()">
-                    <!-- options here -->
+                    <!-- options -->
                 </select>
             </form>
         </div>
@@ -83,24 +83,17 @@
 
             <td>
                 <div class="action-group">
-
-                    <a href="{{ route('admin.users.view', $user->id) }}" class="btn-primary">
+                    <a href="{{ route(Route::is('superadmin.*') ? 'superadmin.users.view' : 'admin.users.view', $user->id) }}" class="btn-primary">
                         View
                     </a>
 
-                    <form action="{{ route('admin.users.delete', $user->id) }}"
-                          method="POST"
-                          onsubmit="return confirm('Delete this user?')">
-
+                    <form action="{{ route(Route::is('superadmin.*') ? 'superadmin.users.delete' : 'admin.users.delete', $user->id) }}"
+                        method="POST"
+                        onsubmit="return confirm('Delete this user?')">
                         @csrf
                         @method('DELETE')
-
-                        <button type="submit" class="btn-danger">
-                            Delete
-                        </button>
-
+                        <button type="submit" class="btn-danger">Delete</button>
                     </form>
-
                 </div>
             </td>
 
