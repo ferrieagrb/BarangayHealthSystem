@@ -116,7 +116,7 @@
                         <select id="edit_role" name="role" required>
                             <option value="superadmin">Super Admin</option>
                             <option value="admin">Admin</option>
-                            <option value="worker">Community Health Worker</option>
+                            <option value="bhw">Barangay Health Worker</option>
                             <option value="volunteer">Volunteer</option>
                         </select>
                     </div>
