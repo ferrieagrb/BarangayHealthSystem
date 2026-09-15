@@ -203,7 +203,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
-    
+    Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies');
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
