@@ -78,7 +78,7 @@
 
 @foreach ($groupedSupplies as $itemName => $itemsOfKind)
     @php
-        // Filter out empty placeholder rows so we only count real batches
+        // Filter out empty placeholder rows so we only count real packs
         $actualBatches = $itemsOfKind->filter(function($item) {
             return $item->quantity > 0 || !empty($item->item_number) || !empty($item->serial_number);
         });
@@ -94,7 +94,7 @@
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
             <span class="arrow-icon">▶</span> 
             <strong>{{ $itemName }}</strong> 
-            <small class="text-muted">({{ $actualBatches->count() }} batches)</small>
+            <small class="text-muted">({{ $actualBatches->count() }} packs)</small>
         </td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $category }}</td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $totalQty }}</td>
@@ -108,20 +108,20 @@
             @endif
         </td>
         <td>
-            <!-- Triggers Multi-Batch Deposit Modal -->
+            <!-- Triggers Multi-Pack Deposit Modal -->
             <div onclick="event.stopPropagation();">
                 <button 
                     type="button"
                     class="btn-primary openDeposit"
                     data-name="{{ $itemName }}">
-                    + Deposit Batches
+                    + Deposit Packs
                 </button>
             </div>
         </td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
 
-    <!-- EXPANDABLE CHILD ROW (LISTS REAL BATCHES ONLY) -->
+    <!-- EXPANDABLE CHILD ROW (LISTS REAL PACKS ONLY) -->
     <tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
         <td colspan="6" style="padding: 0; background: #f9f9f9;">
             <table class="table batch-table">
@@ -162,16 +162,16 @@
                             </td>
                             <td>
                                 @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                    <!-- Trash Button for Expired Items -->
-                                    <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired batch entirely?');" style="display:inline;">
+                                    <!-- Trash Button for Expired Packs -->
+                                    <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired pack entirely?');" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Batch">
+                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Pack">
                                             🗑️ Delete
                                         </button>
                                     </form>
                                 @else
-                                    <!-- Specific Batch Withdraw Button -->
+                                    <!-- Specific Pack Withdraw Button -->
                                     <button 
                                         type="button" 
                                         class="btn-secondary openWithdrawModal" 
@@ -198,7 +198,7 @@
 <!-- ================= MULTI-DEPOSIT MODAL ================= -->
 <div id="depositModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
     <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 800px; max-width: 95%;">
-        <h3>Deposit New Batches</h3>
+        <h3>Deposit New Packs</h3>
         <p id="depositItemName" style="font-weight: bold; color: #555; margin-bottom: 15px;"></p>
 
         <form method="POST" action="{{ route('supplies.deposit') }}">
@@ -230,7 +230,7 @@
                 </tbody>
             </table>
 
-            <button type="button" id="addRowBtn" class="btn-secondary" style="margin-bottom: 15px;">+ Add Another Batch Row</button>
+            <button type="button" id="addRowBtn" class="btn-secondary" style="margin-bottom: 15px;">+ Add Another Pack Row</button>
 
             <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="submit" class="btn-primary">Submit All Deposits</button>
@@ -240,10 +240,10 @@
     </div>
 </div>
 
-<!-- ================= SPECIFIC BATCH WITHDRAW MODAL ================= -->
+<!-- ================= SPECIFIC PACK WITHDRAW MODAL ================= -->
 <div id="withdrawModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
     <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 95%;">
-        <h3>Withdraw Batch Quantity</h3>
+        <h3>Withdraw Pack Quantity</h3>
         <p id="withdrawBatchInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
 
         <form method="POST" action="{{ route('supplies.batch.withdraw') }}">
@@ -347,12 +347,12 @@ document.addEventListener("DOMContentLoaded", function () {
             e.stopPropagation();
             depositModal.style.display = "flex";
             let itemName = btn.dataset.name;
-            depositItemName.innerText = "Depositing batches for: " + itemName;
+            depositItemName.innerText = "Depositing packs for: " + itemName;
             depositNameInput.value = itemName;
         });
     });
 
-    // Open Specific Batch Withdraw Modal
+    // Open Specific Pack Withdraw Modal
     document.querySelectorAll(".openWithdrawModal").forEach(btn => {
         btn.addEventListener("click", function () {
             let supplyId = this.dataset.id;
@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let itemCode = this.dataset.code;
 
             withdrawSupplyId.value = supplyId;
-            withdrawBatchInfo.innerText = `Batch Code: ${itemCode} | Available Stock: ${maxQty}`;
+            withdrawBatchInfo.innerText = `Pack Code: ${itemCode} | Available Stock: ${maxQty}`;
             withdrawQtyInput.max = maxQty;
             withdrawQtyInput.value = 1;
 
