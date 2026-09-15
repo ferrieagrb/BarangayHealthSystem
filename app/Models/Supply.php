@@ -7,15 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Supply extends Model
 {
     protected $fillable = [
-    'name',
-    'category',
-    'quantity',
-    'unit',
-    'expiration_date',
-    'supplier',
-    'description'
-];
+        'name',
+        'item_number',
+        'serial_number',
+        'category',
+        'quantity',
+        'unit',
+        'min_stock',
+        'expiration_date',
+        'supplier',
+        'description',
+        'status',
+    ];
 
-
-
+    protected $casts = [
+        'expiration_date' => 'date',
+    ];
 }

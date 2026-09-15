@@ -10,13 +10,18 @@ return new class extends Migration
     {
         Schema::create('supplies', function (Blueprint $table) {
             $table->id();
-
-            $table->string('name');          // Item
-            $table->string('category');      // Category
-            $table->integer('quantity');     // Needed for status logic
-            $table->integer('min_stock')->default(5); // threshold
-
-            $table->timestamps(); // last_updated = updated_at
+            $table->string('name');
+            $table->string('item_number')->unique()->nullable();
+            $table->string('serial_number')->nullable();
+            $table->string('category');
+            $table->string('unit')->nullable();
+            $table->integer('quantity')->default(1);
+            $table->integer('min_stock')->default(5);
+            $table->date('expiration_date')->nullable();
+            $table->string('supplier')->nullable();
+            $table->text('description')->nullable();
+            $table->string('status')->default('Available');
+            $table->timestamps();
         });
     }
 
