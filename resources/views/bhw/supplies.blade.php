@@ -108,24 +108,13 @@
             @endif
         </td>
         <td>
-            <!-- Master Row Action Buttons side by side -->
-            <div style="display: flex; gap: 5px;" onclick="event.stopPropagation();">
-                <!-- Triggers Multi-Batch Deposit Modal -->
+            <!-- Triggers Multi-Batch Deposit Modal -->
+            <div onclick="event.stopPropagation();">
                 <button 
                     type="button"
                     class="btn-primary openDeposit"
                     data-name="{{ $itemName }}">
-                    + Deposit
-                </button>
-
-                <!-- Triggers Item-Level Withdraw Modal -->
-                <button 
-                    type="button"
-                    class="btn-secondary openItemWithdraw"
-                    data-name="{{ $itemName }}"
-                    data-total="{{ $totalQty }}"
-                    style="background-color: #f0ad4e; color: white; border: none;">
-                    Withdraw
+                    + Deposit Batches
                 </button>
             </div>
         </td>
@@ -173,7 +162,7 @@
                             </td>
                             <td>
                                 @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                    <!-- Trash Button for Expired Items (Completely removes expired batch) -->
+                                    <!-- Trash Button for Expired Items -->
                                     <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired batch entirely?');" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
@@ -182,7 +171,16 @@
                                         </button>
                                     </form>
                                 @else
-                                    <span class="text-muted" style="font-size: 0.85rem;">Active Batch</span>
+                                    <!-- Specific Batch Withdraw Button -->
+                                    <button 
+                                        type="button" 
+                                        class="btn-secondary openWithdrawModal" 
+                                        style="padding: 4px 8px;"
+                                        data-id="{{ $supply->id }}"
+                                        data-max="{{ $supply->quantity }}"
+                                        data-code="{{ $supply->item_number ?? 'N/A' }}">
+                                        Withdraw
+                                    </button>
                                 @endif
                             </td>
                         </tr>
@@ -220,7 +218,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Initial Row -->
                     <tr>
                         <td><input type="text" name="batches[0][item_number]" placeholder="Item/Code" required></td>
                         <td><input type="text" name="batches[0][serial_number]" placeholder="Serial #"></td>
@@ -243,29 +240,29 @@
     </div>
 </div>
 
-<!-- ================= ITEM-LEVEL WITHDRAW MODAL ================= -->
-<div id="itemWithdrawModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+<!-- ================= SPECIFIC BATCH WITHDRAW MODAL ================= -->
+<div id="withdrawModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
     <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 95%;">
-        <h3>Withdraw Item Stock</h3>
-        <p id="itemWithdrawInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
+        <h3>Withdraw Batch Quantity</h3>
+        <p id="withdrawBatchInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
 
-        <form method="POST" action="{{ route('supplies.item.withdraw') }}">
+        <form method="POST" action="{{ route('supplies.batch.withdraw') }}">
             @csrf
-            <input type="hidden" name="name" id="itemWithdrawNameInput">
+            <input type="hidden" name="supply_id" id="withdrawSupplyId">
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display:block; margin-bottom: 5px;">Quantity to Withdraw:</label>
-                <input type="number" name="quantity" id="itemWithdrawQtyInput" min="1" required style="width: 100%; padding: 6px; box-sizing: border-box;">
+                <input type="number" name="quantity" id="withdrawQtyInput" min="1" required style="width: 100%; padding: 6px; box-sizing: border-box;">
             </div>
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display:block; margin-bottom: 5px;">Notes / Reason (Optional):</label>
-                <input type="text" name="notes" placeholder="e.g., Dispensed to clinic / Community outreach" style="width: 100%; padding: 6px; box-sizing: border-box;">
+                <input type="text" name="notes" placeholder="e.g., Dispensed to patient / Damaged" style="width: 100%; padding: 6px; box-sizing: border-box;">
             </div>
 
             <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="submit" class="btn-primary">Confirm Withdrawal</button>
-                <button type="button" class="btn-secondary closeItemWithdrawBtn">Cancel</button>
+                <button type="button" class="btn-secondary closeWithdrawModalBtn">Cancel</button>
             </div>
         </form>
     </div>
@@ -296,11 +293,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositRowsTable = document.getElementById("depositRowsTable").getElementsByTagName('tbody')[0];
     const addRowBtn = document.getElementById("addRowBtn");
 
-    // Item Withdraw Modal Elements
-    const itemWithdrawModal = document.getElementById("itemWithdrawModal");
-    const itemWithdrawNameInput = document.getElementById("itemWithdrawNameInput");
-    const itemWithdrawInfo = document.getElementById("itemWithdrawInfo");
-    const itemWithdrawQtyInput = document.getElementById("itemWithdrawQtyInput");
+    // Withdraw Modal Elements
+    const withdrawModal = document.getElementById("withdrawModal");
+    const withdrawSupplyId = document.getElementById("withdrawSupplyId");
+    const withdrawBatchInfo = document.getElementById("withdrawBatchInfo");
+    const withdrawQtyInput = document.getElementById("withdrawQtyInput");
 
     let rowIndex = 1;
 
@@ -320,7 +317,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateRemoveButtons();
     });
 
-    // Handle row removal
     depositRowsTable.addEventListener("click", function(e) {
         if (e.target.classList.contains("removeRowBtn")) {
             e.target.closest("tr").remove();
@@ -340,10 +336,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Modal Control Functions
     function closeAllModals() {
         depositModal.style.display = "none";
-        itemWithdrawModal.style.display = "none";
+        withdrawModal.style.display = "none";
     }
 
     // Open Deposit Modal
@@ -357,29 +352,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Open Item Withdraw Modal
-    document.querySelectorAll(".openItemWithdraw").forEach(btn => {
-        btn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            let itemName = this.dataset.name;
-            let totalStock = this.dataset.total;
+    // Open Specific Batch Withdraw Modal
+    document.querySelectorAll(".openWithdrawModal").forEach(btn => {
+        btn.addEventListener("click", function () {
+            let supplyId = this.dataset.id;
+            let maxQty = this.dataset.max;
+            let itemCode = this.dataset.code;
 
-            itemWithdrawNameInput.value = itemName;
-            itemWithdrawInfo.innerText = `Item: ${itemName} | Total Available Stock: ${totalStock}`;
-            itemWithdrawQtyInput.max = totalStock;
-            itemWithdrawQtyInput.value = 1;
+            withdrawSupplyId.value = supplyId;
+            withdrawBatchInfo.innerText = `Batch Code: ${itemCode} | Available Stock: ${maxQty}`;
+            withdrawQtyInput.max = maxQty;
+            withdrawQtyInput.value = 1;
 
-            itemWithdrawModal.style.display = "flex";
+            withdrawModal.style.display = "flex";
         });
     });
 
     // Close Modals Triggers
-    document.querySelectorAll(".closeModal, .closeItemWithdrawBtn").forEach(btn => {
+    document.querySelectorAll(".closeModal, .closeWithdrawModalBtn").forEach(btn => {
         btn.addEventListener("click", closeAllModals);
     });
 
     window.addEventListener("click", e => {
-        if (e.target === depositModal || e.target === itemWithdrawModal) {
+        if (e.target === depositModal || e.target === withdrawModal) {
             closeAllModals();
         }
     });
