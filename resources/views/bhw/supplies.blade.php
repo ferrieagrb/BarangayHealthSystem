@@ -5,11 +5,21 @@
 <style>
     .item-toggle-row { cursor: pointer; background-color: #fafafa; font-weight: 600; }
     .item-toggle-row:hover { background-color: #f1f1f1; }
-    .batch-details-row { background-color: #ffffff; }
-    .batch-table { width: 95%; margin: 10px auto; border: 1px solid #e0e0e0; }
-    .batch-table th, .batch-table td { font-size: 0.9rem; padding: 6px 10px !important; }
-    .arrow-icon { display: inline-block; transition: transform 0.2s ease; margin-right: 8px; }
-    .expanded .arrow-icon { transform: rotate(90deg); }
+    
+    /* Smooth Accordion Animation */
+    .pack-details-row { background-color: #ffffff; }
+    .pack-details-wrapper { 
+        display: grid; 
+        grid-template-rows: 0fr; 
+        transition: grid-template-rows 0.3s ease-in-out; 
+    }
+    .pack-details-wrapper > div { overflow: hidden; }
+    .pack-details-row.expanded .pack-details-wrapper { grid-template-rows: 1fr; }
+
+    .pack-table { width: 95%; margin: 10px auto; border: 1px solid #e0e0e0; }
+    .pack-table th, .pack-table td { font-size: 0.9rem; padding: 6px 10px !important; }
+    .arrow-icon { display: inline-block; transition: transform 0.3s ease; margin-right: 8px; }
+    .item-toggle-row.expanded .arrow-icon { transform: rotate(90deg); }
     
     /* Multi-row Deposit Table Styles */
     .multi-deposit-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
@@ -78,8 +88,7 @@
 
 @foreach ($groupedSupplies as $itemName => $itemsOfKind)
     @php
-        // Filter out empty placeholder rows so we only count real packs
-        $actualBatches = $itemsOfKind->filter(function($item) {
+        $actualPacks = $itemsOfKind->filter(function($item) {
             return $item->quantity > 0 || !empty($item->item_number) || !empty($item->serial_number);
         });
 
@@ -90,15 +99,15 @@
     @endphp
 
     <!-- MASTER ROW (DROPDOWN TRIGGER) -->
-    <tr class="item-toggle-row">
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
+    <tr class="item-toggle-row" onclick="togglePackRow('packs-{{ $loop->index }}', this)">
+        <td>
             <span class="arrow-icon">▶</span> 
             <strong>{{ $itemName }}</strong> 
-            <small class="text-muted">({{ $actualBatches->count() }} packs)</small>
+            <small class="text-muted">({{ $actualPacks->count() }} packs)</small>
         </td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $category }}</td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $totalQty }}</td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
+        <td>{{ $category }}</td>
+        <td>{{ $totalQty }}</td>
+        <td>
             @if($totalQty <= 0)
                 <span class="low">Out of Stock</span>
             @elseif($totalQty <= $minStockThreshold)
@@ -118,76 +127,81 @@
                 </button>
             </div>
         </td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
+        <td>{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
 
     <!-- EXPANDABLE CHILD ROW (LISTS REAL PACKS ONLY) -->
-    <tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
-        <td colspan="6" style="padding: 0; background: #f9f9f9;">
-            <table class="table batch-table">
-                <thead>
-                    <tr style="background: #efefef;">
-                        <th>Item # / Code</th>
-                        <th>Serial #</th>
-                        <th>Unit</th>
-                        <th>Qty</th>
-                        <th>Expiration Date</th>
-                        <th>Supplier</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($itemsOfKind as $supply)
-                        @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
-                        <tr>
-                            <td>{{ $supply->item_number ?? 'N/A' }}</td>
-                            <td>{{ $supply->serial_number ?? 'N/A' }}</td>
-                            <td>{{ $supply->unit ?? 'N/A' }}</td>
-                            <td><strong>{{ $supply->quantity }}</strong></td>
-                            <td>
-                                @if($supply->expiration_date)
-                                    {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
-                                @else
-                                    N/A
+    <tr id="packs-{{ $loop->index }}" class="pack-details-row">
+        <td colspan="6" style="padding: 0;">
+            <div class="pack-details-wrapper">
+                <div>
+                    <table class="table pack-table">
+                        <thead>
+                            <tr style="background: #efefef;">
+                                typeof Item # / Code
+                                <th>Item # / Code</th>
+                                <th>Serial #</th>
+                                <th>Unit</th>
+                                <th>Qty</th>
+                                <th>Expiration Date</th>
+                                <th>Supplier</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($itemsOfKind as $supply)
+                                @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
+                                <tr>
+                                    <td>{{ $supply->item_number ?? 'N/A' }}</td>
+                                    <td>{{ $supply->serial_number ?? 'N/A' }}</td>
+                                    <td>{{ $supply->unit ?? 'N/A' }}</td>
+                                    <td><strong>{{ $supply->quantity }}</strong></td>
+                                    <td>
+                                        @if($supply->expiration_date)
+                                            {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td>{{ $supply->supplier ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                            <span class="low">Expired</span>
+                                        @else
+                                            <span class="high">Available</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                            <!-- Trash Button for Expired Packs -->
+                                            <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired pack entirely?');" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Pack">
+                                                    🗑️ Delete
+                                                </button>
+                                            </form>
+                                        @else
+                                            <!-- Specific Pack Withdraw Button -->
+                                            <button 
+                                                type="button" 
+                                                class="btn-secondary openWithdrawModal" 
+                                                style="padding: 4px 8px;"
+                                                data-id="{{ $supply->id }}"
+                                                data-max="{{ $supply->quantity }}"
+                                                data-code="{{ $supply->item_number ?? 'N/A' }}">
+                                                Withdraw
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
                                 @endif
-                            </td>
-                            <td>{{ $supply->supplier ?? 'N/A' }}</td>
-                            <td>
-                                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                    <span class="low">Expired</span>
-                                @else
-                                    <span class="high">Available</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                    <!-- Trash Button for Expired Packs -->
-                                    <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired pack entirely?');" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Pack">
-                                            🗑️ Delete
-                                        </button>
-                                    </form>
-                                @else
-                                    <!-- Specific Pack Withdraw Button -->
-                                    <button 
-                                        type="button" 
-                                        class="btn-secondary openWithdrawModal" 
-                                        style="padding: 4px 8px;"
-                                        data-id="{{ $supply->id }}"
-                                        data-max="{{ $supply->quantity }}"
-                                        data-code="{{ $supply->item_number ?? 'N/A' }}">
-                                        Withdraw
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-            </table>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </td>
     </tr>
 @endforeach
@@ -219,12 +233,12 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><input type="text" name="batches[0][item_number]" placeholder="Item/Code" required></td>
-                        <td><input type="text" name="batches[0][serial_number]" placeholder="Serial #"></td>
-                        <td><input type="number" name="batches[0][quantity]" placeholder="Qty" required min="1"></td>
-                        <td><input type="text" name="batches[0][unit]" placeholder="e.g. box"></td>
-                        <td><input type="date" name="batches[0][expiration_date]" required></td>
-                        <td><input type="text" name="batches[0][supplier]" placeholder="Supplier"></td>
+                        <td><input type="text" name="packs[0][item_number]" placeholder="Item/Code" required></td>
+                        <td><input type="text" name="packs[0][serial_number]" placeholder="Serial #"></td>
+                        <td><input type="number" name="packs[0][quantity]" placeholder="Qty" required min="1"></td>
+                        <td><input type="text" name="packs[0][unit]" placeholder="e.g. box"></td>
+                        <td><input type="date" name="packs[0][expiration_date]" required></td>
+                        <td><input type="text" name="packs[0][supplier]" placeholder="Supplier"></td>
                         <td><button type="button" class="btn-secondary removeRowBtn" style="padding: 4px 8px;" disabled>X</button></td>
                     </tr>
                 </tbody>
@@ -244,7 +258,7 @@
 <div id="withdrawModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
     <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 95%;">
         <h3>Withdraw Pack Quantity</h3>
-        <p id="withdrawBatchInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
+        <p id="withdrawPackInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
 
         <form method="POST" action="{{ route('supplies.batch.withdraw') }}">
             @csrf
@@ -272,16 +286,15 @@
 
 @section('scripts')
 <script>
-function toggleBatchRow(rowId, element) {
+function togglePackRow(rowId, masterRow) {
     const targetRow = document.getElementById(rowId);
-    const masterRow = targetRow.previousElementSibling;
     
-    if (targetRow.style.display === "none") {
-        targetRow.style.display = "table-row";
+    if (!masterRow.classList.contains("expanded")) {
         masterRow.classList.add("expanded");
+        targetRow.classList.add("expanded");
     } else {
-        targetRow.style.display = "none";
         masterRow.classList.remove("expanded");
+        targetRow.classList.remove("expanded");
     }
 }
 
@@ -296,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Withdraw Modal Elements
     const withdrawModal = document.getElementById("withdrawModal");
     const withdrawSupplyId = document.getElementById("withdrawSupplyId");
-    const withdrawBatchInfo = document.getElementById("withdrawBatchInfo");
+    const withdrawPackInfo = document.getElementById("withdrawPackInfo");
     const withdrawQtyInput = document.getElementById("withdrawQtyInput");
 
     let rowIndex = 1;
@@ -305,12 +318,12 @@ document.addEventListener("DOMContentLoaded", function () {
     addRowBtn.addEventListener("click", function() {
         let newRow = depositRowsTable.insertRow();
         newRow.innerHTML = `
-            <td><input type="text" name="batches[${rowIndex}][item_number]" placeholder="Item/Code" required></td>
-            <td><input type="text" name="batches[${rowIndex}][serial_number]" placeholder="Serial #"></td>
-            <td><input type="number" name="batches[${rowIndex}][quantity]" placeholder="Qty" required min="1"></td>
-            <td><input type="text" name="batches[${rowIndex}][unit]" placeholder="e.g. box"></td>
-            <td><input type="date" name="batches[${rowIndex}][expiration_date]" required></td>
-            <td><input type="text" name="batches[${rowIndex}][supplier]" placeholder="Supplier"></td>
+            <td><input type="text" name="packs[${rowIndex}][item_number]" placeholder="Item/Code" required></td>
+            <td><input type="text" name="packs[${rowIndex}][serial_number]" placeholder="Serial #"></td>
+            <td><input type="number" name="packs[${rowIndex}][quantity]" placeholder="Qty" required min="1"></td>
+            <td><input type="text" name="packs[${rowIndex}][unit]" placeholder="e.g. box"></td>
+            <td><input type="date" name="packs[${rowIndex}][expiration_date]" required></td>
+            <td><input type="text" name="packs[${rowIndex}][supplier]" placeholder="Supplier"></td>
             <td><button type="button" class="btn-secondary removeRowBtn" style="padding: 4px 8px;">X</button></td>
         `;
         rowIndex++;
@@ -360,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let itemCode = this.dataset.code;
 
             withdrawSupplyId.value = supplyId;
-            withdrawBatchInfo.innerText = `Pack Code: ${itemCode} | Available Stock: ${maxQty}`;
+            withdrawPackInfo.innerText = `Pack Code: ${itemCode} | Available Stock: ${maxQty}`;
             withdrawQtyInput.max = maxQty;
             withdrawQtyInput.value = 1;
 
