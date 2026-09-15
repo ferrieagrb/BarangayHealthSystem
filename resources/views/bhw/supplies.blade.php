@@ -138,7 +138,7 @@
                     <table class="table pack-table">
                         <thead>
                             <tr style="background: #efefef;">
-                                typeof Item # / Code
+                                
                                 <th>Item # / Code</th>
                                 <th>Serial #</th>
                                 <th>Unit</th>
