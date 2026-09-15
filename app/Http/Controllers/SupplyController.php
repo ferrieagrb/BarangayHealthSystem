@@ -28,19 +28,34 @@ class SupplyController extends Controller
             $query->whereColumn('quantity', '>', 'min_stock');
         }
 
+        // Allow searching by name or item/serial number if requested
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('item_number', 'like', "%{$search}%")
+                  ->orWhere('serial_number', 'like', "%{$search}%");
+            });
+        }
+
         $supplies = $query->get();
 
+        // Phase 1: Backend Metrics & Analytics Calculations
         $totalsupply = Supply::sum('quantity');
-
         $wellStocked = Supply::whereColumn('quantity', '>', 'min_stock')->count();
-
         $lowStock = Supply::whereColumn('quantity', '<=', 'min_stock')
             ->where('quantity', '>', 0)
             ->count();
 
         $citizens = citizens::all();
 
-        return view('bhw.supplies', compact(
+        // Step 1 Integration: Dynamic view switching based on user role
+        $user = Auth::user();
+        $view = ($user && $user->role === 'admin') 
+            ? 'admin.supplies'   // Renders resources/views/admin/supplies.blade.php
+            : 'bhw.supplies';    // Renders resources/views/bhw/supplies.blade.php
+
+        return view($view, compact(
             'supplies',
             'totalsupply',
             'wellStocked',
@@ -125,78 +140,77 @@ class SupplyController extends Controller
     }
     
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'category' => 'required|string|max:255',
-        'min_stock' => 'required|integer|min:0',
-        'description' => 'nullable|string',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'min_stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+        ]);
 
-    // Ensure we don't duplicate or create phantom stock rows
-    Supply::create([
-        'name' => $request->name,
-        'category' => $request->category,
-        'quantity' => 0, // Starts at zero until a batch is deposited
-        'min_stock' => $request->min_stock,
-        'status' => 'Out of Stock'
-    ]);
+        // Ensure we don't duplicate or create phantom stock rows
+        Supply::create([
+            'name' => $request->name,
+            'category' => $request->category,
+            'quantity' => 0, // Starts at zero until a batch is deposited
+            'min_stock' => $request->min_stock,
+            'status' => 'Out of Stock'
+        ]);
 
-    return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
-}
-
-public function withdrawBatch(Request $request)
-{
-    $request->validate([
-        'supply_id' => 'required|exists:supplies,id',
-        'quantity' => 'required|integer|min:1',
-        'notes' => 'nullable|string'
-    ]);
-
-    $supply = Supply::findOrFail($request->supply_id);
-
-    if ($request->quantity > $supply->quantity) {
-        return back()->withErrors(['quantity' => "The withdrawal quantity exceeds the available stock in this specific batch (Max: {$supply->quantity})."]);
+        return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
     }
 
-    // Deduct quantity
-    $supply->quantity -= $request->quantity;
-    $supply->save();
+    public function withdrawBatch(Request $request)
+    {
+        $request->validate([
+            'supply_id' => 'required|exists:supplies,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string'
+        ]);
 
-    // Log the transaction
-    SupplyLog::create([
-        'action' => 'withdraw',
-        'supply_id' => $supply->id,
-        'quantity' => $request->quantity,
-        'user_id' => Auth::id(),
-        'citizen_id' => null,
-        'notes' => $request->notes ?? 'Specific batch stock withdrawal',
-    ]);
+        $supply = Supply::findOrFail($request->supply_id);
 
-    // If batch quantity drops to zero, clean up the row
-    if ($supply->quantity <= 0) {
+        if ($request->quantity > $supply->quantity) {
+            return back()->withErrors(['quantity' => "The withdrawal quantity exceeds the available stock in this specific batch (Max: {$supply->quantity})."]);
+        }
+
+        // Deduct quantity
+        $supply->quantity -= $request->quantity;
+        $supply->save();
+
+        // Log the transaction
+        SupplyLog::create([
+            'action' => 'withdraw',
+            'supply_id' => $supply->id,
+            'quantity' => $request->quantity,
+            'user_id' => Auth::id(),
+            'citizen_id' => null,
+            'notes' => $request->notes ?? 'Specific batch stock withdrawal',
+        ]);
+
+        // If batch quantity drops to zero, clean up the row
+        if ($supply->quantity <= 0) {
+            $supply->delete();
+        }
+
+        return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
+    }
+
+    public function destroy($id)
+    {
+        $supply = Supply::findOrFail($id);
+
+        SupplyLog::create([
+            'action' => 'delete',
+            'supply_id' => $supply->id,
+            'quantity' => $supply->quantity,
+            'user_id' => Auth::id(),
+            'citizen_id' => null,
+            'notes' => 'Removed expired batch',
+        ]);
+
         $supply->delete();
+
+        return back()->with('success', 'Expired batch successfully removed.');
     }
-
-    return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
-}
-
-public function destroy($id)
-{
-    $supply = Supply::findOrFail($id);
-
-    // Optional: Log the deletion/removal of the expired batch
-    SupplyLog::create([
-        'action' => 'delete',
-        'supply_id' => $supply->id,
-        'quantity' => $supply->quantity,
-        'user_id' => Auth::id(),
-        'citizen_id' => null,
-        'notes' => 'Removed expired batch',
-    ]);
-
-    $supply->delete();
-
-    return back()->with('success', 'Expired batch successfully removed.');
-}
 }
