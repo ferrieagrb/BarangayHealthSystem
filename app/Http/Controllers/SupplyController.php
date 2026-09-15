@@ -145,38 +145,71 @@ class SupplyController extends Controller
     return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
 }
 
-public function withdrawBatch(Request $request)
+public function withdrawItem(Request $request)
 {
     $request->validate([
-        'supply_id' => 'required|exists:supplies,id',
+        'name' => 'required|string',
         'quantity' => 'required|integer|min:1',
+        'notes' => 'nullable|string'
     ]);
 
-    $supply = Supply::findOrFail($request->supply_id);
+    $itemName = $request->input('name');
+    $quantityToWithdraw = $request->input('quantity');
 
-    if ($request->quantity > $supply->quantity) {
-        return back()->withErrors(['quantity' => 'The withdrawal quantity exceeds the available stock in this batch.']);
+    // Get all available (non-expired) batches for this item, sorted by expiration date (FIFO)
+    $batches = Supply::where('name', $itemName)
+        ->where('quantity', '>', 0)
+        ->where(function($query) {
+            $query->whereNull('expiration_date')
+                  ->orWhere('expiration_date', '>=', now());
+        })
+        ->orderBy('expiration_date', 'asc')
+        ->get();
+
+    $totalAvailable = $batches->sum('quantity');
+
+    if ($quantityToWithdraw > $totalAvailable) {
+        return back()->withErrors(['quantity' => "Cannot withdraw. Only {$totalAvailable} total available stock remaining for this item."]);
     }
 
-    // Subtract the quantity
-    $supply->quantity -= $request->quantity;
-    $supply->save();
+    $remainingToDeduct = $quantityToWithdraw;
 
-    // Log the withdrawal
-    SupplyLog::create([
-        'action' => 'withdraw',
-        'supply_id' => $supply->id,
-        'quantity' => $request->quantity,
-        'user_id' => Auth::id(),
-        'citizen_id' => null,
-        'notes' => $request->notes ?? 'Batch partial withdrawal',
-    ]);
+    foreach ($batches as $batch) {
+        if ($remainingToDeduct <= 0) break;
 
-    // If quantity drops to 0, clean up the empty batch row
-    if ($supply->quantity <= 0) {
-        $supply->delete();
+        if ($batch->quantity <= $remainingToDeduct) {
+            // Deduct entire batch quantity and delete the empty batch row
+            $deducted = $batch->quantity;
+            $remainingToDeduct -= $deducted;
+
+            SupplyLog::create([
+                'action' => 'withdraw',
+                'supply_id' => $batch->id,
+                'quantity' => $deducted,
+                'user_id' => Auth::id(),
+                'citizen_id' => null,
+                'notes' => $request->notes ?? 'Item-level stock withdrawal',
+            ]);
+
+            $batch->delete();
+        } else {
+            // Deduct partial quantity from this batch
+            $batch->quantity -= $remainingToDeduct;
+            $batch->save();
+
+            SupplyLog::create([
+                'action' => 'withdraw',
+                'supply_id' => $batch->id,
+                'quantity' => $remainingToDeduct,
+                'user_id' => Auth::id(),
+                'citizen_id' => null,
+                'notes' => $request->notes ?? 'Item-level stock withdrawal',
+            ]);
+
+            $remainingToDeduct = 0;
+        }
     }
 
-    return back()->with('success', 'Stock successfully withdrawn from batch.');
+    return back()->with('success', 'Stock successfully withdrawn from item.');
 }
 }

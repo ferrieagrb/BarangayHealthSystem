@@ -108,86 +108,90 @@
             @endif
         </td>
         <td>
-            <!-- Triggers Multi-Batch Deposit Modal -->
-            <button 
-                type="button"
-                class="btn-primary openDeposit"
-                data-name="{{ $itemName }}">
-                + Deposit Batches
-            </button>
+            <!-- Master Row Action Buttons side by side -->
+            <div style="display: flex; gap: 5px;" onclick="event.stopPropagation();">
+                <!-- Triggers Multi-Batch Deposit Modal -->
+                <button 
+                    type="button"
+                    class="btn-primary openDeposit"
+                    data-name="{{ $itemName }}">
+                    + Deposit
+                </button>
+
+                <!-- Triggers Item-Level Withdraw Modal -->
+                <button 
+                    type="button"
+                    class="btn-secondary openItemWithdraw"
+                    data-name="{{ $itemName }}"
+                    data-total="{{ $totalQty }}"
+                    style="background-color: #f0ad4e; color: white; border: none;">
+                    Withdraw
+                </button>
+            </div>
         </td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
 
     <!-- EXPANDABLE CHILD ROW (LISTS REAL BATCHES ONLY) -->
-<tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
-    <td colspan="8" style="padding: 0; background: #f9f9f9;">
-        <table class="table batch-table">
-            <thead>
-                <tr style="background: #efefef;">
-                    <th>Item # / Code</th>
-                    <th>Serial #</th>
-                    <th>Unit</th>
-                    <th>Qty</th>
-                    <th>Expiration Date</th>
-                    <th>Supplier</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($itemsOfKind as $supply)
-                    @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
-                    <tr>
-                        <td>{{ $supply->item_number ?? 'N/A' }}</td>
-                        <td>{{ $supply->serial_number ?? 'N/A' }}</td>
-                        <td>{{ $supply->unit ?? 'N/A' }}</td>
-                        <td><strong>{{ $supply->quantity }}</strong></td>
-                        <td>
-                            @if($supply->expiration_date)
-                                {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
-                            @else
-                                N/A
-                            @endif
-                        </td>
-                        <td>{{ $supply->supplier ?? 'N/A' }}</td>
-                        <td>
-                            @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                <span class="low">Expired</span>
-                            @else
-                                <span class="high">Available</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                <!-- Trash Button for Expired Items (Completely removes expired batch) -->
-                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired batch entirely?');" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Batch">
-                                        🗑️ Delete
-                                    </button>
-                                </form>
-                            @else
-                                <!-- Button to open Withdraw Quantity Modal for this specific batch -->
-                                <button 
-                                    type="button" 
-                                    class="btn-secondary openWithdrawModal" 
-                                    style="padding: 4px 8px;"
-                                    data-id="{{ $supply->id }}"
-                                    data-max="{{ $supply->quantity }}"
-                                    data-code="{{ $supply->item_number ?? 'N/A' }}">
-                                    Withdraw
-                                </button>
-                            @endif
-                        </td>
+    <tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
+        <td colspan="6" style="padding: 0; background: #f9f9f9;">
+            <table class="table batch-table">
+                <thead>
+                    <tr style="background: #efefef;">
+                        <th>Item # / Code</th>
+                        <th>Serial #</th>
+                        <th>Unit</th>
+                        <th>Qty</th>
+                        <th>Expiration Date</th>
+                        <th>Supplier</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
-    </td>
-</tr>
+                </thead>
+                <tbody>
+                    @foreach ($itemsOfKind as $supply)
+                        @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
+                        <tr>
+                            <td>{{ $supply->item_number ?? 'N/A' }}</td>
+                            <td>{{ $supply->serial_number ?? 'N/A' }}</td>
+                            <td>{{ $supply->unit ?? 'N/A' }}</td>
+                            <td><strong>{{ $supply->quantity }}</strong></td>
+                            <td>
+                                @if($supply->expiration_date)
+                                    {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                            <td>{{ $supply->supplier ?? 'N/A' }}</td>
+                            <td>
+                                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                    <span class="low">Expired</span>
+                                @else
+                                    <span class="high">Available</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                    <!-- Trash Button for Expired Items (Completely removes expired batch) -->
+                                    <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired batch entirely?');" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Batch">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-muted" style="font-size: 0.85rem;">Active Batch</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </td>
+    </tr>
 @endforeach
 </tbody>
 </table>
@@ -239,6 +243,34 @@
     </div>
 </div>
 
+<!-- ================= ITEM-LEVEL WITHDRAW MODAL ================= -->
+<div id="itemWithdrawModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 95%;">
+        <h3>Withdraw Item Stock</h3>
+        <p id="itemWithdrawInfo" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></p>
+
+        <form method="POST" action="{{ route('supplies.item.withdraw') }}">
+            @csrf
+            <input type="hidden" name="name" id="itemWithdrawNameInput">
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px;">Quantity to Withdraw:</label>
+                <input type="number" name="quantity" id="itemWithdrawQtyInput" min="1" required style="width: 100%; padding: 6px; box-sizing: border-box;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom: 5px;">Notes / Reason (Optional):</label>
+                <input type="text" name="notes" placeholder="e.g., Dispensed to clinic / Community outreach" style="width: 100%; padding: 6px; box-sizing: border-box;">
+            </div>
+
+            <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="submit" class="btn-primary">Confirm Withdrawal</button>
+                <button type="button" class="btn-secondary closeItemWithdrawBtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -257,11 +289,18 @@ function toggleBatchRow(rowId, element) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Deposit Modal Elements
     const depositModal = document.getElementById("depositModal");
     const depositItemName = document.getElementById("depositItemName");
     const depositNameInput = document.getElementById("depositNameInput");
     const depositRowsTable = document.getElementById("depositRowsTable").getElementsByTagName('tbody')[0];
     const addRowBtn = document.getElementById("addRowBtn");
+
+    // Item Withdraw Modal Elements
+    const itemWithdrawModal = document.getElementById("itemWithdrawModal");
+    const itemWithdrawNameInput = document.getElementById("itemWithdrawNameInput");
+    const itemWithdrawInfo = document.getElementById("itemWithdrawInfo");
+    const itemWithdrawQtyInput = document.getElementById("itemWithdrawQtyInput");
 
     let rowIndex = 1;
 
@@ -301,10 +340,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function closeAll() {
+    // Modal Control Functions
+    function closeAllModals() {
         depositModal.style.display = "none";
+        itemWithdrawModal.style.display = "none";
     }
 
+    // Open Deposit Modal
     document.querySelectorAll(".openDeposit").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -315,13 +357,30 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    document.querySelectorAll(".closeModal").forEach(btn => {
-        btn.addEventListener("click", closeAll);
+    // Open Item Withdraw Modal
+    document.querySelectorAll(".openItemWithdraw").forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            let itemName = this.dataset.name;
+            let totalStock = this.dataset.total;
+
+            itemWithdrawNameInput.value = itemName;
+            itemWithdrawInfo.innerText = `Item: ${itemName} | Total Available Stock: ${totalStock}`;
+            itemWithdrawQtyInput.max = totalStock;
+            itemWithdrawQtyInput.value = 1;
+
+            itemWithdrawModal.style.display = "flex";
+        });
+    });
+
+    // Close Modals Triggers
+    document.querySelectorAll(".closeModal, .closeItemWithdrawBtn").forEach(btn => {
+        btn.addEventListener("click", closeAllModals);
     });
 
     window.addEventListener("click", e => {
-        if (e.target === depositModal) {
-            closeAll();
+        if (e.target === depositModal || e.target === itemWithdrawModal) {
+            closeAllModals();
         }
     });
 });
