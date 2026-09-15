@@ -145,22 +145,38 @@ class SupplyController extends Controller
     return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
 }
 
-public function destroy($id)
+public function withdrawBatch(Request $request)
 {
-    $supply = Supply::findOrFail($id);
+    $request->validate([
+        'supply_id' => 'required|exists:supplies,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
 
+    $supply = Supply::findOrFail($request->supply_id);
+
+    if ($request->quantity > $supply->quantity) {
+        return back()->withErrors(['quantity' => 'The withdrawal quantity exceeds the available stock in this batch.']);
+    }
+
+    // Subtract the quantity
+    $supply->quantity -= $request->quantity;
+    $supply->save();
+
+    // Log the withdrawal
     SupplyLog::create([
         'action' => 'withdraw',
         'supply_id' => $supply->id,
-        'quantity' => $supply->quantity,
+        'quantity' => $request->quantity,
         'user_id' => Auth::id(),
         'citizen_id' => null,
-        'notes' => 'Batch manually withdrawn/removed from available stock',
+        'notes' => $request->notes ?? 'Batch partial withdrawal',
     ]);
 
-    // Delete or set quantity to 0 so it disappears from available stock
-    $supply->delete(); // or use $supply->update(['quantity' => 0]);
+    // If quantity drops to 0, clean up the empty batch row
+    if ($supply->quantity <= 0) {
+        $supply->delete();
+    }
 
-    return back()->with('success', 'Batch successfully withdrawn and removed from available stocks.');
+    return back()->with('success', 'Stock successfully withdrawn from batch.');
 }
 }

@@ -121,7 +121,7 @@
 
     <!-- EXPANDABLE CHILD ROW (LISTS REAL BATCHES ONLY) -->
 <tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
-    <td colspan="6" style="padding: 0; background: #f9f9f9;">
+    <td colspan="8" style="padding: 0; background: #f9f9f9;">
         <table class="table batch-table">
             <thead>
                 <tr style="background: #efefef;">
@@ -132,7 +132,7 @@
                     <th>Expiration Date</th>
                     <th>Supplier</th>
                     <th>Status</th>
-                    <th>Action</th> <!-- Added Action Column -->
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -142,7 +142,7 @@
                         <td>{{ $supply->item_number ?? 'N/A' }}</td>
                         <td>{{ $supply->serial_number ?? 'N/A' }}</td>
                         <td>{{ $supply->unit ?? 'N/A' }}</td>
-                        <td>{{ $supply->quantity }}</td>
+                        <td><strong>{{ $supply->quantity }}</strong></td>
                         <td>
                             @if($supply->expiration_date)
                                 {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
@@ -160,23 +160,25 @@
                         </td>
                         <td>
                             @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                <!-- Trash Button for Expired Items -->
-                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this expired batch?');" style="display:inline;">
+                                <!-- Trash Button for Expired Items (Completely removes expired batch) -->
+                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired batch entirely?');" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Remove Expired Item">
+                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Batch">
                                         🗑️ Delete
                                     </button>
                                 </form>
                             @else
-                                <!-- Withdraw Button for Available Items -->
-                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to withdraw this batch from available stocks?');" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px;" title="Withdraw Batch">
-                                        Withdraw
-                                    </button>
-                                </form>
+                                <!-- Button to open Withdraw Quantity Modal for this specific batch -->
+                                <button 
+                                    type="button" 
+                                    class="btn-secondary openWithdrawModal" 
+                                    style="padding: 4px 8px;"
+                                    data-id="{{ $supply->id }}"
+                                    data-max="{{ $supply->quantity }}"
+                                    data-code="{{ $supply->item_number ?? 'N/A' }}">
+                                    Withdraw
+                                </button>
                             @endif
                         </td>
                     </tr>
