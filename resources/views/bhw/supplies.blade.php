@@ -114,23 +114,25 @@
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
 
-    <!-- EXPANDABLE CHILD ROW (LISTS ALL BATCHES OF THAT KIND) -->
-    <tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
-        <td colspan="6" style="padding: 0; background: #f9f9f9;">
-            <table class="table batch-table">
-                <thead>
-                    <tr style="background: #efefef;">
-                        <th>Item # / Code</th>
-                        <th>Serial #</th>
-                        <th>Unit</th>
-                        <th>Qty</th>
-                        <th>Expiration Date</th>
-                        <th>Supplier</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($itemsOfKind as $supply)
+    <!-- EXPANDABLE CHILD ROW (LISTS REAL BATCHES ONLY) -->
+<tr id="batches-{{ $loop->index }}" class="batch-details-row" style="display: none;">
+    <td colspan="6" style="padding: 0; background: #f9f9f9;">
+        <table class="table batch-table">
+            <thead>
+                <tr style="background: #efefef;">
+                    <th>Item # / Code</th>
+                    <th>Serial #</th>
+                    <th>Unit</th>
+                    <th>Qty</th>
+                    <th>Expiration Date</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($itemsOfKind as $supply)
+                    {{-- Only show the row if it has an actual quantity or batch details (skips empty placeholders) --}}
+                    @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
                     <tr>
                         <td>{{ $supply->item_number ?? 'N/A' }}</td>
                         <td>{{ $supply->serial_number ?? 'N/A' }}</td>
@@ -143,7 +145,7 @@
                                     <span class="low" style="font-size:0.75rem;">(Expired)</span>
                                 @endif
                             @else
-                                N/A
+                                SN/A
                             @endif
                         </td>
                         <td>{{ $supply->supplier ?? 'N/A' }}</td>
@@ -157,11 +159,12 @@
                             @endif
                         </td>
                     </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </td>
-    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </td>
+</tr>
 @endforeach
 </tbody>
 </table>
