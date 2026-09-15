@@ -162,7 +162,7 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
-    Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request));
+    Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies.index');
     Route::get('/supplies/create', fn () => view('bhw.supply_create'))->name('supplies.create');
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
