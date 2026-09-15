@@ -125,23 +125,23 @@ class SupplyController extends Controller
     }
     
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'min_stock' => 'required|integer|min:0',
-            'description' => 'nullable|string',
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'category' => 'required|string|max:255',
+        'min_stock' => 'required|integer|min:0',
+        'description' => 'nullable|string',
+    ]);
 
-        // Creates the baseline catalog entry placeholder (quantity starts at 0 until batches are deposited)
-        Supply::create([
-            'name' => $request->name,
-            'category' => $request->category,
-            'quantity' => 0,
-            'min_stock' => $request->min_stock,
-            'status' => 'Out of Stock'
-        ]);
+    // Ensure we don't duplicate or create phantom stock rows
+    Supply::create([
+        'name' => $request->name,
+        'category' => $request->category,
+        'quantity' => 0, // Starts at zero until a batch is deposited
+        'min_stock' => $request->min_stock,
+        'status' => 'Out of Stock'
+    ]);
 
-        return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
-    }
+    return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
+}
 }
