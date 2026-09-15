@@ -135,38 +135,35 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($itemsOfKind as $supply)
-                    {{-- Only show the row if it has an actual quantity or batch details (skips empty placeholders) --}}
-                    @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
-                    <tr>
-                        <td>{{ $supply->item_number ?? 'N/A' }}</td>
-                        <td>{{ $supply->serial_number ?? 'N/A' }}</td>
-                        <td>{{ $supply->unit ?? 'N/A' }}</td>
-                        <td>{{ $supply->quantity }}</td>
-                        <td>
-                            @if($supply->expiration_date)
-                                {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
-                                @if(\Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                    <span class="low" style="font-size:0.75rem;">(Expired)</span>
-                                @endif
-                            @else
-                                SN/A
-                            @endif
-                        </td>
-                        <td>{{ $supply->supplier ?? 'N/A' }}</td>
-                        <td>
-                            @if($supply->quantity <= 0)
-                                <span class="low">Out of Stock</span>
-                            @elseif($supply->quantity <= $supply->min_stock)
-                                <span class="medium">Low Stock</span>
-                            @else
-                                <span class="high">{{ $supply->status ?? 'Available' }}</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @endif
-                @endforeach
-            </tbody>
+    @foreach ($itemsOfKind as $supply)
+        {{-- Only show the row if it has an actual quantity or batch details --}}
+        @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
+        <tr>
+            <td>{{ $supply->item_number ?? 'N/A' }}</td>
+            <td>{{ $supply->serial_number ?? 'N/A' }}</td>
+            <td>{{ $supply->unit ?? 'N/A' }}</td>
+            <td>{{ $supply->quantity }}</td>
+            <!-- Expiration Date Column (Cleaned up, no text next to date) -->
+            <td>
+                @if($supply->expiration_date)
+                    {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
+                @else
+                    N/A
+                @endif
+            </td>
+            <td>{{ $supply->supplier ?? 'N/A' }}</td>
+            <!-- Status Column (Displays strictly Available or Expired) -->
+            <td>
+                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                    <span class="low">Expired</span>
+                @else
+                    <span class="high">Available</span>
+                @endif
+            </td>
+        </tr>
+        @endif
+    @endforeach
+</tbody>
         </table>
     </td>
 </tr>
