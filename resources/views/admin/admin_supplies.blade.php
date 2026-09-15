@@ -68,9 +68,10 @@
 
     @forelse($groupedSupplies as $name => $group)
         @php
+            $firstItem = $group->first();
             $totalQty = $group->sum('quantity');
-            $category = $group->first()->category;
-            $minThreshold = $group->first()->min_stock ?? 10;
+            $category = $firstItem ? $firstItem->category : 'N/A';
+            $minThreshold = $firstItem ? ($firstItem->min_stock ?? 10) : 10;
 
             if ($totalQty <= 0) {
                 $statusBadge = '<span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 4px; font-size: 12px;">🔴 Out of Stock</span>';
@@ -79,7 +80,7 @@
             } else {
                 $statusBadge = '<span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-size: 12px;">🟢 In Stock</span>';
             }
-        @php
+        @endphp
 
         <!-- Expander Row matching Streamlit concept -->
         <details style="border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; padding: 10px 15px; background: #fafafa;">
@@ -158,7 +159,7 @@
     </div>
 </div>
 
-<!-- Extra Modals for Catalog Creation -->
+<!-- Modal for Catalog Creation -->
 <div id="catalogModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
     <div style="background: white; padding: 25px; border-radius: 8px; width: 400px; max-width: 90%;">
         <h3>Create New Catalog Item</h3>
