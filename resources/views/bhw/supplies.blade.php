@@ -132,38 +132,57 @@
                     <th>Expiration Date</th>
                     <th>Supplier</th>
                     <th>Status</th>
+                    <th>Action</th> <!-- Added Action Column -->
                 </tr>
             </thead>
             <tbody>
-    @foreach ($itemsOfKind as $supply)
-        {{-- Only show the row if it has an actual quantity or batch details --}}
-        @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
-        <tr>
-            <td>{{ $supply->item_number ?? 'N/A' }}</td>
-            <td>{{ $supply->serial_number ?? 'N/A' }}</td>
-            <td>{{ $supply->unit ?? 'N/A' }}</td>
-            <td>{{ $supply->quantity }}</td>
-            <!-- Expiration Date Column (Cleaned up, no text next to date) -->
-            <td>
-                @if($supply->expiration_date)
-                    {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
-                @else
-                    N/A
-                @endif
-            </td>
-            <td>{{ $supply->supplier ?? 'N/A' }}</td>
-            <!-- Status Column (Displays strictly Available or Expired) -->
-            <td>
-                @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                    <span class="low">Expired</span>
-                @else
-                    <span class="high">Available</span>
-                @endif
-            </td>
-        </tr>
-        @endif
-    @endforeach
-</tbody>
+                @foreach ($itemsOfKind as $supply)
+                    @if($supply->quantity > 0 || !empty($supply->item_number) || !empty($supply->serial_number))
+                    <tr>
+                        <td>{{ $supply->item_number ?? 'N/A' }}</td>
+                        <td>{{ $supply->serial_number ?? 'N/A' }}</td>
+                        <td>{{ $supply->unit ?? 'N/A' }}</td>
+                        <td>{{ $supply->quantity }}</td>
+                        <td>
+                            @if($supply->expiration_date)
+                                {{ \Carbon\Carbon::parse($supply->expiration_date)->format('Y-m-d') }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td>{{ $supply->supplier ?? 'N/A' }}</td>
+                        <td>
+                            @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                <span class="low">Expired</span>
+                            @else
+                                <span class="high">Available</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                <!-- Trash Button for Expired Items -->
+                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this expired batch?');" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Remove Expired Item">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
+                            @else
+                                <!-- Withdraw Button for Available Items -->
+                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to withdraw this batch from available stocks?');" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px;" title="Withdraw Batch">
+                                        Withdraw
+                                    </button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
         </table>
     </td>
 </tr>

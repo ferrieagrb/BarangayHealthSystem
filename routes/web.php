@@ -167,6 +167,8 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
+    // Add this inside the Route::middleware(['auth', 'role:bhw'])->group(function () { ... }) block:
+    Route::delete('/supplies/batch/{id}', [SupplyController::class, 'destroy'])->name('supplies.destroy');
 
     // Announcements
     Route::get('/announcements', fn () => app(AnnouncementController::class)->index())->name('announcements');

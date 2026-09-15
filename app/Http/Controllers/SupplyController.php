@@ -144,4 +144,23 @@ class SupplyController extends Controller
 
     return redirect()->route('supplies.index')->with('success', 'Item catalog created successfully.');
 }
+
+public function destroy($id)
+{
+    $supply = Supply::findOrFail($id);
+
+    SupplyLog::create([
+        'action' => 'withdraw',
+        'supply_id' => $supply->id,
+        'quantity' => $supply->quantity,
+        'user_id' => Auth::id(),
+        'citizen_id' => null,
+        'notes' => 'Batch manually withdrawn/removed from available stock',
+    ]);
+
+    // Delete or set quantity to 0 so it disappears from available stock
+    $supply->delete(); // or use $supply->update(['quantity' => 0]);
+
+    return back()->with('success', 'Batch successfully withdrawn and removed from available stocks.');
+}
 }
