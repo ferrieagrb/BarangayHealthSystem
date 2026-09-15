@@ -78,6 +78,11 @@
 
 @foreach ($groupedSupplies as $itemName => $itemsOfKind)
     @php
+        // Filter out empty placeholder rows so we only count real batches
+        $actualBatches = $itemsOfKind->filter(function($item) {
+            return $item->quantity > 0 || !empty($item->item_number) || !empty($item->serial_number);
+        });
+
         $totalQty = $itemsOfKind->sum('quantity');
         $minStockThreshold = $itemsOfKind->first()->min_stock ?? 5;
         $category = $itemsOfKind->first()->category;
@@ -89,7 +94,7 @@
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
             <span class="arrow-icon">▶</span> 
             <strong>{{ $itemName }}</strong> 
-            <small class="text-muted">({{ $itemsOfKind->count() }} batches)</small>
+            <small class="text-muted">({{ $actualBatches->count() }} batches)</small>
         </td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $category }}</td>
         <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $totalQty }}</td>
