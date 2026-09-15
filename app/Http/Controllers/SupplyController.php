@@ -52,7 +52,7 @@ class SupplyController extends Controller
         // Step 1 Integration: Dynamic view switching based on user role
         $user = Auth::user();
         $view = ($user && $user->role === 'admin') 
-            ? 'admin.supplies'   // Renders resources/views/admin/supplies.blade.php
+            ? 'admin.admin_supplies'   // Renders resources/views/admin/supplies.blade.php
             : 'bhw.supplies';    // Renders resources/views/bhw/supplies.blade.php
 
         return view($view, compact(
