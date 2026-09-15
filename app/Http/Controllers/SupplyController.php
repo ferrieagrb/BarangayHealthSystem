@@ -180,4 +180,23 @@ public function withdrawBatch(Request $request)
 
     return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
 }
+
+public function destroy($id)
+{
+    $supply = Supply::findOrFail($id);
+
+    // Optional: Log the deletion/removal of the expired batch
+    SupplyLog::create([
+        'action' => 'delete',
+        'supply_id' => $supply->id,
+        'quantity' => $supply->quantity,
+        'user_id' => Auth::id(),
+        'citizen_id' => null,
+        'notes' => 'Removed expired batch',
+    ]);
+
+    $supply->delete();
+
+    return back()->with('success', 'Expired batch successfully removed.');
+}
 }
