@@ -3,35 +3,18 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/supplies.css') }}">
 <style>
-    /* Accordion Custom Styling */
-    .item-toggle-row {
-        cursor: pointer;
-        background-color: #fafafa;
-        font-weight: 600;
-    }
-    .item-toggle-row:hover {
-        background-color: #f1f1f1;
-    }
-    .batch-details-row {
-        background-color: #ffffff;
-    }
-    .batch-table {
-        width: 95%;
-        margin: 10px auto;
-        border: 1px solid #e0e0e0;
-    }
-    .batch-table th, .batch-table td {
-        font-size: 0.9rem;
-        padding: 6px 10px !important;
-    }
-    .arrow-icon {
-        display: inline-block;
-        transition: transform 0.2s ease;
-        margin-right: 8px;
-    }
-    .expanded .arrow-icon {
-        transform: rotate(90deg);
-    }
+    .item-toggle-row { cursor: pointer; background-color: #fafafa; font-weight: 600; }
+    .item-toggle-row:hover { background-color: #f1f1f1; }
+    .batch-details-row { background-color: #ffffff; }
+    .batch-table { width: 95%; margin: 10px auto; border: 1px solid #e0e0e0; }
+    .batch-table th, .batch-table td { font-size: 0.9rem; padding: 6px 10px !important; }
+    .arrow-icon { display: inline-block; transition: transform 0.2s ease; margin-right: 8px; }
+    .expanded .arrow-icon { transform: rotate(90deg); }
+    
+    /* Multi-row Deposit Table Styles */
+    .multi-deposit-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+    .multi-deposit-table th, .multi-deposit-table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    .multi-deposit-table input, .multi-deposit-table select { width: 100%; padding: 6px; box-sizing: border-box; }
 </style>
 @endsection
 
@@ -43,7 +26,7 @@
         <h1>Health Supplies Inventory</h1>
         <p>Monitor stock levels of medicines and health supplies.</p>
     </div>
-    <a href="{{ route('supplies.create') }}" class="btn-primary">+ Add Item</a>
+    <a href="{{ route('supplies.create') }}" class="btn-primary">+ Add New Item</a>
 </div>
 
 <!-- SUMMARY -->
@@ -81,7 +64,7 @@
 <tr>
     <th>Item</th>
     <th>Category</th>
-    <th>Quantity</th>
+    <th>Total Quantity</th>
     <th>Status</th>
     <th>Actions</th>
     <th>Last Updated</th>
@@ -99,20 +82,18 @@
         $minStockThreshold = $itemsOfKind->first()->min_stock ?? 5;
         $category = $itemsOfKind->first()->category;
         $lastUpdated = $itemsOfKind->max('updated_at');
-        // Default to the first batch ID for quick actions on the main row
-        $defaultSupply = $itemsOfKind->first();
     @endphp
 
     <!-- MASTER ROW (DROPDOWN TRIGGER) -->
     <tr class="item-toggle-row">
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)" style="cursor: pointer;">
+        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
             <span class="arrow-icon">▶</span> 
             <strong>{{ $itemName }}</strong> 
             <small class="text-muted">({{ $itemsOfKind->count() }} batches)</small>
         </td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)" style="cursor: pointer;">{{ $category }}</td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)" style="cursor: pointer;">{{ $totalQty }}</td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)" style="cursor: pointer;">
+        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $category }}</td>
+        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ $totalQty }}</td>
+        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">
             @if($totalQty <= 0)
                 <span class="low">Out of Stock</span>
             @elseif($totalQty <= $minStockThreshold)
@@ -122,21 +103,15 @@
             @endif
         </td>
         <td>
+            <!-- Triggers Multi-Batch Deposit Modal -->
             <button 
+                type="button"
                 class="btn-primary openDeposit"
-                data-id="{{ $defaultSupply->id }}"
                 data-name="{{ $itemName }}">
-                Deposit
-            </button>
-
-            <button 
-                class="btn-secondary openRelease"
-                data-id="{{ $defaultSupply->id }}"
-                data-name="{{ $itemName }}">
-                Release
+                + Deposit Batches
             </button>
         </td>
-        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)" style="cursor: pointer;">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
+        <td onclick="toggleBatchRow('batches-{{ $loop->index }}', this)">{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
 
     <!-- EXPANDABLE CHILD ROW (LISTS ALL BATCHES OF THAT KIND) -->
@@ -145,14 +120,13 @@
             <table class="table batch-table">
                 <thead>
                     <tr style="background: #efefef;">
-                        <th>Item #</th>
+                        <th>Item # / Code</th>
                         <th>Serial #</th>
                         <th>Unit</th>
                         <th>Qty</th>
                         <th>Expiration Date</th>
                         <th>Supplier</th>
                         <th>Status</th>
-                        <th>Batch Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -182,21 +156,6 @@
                                 <span class="high">{{ $supply->status ?? 'Available' }}</span>
                             @endif
                         </td>
-                        <td>
-                            <button 
-                                class="btn-primary openDeposit"
-                                data-id="{{ $supply->id }}"
-                                data-name="{{ $supply->name }} (Item #: {{ $supply->item_number ?? 'N/A' }})">
-                                Deposit
-                            </button>
-
-                            <button 
-                                class="btn-secondary openRelease"
-                                data-id="{{ $supply->id }}"
-                                data-name="{{ $supply->name }} (Item #: {{ $supply->item_number ?? 'N/A' }})">
-                                Release
-                            </button>
-                        </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -208,55 +167,49 @@
 </table>
 </div>
 
-<!-- ================= MODALS ================= -->
-
-<!-- DEPOSIT -->
-<div id="depositModal" class="modal">
-    <div class="modal-content">
-        <h3>Deposit Stock</h3>
-        <p id="depositItemName"></p>
+<!-- ================= MULTI-DEPOSIT MODAL ================= -->
+<div id="depositModal" class="modal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background: white; padding: 20px; border-radius: 8px; width: 800px; max-width: 95%;">
+        <h3>Deposit New Batches</h3>
+        <p id="depositItemName" style="font-weight: bold; color: #555; margin-bottom: 15px;"></p>
 
         <form method="POST" action="{{ route('supplies.deposit') }}">
             @csrf
-            <input type="hidden" name="id" id="depositId">
-            <input type="number" name="quantity" placeholder="Enter quantity" required>
+            <input type="hidden" name="name" id="depositNameInput">
 
-            <div class="modal-actions">
-                <button type="submit" class="btn-primary">Confirm</button>
+            <table class="multi-deposit-table" id="depositRowsTable">
+                <thead>
+                    <tr>
+                        <th>Item # / Code</th>
+                        <th>Serial #</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Expiry Date</th>
+                        <th>Supplier</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Initial Row -->
+                    <tr>
+                        <td><input type="text" name="batches[0][item_number]" placeholder="Item/Code" required></td>
+                        <td><input type="text" name="batches[0][serial_number]" placeholder="Serial #"></td>
+                        <td><input type="number" name="batches[0][quantity]" placeholder="Qty" required min="1"></td>
+                        <td><input type="text" name="batches[0][unit]" placeholder="e.g. box"></td>
+                        <td><input type="date" name="batches[0][expiration_date]" required></td>
+                        <td><input type="text" name="batches[0][supplier]" placeholder="Supplier"></td>
+                        <td><button type="button" class="btn-secondary removeRowBtn" style="padding: 4px 8px;" disabled>X</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button type="button" id="addRowBtn" class="btn-secondary" style="margin-bottom: 15px;">+ Add Another Batch Row</button>
+
+            <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="submit" class="btn-primary">Submit All Deposits</button>
                 <button type="button" class="btn-secondary closeModal">Cancel</button>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- RELEASE -->
-<div id="releaseModal" class="modal">
-    <div class="modal-content">
-
-        <h3>Release Stock</h3>
-        <p id="releaseItemName"></p>
-
-        <form method="POST" action="{{ route('supplies.release') }}">
-            @csrf
-
-            <input type="hidden" name="id" id="releaseId">
-
-            <input type="number" name="quantity" required>
-
-            <select name="citizen_id" required>
-                <option value="">Select Citizen</option>
-                @foreach($citizens as $citizen)
-                    <option value="{{ $citizen->id }}">
-                        {{ $citizen->name }}
-                    </option>
-                @endforeach
-            </select>
-
-            <textarea name="notes" placeholder="Notes / Diagnosis"></textarea>
-
-            <button type="submit">Confirm</button>
-        </form>
-
     </div>
 </div>
 
@@ -266,7 +219,6 @@
 <script>
 function toggleBatchRow(rowId, element) {
     const targetRow = document.getElementById(rowId);
-    // Find the master row to toggle the arrow class
     const masterRow = targetRow.previousElementSibling;
     
     if (targetRow.style.display === "none") {
@@ -279,38 +231,61 @@ function toggleBatchRow(rowId, element) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-
     const depositModal = document.getElementById("depositModal");
-    const releaseModal = document.getElementById("releaseModal");
-
-    const depositId = document.getElementById("depositId");
-    const releaseId = document.getElementById("releaseId");
-
     const depositItemName = document.getElementById("depositItemName");
-    const releaseItemName = document.getElementById("releaseItemName");
+    const depositNameInput = document.getElementById("depositNameInput");
+    const depositRowsTable = document.getElementById("depositRowsTable").getElementsByTagName('tbody')[0];
+    const addRowBtn = document.getElementById("addRowBtn");
+
+    let rowIndex = 1;
+
+    // Add dynamic row functionality for multi-deposits
+    addRowBtn.addEventListener("click", function() {
+        let newRow = depositRowsTable.insertRow();
+        newRow.innerHTML = `
+            <td><input type="text" name="batches[${rowIndex}][item_number]" placeholder="Item/Code" required></td>
+            <td><input type="text" name="batches[${rowIndex}][serial_number]" placeholder="Serial #"></td>
+            <td><input type="number" name="batches[${rowIndex}][quantity]" placeholder="Qty" required min="1"></td>
+            <td><input type="text" name="batches[${rowIndex}][unit]" placeholder="e.g. box"></td>
+            <td><input type="date" name="batches[${rowIndex}][expiration_date]" required></td>
+            <td><input type="text" name="batches[${rowIndex}][supplier]" placeholder="Supplier"></td>
+            <td><button type="button" class="btn-secondary removeRowBtn" style="padding: 4px 8px;">X</button></td>
+        `;
+        rowIndex++;
+        updateRemoveButtons();
+    });
+
+    // Handle row removal
+    depositRowsTable.addEventListener("click", function(e) {
+        if (e.target.classList.contains("removeRowBtn")) {
+            e.target.closest("tr").remove();
+            updateRemoveButtons();
+        }
+    });
+
+    function updateRemoveButtons() {
+        let rows = depositRowsTable.getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let btn = rows[i].querySelector(".removeRowBtn");
+            if (rows.length === 1) {
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+            }
+        }
+    }
 
     function closeAll() {
         depositModal.style.display = "none";
-        releaseModal.style.display = "none";
     }
 
     document.querySelectorAll(".openDeposit").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             depositModal.style.display = "flex";
-            depositId.value = btn.dataset.id;
-            depositItemName.innerText = btn.dataset.name;
-        });
-    });
-
-    document.querySelectorAll(".openRelease").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation(); 
-            releaseModal.style.display = "flex";
-            releaseId.value = btn.dataset.id;
-            releaseItemName.innerText = btn.dataset.name;
-            releaseModal.querySelector("form").reset();
-            releaseId.value = btn.dataset.id;
+            let itemName = btn.dataset.name;
+            depositItemName.innerText = "Depositing batches for: " + itemName;
+            depositNameInput.value = itemName;
         });
     });
 
@@ -319,11 +294,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     window.addEventListener("click", e => {
-        if (e.target === depositModal || e.target === releaseModal) {
+        if (e.target === depositModal) {
             closeAll();
         }
     });
-
 });
 </script>
 @endsection

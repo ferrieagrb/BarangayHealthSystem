@@ -8,8 +8,8 @@
 
 <div class="page-top">
     <div class="page-title">
-        <h1>Add Supply Item</h1>
-        <p>Create a new health supply record</p>
+        <h1>Add Supply Item Catalog</h1>
+        <p>Create a new generic supply entry</p>
     </div>
 </div>
 
@@ -21,13 +21,13 @@
         <div class="form-grid">
 
             <!-- ITEM NAME -->
-            <div class="form-group">
+            <div class="form-group" style="grid-column: span 2;">
                 <label>Item Name</label>
                 <input type="text" name="name" required placeholder="e.g., Biogesic">
             </div>
 
-            <!-- CATEGORY (WITH CHOICES) -->
-            <div class="form-group">
+            <!-- CATEGORY -->
+            <div class="form-group" style="grid-column: span 2;">
                 <label>Category</label>
                 <select name="category" required>
                     <option value="">Select Category</option>
@@ -39,63 +39,16 @@
                 </select>
             </div>
 
-            <!-- ITEM NUMBER -->
-            <div class="form-group">
-                <label>Item Number / Code</label>
-                <input type="text" name="item_number" placeholder="Optional custom code">
-            </div>
-
-            <!-- SERIAL NUMBER -->
-            <div class="form-group">
-                <label>Serial Number</label>
-                <input type="text" name="serial_number" placeholder="Optional serial number">
-            </div>
-
-            <!-- QUANTITY -->
-            <div class="form-group">
-                <label>Quantity</label>
-                <input type="number" name="quantity" required min="0">
-            </div>
-
-            <!-- UNIT -->
-            <div class="form-group">
-                <label>Unit</label>
-                <input type="text" name="unit" placeholder="e.g., pcs, box, vials">
-            </div>
-
-            <!-- MIN STOCK -->
-            <div class="form-group">
-                <label>Minimum Stock</label>
+            <!-- MINIMUM STOCK THRESHOLD -->
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Minimum Stock Alert Level</label>
                 <input type="number" name="min_stock" required min="0" value="5">
             </div>
 
-            <!-- EXPIRATION DATE -->
-            <div class="form-group">
-                <label>Expiration Date</label>
-                <input type="date" name="expiration_date">
-            </div>
-
-            <!-- SUPPLIER -->
-            <div class="form-group">
-                <label>Supplier</label>
-                <input type="text" name="supplier" placeholder="Supplier name">
-            </div>
-
-            <!-- STATUS -->
-            <div class="form-group">
-                <label>Status</label>
-                <select name="status">
-                    <option value="Available">Available</option>
-                    <option value="Low Stock">Low Stock</option>
-                    <option value="Expired">Expired</option>
-                    <option value="Out of Stock">Out of Stock</option>
-                </select>
-            </div>
-
-            <!-- DESCRIPTION (Full width or span if grid allows) -->
+            <!-- DESCRIPTION -->
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label>Description / Notes</label>
-                <textarea name="description" placeholder="Enter item specs or notes..."></textarea>
+                <textarea name="description" placeholder="Enter general item notes..."></textarea>
             </div>
 
         </div>
