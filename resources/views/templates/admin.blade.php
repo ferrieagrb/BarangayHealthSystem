@@ -50,7 +50,7 @@
             </li>
 
             <li>
-                <a href="/supplies">
+                <a href="{{ route('admin.supplies') }}">
                     <i class="bx bx-box"></i>
                     <span class="nav-item">Supplies</span>
                 </a>
