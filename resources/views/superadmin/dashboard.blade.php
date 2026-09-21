@@ -38,7 +38,7 @@
                 chart: {
                     type: 'area',
                     width: '100%',   // Fill the container width perfectly
-                    height: '100%',  // Fill the container height perfectly
+                    height: '320px',  // Fill the container height perfectly
                     toolbar: {
                         show: true
                     }
@@ -47,7 +47,7 @@
                     padding: {
                         left: 15,
                         right: 15,
-                        bottom: 25
+                        bottom: 15
                     }
                 },
                 dataLabels: {
@@ -59,7 +59,10 @@
                 },
                 xaxis: {
                     categories: categories,
-                    type: 'category'
+                    type: 'category',
+                    labels: {
+                        offsetY: 2 // Keeps labels safely positioned inside
+                    }
                 },
                 yaxis: {
                     min: 0,
