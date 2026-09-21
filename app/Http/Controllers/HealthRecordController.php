@@ -17,65 +17,74 @@ class HealthRecordController extends Controller
     |--------------------------------------------------------------------------
     */
     public function index(Request $request)
-    {
-        if (!Auth::check() || Auth::user()->role !== 'bhw') {
-            abort(403);
-        }
-
-        $search = $request->input('search');
-        $purok = $request->input('purok');
-
-        $query = citizens::with('healthRecords');
-
-        // Filter by Purok if selected
-        if ($purok && $purok !== 'all') {
-            $query->where('Citizen_Purok', $purok);
-        }
-
-        // Filter by Search query (Citizen Name or Diagnosis)
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('Citizen_FName', 'LIKE', "%{$search}%")
-                  ->orWhere('Citizen_LName', 'LIKE', "%{$search}%")
-                  ->orWhereHas('healthRecords', function($subQuery) use ($search) {
-                      $subQuery->where('diagnosis', 'LIKE', "%{$search}%");
-                  });
-            });
-        }
-
-        $citizens = $query->paginate(10)->appends($request->all());
-
-        // Define baseline coordinate mapping for Puroks within Barangay Amuyong, Alfonso, Cavite
-        $amuyongPurokCoordinates = [
-            1 => ['lat' => 14.0680, 'lng' => 120.8515],
-            2 => ['lat' => 14.0655, 'lng' => 120.8540],
-            3 => ['lat' => 14.0630, 'lng' => 120.8500],
-            4 => ['lat' => 14.0690, 'lng' => 120.8550],
-            5 => ['lat' => 14.0640, 'lng' => 120.8525],
-        ];
-
-        // Fetch all citizens with records to compute precise map density weights
-        $allCitizensForMap = citizens::with('healthRecords')->get();
-
-        $heatmapData = [];
-        foreach ($amuyongPurokCoordinates as $purokNum => $coords) {
-            // Count total health records associated with citizens living in this specific purok
-            $recordCount = $allCitizensForMap->filter(function($c) use ($purokNum) {
-                return $c->Citizen_Purok == $purokNum && $c->healthRecords->count() > 0;
-            })->sum(function($c) {
-                return $c->healthRecords->count();
-            });
-
-            if ($recordCount > 0) {
-                $heatmapData[] = [
-                    'location' => $coords,
-                    'weight' => $recordCount * 4 // Multiplier to increase intensity visibility
-                ];
-            }
-        }
-
-        return view('bhw.healthrecord', compact('citizens', 'heatmapData'));
+{
+    if (!Auth::check() || Auth::user()->role !== 'bhw') {
+        abort(403);
     }
+
+    $search = $request->input('search');
+    $purok = $request->input('purok');
+
+    $query = citizens::with('healthRecords');
+
+    // Filter by Purok if selected
+    if ($purok && $purok !== 'all') {
+        $query->where('Citizen_Purok', $purok);
+    }
+
+    // Filter by Search query (Citizen Name or Diagnosis)
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('Citizen_FName', 'LIKE', "%{$search}%")
+              ->orWhere('Citizen_LName', 'LIKE', "%{$search}%")
+              ->orWhereHas('healthRecords', function($subQuery) use ($search) {
+                  $subQuery->where('diagnosis', 'LIKE', "%{$search}%");
+              });
+        });
+    }
+
+    $citizens = $query->paginate(10)->appends($request->all());
+
+    // Define precise geographic coordinates for each Purok/Zone in Brgy. Amuyong, Alfonso, Cavite
+    // (You can adjust these lat/lng points to better match your actual local layout)
+    $amuyongPurokCoordinates = [
+        '1' => ['lat' => 14.0680, 'lng' => 120.8515],
+        '2' => ['lat' => 14.0655, 'lng' => 120.8540],
+        '3' => ['lat' => 14.0630, 'lng' => 120.8500],
+        '4' => ['lat' => 14.0690, 'lng' => 120.8550],
+        '5' => ['lat' => 14.0640, 'lng' => 120.8525],
+    ];
+
+    // Fetch all citizens to plot every registered location point on the map
+    $allCitizens = citizens::with('healthRecords')->get();
+
+    $heatmapData = [];
+
+    // Group citizens by their location field (e.g., Citizen_Purok)
+    foreach ($amuyongPurokCoordinates as $purokKey => $coords) {
+        // Count how many citizens are located in this specific purok
+        $matchingCitizens = $allCitizens->filter(function($c) use ($purokKey) {
+            return trim((string)$c->Citizen_Purok) === trim((string)$purokKey);
+        });
+
+        $citizenCount = $matchingCitizens->count();
+        // Also count how many total health records exist in this purok
+        $recordCount = $matchingCitizens->sum(fn($c) => $c->healthRecords->count());
+
+        if ($citizenCount > 0) {
+            $heatmapData[] = [
+                'location' => $coords,
+                // Weight combines citizen population density + active health record cases
+                'weight' => $citizenCount + $recordCount,
+                'purok' => $purokKey,
+                'citizens_count' => $citizenCount,
+                'records_count' => $recordCount
+            ];
+        }
+    }
+
+    return view('bhw.healthrecord', compact('citizens', 'heatmapData'));
+}
 
     /*
     |--------------------------------------------------------------------------
