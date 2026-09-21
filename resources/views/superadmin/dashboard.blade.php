@@ -13,12 +13,13 @@
 </h1>
 
 <!-- Card container with overflow-hidden to contain date labels inside rounded corners -->
-<div class="w-full max-w-3xl mx-auto p-6 pb-10 bg-white rounded-xl shadow-md overflow-hidden">
-    <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
+<!-- Removed h-[500px], flex, and flex-col. Added pb-6 for extra bottom breathing room -->
+<div class="w-full max-w-xl mx-auto p-6 pb-8 bg-white rounded-xl shadow-md">
+    <h2 class="text-lg font-bold mb-1 text-gray-800">User Growth Analytics (SuperAdmin)</h2>
     <p class="text-sm text-gray-500 mb-4">Daily User Registrations</p>
     
-    <!-- Explicit height container for the chart to prevent layout blowout -->
-    <div id="userAnalyticsApexChart" class="w-full h-[380px]"></div>
+    <!-- Removed flex-grow and gave it an explicit height of 350px -->
+    <div id="userAnalyticsApexChart" class="w-full h-[350px]"></div>
 </div>
 
 <script>
@@ -38,7 +39,7 @@
                 chart: {
                     type: 'area',
                     width: '100%',   // Fill the container width perfectly
-                    height: '320px',  // Fill the container height perfectly
+                    height: '100%',  // Fill the container height perfectly
                     toolbar: {
                         show: true
                     }
