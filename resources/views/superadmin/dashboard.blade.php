@@ -42,6 +42,12 @@
                         show: true
                     }
                 },
+                grid: {
+                    padding: {
+                        left: 20,  // Adds space on the left
+                        right: 20  // Adds space on the right
+                    }
+                },
                 dataLabels: {
                     enabled: false
                 },
