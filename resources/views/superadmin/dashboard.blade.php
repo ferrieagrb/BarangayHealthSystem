@@ -13,7 +13,7 @@
 </h1>
 
 <!-- Example using Tailwind classes for max-width and fixed height -->
-<div class="w-full max-w-xl h-[350px] mx-auto p-4 bg-white rounded-lg shadow flex flex-col">
+<div class="w-full max-w-xl h-[500px] mx-auto p-4 bg-white rounded-lg shadow flex flex-col">
     <h2 class="text-lg font-bold mb-2">User Growth Analytics (SuperAdmin)</h2>
     
     <!-- Wrapper container for the chart taking remaining space -->
