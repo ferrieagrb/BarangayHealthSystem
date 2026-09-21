@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-<!-- Load Google Maps API (Visualization library is no longer needed/supported) -->
+<!-- Load Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
 @endsection
 
@@ -16,60 +16,36 @@
             <h1>Health Records</h1>
             <p>Track diagnoses, treatments, and medical history of citizens.</p>
         </div>
-        <button class="btn-primary">+ Add Record</button>
+        <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#addRecordModal">+ Add Record</button>
     </div>
 
     <!-- SUMMARY -->
     <div class="summary">
         <div class="summary-card">
             <span>Total Diagnoses</span>
-            <strong>
-                {{ $citizens->sum(fn($c) => $c->healthRecords->count()) }}
-            </strong>
+            <strong>{{ $totalDiagnoses ?? $citizens->sum(fn($c) =>$c->healthRecords->count()) }}</strong>
         </div>
 
         <div class="summary-card">
             <span>Most Popular Sickness</span>
-            <strong>
-                @php
-                    $allDiagnoses = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords)
-                        ->pluck('diagnosis')
-                        ->filter();
-
-                    $mostCommon = $allDiagnoses
-                        ->countBy()
-                        ->sortDesc()
-                        ->keys()
-                        ->first();
-                @endphp
-                {{ $mostCommon ?? 'N/A' }}
-            </strong>
+            <strong>{{ $mostCommonDiagnosis ?? 'N/A' }}</strong>
         </div>
 
         <div class="summary-card">
             <span>Cases This Month</span>
-            <strong>
-                @php
-                    $thisMonthCount = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords)
-                        ->filter(fn($r) => $r->created_at->isCurrentMonth())
-                        ->count();
-                @endphp
-                {{ $thisMonthCount }}
-            </strong>
+            <strong>{{ $thisMonthCount ?? 0 }}</strong>
         </div>
     </div>
 
     <!-- WRAPPER -->
     <div class="health-wrapper">
 
-        <!-- LEFT -->
+        <!-- LEFT: Citizen Table Panel -->
         <div class="left-panel">
             <div class="list-tab">
 
                 <div class="toolbar">
-                    <form method="GET" action="{{ route('citizenlist') }}" class="d-flex gap-2">
+                    <form method="GET" action="{{ route('healthrecord') }}" class="d-flex gap-2">
                         <input type="text" name="search" placeholder="Search citizen or diagnosis" 
                             value="{{ request('search') }}" class="form-control">
 
@@ -95,14 +71,14 @@
                         </thead>
 
                         <tbody>
-                            @forelse($citizens as $citizen)
+                            @forelse($citizens as$citizen)
                                 @php
-                                    $latest = $citizen->healthRecords->sortByDesc('created_at')->first();
+                                    $latest =$citizen->healthRecords->sortByDesc('created_at')->first();
                                 @endphp
                                 <tr>
                                     <td>
                                         <div class="record-name">
-                                            {{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}
+                                            {{ $citizen->Citizen_FName }} {{$citizen->Citizen_LName }}
                                         </div>
                                         <div class="record-sub">
                                             Purok {{ $citizen->Citizen_Purok }}
@@ -118,19 +94,20 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4">No citizens found.</td>
+                                    <td colspan="4" class="text-center py-3">No citizens found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+
                 <div style="margin-top: 15px;">
-                    {{ $citizens->links('pagination::bootstrap-5') }}
+                    {{ $citizens->withQueryString()->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- RIGHT: Widgets Panel -->
         <div class="right-panel" style="display: flex; flex-direction: column; gap: 20px;">
             
             <!-- Google Maps Geographic Heatmap Widget -->
@@ -144,10 +121,10 @@
             <div class="recent-tab">
                 <h3>Recent Diagnoses</h3>
                 @php
-                    $recent = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords->map(function ($r) use ($c) {
+                    $recentRecords =$citizens
+                        ->flatMap(fn($c) =>$c->healthRecords->map(function ($r) use ($c) {
                             return [
-                                'name' => $c->Citizen_FName . ' ' . $c->Citizen_LName,
+                                'name' => $c->Citizen_FName . ' ' .$c->Citizen_LName,
                                 'diagnosis' => $r->diagnosis,
                                 'date' => $r->created_at,
                             ];
@@ -156,13 +133,13 @@
                         ->take(5);
                 @endphp
 
-                @forelse($recent as $item)
+                @forelse($recentRecords as$item)
                     <div class="recent-card">
-                        <div class="recent-diagnosis">{{ $item['diagnosis'] }}</div>
+                        <div class="recent-diagnosis"><strong>{{ $item['name'] }}</strong>: {{$item['diagnosis'] }}</div>
                         <div class="recent-date">{{ $item['date']->format('M d, Y') }}</div>
                     </div>
                 @empty
-                    <p>No recent records.</p>
+                    <p class="text-muted">No recent records.</p>
                 @endforelse
             </div>
 
@@ -191,12 +168,10 @@
         const infowindow = new google.maps.InfoWindow();
 
         rawZoneData.forEach(item => {
-            // Use original record count (before threefold multiplier) to determine tier color
             const actualCount = item.records_count || 1; 
             const weight = item.weight || 1;
 
-            // Define colors and radius based on your exact diagnostic tiers
-            let fillColor = "#ffcc00";    // Default Yellow (Tier 1: 1-3 cases)
+            let fillColor = "#ffcc00";    // Default Yellow (Tier 1: 1-2 cases)
             let strokeColor = "#ff9900";
             let baseRadius = 45;
 
@@ -206,7 +181,7 @@
                 strokeColor = "#800000";
                 baseRadius = 90;
             } else if (actualCount >= 3) {
-                // Tier 2: 3-5 cases up to 9 (Moderate Severity - Orange/Bright Red)
+                // Tier 2: 3-9 cases (Moderate Severity - Orange/Bright Red)
                 fillColor = "#ff4d4d";
                 strokeColor = "#cc0000";
                 baseRadius = 65;
@@ -220,7 +195,6 @@
                 fillOpacity: 0.5,
                 map: map,
                 center: new google.maps.LatLng(item.location.lat, item.location.lng),
-                // Incorporates your threefold weight scaling factor
                 radius: Math.max(baseRadius, weight * 10) 
             });
 

@@ -239,6 +239,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('dashboard');
+    Route::get('/active-sessions-json', [SuperAdminController::class, 'getActiveSessionsData'])->name('sessions.json');
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
     Route::get('/users/create', fn () => app(AdminUserManagementController::class)->create())->name('users.create');
