@@ -28,7 +28,7 @@ use App\Models\Announcement;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
-use App\Http\Controllers\WebsitePerformanceController;
+use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,7 +160,7 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::put('/citizen/{id}', fn ($id) => app(CitizenController::class)->update(request(), $id))->name('citizen.update');
 
     // Health Records
-    Route::get('/healthrecord', fn () => app(CitizenController::class)->healthIndex())->name('healthrecord');
+Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
