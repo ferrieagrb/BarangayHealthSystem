@@ -12,14 +12,13 @@
     SUPERADMIN HOME
 </h1>
 
-<!-- Card container with overflow-hidden to contain date labels inside rounded corners -->
-<!-- Removed h-[500px], flex, and flex-col. Added pb-6 for extra bottom breathing room -->
-<div class="w-full max-w-xl mx-auto p-6 pb-8 bg-white rounded-xl shadow-md">
-    <h2 class="text-lg font-bold mb-1 text-gray-800">User Growth Analytics (SuperAdmin)</h2>
+<!-- Card container -->
+<div class="w-full max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md">
+    <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
     <p class="text-sm text-gray-500 mb-4">Daily User Registrations</p>
     
-    <!-- Removed flex-grow and gave it an explicit height of 350px -->
-    <div id="userAnalyticsApexChart" class="w-full h-[350px]"></div>
+    <!-- Wrapper div with a fixed height -->
+    <div id="userAnalyticsApexChart" class="w-full h-[360px]"></div>
 </div>
 
 <script>
@@ -38,8 +37,8 @@
                 }],
                 chart: {
                     type: 'area',
-                    width: '100%',   // Fill the container width perfectly
-                    height: '100%',  // Fill the container height perfectly
+                    width: '100%',
+                    height: 300, // 👈 Explicitly smaller than the 360px container to leave room for dates at the bottom
                     toolbar: {
                         show: true
                     }
@@ -48,7 +47,7 @@
                     padding: {
                         left: 15,
                         right: 15,
-                        bottom: 15
+                        bottom: 0
                     }
                 },
                 dataLabels: {
@@ -62,7 +61,7 @@
                     categories: categories,
                     type: 'category',
                     labels: {
-                        offsetY: 2 // Keeps labels safely positioned inside
+                        offsetY: -2 // 👈 Pulls the date labels slightly upward inside the container
                     }
                 },
                 yaxis: {
