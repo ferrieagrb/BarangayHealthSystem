@@ -13,7 +13,7 @@
 </h1>
 
 <!-- Card container with overflow-hidden to contain date labels inside rounded corners -->
-<div class="w-full max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-md overflow-hidden">
+<div class="w-full max-w-3xl mx-auto p-6 pb-10 bg-white rounded-xl shadow-md overflow-hidden">
     <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
     <p class="text-sm text-gray-500 mb-4">Daily User Registrations</p>
     
@@ -47,7 +47,7 @@
                     padding: {
                         left: 15,
                         right: 15,
-                        bottom: 10
+                        bottom: 25
                     }
                 },
                 dataLabels: {
