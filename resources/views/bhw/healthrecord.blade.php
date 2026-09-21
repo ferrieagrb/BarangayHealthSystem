@@ -172,10 +172,9 @@
 
 </div>
 
-<!-- Google Maps Initialization & Dynamic Zone Circles Script -->
+<!-- Google Maps Initialization & Area-Based Circles Script -->
 <script>
     function initMap() {
-        // Centered on Barangay Amuyong, Alfonso, Cavite
         const amuyongCenter = { lat: 14.0668, lng: 120.8531 };
 
         const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
@@ -186,23 +185,39 @@
             zoomControl: true
         });
 
-        // Pull density data passed from the controller
+        // Pull dynamic area data passed from the controller
         const rawZoneData = @json($heatmapData ?? []);
+        console.log("Citizen Area Map Data:", rawZoneData);
 
-        // Render proportional circles for each Purok zone as a modern heatmap alternative
+        const infowindow = new google.maps.InfoWindow();
+
+        // Render proportional circles centered directly on each citizen location area
         rawZoneData.forEach(item => {
-            const caseWeight = item.weight || 1;
+            const weight = item.weight || 1;
 
-            new google.maps.Circle({
+            const circle = new google.maps.Circle({
                 strokeColor: "#ff4d4d",
-                strokeOpacity: 0.8,
+                strokeOpacity: 0.9,
                 strokeWeight: 2,
                 fillColor: "#ff1a1a",
-                fillOpacity: 0.4,
+                fillOpacity: 0.45,
                 map: map,
                 center: new google.maps.LatLng(item.location.lat, item.location.lng),
-                // Radius scales dynamically depending on how many cases are in that Purok
-                radius: Math.max(35, caseWeight * 8) 
+                // Radius expands dynamically based on how many citizens are located there
+                radius: Math.max(40, weight * 12) 
+            });
+
+            // Add click listener to show details for that specific citizen location area
+            circle.addListener("click", (event) => {
+                infowindow.setContent(
+                    `<div style="color: #000; padding: 4px;">
+                        <strong>Purok ${item.purok}</strong><br>
+                        Registered Citizens: ${item.citizens_count}<br>
+                        Health Cases: ${item.records_count}
+                     </div>`
+                );
+                infowindow.setPosition(circle.getCenter());
+                infowindow.open(map);
             });
         });
     }
