@@ -246,5 +246,5 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 
-    Route::get('/superadmin/user-analytics', [UserAnalyticsController::class, 'index']);
+    Route::get('/user-analytics', [UserAnalyticsController::class, 'index']);
 });
