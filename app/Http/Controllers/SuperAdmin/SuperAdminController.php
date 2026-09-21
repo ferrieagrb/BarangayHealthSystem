@@ -30,7 +30,7 @@ class SuperAdminController extends Controller
             ->take(6)
             ->get();
 
-        // 3. Mock or Query Failed Login Spikes
+        // 3. Failed Login Spikes Tracker
         $failedLoginCount = Cache::get('failed_login_spikes_count', 3);
 
         return view('superadmin.dashboard', compact('activeSessions', 'activeUserCount', 'auditLogs', 'failedLoginCount'));
