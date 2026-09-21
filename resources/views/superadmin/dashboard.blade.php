@@ -8,16 +8,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-<h1>
+<h1 class="text-2xl font-bold mb-6 text-gray-800">
     SUPERADMIN HOME
 </h1>
 
-<!-- Example using Tailwind classes for max-width and fixed height -->
-<div class="w-full max-w-xl h-[500px] mx-auto p-4 bg-white rounded-lg shadow flex flex-col">
-    <h2 class="text-lg font-bold mb-2">User Growth Analytics (SuperAdmin)</h2>
+<!-- Card container with overflow-hidden to contain date labels inside rounded corners -->
+<div class="w-full max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-md overflow-hidden">
+    <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
+    <p class="text-sm text-gray-500 mb-4">Daily User Registrations</p>
     
-    <!-- Wrapper container for the chart taking remaining space -->
-    <div id="userAnalyticsApexChart" class="flex-grow"></div>
+    <!-- Explicit height container for the chart to prevent layout blowout -->
+    <div id="userAnalyticsApexChart" class="w-full h-[380px]"></div>
 </div>
 
 <script>
@@ -35,17 +36,18 @@
                     data: seriesData
                 }],
                 chart: {
-                    type: 'area', // You can change to 'line', 'bar', etc.
-                    width: '90%',   // Matches the parent div's width
-                    height: '90%',  // Matches the parent div's height
+                    type: 'area',
+                    width: '100%',   // Fill the container width perfectly
+                    height: '100%',  // Fill the container height perfectly
                     toolbar: {
                         show: true
                     }
                 },
                 grid: {
                     padding: {
-                        left: 20,  // Adds space on the left
-                        right: 20  // Adds space on the right
+                        left: 15,
+                        right: 15,
+                        bottom: 10
                     }
                 },
                 dataLabels: {
@@ -65,7 +67,7 @@
                 },
                 colors: ['#3b82f6'],
                 title: {
-                    text: 'Daily User Registrations',
+                    text: '',
                     align: 'left'
                 }
             };
