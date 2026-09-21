@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class SuperAdminController extends Controller
 {
@@ -35,4 +36,26 @@ class SuperAdminController extends Controller
 
         return view('superadmin.dashboard', compact('activeSessions', 'activeUserCount', 'auditLogs', 'failedLoginCount'));
     }
+
+    public function getActiveSessionsData()
+{
+    $activeSessions = DB::table('sessions')
+        ->whereNotNull('user_id')
+        ->join('users', 'sessions.user_id', '=', 'users.id')
+        ->select('users.name', 'users.email', 'sessions.ip_address', 'sessions.last_activity')
+        ->orderBy('sessions.last_activity', 'desc')
+        ->take(5)
+        ->get()
+        ->map(function ($session) {
+            $session->time_ago = Carbon::createFromTimestamp($session->last_activity)->diffForHumans();
+            return $session;
+        });
+
+    $activeUserCount = DB::table('sessions')->whereNotNull('user_id')->distinct('user_id')->count();
+
+    return response()->json([
+        'count' => $activeUserCount,
+        'sessions' => $activeSessions
+    ]);
+}
 }
