@@ -3,7 +3,7 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
 <!-- Load Google Maps API with Visualization Library -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=visualization" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&libraries=visualization" async defer></script>
 @endsection
 
 @section('content')
