@@ -27,6 +27,7 @@ use App\Models\Referral;
 use App\Models\Announcement;
 use Illuminate\Support\Facades\DB;
 
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
