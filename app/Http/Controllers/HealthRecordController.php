@@ -45,28 +45,36 @@ class HealthRecordController extends Controller
 
         $citizens = $query->paginate(10)->appends($request->all());
 
-        // Prepare Heatmap Data: Group records/citizens by Purok
-        $puroks = citizens::select('Citizen_Purok as purok', DB::raw('count(*) as total'))
-            ->whereNotNull('Citizen_Purok')
-            ->groupBy('Citizen_Purok')
-            ->orderBy('Citizen_Purok', 'asc')
-            ->get();
-
-        $heatmapData = $puroks->map(function ($item) {
-            return [
-                'x' => 'Purok ' . $item->purok,
-                'y' => (int) $item->total
-            ];
-        });
-
-        $heatmapSeries = [
-            [
-                'name' => 'Health Records',
-                'data' => $heatmapData
-            ]
+        // Define baseline coordinate mapping for Puroks within Barangay Amuyong, Alfonso, Cavite
+        $amuyongPurokCoordinates = [
+            1 => ['lat' => 14.0680, 'lng' => 120.8515],
+            2 => ['lat' => 14.0655, 'lng' => 120.8540],
+            3 => ['lat' => 14.0630, 'lng' => 120.8500],
+            4 => ['lat' => 14.0690, 'lng' => 120.8550],
+            5 => ['lat' => 14.0640, 'lng' => 120.8525],
         ];
 
-        return view('bhw.healthrecord', compact('citizens', 'heatmapSeries'));
+        // Fetch all citizens with records to compute precise map density weights
+        $allCitizensForMap = citizens::with('healthRecords')->get();
+
+        $heatmapData = [];
+        foreach ($amuyongPurokCoordinates as $purokNum => $coords) {
+            // Count total health records associated with citizens living in this specific purok
+            $recordCount = $allCitizensForMap->filter(function($c) use ($purokNum) {
+                return $c->Citizen_Purok == $purokNum && $c->healthRecords->count() > 0;
+            })->sum(function($c) {
+                return $c->healthRecords->count();
+            });
+
+            if ($recordCount > 0) {
+                $heatmapData[] = [
+                    'location' => $coords,
+                    'weight' => $recordCount * 4 // Multiplier to increase intensity visibility
+                ];
+            }
+        }
+
+        return view('bhw.healthrecord', compact('citizens', 'heatmapData'));
     }
 
     /*
