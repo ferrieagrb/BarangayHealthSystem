@@ -13,11 +13,11 @@
 </h1>
 
 <!-- Card container with controlled height and padding -->
-<div class="w-full max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md">
+<!-- Changed max-w-xl to max-w-4xl for wider layout coverage -->
+<div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
     <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
     <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
     
-    <!-- Inner wrapper with strict height and overflow hidden to trap the dates -->
     <div class="w-full h-[320px] overflow-hidden relative">
         <div id="userAnalyticsApexChart" class="w-full h-full"></div>
     </div>
@@ -40,15 +40,15 @@
                 chart: {
                     type: 'area',
                     width: '100%',
-                    height: '270px', // Leaves 50px buffer inside the 320px wrapper for dates
+                    height: '270px',
                     toolbar: {
                         show: true
                     }
                 },
                 grid: {
                     padding: {
-                        left: 10,
-                        right: 10,
+                        left: 5,   // Reduced to let the chart stretch wider
+                        right: 5,  // Reduced to let the chart stretch wider
                         top: 0,
                         bottom: 0
                     }
