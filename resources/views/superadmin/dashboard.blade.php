@@ -12,9 +12,12 @@
     SUPERADMIN HOME
 </h1>
 
-<div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow">
-    <h2 class="text-xl font-bold mb-4">User Growth Analytics (SuperAdmin)</h2>
-    <div id="userAnalyticsApexChart"></div>
+<!-- Example using Tailwind classes for max-width and fixed height -->
+<div class="w-full max-w-xl h-[350px] mx-auto p-4 bg-white rounded-lg shadow flex flex-col">
+    <h2 class="text-lg font-bold mb-2">User Growth Analytics (SuperAdmin)</h2>
+    
+    <!-- Wrapper container for the chart taking remaining space -->
+    <div id="userAnalyticsApexChart" class="flex-grow"></div>
 </div>
 
 <script>
@@ -33,7 +36,8 @@
                 }],
                 chart: {
                     type: 'area', // You can change to 'line', 'bar', etc.
-                    height: 350,
+                    width: '100%',   // Matches the parent div's width
+                    height: '100%',  // Matches the parent div's height
                     toolbar: {
                         show: true
                     }
