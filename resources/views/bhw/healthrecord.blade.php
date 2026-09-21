@@ -175,33 +175,31 @@
 <!-- Google Maps Initialization & Heatmap Overlay Script -->
 <script>
     function initMap() {
-        // Center point coordinates (Adjust based on your local area bounds)
-        const barangayCenter = { lat: 14.1250, lng: 120.9880 };
+        // Centered on Barangay Amuyong, Alfonso, Cavite
+        const amuyongCenter = { lat: 14.0668, lng: 120.8531 };
 
         const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
-            zoom: 14,
-            center: barangayCenter,
+            zoom: 15, // Closer zoom view tailored for barangay-level detail
+            center: amuyongCenter,
             mapTypeId: "roadmap",
-            disableDefaultUI: true, // Clean look for dashboard cards
+            disableDefaultUI: true,
             zoomControl: true
         });
 
-        // Heatmap data points with geographic lat/lng coordinates and weights proportional to record counts
+        // Heatmap distribution points mapped around Amuyong zones/Puroks
         const heatmapData = [
-            { location: new google.maps.LatLng(14.1265, 120.9850), weight: 12 }, // Purok 1 cluster
-            { location: new google.maps.LatLng(14.1230, 120.9900), weight: 25 }, // Purok 2 cluster
-            { location: new google.maps.LatLng(14.1210, 120.9840), weight: 8 },  // Purok 3 cluster
+            { location: new google.maps.LatLng(14.0680, 120.8515), weight: 12 }, // Purok 1 cluster
+            { location: new google.maps.LatLng(14.0655, 120.8540), weight: 25 }, // Purok 2 cluster (e.g., near Hall/Highway)
+            { location: new google.maps.LatLng(14.0630, 120.8500), weight: 8 },  // Purok 3 cluster
         ];
 
         const heatmap = new google.maps.visualization.HeatmapLayer({
             data: heatmapData,
             map: map,
-            radius: 35, // Adjust circle blur radius
+            radius: 35,
             opacity: 0.85
         });
     }
-
-    window.addEventListener('DOMContentLoaded', initMap);
 </script>
 
 @endsection
