@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-<!-- Load Google Maps API with Visualization Library -->
+<!-- Load Google Maps API with Visualization Library & async loading -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&libraries=visualization&loading=async&callback=initMap" async defer></script>
 @endsection
 
@@ -136,7 +136,7 @@
             <!-- Google Maps Geographic Heatmap Widget -->
             <div class="recent-tab" style="padding: 15px; background: #fff; border-radius: 8px;">
                 <h3 style="margin-bottom: 5px;">Geographic Zone Heatmap</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Patient Density Concentration</p>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Patient Density Concentration (Brgy. Amuyong)</p>
                 <div id="purokGoogleMap" style="width: 100%; height: 260px; border-radius: 6px;"></div>
             </div>
 
@@ -179,19 +179,23 @@
         const amuyongCenter = { lat: 14.0668, lng: 120.8531 };
 
         const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
-            zoom: 15, // Closer zoom view tailored for barangay-level detail
+            zoom: 15,
             center: amuyongCenter,
             mapTypeId: "roadmap",
             disableDefaultUI: true,
             zoomControl: true
         });
 
-        // Heatmap distribution points mapped around Amuyong zones/Puroks
-        const heatmapData = [
-            { location: new google.maps.LatLng(14.0680, 120.8515), weight: 12 }, // Purok 1 cluster
-            { location: new google.maps.LatLng(14.0655, 120.8540), weight: 25 }, // Purok 2 cluster (e.g., near Hall/Highway)
-            { location: new google.maps.LatLng(14.0630, 120.8500), weight: 8 },  // Purok 3 cluster
-        ];
+        // Pull dynamic heatmap data passed from the controller
+        const rawHeatmapData = @json($heatmapData ?? []);
+
+        // Transform array items into google.maps.LatLng objects with weights
+        const heatmapData = rawHeatmapData.map(item => {
+            return {
+                location: new google.maps.LatLng(item.location.lat, item.location.lng),
+                weight: item.weight
+            };
+        });
 
         const heatmap = new google.maps.visualization.HeatmapLayer({
             data: heatmapData,
