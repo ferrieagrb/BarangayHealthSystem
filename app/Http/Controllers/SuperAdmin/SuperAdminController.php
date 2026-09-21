@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class SuperAdminController extends Controller
 {
-    public function dashboard()
+    public function index()
     {
         // 1. Active Sessions / Concurrent Logins
         $activeSessions = DB::table('sessions')
