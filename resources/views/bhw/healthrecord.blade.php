@@ -172,9 +172,10 @@
 
 </div>
 
-<!-- Google Maps Initialization & Area-Based Circles Script -->
+<!-- Google Maps Initialization & Tiered Severity Circles Script -->
 <script>
     function initMap() {
+        // Centered on Barangay Amuyong, Alfonso, Cavite
         const amuyongCenter = { lat: 14.0668, lng: 120.8531 };
 
         const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
@@ -187,33 +188,49 @@
 
         // Pull dynamic area data passed from the controller
         const rawZoneData = @json($heatmapData ?? []);
-        console.log("Citizen Area Map Data:", rawZoneData);
-
         const infowindow = new google.maps.InfoWindow();
 
-        // Render proportional circles centered directly on each citizen location area
         rawZoneData.forEach(item => {
+            // Use original record count (before threefold multiplier) to determine tier color
+            const actualCount = item.records_count || 1; 
             const weight = item.weight || 1;
 
+            // Define colors and radius based on your exact diagnostic tiers
+            let fillColor = "#ffcc00";    // Default Yellow (Tier 1: 1-3 cases)
+            let strokeColor = "#ff9900";
+            let baseRadius = 45;
+
+            if (actualCount >= 10) {
+                // Tier 3: 10 and up cases (High Severity - Deep Red/Crimson)
+                fillColor = "#b30000";
+                strokeColor = "#800000";
+                baseRadius = 90;
+            } else if (actualCount >= 3) {
+                // Tier 2: 3-5 cases up to 9 (Moderate Severity - Orange/Bright Red)
+                fillColor = "#ff4d4d";
+                strokeColor = "#cc0000";
+                baseRadius = 65;
+            }
+
             const circle = new google.maps.Circle({
-                strokeColor: "#ff4d4d",
+                strokeColor: strokeColor,
                 strokeOpacity: 0.9,
                 strokeWeight: 2,
-                fillColor: "#ff1a1a",
-                fillOpacity: 0.45,
+                fillColor: fillColor,
+                fillOpacity: 0.5,
                 map: map,
                 center: new google.maps.LatLng(item.location.lat, item.location.lng),
-                // Radius expands dynamically based on how many citizens are located there
-                radius: Math.max(40, weight * 12) 
+                // Incorporates your threefold weight scaling factor
+                radius: Math.max(baseRadius, weight * 10) 
             });
 
-            // Add click listener to show details for that specific citizen location area
-            circle.addListener("click", (event) => {
+            // Click listener for detailed breakdown popup
+            circle.addListener("click", () => {
                 infowindow.setContent(
-                    `<div style="color: #000; padding: 4px;">
+                    `<div style="color: #000; padding: 5px;">
                         <strong>Purok ${item.purok}</strong><br>
                         Registered Citizens: ${item.citizens_count}<br>
-                        Health Cases: ${item.records_count}
+                        Health Cases: ${actualCount}
                      </div>`
                 );
                 infowindow.setPosition(circle.getCenter());
