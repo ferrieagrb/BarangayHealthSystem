@@ -2,8 +2,8 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-<!-- Load Google Maps API with Visualization Library & async loading -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&libraries=visualization&loading=async&callback=initMap" async defer></script>
+<!-- Load Google Maps API (Visualization library is no longer needed/supported) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
 @endsection
 
 @section('content')
@@ -172,7 +172,7 @@
 
 </div>
 
-<!-- Google Maps Initialization & Heatmap Overlay Script -->
+<!-- Google Maps Initialization & Dynamic Zone Circles Script -->
 <script>
     function initMap() {
         // Centered on Barangay Amuyong, Alfonso, Cavite
@@ -186,22 +186,24 @@
             zoomControl: true
         });
 
-        // Pull dynamic heatmap data passed from the controller
-        const rawHeatmapData = @json($heatmapData ?? []);
+        // Pull density data passed from the controller
+        const rawZoneData = @json($heatmapData ?? []);
 
-        // Transform array items into google.maps.LatLng objects with weights
-        const heatmapData = rawHeatmapData.map(item => {
-            return {
-                location: new google.maps.LatLng(item.location.lat, item.location.lng),
-                weight: item.weight
-            };
-        });
+        // Render proportional circles for each Purok zone as a modern heatmap alternative
+        rawZoneData.forEach(item => {
+            const caseWeight = item.weight || 1;
 
-        const heatmap = new google.maps.visualization.HeatmapLayer({
-            data: heatmapData,
-            map: map,
-            radius: 35,
-            opacity: 0.85
+            new google.maps.Circle({
+                strokeColor: "#ff4d4d",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#ff1a1a",
+                fillOpacity: 0.4,
+                map: map,
+                center: new google.maps.LatLng(item.location.lat, item.location.lng),
+                // Radius scales dynamically depending on how many cases are in that Purok
+                radius: Math.max(35, caseWeight * 8) 
+            });
         });
     }
 </script>
