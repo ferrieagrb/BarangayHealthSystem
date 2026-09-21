@@ -12,13 +12,15 @@
     SUPERADMIN HOME
 </h1>
 
-<!-- Card container -->
+<!-- Card container with controlled height and padding -->
 <div class="w-full max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md">
     <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
-    <p class="text-sm text-gray-500 mb-4">Daily User Registrations</p>
+    <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
     
-    <!-- Wrapper div with a fixed height -->
-    <div id="userAnalyticsApexChart" class="w-full h-[360px]"></div>
+    <!-- Inner wrapper with strict height and overflow hidden to trap the dates -->
+    <div class="w-full h-[320px] overflow-hidden relative">
+        <div id="userAnalyticsApexChart" class="w-full h-full"></div>
+    </div>
 </div>
 
 <script>
@@ -38,15 +40,16 @@
                 chart: {
                     type: 'area',
                     width: '100%',
-                    height: 300, // 👈 Explicitly smaller than the 360px container to leave room for dates at the bottom
+                    height: '270px', // Leaves 50px buffer inside the 320px wrapper for dates
                     toolbar: {
                         show: true
                     }
                 },
                 grid: {
                     padding: {
-                        left: 15,
-                        right: 15,
+                        left: 10,
+                        right: 10,
+                        top: 0,
                         bottom: 0
                     }
                 },
@@ -61,7 +64,9 @@
                     categories: categories,
                     type: 'category',
                     labels: {
-                        offsetY: -2 // 👈 Pulls the date labels slightly upward inside the container
+                        style: {
+                            fontSize: '11px'
+                        }
                     }
                 },
                 yaxis: {
