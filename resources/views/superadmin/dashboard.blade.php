@@ -20,7 +20,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
         try {
-            const response = await fetch('/api/superadmin/user-analytics');
+            const response = await fetch('/superadmin/user-analytics');
             const data = await response.json();
 
             const categories = data.map(item => item.date);

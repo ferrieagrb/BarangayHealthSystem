@@ -27,6 +27,7 @@ use App\Models\Referral;
 use App\Models\Announcement;
 use Illuminate\Support\Facades\DB;
 
+use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -244,4 +245,6 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
+
+    Route::get('/superadmin/user-analytics', [UserAnalyticsController::class, 'index']);
 });
