@@ -17,7 +17,7 @@ use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\HealthRecordController;
-use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\SuperAdminController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
