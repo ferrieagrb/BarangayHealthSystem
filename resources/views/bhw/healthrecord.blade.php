@@ -130,14 +130,13 @@
             </div>
         </div>
 
-        <!-- RIGHT (Enlarged Map aligned with layout structure) -->
+        <!-- RIGHT -->
         <div class="right-panel" style="display: flex; flex-direction: column; gap: 20px;">
             
-            <!-- Google Maps Geographic Heatmap Widget (Bigger Height) -->
+            <!-- Google Maps Geographic Heatmap Widget -->
             <div class="recent-tab" style="padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                 <h3 style="margin-bottom: 5px;">Geographic Zone Heatmap</h3>
                 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Patient Density Concentration (Brgy. Amuyong)</p>
-                <!-- Height increased to 450px for a much larger, clear map view -->
                 <div id="purokGoogleMap" style="width: 100%; height: 450px; border-radius: 6px;"></div>
             </div>
 
@@ -145,19 +144,17 @@
             <div class="recent-tab">
                 <h3>Recent Diagnoses</h3>
                 @php
-                    $recent =$citizens
-                        ->flatMap(fn($c) =>$c->healthRecords->map(function ($r) use ($c) {
+                    $recentRecords = $citizens->flatMap(function($c) {
+                        return $c->healthRecords->map(function($r) use ($c) {
                             return [
-                                'name' => $c->Citizen_FName . ' ' .$c->Citizen_LName,
                                 'diagnosis' => $r->diagnosis,
-                                'date' => $r->created_at,
+                                'date' => $r->created_at
                             ];
-                        }))
-                        ->sortByDesc('date')
-                        ->take(5);
+                        });
+                    })->sortByDesc('date')->take(5);
                 @endphp
 
-                @forelse($recent as$item)
+                @forelse($recentRecords as$item)
                     <div class="recent-card">
                         <div class="recent-diagnosis">{{ $item['diagnosis'] }}</div>
                         <div class="recent-date">{{ $item['date']->format('M d, Y') }}</div>
@@ -198,12 +195,10 @@
             let baseRadius = 50;
 
             if (actualCount >= 10) {
-                // Tier 3: 10+ cases (Deep Crimson)
                 fillColor = "#b30000";
                 strokeColor = "#800000";
                 baseRadius = 100;
             } else if (actualCount >= 3) {
-                // Tier 2: 3-5 up to 9 cases (Bright Red/Orange)
                 fillColor = "#ff4d4d";
                 strokeColor = "#cc0000";
                 baseRadius = 75;
