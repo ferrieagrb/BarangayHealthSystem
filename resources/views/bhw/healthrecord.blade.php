@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-<!-- Load Google Maps API (Visualization library is no longer needed/supported) -->
+<!-- Load Google Maps API with async loading -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
 @endsection
 
@@ -19,12 +19,12 @@
         <button class="btn-primary">+ Add Record</button>
     </div>
 
-    <!-- SUMMARY -->
+    <!-- SUMMARY (3 Boxes) -->
     <div class="summary">
         <div class="summary-card">
             <span>Total Diagnoses</span>
             <strong>
-                {{ $citizens->sum(fn($c) => $c->healthRecords->count()) }}
+                {{ $citizens->sum(fn($c) =>$c->healthRecords->count()) }}
             </strong>
         </div>
 
@@ -32,12 +32,12 @@
             <span>Most Popular Sickness</span>
             <strong>
                 @php
-                    $allDiagnoses = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords)
+                    $allDiagnoses =$citizens
+                        ->flatMap(fn($c) =>$c->healthRecords)
                         ->pluck('diagnosis')
                         ->filter();
 
-                    $mostCommon = $allDiagnoses
+                    $mostCommon =$allDiagnoses
                         ->countBy()
                         ->sortDesc()
                         ->keys()
@@ -51,9 +51,9 @@
             <span>Cases This Month</span>
             <strong>
                 @php
-                    $thisMonthCount = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords)
-                        ->filter(fn($r) => $r->created_at->isCurrentMonth())
+                    $thisMonthCount =$citizens
+                        ->flatMap(fn($c) =>$c->healthRecords)
+                        ->filter(fn($r) =>$r->created_at->isCurrentMonth())
                         ->count();
                 @endphp
                 {{ $thisMonthCount }}
@@ -95,14 +95,14 @@
                         </thead>
 
                         <tbody>
-                            @forelse($citizens as $citizen)
+                            @forelse($citizens as$citizen)
                                 @php
-                                    $latest = $citizen->healthRecords->sortByDesc('created_at')->first();
+                                    $latest =$citizen->healthRecords->sortByDesc('created_at')->first();
                                 @endphp
                                 <tr>
                                     <td>
                                         <div class="record-name">
-                                            {{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}
+                                            {{ $citizen->Citizen_FName }} {{$citizen->Citizen_LName }}
                                         </div>
                                         <div class="record-sub">
                                             Purok {{ $citizen->Citizen_Purok }}
@@ -130,24 +130,25 @@
             </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- RIGHT (Enlarged Map aligned with layout structure) -->
         <div class="right-panel" style="display: flex; flex-direction: column; gap: 20px;">
             
-            <!-- Google Maps Geographic Heatmap Widget -->
-            <div class="recent-tab" style="padding: 15px; background: #fff; border-radius: 8px;">
+            <!-- Google Maps Geographic Heatmap Widget (Bigger Height) -->
+            <div class="recent-tab" style="padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                 <h3 style="margin-bottom: 5px;">Geographic Zone Heatmap</h3>
                 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Patient Density Concentration (Brgy. Amuyong)</p>
-                <div id="purokGoogleMap" style="width: 100%; height: 260px; border-radius: 6px;"></div>
+                <!-- Height increased to 450px for a much larger, clear map view -->
+                <div id="purokGoogleMap" style="width: 100%; height: 450px; border-radius: 6px;"></div>
             </div>
 
             <!-- Recent Diagnoses Widget -->
             <div class="recent-tab">
                 <h3>Recent Diagnoses</h3>
                 @php
-                    $recent = $citizens
-                        ->flatMap(fn($c) => $c->healthRecords->map(function ($r) use ($c) {
+                    $recent =$citizens
+                        ->flatMap(fn($c) =>$c->healthRecords->map(function ($r) use ($c) {
                             return [
-                                'name' => $c->Citizen_FName . ' ' . $c->Citizen_LName,
+                                'name' => $c->Citizen_FName . ' ' .$c->Citizen_LName,
                                 'diagnosis' => $r->diagnosis,
                                 'date' => $r->created_at,
                             ];
@@ -156,7 +157,7 @@
                         ->take(5);
                 @endphp
 
-                @forelse($recent as $item)
+                @forelse($recent as$item)
                     <div class="recent-card">
                         <div class="recent-diagnosis">{{ $item['diagnosis'] }}</div>
                         <div class="recent-date">{{ $item['date']->format('M d, Y') }}</div>
@@ -175,7 +176,6 @@
 <!-- Google Maps Initialization & Tiered Severity Circles Script -->
 <script>
     function initMap() {
-        // Centered on Barangay Amuyong, Alfonso, Cavite
         const amuyongCenter = { lat: 14.0668, lng: 120.8531 };
 
         const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
@@ -186,30 +186,27 @@
             zoomControl: true
         });
 
-        // Pull dynamic area data passed from the controller
         const rawZoneData = @json($heatmapData ?? []);
         const infowindow = new google.maps.InfoWindow();
 
         rawZoneData.forEach(item => {
-            // Use original record count (before threefold multiplier) to determine tier color
             const actualCount = item.records_count || 1; 
             const weight = item.weight || 1;
 
-            // Define colors and radius based on your exact diagnostic tiers
-            let fillColor = "#ffcc00";    // Default Yellow (Tier 1: 1-3 cases)
+            let fillColor = "#ffcc00";    // Tier 1: 1-3 cases (Yellow/Amber)
             let strokeColor = "#ff9900";
-            let baseRadius = 45;
+            let baseRadius = 50;
 
             if (actualCount >= 10) {
-                // Tier 3: 10 and up cases (High Severity - Deep Red/Crimson)
+                // Tier 3: 10+ cases (Deep Crimson)
                 fillColor = "#b30000";
                 strokeColor = "#800000";
-                baseRadius = 90;
+                baseRadius = 100;
             } else if (actualCount >= 3) {
-                // Tier 2: 3-5 cases up to 9 (Moderate Severity - Orange/Bright Red)
+                // Tier 2: 3-5 up to 9 cases (Bright Red/Orange)
                 fillColor = "#ff4d4d";
                 strokeColor = "#cc0000";
-                baseRadius = 65;
+                baseRadius = 75;
             }
 
             const circle = new google.maps.Circle({
@@ -220,11 +217,9 @@
                 fillOpacity: 0.5,
                 map: map,
                 center: new google.maps.LatLng(item.location.lat, item.location.lng),
-                // Incorporates your threefold weight scaling factor
-                radius: Math.max(baseRadius, weight * 10) 
+                radius: Math.max(baseRadius, weight * 12) 
             });
 
-            // Click listener for detailed breakdown popup
             circle.addListener("click", () => {
                 infowindow.setContent(
                     `<div style="color: #000; padding: 5px;">
