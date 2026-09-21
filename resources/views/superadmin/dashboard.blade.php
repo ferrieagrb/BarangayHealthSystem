@@ -36,8 +36,8 @@
                 }],
                 chart: {
                     type: 'area', // You can change to 'line', 'bar', etc.
-                    width: '100%',   // Matches the parent div's width
-                    height: '100%',  // Matches the parent div's height
+                    width: '90%',   // Matches the parent div's width
+                    height: '90%',  // Matches the parent div's height
                     toolbar: {
                         show: true
                     }
