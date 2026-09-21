@@ -54,28 +54,26 @@ class HealthRecordController extends Controller
         '5' => ['lat' => 14.0640, 'lng' => 120.8525],
     ];
 
-    // Fetch all records with their relation
     $allCitizens = citizens::with('healthRecords')->get();
     $heatmapData = [];
 
     foreach ($amuyongPurokCoordinates as $purokKey => $coords) {
-        // Match citizens based on their Purok location
         $matchingCitizens = $allCitizens->filter(function($c) use ($purokKey) {
             $dbPurok = preg_replace('/[^0-9]/', '', (string)$c->Citizen_Purok);
             return $dbPurok === (string)$purokKey;
         });
 
-        $citizenCount = $matchingCitizens->count();
+        // Count total health records/diagnoses in this specific Purok
         $recordCount = $matchingCitizens->sum(fn($c) => $c->healthRecords->count());
 
-        // Even if there are only registered citizens (and 0 health records yet), 
-        // this ensures the Purok circle still appears on the map.
-        if ($citizenCount > 0) {
+        // STRICT REQUIREMENT: Only include zones that have 1 or more diagnoses
+        if ($recordCount > 0) {
             $heatmapData[] = [
                 'location' => $coords,
-                'weight' => max(1, $recordCount),
+                // Severity scaled threefold based on the number of diagnoses
+                'weight' => $recordCount * 3,
                 'purok' => $purokKey,
-                'citizens_count' => $citizenCount,
+                'citizens_count' => $matchingCitizens->count(),
                 'records_count' => $recordCount
             ];
         }
