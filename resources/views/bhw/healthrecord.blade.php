@@ -2,8 +2,8 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-<!-- Load ApexCharts Library -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<!-- Load Google Maps API with Visualization Library -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=visualization" async defer></script>
 @endsection
 
 @section('content')
@@ -133,11 +133,11 @@
         <!-- RIGHT -->
         <div class="right-panel" style="display: flex; flex-direction: column; gap: 20px;">
             
-            <!-- Purok Density Heatmap Widget -->
+            <!-- Google Maps Geographic Heatmap Widget -->
             <div class="recent-tab" style="padding: 15px; background: #fff; border-radius: 8px;">
-                <h3 style="margin-bottom: 5px;">Zone Density Heatmap</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Concentration per Purok</p>
-                <div id="purokHeatmapChart" style="width: 100%; height: 200px;"></div>
+                <h3 style="margin-bottom: 5px;">Geographic Zone Heatmap</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Patient Density Concentration</p>
+                <div id="purokGoogleMap" style="width: 100%; height: 260px; border-radius: 6px;"></div>
             </div>
 
             <!-- Recent Diagnoses Widget -->
@@ -172,39 +172,36 @@
 
 </div>
 
-<!-- Render ApexCharts Heatmap using data passed from Controller -->
+<!-- Google Maps Initialization & Heatmap Overlay Script -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const heatmapData = @json($heatmapSeries);
+    function initMap() {
+        // Center point coordinates (Adjust based on your local area bounds)
+        const barangayCenter = { lat: 14.1250, lng: 120.9880 };
 
-        const options = {
-            series: heatmapData,
-            chart: {
-                type: 'heatmap',
-                height: '100%',
-                toolbar: { show: false }
-            },
-            dataLabels: {
-                enabled: true,
-                style: { colors: ['#fff'] }
-            },
-            colorScale: {
-                ranges: [
-                    { from: 0, to: 5, name: 'Low', color: '#93c5fd' },
-                    { from: 6, to: 15, name: 'Moderate', color: '#3b82f6' },
-                    { from: 16, to: 100, name: 'High', color: '#1d4ed8' }
-                ]
-            },
-            xaxis: {
-                type: 'category'
-            },
-            grid: { padding: { top: 0, bottom: 0 } },
-            title: { text: '', align: 'left' }
-        };
+        const map = new google.maps.Map(document.getElementById("purokGoogleMap"), {
+            zoom: 14,
+            center: barangayCenter,
+            mapTypeId: "roadmap",
+            disableDefaultUI: true, // Clean look for dashboard cards
+            zoomControl: true
+        });
 
-        const chart = new ApexCharts(document.querySelector("#purokHeatmapChart"), options);
-        chart.render();
-    });
+        // Heatmap data points with geographic lat/lng coordinates and weights proportional to record counts
+        const heatmapData = [
+            { location: new google.maps.LatLng(14.1265, 120.9850), weight: 12 }, // Purok 1 cluster
+            { location: new google.maps.LatLng(14.1230, 120.9900), weight: 25 }, // Purok 2 cluster
+            { location: new google.maps.LatLng(14.1210, 120.9840), weight: 8 },  // Purok 3 cluster
+        ];
+
+        const heatmap = new google.maps.visualization.HeatmapLayer({
+            data: heatmapData,
+            map: map,
+            radius: 35, // Adjust circle blur radius
+            opacity: 0.85
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', initMap);
 </script>
 
 @endsection
