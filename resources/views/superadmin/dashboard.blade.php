@@ -51,7 +51,8 @@
             <div>
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-base font-bold text-gray-800">Active Sessions</h3>
-                    <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                    <!-- Updated with ID for real-time count updating -->
+                    <span id="active-session-count-badge" class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
                         {{ $activeUserCount ?? 0 }} Online Now
                     </span>
                 </div>
@@ -65,7 +66,8 @@
                                 <th class="pb-2">Last Active</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <!-- Updated with ID for dynamic table row refreshing -->
+                        <tbody id="active-sessions-table-body" class="divide-y divide-gray-100">
                             @forelse($activeSessions ?? [] as $session)
                                 <tr class="hover:bg-gray-50">
                                     <td class="py-3">
@@ -233,6 +235,54 @@
         } catch (error) {
             console.error('Failed to load website performance data:', error);
         }
+
+        // --- Real-Time Active Sessions Polling (Every 10 seconds) ---
+        async function updateActiveSessions() {
+            try {
+                const response = await fetch('/superadmin/active-sessions');
+                const data = await response.json();
+
+                // 1. Update online badge counter
+                const badge = document.querySelector('#active-session-count-badge');
+                if (badge) {
+                    badge.textContent = `${data.activeUserCount} Online Now`;
+                }
+
+                // 2. Re-render table rows dynamically
+                const tbody = document.querySelector('#active-sessions-table-body');
+                if (!tbody) return;
+
+                if (!data.activeSessions || data.activeSessions.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="py-4 text-center text-gray-400 text-xs">No active sessions found.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let rowsHtml = '';
+                data.activeSessions.forEach(session => {
+                    rowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3">
+                                <div class="font-medium text-gray-800">${session.name}</div>
+                                <div class="text-xs text-gray-400">${session.email}</div>
+                            </td>
+                            <td class="py-3 font-mono text-xs text-gray-500">${session.ip_address ?? 'N/A'}</td>
+                            <td class="py-3 text-xs text-gray-500">${session.last_activity}</td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = rowsHtml;
+            } catch (error) {
+                console.error('Failed to fetch real-time active sessions:', error);
+            }
+        }
+
+        // Trigger polling loop interval (10000 ms = 10 seconds)
+        setInterval(updateActiveSessions, 10000);
     });
 </script>
 @endsection
