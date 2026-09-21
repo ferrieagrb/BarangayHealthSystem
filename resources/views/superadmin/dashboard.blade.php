@@ -12,13 +12,13 @@
     SUPERADMIN HOME
 </h1>
 
-<!-- Card container with controlled height and padding -->
-<!-- Changed max-w-xl to max-w-4xl for wider layout coverage -->
+<!-- Card container -->
 <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
     <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
     <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
     
-    <div class="w-full h-[320px] overflow-hidden relative">
+    <!-- Reduced height from 320px to 280px to remove the bottom gap -->
+    <div class="w-full h-[280px] overflow-hidden relative">
         <div id="userAnalyticsApexChart" class="w-full h-full"></div>
     </div>
 </div>
@@ -40,15 +40,15 @@
                 chart: {
                     type: 'area',
                     width: '100%',
-                    height: '270px',
+                    height: '100%', // Fills the 280px container cleanly
                     toolbar: {
                         show: true
                     }
                 },
                 grid: {
                     padding: {
-                        left: 5,   // Reduced to let the chart stretch wider
-                        right: 5,  // Reduced to let the chart stretch wider
+                        left: 5,
+                        right: 5,
                         top: 0,
                         bottom: 0
                     }
