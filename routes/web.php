@@ -28,6 +28,7 @@ use App\Models\Announcement;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
+use App\Http\Controllers\WebsitePerformanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -247,4 +248,5 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
 
     Route::get('/user-analytics', [UserAnalyticsController::class, 'index']);
+    Route::get('/website-performance', [WebsitePerformanceController::class, 'getPerformanceData']);
 });

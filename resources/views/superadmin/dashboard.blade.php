@@ -12,78 +12,111 @@
     SUPERADMIN HOME
 </h1>
 
-<!-- Card container -->
-<div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
-    <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
-    <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
-    
-    <!-- Reduced height from 320px to 280px to remove the bottom gap -->
-    <div class="w-full h-[280px] overflow-hidden relative">
-        <div id="userAnalyticsApexChart" class="w-full h-full"></div>
+<!-- Parent Grid Wrapper for Side-by-Side Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-7xl mx-auto">
+
+    <!-- 1. User Growth Analytics Card -->
+    <div class="w-full p-6 bg-white rounded-xl shadow-md">
+        <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics</h2>
+        <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
+        
+        <div class="w-full h-[280px] overflow-hidden relative">
+            <div id="userAnalyticsApexChart" class="w-full h-full"></div>
+        </div>
     </div>
+
+    <!-- 2. Website Performance Analytics Card -->
+    <div class="w-full p-6 bg-white rounded-xl shadow-md">
+        <h2 class="text-lg font-bold text-gray-800 mb-1">Website Traffic & Performance</h2>
+        <p class="text-sm text-gray-500 mb-2">Daily Page Views / Activity</p>
+        
+        <div class="w-full h-[280px] overflow-hidden relative">
+            <div id="websitePerformanceChart" class="w-full h-full"></div>
+        </div>
+    </div>
+
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
+        // --- Render User Growth Chart ---
         try {
-            const response = await fetch('/superadmin/user-analytics');
-            const data = await response.json();
+            const userResponse = await fetch('/superadmin/user-analytics');
+            const userData = await userResponse.json();
 
-            const categories = data.map(item => item.date);
-            const seriesData = data.map(item => item.count);
+            const userCategories = userData.map(item => item.date);
+            const userSeriesData = userData.map(item => item.count);
 
-            const options = {
+            const userOptions = {
                 series: [{
                     name: 'Added Users',
-                    data: seriesData
+                    data: userSeriesData
                 }],
                 chart: {
                     type: 'area',
                     width: '100%',
-                    height: '100%', // Fills the 280px container cleanly
-                    toolbar: {
-                        show: true
-                    }
+                    height: '100%',
+                    toolbar: { show: true }
                 },
                 grid: {
-                    padding: {
-                        left: 5,
-                        right: 5,
-                        top: 0,
-                        bottom: 0
-                    }
+                    padding: { left: 5, right: 5, top: 0, bottom: 0 }
                 },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 2 },
                 xaxis: {
-                    categories: categories,
+                    categories: userCategories,
                     type: 'category',
-                    labels: {
-                        style: {
-                            fontSize: '11px'
-                        }
-                    }
+                    labels: { style: { fontSize: '11px' } }
                 },
-                yaxis: {
-                    min: 0,
-                    tickAmount: 5
-                },
+                yaxis: { min: 0, tickAmount: 5 },
                 colors: ['#3b82f6'],
-                title: {
-                    text: '',
-                    align: 'left'
-                }
+                title: { text: '', align: 'left' }
             };
 
-            const chart = new ApexCharts(document.querySelector("#userAnalyticsApexChart"), options);
-            chart.render();
+            const userChart = new ApexCharts(document.querySelector("#userAnalyticsApexChart"), userOptions);
+            userChart.render();
         } catch (error) {
             console.error('Failed to load user analytics:', error);
+        }
+
+        // --- Render Website Performance Chart ---
+        try {
+            const perfResponse = await fetch('/superadmin/website-performance');
+            const perfData = await perfResponse.json();
+
+            const perfCategories = perfData.map(item => item.date);
+            const perfSeriesData = perfData.map(item => item.views);
+
+            const perfOptions = {
+                series: [{
+                    name: 'Page Views',
+                    data: perfSeriesData
+                }],
+                chart: {
+                    type: 'line',
+                    width: '100%',
+                    height: '100%',
+                    toolbar: { show: true }
+                },
+                grid: {
+                    padding: { left: 5, right: 5, top: 0, bottom: 0 }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                xaxis: {
+                    categories: perfCategories,
+                    type: 'category',
+                    labels: { style: { fontSize: '11px' } }
+                },
+                yaxis: { min: 0, tickAmount: 5 },
+                colors: ['#10b981'],
+                title: { text: '', align: 'left' }
+            };
+
+            const perfChart = new ApexCharts(document.querySelector("#websitePerformanceChart"), perfOptions);
+            perfChart.render();
+        } catch (error) {
+            console.error('Failed to load website performance data:', error);
         }
     });
 </script>
