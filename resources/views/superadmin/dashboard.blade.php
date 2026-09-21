@@ -8,16 +8,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-<h1>
+<h1 class="text-2xl font-bold mb-6 text-gray-800">
     SUPERADMIN HOME
 </h1>
 
-<!-- Example using Tailwind classes for max-width and fixed height -->
-<div class="w-full max-w-xl h-[500px] mx-auto p-4 bg-white rounded-lg shadow flex flex-col">
-    <h2 class="text-lg font-bold mb-2">User Growth Analytics (SuperAdmin)</h2>
+<!-- Card container with controlled height and padding -->
+<div class="w-full max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md">
+    <h2 class="text-lg font-bold text-gray-800 mb-1">User Growth Analytics (SuperAdmin)</h2>
+    <p class="text-sm text-gray-500 mb-2">Daily User Registrations</p>
     
-    <!-- Wrapper container for the chart taking remaining space -->
-    <div id="userAnalyticsApexChart" class="flex-grow"></div>
+    <!-- Inner wrapper with strict height and overflow hidden to trap the dates -->
+    <div class="w-full h-[320px] overflow-hidden relative">
+        <div id="userAnalyticsApexChart" class="w-full h-full"></div>
+    </div>
 </div>
 
 <script>
@@ -35,11 +38,19 @@
                     data: seriesData
                 }],
                 chart: {
-                    type: 'area', // You can change to 'line', 'bar', etc.
-                    width: '100%',   // Matches the parent div's width
-                    height: '100%',  // Matches the parent div's height
+                    type: 'area',
+                    width: '100%',
+                    height: '270px', // Leaves 50px buffer inside the 320px wrapper for dates
                     toolbar: {
                         show: true
+                    }
+                },
+                grid: {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 0,
+                        bottom: 0
                     }
                 },
                 dataLabels: {
@@ -51,7 +62,12 @@
                 },
                 xaxis: {
                     categories: categories,
-                    type: 'category'
+                    type: 'category',
+                    labels: {
+                        style: {
+                            fontSize: '11px'
+                        }
+                    }
                 },
                 yaxis: {
                     min: 0,
@@ -59,7 +75,7 @@
                 },
                 colors: ['#3b82f6'],
                 title: {
-                    text: 'Daily User Registrations',
+                    text: '',
                     align: 'left'
                 }
             };
