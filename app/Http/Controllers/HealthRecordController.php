@@ -45,8 +45,7 @@ class HealthRecordController extends Controller
 
     $citizens = $query->paginate(10)->appends($request->all());
 
-    // Define precise geographic coordinates for each Purok/Zone in Brgy. Amuyong, Alfonso, Cavite
-    // (You can adjust these lat/lng points to better match your actual local layout)
+    // Define geographic coordinates for each Purok in Brgy. Amuyong
     $amuyongPurokCoordinates = [
         '1' => ['lat' => 14.0680, 'lng' => 120.8515],
         '2' => ['lat' => 14.0655, 'lng' => 120.8540],
@@ -55,27 +54,26 @@ class HealthRecordController extends Controller
         '5' => ['lat' => 14.0640, 'lng' => 120.8525],
     ];
 
-    // Fetch all citizens to plot every registered location point on the map
+    // Fetch all records with their relation
     $allCitizens = citizens::with('healthRecords')->get();
-
     $heatmapData = [];
 
-    // Group citizens by their location field (e.g., Citizen_Purok)
     foreach ($amuyongPurokCoordinates as $purokKey => $coords) {
-        // Count how many citizens are located in this specific purok
+        // Match citizens based on their Purok location
         $matchingCitizens = $allCitizens->filter(function($c) use ($purokKey) {
-            return trim((string)$c->Citizen_Purok) === trim((string)$purokKey);
+            $dbPurok = preg_replace('/[^0-9]/', '', (string)$c->Citizen_Purok);
+            return $dbPurok === (string)$purokKey;
         });
 
         $citizenCount = $matchingCitizens->count();
-        // Also count how many total health records exist in this purok
         $recordCount = $matchingCitizens->sum(fn($c) => $c->healthRecords->count());
 
+        // Even if there are only registered citizens (and 0 health records yet), 
+        // this ensures the Purok circle still appears on the map.
         if ($citizenCount > 0) {
             $heatmapData[] = [
                 'location' => $coords,
-                // Weight combines citizen population density + active health record cases
-                'weight' => $citizenCount + $recordCount,
+                'weight' => max(1, $recordCount),
                 'purok' => $purokKey,
                 'citizens_count' => $citizenCount,
                 'records_count' => $recordCount
