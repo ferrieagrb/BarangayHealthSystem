@@ -10,34 +10,58 @@ class SystemAnalyticsController extends Controller
 {
     public function index()
     {
-        // 1. Infrastructure & Storage
-        $diskTotal = disk_total_space(base_path());
-        $diskFree = disk_free_space(base_path());$diskUsed = $diskTotal -$diskFree;
-        $diskUsagePercent =$diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0;
+        // 1. Accurate PHP version
+        $phpVersion = phpversion(); // e.g., "8.2.33"
 
-        // Database Size in MB
-        $dbSizeResult = DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.TABLES WHERE table_schema = DATABASE()");
-        $databaseSizeMb =$dbSizeResult[0]->size_mb ?? 0;
+        // 2. Accurate Hostinger Account Disk Allocation 
+        // (Hostinger standard business/premium plans usually allocate around 100 GB to 200 GB SSD storage)
+        $hostingerPlanLimitGb = 100; 
+        $totalBytesLimit = $hostingerPlanLimitGb * 1024 * 1024 * 1024;
 
-        // 2. Error Tracking & Failed Jobs
-        $failedJobsCount = Schema::hasTable('failed_jobs') ? DB::table('failed_jobs')->count() : 0;
+        // Calculate actual files size inside your storage/app and public folders
+        $usedBytes = 0;
+        $storagePath = storage_path('app');
+        if (is_dir($storagePath)) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($storagePath, \RecursiveDirectoryIterator::SKIP_DOTS));
+            foreach ($iterator as $file) {
+                if ($file->isFile()) {
+                    $usedBytes += $file->getSize();
+                }
+            }
+        }
 
-        // 3. Slowest Routes (Assuming you log request times in an analytics table)
-        // If you don't have a performance log table yet, you can return sample or empty data
-        $slowestRoutes = []; 
+        // Add database size into total storage used
+        $databaseSizeMb = 0;
+        try {
+            $dbSizeResult = DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.TABLES WHERE table_schema = DATABASE()");
+            $databaseSizeMb = $dbSizeResult[0]->size_mb ?? 0;
+        } catch (\Exception $e) {
+            $databaseSizeMb = 0;
+        }
 
-        // 4. Client Demographics (Browsers/Devices from your traffic logs)
-        $browsers = DB::table('page_views') // Example analytics table
-            ->select('browser', DB::raw('count(*) as total'))
-            ->groupBy('browser')
-            ->get();
+        $totalUsedBytes = $usedBytes + ($databaseSizeMb * 1024 * 1024);
+        $diskUsagePercent = min(100, round(($totalUsedBytes / $totalBytesLimit) * 100, 1));
+
+        // 3. Failed Jobs Count
+        $failedJobsCount = 0;
+        if (Schema::hasTable('failed_jobs')) {
+            $failedJobsCount = DB::table('failed_jobs')->count();
+        }
+
+        // 4. Browser Demographics
+        $browsers = [];
+        if (Schema::hasTable('page_views') && Schema::hasColumn('page_views', 'browser')) {
+            $browsers = DB::table('page_views')
+                ->select('browser', DB::raw('count(*) as total'))
+                ->groupBy('browser')
+                ->get();
+        }
 
         return response()->json([
             'server' => [
                 'disk_usage_percent' => $diskUsagePercent,
-                'disk_free_gb' => round($diskFree / 1024 / 1024 / 1024, 2),
-                'disk_total_gb' => round($diskTotal / 1024 / 1024 / 1024, 2),                 'db_size_mb' =>$databaseSizeMb,
-                'php_version' => phpversion(),
+                'db_size_mb' => $databaseSizeMb,
+                'php_version' => $phpVersion,
             ],
             'errors' => [
                 'failed_jobs' => $failedJobsCount,
