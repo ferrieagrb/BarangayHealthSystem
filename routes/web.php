@@ -261,5 +261,5 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     // JSON endpoint for the widgets
     Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);
 
-    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('.audit-logs');
+    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
 });
