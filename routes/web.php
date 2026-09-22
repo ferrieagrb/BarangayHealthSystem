@@ -253,10 +253,10 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::get('/website-performance', [WebsitePerformanceController::class, 'getPerformanceData']);
 
     // 1. Renders the System Analytics view/tab page
-    get('/system-analytics-page', function () {
+    Route::get('/system-analytics-page', function () {
         return view('superadmin.system-analytics');
     })->name('superadmin.system.analytics.page');
 
     // 2. Returns the JSON data for the widgets
-    get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);
+    Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);
 });
