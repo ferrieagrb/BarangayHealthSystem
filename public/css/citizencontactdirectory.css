@@ -1,331 +1,165 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+/* ==========================================================================
+   Contact Directory & Hotline Cards Styling
+   ========================================================================== */
+
+/* Directory Category Section Header */
+.directory-group {
+    margin-bottom: 2.5rem;
 }
 
-body {
-    background: #f5f6fa;
+.group-header {
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
 }
 
-/* TOP BAR */
-.topbar {
-    background: #e5e5e5;
-    padding: 1.4%;
+.group-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
     display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-}
-
-/* HERO */
-.hero {
-    background: linear-gradient(rgba(0,0,80,0.8), rgba(0,0,120,0.8)), url('https://via.placeholder.com/1200x500');
-    background-size: cover;
-    color: white;
-    padding: 30px 40px 60px;
-}
-
-.nav {
-    display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 0.75rem;
 }
 
-.nav ul {
-    display: flex;
-    list-style: none;
-    gap: 200px;
-    margin-left: 25%;
+.group-header h2 i {
+    color: #0284c7;
 }
 
-.nav a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.hero{
-    background-size: cover;
-    background-position: center;
-    background: linear-gradient(rgba(27, 0, 150, 0.8), rgba(27, 0, 150, 0.8)), url("../images/mission.jpg");
-}
-
-.hero h1 {
-    font-size: 36px;
-    max-width: 400px;
-}
-
-.tagline {
-    margin-top: 5%;
-    margin-bottom: 5%;
-    margin-left: 10%;
-}
-
-.actions {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-    gap: 15%;
-}
-
-.action-box {
-    text-align: center;
-    border-radius:20px;
-    padding:1%;
-    transition: 0.5s;
-    cursor: pointer;
-}
-
-.action-box:hover {
-    translate: translateY(-5px);
-    background: #ffffff;
-    color:#0f2a6b;
-
-}
-
-/* SECTION */
-.section {
-    padding: 60px 10%;
-    background: #f5f7fa;
-}
-
-.section h2 {
-    text-align: center;
-    margin-bottom: 40px;
-    font-size: 38px;
-    color: #1e3a5f;
-}
-
-.contact-container {
+/* Hotline Cards Layout Grid */
+.hotlines-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
 }
 
-.contact-category {
-    background: white;
-    border-radius: 18px;
-    padding: 25px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-}
-
-.contact-category h3 {
-    margin-bottom: 20px;
-    color: #0f4c81;
-    border-bottom: 2px solid #e5e5e5;
-    padding-bottom: 10px;
-}
-
-.contact-card {
-    background: #f8fbff;
-    padding: 15px;
+/* Individual Hotline Card Container */
+.hotline-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    margin-bottom: 15px;
-    transition: 0.3s ease;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease-in-out;
+    position: relative;
+    overflow: hidden;
 }
 
-.contact-card:hover {
+.hotline-card:hover {
     transform: translateY(-4px);
-    background: #eef6ff;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
 }
 
-.contact-card h4 {
-    margin-bottom: 5px;
-    color: #16324f;
-}
-
-.contact-card p {
-    color: #555;
-    font-size: 15px;
-}
-
-.section h2 {
-    margin-bottom: 20px;
-}
-
-.cards {
-    display: flex;
-    justify-content: center;
-    gap: 10%;
-}
-
-.card {
-    width: 350px;
-    background: white;
-    padding-bottom: 3%;
-    transition: 3s;
-}
-
-.card:hover{
-    translate: translateY(-5px);
-}
-
-.card img {
-    width: 100%;
-}
-
-.card p {
-    padding: 5%;
-    font-size: 12px;
-}
-
-.divider {
-    margin: 70px 0;
-    height: 2px;
-    background: #1e3a8a;
-}
-
-.announcements {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    text-align: center;
-}
-
-.announcement {
-    background: #eaeaea;
-    padding: 20px;
+/* Card Icon Box */
+.card-icon {
+    width: 50px;
+    height: 50px;
+    background-color: #f1f5f9;
+    color: #0284c7;
     border-radius: 10px;
-    flex: 1;
-}
-
-/* FOOTER */
-.footer {
-    background: #0f2a6b;
-    color: white;
-    padding: 30px 40px;
-}
-
-.footer-content {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.footer ul {
-    list-style: none;
+.hotline-card:hover .card-icon {
+    background-color: #0284c7;
+    color: #ffffff;
 }
 
-/* SCROLL */
-html {
-    scroll-behavior: smooth;
+/* Card Content Details */
+.card-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-
-
-/* =========================
-   TABLET (1024px)
-========================= */
-@media (max-width: 1024px) {
-
-    .nav ul {
-        gap: 80px;
-        margin-left: 0;
-    }
-
-    .hero h1 {
-        font-size: 30px;
-        max-width: 100%;
-    }
-
-    .cards {
-        gap: 5%;
-    }
-
-    .card {
-        width: 300px;
-    }
-
-    .actions {
-        gap: 8%;
-    }
+/* Category Badge Tag */
+.card-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 0.2rem;
 }
 
-/* =========================
-   MOBILE (768px)
-========================= */
-@media (max-width: 768px) {
-
-    .topbar {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-        font-size: 11px;
-    }
-
-    .nav {
-        flex-direction: column;
-    }
-
-    .nav ul {
-        flex-direction: column;
-        gap: 15px;
-        margin-left: 0;
-        padding: 10px 0;
-    }
-
-    .hero {
-        padding: 20px;
-        text-align: center;
-    }
-
-    .hero h1 {
-        font-size: 26px;
-    }
-
-    .tagline {
-        margin: 20px 0;
-    }
-
-    .actions {
-        flex-direction: column;
-        gap: 15px;
-        align-items: center;
-    }
-
-    .cards {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .card {
-        width: 90%;
-    }
-
-    .announcements {
-        flex-direction: column;
-    }
-
-    .announcement {
-        width: 100%;
-    }
-
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 20px;
-    }
+/* Hotline Title */
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* =========================
-   SMALL PHONES (480px)
-========================= */
-@media (max-width: 480px) {
+/* Clickable Phone Link */
+.card-number {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0284c7;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.2s ease;
+}
 
-    .hero h1 {
-        font-size: 22px;
+.card-number:hover {
+    color: #0369a1;
+    text-decoration: underline;
+}
+
+.card-number i {
+    font-size: 0.75rem;
+}
+
+/* --- Special Card Variations --- */
+
+/* Featured Barangay Cards (Blue Accent Accent) */
+.hotline-card.featured {
+    border-left: 4px solid #0284c7;
+}
+
+/* Emergency Red Accent Cards */
+.hotline-card.emergency {
+    border-left: 4px solid #ef4444;
+}
+
+.hotline-card.emergency .card-icon {
+    background-color: #fef2f2;
+    color: #ef4444;
+}
+
+.hotline-card.emergency:hover .card-icon {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.hotline-card.emergency .card-number {
+    color: #dc2626;
+}
+
+.hotline-card.emergency .card-tag {
+    color: #ef4444;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 640px) {
+    .hotlines-cards-grid {
+        grid-template-columns: 1fr;
     }
-
-    .action-box {
-        width: 90%;
-    }
-
-    .card p {
-        font-size: 11px;
-    }
-
-    .footer {
-        text-align: center;
+    
+    .hotline-card {
+        padding: 1rem;
     }
 }
