@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('page_views', function (Blueprint $table) {
-            $table->string('browser')->nullable()->after('user_agent'); // or after any existing column
+            $table->string('browser')->nullable()->after('url'); // or after any existing column
         });
     }
 
