@@ -196,38 +196,66 @@
             console.error('Failed to load user analytics:', error);
         }
 
-        // --- Render Website Performance Chart ---
+        // --- Render Website Performance Bar Chart (Page Views & Load Time) ---
         try {
             const perfResponse = await fetch('/superadmin/website-performance');
             const perfData = await perfResponse.json();
 
             const perfCategories = perfData.map(item => item.date);
-            const perfSeriesData = perfData.map(item => item.views);
+            const viewsData = perfData.map(item => item.views);
+            const loadTimeData = perfData.map(item => item.avg_load_time ?? 0);
 
             const perfOptions = {
-                series: [{
-                    name: 'Page Views',
-                    data: perfSeriesData
-                }],
+                series: [
+                    {
+                        name: 'Page Views',
+                        data: viewsData
+                    },
+                    {
+                        name: 'Avg Load Time (ms)',
+                        data: loadTimeData
+                    }
+                ],
                 chart: {
-                    type: 'line',
-                    width: '100%',
+                    type: 'bar',
                     height: '100%',
+                    width: '100%',
                     toolbar: { show: true }
                 },
-                grid: {
-                    padding: { left: 5, right: 5, top: 0, bottom: 0 }
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    },
                 },
                 dataLabels: { enabled: false },
-                stroke: { curve: 'smooth', width: 3 },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
                 xaxis: {
                     categories: perfCategories,
-                    type: 'category',
                     labels: { style: { fontSize: '11px' } }
                 },
-                yaxis: { min: 0, tickAmount: 5 },
-                colors: ['#10b981'],
-                title: { text: '', align: 'left' }
+                yaxis: [
+                    {
+                        title: { text: 'Views' },
+                        labels: { style: { fontSize: '11px' } }
+                    },
+                    {
+                        opposite: true,
+                        title: { text: 'Load Time (ms)' },
+                        labels: { style: { fontSize: '11px' } }
+                    }
+                ],
+                fill: { opacity: 1 },
+                colors: ['#10b981', '#f59e0b'], // Green for Views, Amber/Yellow for Load Time
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right'
+                }
             };
 
             const perfChart = new ApexCharts(document.querySelector("#websitePerformanceChart"), perfOptions);
@@ -242,13 +270,11 @@
                 const response = await fetch('/superadmin/active-sessions');
                 const data = await response.json();
 
-                // 1. Update online badge counter
                 const badge = document.querySelector('#active-session-count-badge');
                 if (badge) {
                     badge.textContent = `${data.activeUserCount} Online Now`;
                 }
 
-                // 2. Re-render table rows dynamically
                 const tbody = document.querySelector('#active-sessions-table-body');
                 if (!tbody) return;
 
@@ -281,7 +307,6 @@
             }
         }
 
-        // Trigger polling loop interval (10000 ms = 10 seconds)
         setInterval(updateActiveSessions, 10000);
     });
 </script>
