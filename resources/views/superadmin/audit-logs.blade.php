@@ -9,7 +9,7 @@
             <p class="text-xs text-gray-500 mt-1">Dedicated governance, security, and administrative action logs for the barangay health system.</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('superadmin.analytics') }}" class="px-3.5 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
+            <a href="{{ route('superadmin.system.analytics.page') }}" class="px-3.5 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
                 &larr; Back to System Analytics
             </a>
             <span class="px-3 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-200">
