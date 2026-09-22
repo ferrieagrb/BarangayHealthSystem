@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
-use App\Http\Controllers\Superadmin\SystemAnalyticsController;
+use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
