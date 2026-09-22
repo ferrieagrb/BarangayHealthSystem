@@ -51,7 +51,7 @@
             </li>
 
             <li>
-                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.analytics') }}">
+                <a href="{{ route('superadmin.system.analytics.page') }}">
                     <i class="bx bx-network-chart"></i>
                     <span class="nav-item">System Analytics</span>
                 </a>
