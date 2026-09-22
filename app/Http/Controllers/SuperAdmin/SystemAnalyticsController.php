@@ -79,6 +79,16 @@ class SystemAnalyticsController extends Controller
                 ->get();
         }
 
+        $auditLogs = [];
+        if (Schema::hasTable('admin_activity_logs')) {
+            $auditLogs = DB::table('admin_activity_logs')
+                ->join('users', 'admin_activity_logs.admin_id', '=', 'users.id')
+                ->select('admin_activity_logs.*', 'users.name as admin_name', 'users.email as admin_email')
+                ->orderByDesc('admin_activity_logs.created_at')
+                ->limit(10)
+                ->get();
+        }
+
         return response()->json([
             'server' => [
                 'disk_usage_percent' => $diskUsagePercent,
@@ -96,7 +106,8 @@ class SystemAnalyticsController extends Controller
             'errors' => [
                 'failed_jobs' => $failedJobsCount,
             ],
-            'demographics' => $browsers
+            'demographics' => $browsers,
+            'audit_logs' => $auditLogs
         ]);
     }
 }

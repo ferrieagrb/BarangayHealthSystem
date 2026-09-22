@@ -58,7 +58,7 @@
             </li>
 
             <li>
-                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.logs') }}">
+                <a href="{{ route('superadmin.audit-logs') }}">
                     <i class="bx bx-folder"></i>
                     <span class="nav-item">System Logs</span>
                 </a>

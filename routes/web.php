@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
 use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
+use App\Http\Controllers\Superadmin\AdminAuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -259,4 +260,6 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
 
     // JSON endpoint for the widgets
     Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);
+
+    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('superadmin.audit-logs');
 });
