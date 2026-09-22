@@ -9,6 +9,7 @@
         <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
             <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Disk Storage (Hostinger)</h4>
             <div class="mt-2 text-2xl font-bold text-gray-800" id="disk-usage-text">Loading...</div>
+            <p class="text-xs text-gray-400 mt-1" id="disk-subtext">Calculating storage...</p>
             <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3">
                 <div id="disk-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
             </div>
@@ -55,9 +56,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         const response = await fetch('/superadmin/system-analytics-data');
         const data = await response.json();
 
-        // Populate Section 1
-        document.getElementById('disk-usage-text').textContent = `${data.server.disk_usage_percent}% Used`;
+        // Populate Section 1 (Disk Storage Used / Total + Subtext percentage)
+        document.getElementById('disk-usage-text').textContent = `${data.server.disk_used_text} / ${data.server.disk_total_text}`;
+        document.getElementById('disk-subtext').textContent = `${data.server.disk_usage_percent}% of total capacity used`;
         document.getElementById('disk-progress-bar').style.width = `${data.server.disk_usage_percent}%`;
+
         document.getElementById('db-size-text').textContent = `${data.server.db_size_mb} MB`;
         document.getElementById('php-version-text').textContent = `PHP ${data.server.php_version}`;
 

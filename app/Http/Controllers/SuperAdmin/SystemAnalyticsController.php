@@ -13,19 +13,18 @@ class SystemAnalyticsController extends Controller
         // 1. Accurate PHP version
         $phpVersion = phpversion(); // e.g., "8.2.33"
 
-        // 2. Accurate Hostinger Account Disk Allocation 
-        // (Hostinger standard business/premium plans usually allocate around 100 GB to 200 GB SSD storage)
+        // 2. Accurate Hostinger Account Disk Allocation (e.g., 100 GB)
         $hostingerPlanLimitGb = 100; 
-        $totalBytesLimit = $hostingerPlanLimitGb * 1024 * 1024 * 1024;
+        $totalBytesLimit =$hostingerPlanLimitGb * 1024 * 1024 * 1024;
 
-        // Calculate actual files size inside your storage/app and public folders
+        // Calculate actual files size inside storage/app
         $usedBytes = 0;
         $storagePath = storage_path('app');
         if (is_dir($storagePath)) {
             $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($storagePath, \RecursiveDirectoryIterator::SKIP_DOTS));
-            foreach ($iterator as $file) {
+            foreach ($iterator as$file) {
                 if ($file->isFile()) {
-                    $usedBytes += $file->getSize();
+                    $usedBytes +=$file->getSize();
                 }
             }
         }
@@ -34,13 +33,16 @@ class SystemAnalyticsController extends Controller
         $databaseSizeMb = 0;
         try {
             $dbSizeResult = DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.TABLES WHERE table_schema = DATABASE()");
-            $databaseSizeMb = $dbSizeResult[0]->size_mb ?? 0;
-        } catch (\Exception $e) {
-            $databaseSizeMb = 0;
+            $databaseSizeMb =$dbSizeResult[0]->size_mb ?? 0;
+        } catch (\Exception $e) {$databaseSizeMb = 0;
         }
 
-        $totalUsedBytes = $usedBytes + ($databaseSizeMb * 1024 * 1024);
-        $diskUsagePercent = min(100, round(($totalUsedBytes / $totalBytesLimit) * 100, 1));
+        $totalUsedBytes =$usedBytes + ($databaseSizeMb * 1024 * 1024);$diskUsagePercent = min(100, round(($totalUsedBytes / $totalBytesLimit) * 100, 2));
+
+        // Format used space nicely (MB or GB)
+        $usedFormatted =$totalUsedBytes >= 1073741824 
+            ? round($totalUsedBytes / 1024 / 1024 / 1024, 2) . ' GB' 
+            : round($totalUsedBytes / 1024 / 1024, 2) . ' MB';
 
         // 3. Failed Jobs Count
         $failedJobsCount = 0;
@@ -60,6 +62,8 @@ class SystemAnalyticsController extends Controller
         return response()->json([
             'server' => [
                 'disk_usage_percent' => $diskUsagePercent,
+                'disk_used_text' => $usedFormatted,
+                'disk_total_text' => $hostingerPlanLimitGb . ' GB',
                 'db_size_mb' => $databaseSizeMb,
                 'php_version' => $phpVersion,
             ],
