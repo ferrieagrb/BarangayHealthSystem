@@ -5,7 +5,7 @@
 @endsection
     
 @section('content')
-
+    <!-- SAMPLE COMMENT-->
     <div class="admin-container" style="margin-left: 0; width: 100%;">
         <!-- Main Content Area -->
         <main class="main-content" style="margin-left: 0; width: 100%;">
