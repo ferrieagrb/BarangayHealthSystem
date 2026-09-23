@@ -114,6 +114,10 @@
             View
         </a>
 
+        <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}" class="btn-primary">
+            Manage E-Card
+        </a>
+
         <form action="{{ route('citizen.delete', $citizen->id) }}" method="POST" onsubmit="return confirm('Delete this citizen?')">
             @csrf
             @method('DELETE')
