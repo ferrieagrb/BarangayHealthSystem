@@ -8,6 +8,9 @@ use App\Models\HealthRecord;
 use App\Models\CitizenActivityLog;
 use App\Models\HealthRecordActivityLog;
 use Illuminate\Support\Facades\Auth;
+use App\Models\VaccinationRecord;
+use App\Models\MedicationRecord;
+
 
 class CitizenController extends Controller
 {
@@ -266,6 +269,52 @@ public function import(Request $request)
     $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
 
     return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+}
+
+// BHW View for specific citizen card
+public function showElectronicCard($id)
+{
+    $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])->findOrFail($id);
+    return view('bhw.ecard', compact('citizen'));
+}
+
+// Store new vaccination record
+public function storeVaccination(Request $request, $id)
+{
+    $validated = $request->validate([
+        'vaccine_name' => 'required|string|max:255',
+        'dose_number' => 'required|string|max:100',
+        'date_administered' => 'required|date',
+        'administered_by' => 'required|string|max:255',
+    ]);
+    $validated['citizen_id'] = $id;
+    VaccinationRecord::create($validated);
+    return back()->with('success', 'Vaccination record added successfully.');
+}
+
+// Store new medication record
+public function storeMedication(Request $request, $id)
+{
+    $validated = $request->validate([
+        'medicine_name' => 'required|string|max:255',
+        'dosage' => 'required|string|max:100',
+        'quantity_dispensed' => 'required|integer|min:1',
+        'date_dispensed' => 'required|date',
+    ]);
+    $validated['citizen_id'] = $id;
+    MedicationRecord::create($validated);
+    return back()->with('success', 'Medication log added successfully.');
+}
+
+// Citizen self-service view method
+public function citizenViewECard()
+{
+    $user = Auth::user();
+    $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+                ->where('id', $user->citizen_id)
+                ->firstOrFail();
+
+    return view('citizen.ecard', compact('citizen'));
 }
 
 }

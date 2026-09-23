@@ -26,6 +26,8 @@ use App\Models\Event;
 use App\Models\Supply;
 use App\Models\Referral;
 use App\Models\Announcement;
+use App\Models\VaccinationRecord;
+use App\Models\MedicationRecord;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
@@ -140,7 +142,11 @@ Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function
 
         return view('citizen.announcements', compact('announcements'));
     })->name('announcements');
+
+    //  STATIC ROUTE PLACED SAFELY AT THE TOP OF THE PREFIX GROUP
+    Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
 });
+
 
 
 /*
@@ -196,13 +202,20 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
     Route::get('/addcitizen', fn () => view('bhw.addcitizen'))->name('citizen.add');
     Route::post('/citizen-store', fn () => app(CitizenController::class)->store(request()))->name('citizen.store');
+
+    // Electronic Health & Vaccination Card Routes (NEW)
+    Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
+    Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::post('/citizen/{id}/medication', [CitizenController::class, 'storeMedication'])->name('citizen.medication.store');
+
     Route::get('/citizen/{id}', fn ($id) => app(CitizenController::class)->show($id))->name('citizen.show');
     Route::get('/citizendetails/{id}', fn ($id) => app(CitizenController::class)->citizendetails($id))->name('citizendetails');
     Route::delete('/citizen/{id}', fn ($id) => app(CitizenController::class)->destroy($id))->name('citizen.delete');
     Route::put('/citizen/{id}', fn ($id) => app(CitizenController::class)->update(request(), $id))->name('citizen.update');
 
+
     // Health Records
-Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
+    Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
@@ -212,7 +225,6 @@ Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('hea
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
-    // Add this inside the Route::middleware(['auth', 'role:bhw'])->group(function () { ... }) block:
     Route::delete('/supplies/batch/{id}', [SupplyController::class, 'destroy'])->name('supplies.destroy');
     Route::post('/supplies/item/withdraw', [SupplyController::class, 'withdrawItem'])->name('supplies.item.withdraw');
     Route::post('/supplies/batch/withdraw', [SupplyController::class, 'withdrawBatch'])->name('supplies.batch.withdraw');
@@ -239,6 +251,7 @@ Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('hea
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 });
+
 
 /*
 |--------------------------------------------------------------------------

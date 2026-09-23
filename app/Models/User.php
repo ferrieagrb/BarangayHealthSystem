@@ -55,4 +55,10 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_CITIZEN;
     }
+
+    public function citizen() 
+    {
+        return $this->belongsTo(citizens::class, 'citizen_id');
+    }
+
 }
