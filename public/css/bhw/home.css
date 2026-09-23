@@ -1,5 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* ==========================================
+   1. GLOBAL RESET & BASE STYLES
+   ========================================== */
 * {
     margin: 0;
     padding: 0;
@@ -8,43 +11,122 @@
     font-weight: 500;
 }
 
-.main {
-    flex: 1;
-    padding: 40px;
-    background: #f2f3f8;
-    min-height: 100vh;
-}
 
+
+
+/* PAGE HEADER AREA */
 .page-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
-.page-title-group h1 {
+.page-title-group h1,
+.page-title h1 {
     font-size: 30px;
     color: #0f172a;
 }
 
-.page-title-group p {
+.page-title-group p,
+.page-title p {
     margin-top: 6px;
     color: #64748b;
     font-size: 14px;
 }
 
-.summary-cards {
+.header {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+/* ==========================================
+   2. BUTTONS & ACTIONS
+   ========================================== */
+button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #0E42B1;
+    color: #ffffff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #0f172a;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Siguraduhing pareho ang laki ng <a> at <button> sa loob ng action group */
+.action-group .btn-primary,
+.action-group .btn-danger {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* ==========================================
+   3. SUMMARY & STATS CARDS
+   ========================================== */
+.summary-cards,
+.summary,
+.cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 20px;
 }
 
-.summary-card {
-    background: white;
+.summary-cards,
+.cards {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.summary {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.summary-card,
+.card {
+    background: #ffffff;
     border-radius: 14px;
     padding: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .summary-card span {
@@ -57,8 +139,12 @@
 .summary-card strong {
     font-size: 22px;
     color: #0f172a;
+    display: block;
 }
 
+/* ==========================================
+   4. DASHBOARD & PANEL GRIDS
+   ========================================== */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -66,10 +152,10 @@
 }
 
 .dashboard-card {
-    background: white;
+    background: #ffffff;
     border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .full-card {
@@ -91,6 +177,51 @@
     color: #64748b;
 }
 
+/* HEALTH RECORDS / TWO-PANEL LAYOUT */
+.health-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.left-panel {
+    flex: 0 0 75%;
+}
+
+.right-panel {
+    flex: 0 0 25%;
+}
+
+/* TOOLBAR & LIST CONTAINERS */
+.toolbar {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.toolbar input,
+.toolbar select {
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+.table-container,
+.list-tab,
+.recent-tab {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================
+   5. LIST ITEMS & TABLES
+   ========================================== */
 .list-item {
     display: flex;
     justify-content: space-between;
@@ -119,28 +250,10 @@
     font-size: 14px;
 }
 
-.status-badge {
-    display: inline-block;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.status-active {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-monitoring {
-    background: #fef3c7;
-    color: #92400e;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: #ffffff;
 }
 
 table th,
@@ -153,14 +266,126 @@ table td {
 
 table th {
     color: #0f172a;
+    background: #f1f5f9;
 }
 
 table td {
     color: #334155;
 }
 
+/* ==========================================
+   6. BADGES, RECENT ITEMS & TEXT STYLES
+   ========================================== */
+.status-badge,
+.status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-active,
+.status-treated {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-monitoring,
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.record-name,
+.recent-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.record-sub {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.recent-tab h3 {
+    margin-bottom: 15px;
+    color: #0f172a;
+}
+
+.recent-card {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.recent-card:last-child {
+    border-bottom: none;
+}
+
+.recent-diagnosis {
+    font-size: 14px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.recent-date {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+/* ==========================================
+   7. PAGINATION
+   ========================================== */
+.pagination {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pagination li {
+    list-style: none;
+}
+
+.pagination li a,
+.pagination li span {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.pagination li a {
+    background: #f3f4f6;
+    color: #333333;
+}
+
+.pagination li a:hover {
+    background: #e5e7eb;
+}
+
+.pagination .active span {
+    background: #0E42B1;
+    color: #ffffff;
+}
+
+.pagination .disabled span {
+    background: #e2e8f0;
+    color: #94a3b8;
+}
+
+/* ==========================================
+   8. RESPONSIVE MEDIA QUERIES
+   ========================================== */
 @media (max-width: 992px) {
-    .summary-cards {
+    .summary-cards,
+    .cards,
+    .summary {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -171,10 +396,22 @@ table td {
     .full-card {
         grid-column: span 1;
     }
+
+    .health-wrapper {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+        flex: 0 0 100%;
+        width: 100%;
+    }
 }
 
 @media (max-width: 640px) {
-    .summary-cards {
+    .summary-cards,
+    .cards,
+    .summary {
         grid-template-columns: 1fr;
     }
 
