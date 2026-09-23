@@ -234,4 +234,38 @@ private function logActivity($action, $module, $citizenId = null, $description =
     ]);
 }
 
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
+    ]);
+
+    $file = $request->file('file');
+    $path = $file->getRealPath();
+
+    // Read CSV file rows
+    if (($handle = fopen($path, 'r')) !== FALSE) {
+        // Skip header row if your file has one
+        $header = fgetcsv($handle, 1000, ',');
+
+        while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
+            // Adjust indices based on your CSV column structure
+            // Example CSV columns: First Name, Last Name, Age, BirthDate, ContactNo, Purok
+            citizens::create([
+                'Citizen_FName'     => $row[0] ?? '',
+                'Citizen_LName'     => $row[1] ?? '',
+                'Citizen_Age'       => $row[2] ?? 0,
+                'Citizen_BirthDate' => $row[3] ?? null,
+                'Citizen_ContactNo' => $row[4] ?? '',
+                'Citizen_Purok'     => $row[5] ?? 'Purok 1',
+            ]);
+        }
+        fclose($handle);
+    }
+
+    $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
+
+    return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+}
+
 }

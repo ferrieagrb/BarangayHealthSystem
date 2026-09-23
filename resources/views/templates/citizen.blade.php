@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <title>Citizen Dashboard</title>
 
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -11,10 +11,9 @@
     @yield('CSSown')
 </head>
 
-
-
 <body>
 @yield('scripts')
+
 <div class="dashboard">
 
     <!-- SIDEBAR -->
@@ -28,10 +27,44 @@
         </div>
 
         <ul>
+
+            <!-- Dashboard / Home -->
             <li>
-                <a href="/admin/home">
+                <a href="{{ route('citizen.dashboard') }}">
                     <i class="bx bx-home"></i>
                     <span class="nav-item">Home</span>
+                </a>
+            </li>
+
+            <!-- Supplies -->
+            <li>
+                <a href="{{ route('citizen.supplies') }}">
+                    <i class="bx bx-package"></i>
+                    <span class="nav-item">Supplies</span>
+                </a>
+            </li>
+
+            <!-- Calendar -->
+            <li>
+                <a href="{{ route('citizen.calendar') }}">
+                    <i class="bx bx-calendar"></i>
+                    <span class="nav-item">Calendar</span>
+                </a>
+            </li>
+
+            <!-- Vaccinations -->
+            <li>
+                <a href="{{ route('citizen.vaccination') }}">
+                    <i class="bx bx-shield-plus"></i>
+                    <span class="nav-item">Vaccinations</span>
+                </a>
+            </li>
+
+            <!-- Announcements -->
+            <li>
+                <a href="{{ route('citizen.announcements') }}">
+                    <i class="bx bx-bell"></i>
+                    <span class="nav-item">Announcements</span>
                 </a>
             </li>
 
@@ -41,18 +74,23 @@
 
     <!-- MAIN -->
     <div class="main-content">
-        <div class="top-bar">
-    <div></div> <!-- empty left space -->
 
-    <form method="POST" action="{{ url('/logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">
-                Logout
-            </button>
-        </form>
-    </div>
+        <div class="top-bar">
+            <div></div>
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+
+                <button type="submit" class="btn-logout">
+                    Logout
+                </button>
+            </form>
+        </div>
+
         @yield('content')
+
     </div>
+
 
 </div>
 

@@ -37,36 +37,21 @@
         <div class="toolbar-left">
             <div class="search-box">
                 <form method="GET" action="{{ route('citizenlist') }}" id="filterForm">
-
                     <input type="text"
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Search citizen name or ID"
                         oninput="this.form.submit()">
-
                 </form>
             </div>
             <div class="filter-box">
                 <form method="GET" action="{{ route('citizenlist') }}">
-
                     <select name="purok" onchange="this.form.submit()">
-
                         <option value="all">All Purok</option>
-
-                        <option value="Purok 1" {{ request('purok')=='Purok 1'?'selected':'' }}>
-                            Purok 1
-                        </option>
-
-                        <option value="Purok 2" {{ request('purok')=='Purok 2'?'selected':'' }}>
-                            Purok 2
-                        </option>
-
-                        <option value="Purok 3" {{ request('purok')=='Purok 3'?'selected':'' }}>
-                            Purok 3
-                        </option>
-
+                        <option value="Purok 1" {{ request('purok')=='Purok 1'?'selected':'' }}>Purok 1</option>
+                        <option value="Purok 2" {{ request('purok')=='Purok 2'?'selected':'' }}>Purok 2</option>
+                        <option value="Purok 3" {{ request('purok')=='Purok 3'?'selected':'' }}>Purok 3</option>
                     </select>
-
                 </form>
             </div>
             <div class="filter-box">
@@ -77,8 +62,23 @@
                 </select>
             </div>
         </div>
-        <button class="btn-secondary">Export List</button>
+
+        <!-- RIGHT TOOLBAR: EXPORT & IMPORT BUTTONS -->
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn-secondary">Export List</button>
+
+            <!-- Hidden File Form for Import -->
+            <form action="{{ route('citizen.import') }}" method="POST" enctype="multipart/form-data" id="importForm" style="display: none;">
+                @csrf
+                <input type="file" name="file" id="excelFileInput" accept=".csv, .xlsx, .xls" onchange="document.getElementById('importForm').submit()">
+            </form>
+
+            <button type="button" class="btn-secondary" onclick="document.getElementById('excelFileInput').click();">
+                Import Excel
+            </button>
+        </div>
     </div>
+
 
     <div class="table-container">
         <div class="table-header">
