@@ -52,11 +52,11 @@
                 </a>
             </li>
 
-            <!-- Vaccinations -->
+            <!-- Health Card -->
             <li>
-                <a href="{{ route('citizen.vaccination') }}">
-                    <i class="bx bx-shield-plus"></i>
-                    <span class="nav-item">Vaccinations</span>
+                <a href="{{ route('citizen.ecard') }}">
+                    <i class="bx bx-id-card"></i>
+                    <span class="nav-item">Health Card</span>
                 </a>
             </li>
 

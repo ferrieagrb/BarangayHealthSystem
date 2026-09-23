@@ -56,6 +56,27 @@
                 </a>
             </li>
 
+            <li>
+                <a href="#">
+                    <i class = "bx bx-box"></i>
+                    <span class = "nav-item"> Demographics </span>
+                </a>
+            </li>
+            
+            <li>
+                <a href = "{{route('admin.supplies')}}">
+                    <i class = "bx bx-box"></i>
+                    <span class = "nav-item"> Permissions </span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#">
+                    <i class = "bx bx-box"></i>
+                    <span class = "nav-item"> Audit Logs </span>
+                </a>
+            </li>    
+
         </ul>
 
     </div>
