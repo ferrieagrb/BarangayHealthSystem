@@ -57,7 +57,7 @@
             </li>
 
             <li>
-                <a href="#">
+                <a href="{{route('admin.demographics')}}">
                     <i class = "bx bx-box"></i>
                     <span class = "nav-item"> Demographics </span>
                 </a>
