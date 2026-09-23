@@ -235,6 +235,9 @@ Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('hea
 
     // QR Scanner
     Route::get('/qr-scanner', fn () => app(QRScannerController::class)->index())->name('qr.scanner');
+
+    // Excel
+    Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 });
 
 /*
