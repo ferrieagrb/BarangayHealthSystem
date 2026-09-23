@@ -1,31 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 /* ==========================================
-   1. GLOBAL RESET & BASE STYLES
+   CITIZENS PAGE STYLES
+   Shared layout styles may also exist in
+   layout.css and home.css.
    ========================================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-    font-weight: 500;
-}
 
+/* ==========================================
+   1. PAGE HEADER
+   ========================================== */
 
-
-/* PAGE HEADER AREA */
 .page-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
     gap: 15px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
 }
 
-.page-title-group h1,
-.page-title h1 {
-    margin: 0;
+.page-title-group h1 {
     font-size: 30px;
     color: #0f172a;
 }
@@ -37,446 +31,273 @@
     font-size: 14px;
 }
 
-.header {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #0f172a;
-}
-
 /* ==========================================
-   2. BUTTONS & ACTIONS
+   2. CITIZEN SUMMARY SECTION
    ========================================== */
-button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
 
-.btn-primary {
-    background: #0E42B1;
-    color: #ffffff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-secondary {
-    background: #e2e8f0;
-    color: #0f172a;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: #ffffff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-     text-decoration: none;
-    display: inline-block;
-}
-
-.action-group {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    text-decoration: none;
-    color: #800080;
-}
-
-.action-group button {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;    
-}
-
-/* ==========================================
-   3. SUMMARY & STATS CARDS
-   ========================================== */
-.summary-cards,
-.summary,
-.cards {
+.citizen-summary-wrapper,
+.summary-cards-wrapper {
     display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.citizen-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
-    margin-bottom: 20px;
 }
 
-.summary-cards,
-.cards {
-    grid-template-columns: repeat(4, 1fr);
-}
-
-.summary {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.summary-card,
-.card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.summary-card span {
-    display: block;
-    color: #64748b;
-    font-size: 13px;
-    margin-bottom: 8px;
-}
-
-.summary-card strong {
-    font-size: 24px;
-    color: #0f172a;
-    display: block;
-}
-
-/* ==========================================
-   4. DASHBOARD & PANEL GRIDS
-   ========================================== */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-}
-
-.dashboard-card {
+.citizen-summary-card,
+.citizen-demographics-card {
     background: #ffffff;
     border-radius: 14px;
     padding: 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.full-card {
-    grid-column: span 2;
-}
-
-.card-header {
-    margin-bottom: 15px;
-}
-
-.card-header h2 {
-    font-size: 20px;
-    color: #0f172a;
-}
-
-.card-header p {
-    margin-top: 4px;
-    font-size: 13px;
-    color: #64748b;
-}
-
-/* HEALTH RECORDS / TWO-PANEL LAYOUT */
-.health-wrapper {
+.citizen-summary-card {
     display: flex;
-    gap: 20px;
-    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 125px;
 }
 
-.left-panel {
-    flex: 0 0 75%;
+.citizen-summary-card span {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 13px;
 }
 
-.right-panel {
-    flex: 0 0 25%;
+.citizen-summary-card strong {
+    display: block;
+    color: #0f172a;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.citizen-demographics-card {
+    min-width: 0;
+}
+
+.citizen-demographics-card .card-header {
+    margin-bottom: 12px;
+}
+
+.citizen-demographics-card .card-header h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.citizen-demographics-card .card-header p {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Supports the existing ApexCharts container */
+
+#demographicsApexChart {
+    width: 100%;
+    min-height: 160px;
 }
 
 /* ==========================================
-   5. TOOLBAR, SEARCH & FILTERS
+   3. CITIZEN TOOLBAR
    ========================================== */
-.toolbar {
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+
+.citizen-toolbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
-.toolbar-left {
+.citizen-toolbar-left,
+.citizen-toolbar-right {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: nowrap;
-}
-
-.search-box input {
-    width: 240px;
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-}
-
-.filter-box select,
-.toolbar input,
-.toolbar select {
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    white-space: nowrap;
-}
-
-.toolbar button {
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-/* ==========================================
-   6. TABLES & LISTS
-   ========================================== */
-.table-container,
-.list-tab,
-.recent-tab {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin-top: 20px;
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.table-header h2 {
-    margin: 0;
-    font-size: 20px;
-    color: #0f172a;
-}
-
-.table-header p {
-    margin: 4px 0 0;
-    color: #64748b;
-    font-size: 13px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-table th,
-table td {
-    padding: 14px;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 14px;
-}
-
-table th {
-    color: #0f172a;
-    background: #f1f5f9;
-}
-
-table td {
-    color: #334155;
-}
-
-.list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-.list-item strong {
-    display: block;
-    color: #0f172a;
-    font-size: 14px;
-}
-
-.list-item span {
-    display: block;
-    color: #64748b;
-    font-size: 12px;
-    margin-top: 3px;
-}
-
-.empty-text {
-    color: #64748b;
-    font-size: 14px;
-}
-
-/* ==========================================
-   7. BADGES, CITIZEN & RECENT DETAILS
-   ========================================== */
-.status-badge,
-.status {
-    display: inline-block;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.status-active,
-.status-treated {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-monitoring,
-.status-pending {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.citizen-name,
-.record-name,
-.recent-name {
-    font-weight: 600;
-    color: #0f172a;
-}
-
-.citizen-sub,
-.record-sub {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 3px;
-}
-
-.recent-tab h3 {
-    margin-bottom: 15px;
-    color: #0f172a;
-}
-
-.recent-card {
-    padding: 10px 0;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.recent-card:last-child {
-    border-bottom: none;
-}
-
-.recent-diagnosis {
-    font-size: 14px;
-    color: #334155;
-    font-weight: 600;
-}
-
-.recent-date {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 3px;
-}
-
-/* ==========================================
-   8. PAGINATION
-   ========================================== */
-.pagination {
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    margin-top: 20px;
     flex-wrap: wrap;
 }
 
-.pagination li {
-    list-style: none;
+.citizen-toolbar .search-box input {
+    width: 240px;
+    max-width: 100%;
 }
 
-.pagination li a,
-.pagination li span {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.pagination li a {
-    background: #f3f4f6;
-    color: #333333;
-}
-
-.pagination li a:hover {
-    background: #e5e7eb;
-}
-
-.pagination .active span {
-    background: #0E42B1;
-    color: #ffffff;
-}
-
-.pagination .disabled span {
-    background: #e2e8f0;
-    color: #94a3b8;
+.citizen-toolbar select,
+.citizen-toolbar input {
+    min-height: 40px;
 }
 
 /* ==========================================
-   9. RESPONSIVE MEDIA QUERIES
+   4. CITIZEN TABLE
    ========================================== */
-@media (max-width: 992px) {
-    .summary-cards,
-    .cards,
-    .summary {
-        grid-template-columns: repeat(2, 1fr);
-    }
 
-    .dashboard-grid {
+.citizen-table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.citizen-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.citizen-table th,
+.citizen-table td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.citizen-table .citizen-name {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.citizen-table .citizen-sub {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.citizen-table .action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.citizen-table .action-group a,
+.citizen-table .action-group button {
+    white-space: nowrap;
+}
+
+/* ==========================================
+   5. CITIZEN ACTIONS
+   ========================================== */
+
+.citizen-action-link {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: #0e42b1;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.citizen-action-link:hover {
+    background: #eff6ff;
+}
+
+.citizen-delete-form {
+    display: inline-block;
+    margin: 0;
+}
+
+/* ==========================================
+   6. IMPORT / EXPORT CONTROLS
+   ========================================== */
+
+.citizen-import-export {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.citizen-import-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.citizen-import-form input[type="file"] {
+    max-width: 220px;
+    padding: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+/* ==========================================
+   7. EMPTY STATE
+   ========================================== */
+
+.citizen-empty-state {
+    padding: 30px 20px;
+    color: #64748b;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ==========================================
+   8. RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 992px) {
+    .citizen-summary-wrapper,
+    .summary-cards-wrapper {
         grid-template-columns: 1fr;
     }
 
-    .full-card {
-        grid-column: span 1;
+    .citizen-summary-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .health-wrapper {
-        flex-direction: column;
+    .citizen-toolbar {
+        align-items: stretch;
     }
 
-    .left-panel,
-    .right-panel {
-        flex: 0 0 100%;
+    .citizen-toolbar-left,
+    .citizen-toolbar-right {
         width: 100%;
     }
 }
 
 @media (max-width: 640px) {
-    .summary-cards,
-    .cards,
-    .summary {
+    .page-title-group h1,
+    .page-title h1 {
+        font-size: 24px;
+    }
+
+    .citizen-summary-cards {
         grid-template-columns: 1fr;
     }
 
-    .main {
-        padding: 20px;
+    .citizen-summary-wrapper,
+    .summary-cards-wrapper {
+        gap: 15px;
     }
 
-    .search-box input {
-        width: 180px;
+    .citizen-toolbar-left,
+    .citizen-toolbar-right,
+    .citizen-import-export,
+    .citizen-import-form {
+        width: 100%;
+    }
+
+    .citizen-toolbar .search-box,
+    .citizen-toolbar .search-box input {
+        width: 100%;
+    }
+
+    .citizen-toolbar select,
+    .citizen-toolbar button,
+    .citizen-import-form input[type="file"] {
+        width: 100%;
+        max-width: 100%;
     }
 }

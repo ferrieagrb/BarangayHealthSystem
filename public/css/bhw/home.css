@@ -81,24 +81,17 @@ button {
 
 .action-group {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 6px;
+    text-decoration: none;
+    color: #800080;
 }
 
-/* Siguraduhing pareho ang laki ng <a> at <button> sa loob ng action group */
-.action-group .btn-primary,
-.action-group .btn-danger {
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 500;
+.action-group button {
+    padding: 6px 10px;
+    font-size: 12px;
     border-radius: 6px;
-    line-height: 1.2;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     border: none;
-    cursor: pointer;
-    text-decoration: none;
+    cursor: pointer;    
 }
 
 /* ==========================================
