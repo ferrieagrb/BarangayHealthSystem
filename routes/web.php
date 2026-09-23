@@ -268,8 +268,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
-    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
+    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(),$id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
+
+    Route::get('/demographics',[AdminSettings::class,'demographicsIndex'])->name('demographics');
+    Route::post('/demographics/purok',[AdminSettings::class,'storePurok'])->name('puroks.store');
+    Route::delete('/demographics/purok/{id}',[AdminSettings::class,'destroyPurok'])->name('puroks.destroy');
 });
 
 /*
