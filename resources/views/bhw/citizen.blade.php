@@ -14,24 +14,27 @@
         <a href="{{ route('citizen.add') }}" class="btn-primary">+ Add Citizen</a>
     </div>
 
-    <div class="summary-cards">
-        <div class="summary-card">
-            <span>Total Citizens</span>
-            <strong>{{ $totalCitizens }}</strong>
-        </div>
-        <div class="summary-card">
-            <span>Kids</span>
-            <strong>{{ $kids }}</strong>
-        </div>
-        <div class="summary-card">
-            <span>Adults</span>
-            <strong>{{ $adults }}</strong>
-        </div>
-        <div class="summary-card">
-            <span>Seniors</span>
-            <strong>{{ $seniors }}</strong>
-        </div>
+   <div class="summary-cards-wrapper" style="dsplay: grid; grid-template-columns: 1fr 2fr;gap:20px;margin-bottom:25px;">
+    
+    <!-- Total Citizens Summary Crads -->
+
+    <div class="summary-card" style="background:#fff; padding: 25px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center">
+        <span style="font-size:14px; color:#64748b; font-weight: 500; text-transform:uppercase; letter-spacing: 0.5px;"> Total Citizens </span>
+        <strong style="font-size: 38px; color: #1e293b; margin-top:10px;"> {{$totalCitizens}} </strong>
     </div>
+
+    <!-- Demograpphics ApexChart Card -->
+
+    <div class="chart-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+            <h3 style="font-size:15px; color:#1e293b; font-weight: 600; margin:0;"> Demographics Breakdown </h3>
+        </div>
+        
+        <div id="demographicsApexChart"></div>
+
+    </div>
+    </div>
+
 
     <div class="toolbar">
         <div class="toolbar-left">
@@ -135,5 +138,68 @@
                     {{ $citizens->links('pagination::bootstrap-5') }}
                 </div>
     </div>
+
+    <!-- ApexCharts CDN & Initialization -->
+
+    <script src = "https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        var options = {
+            series:[{
+                name: 'Count',
+                data:[{{$kids}},{{$adults}},{{$seniors}}]
+            }],
+
+            chart:{
+                type:'bar',
+                height:160,
+                toolbar:{
+                    show:false
+                }
+            },
+            plotOptions:{
+                bar:{
+                    boraderRadius:4,
+                    dstributed:true,
+                    columnWidth:'45%',
+                }
+            },
+            color:['#3b82f6','#14b8a6','#f97316'],// Kids(Blue), Adults(Teal), Seniors(Orange)
+            dataLabels:{
+                enabled:false
+            },
+            legend:{
+                show:false
+            },
+            xaxis:{
+                categories:['Kids','Adults','Seniors'],
+                axisBorder:{
+                    show:false
+                },
+                axisTicks:{
+                    show:false
+                }
+            },
+            yaxis:{
+                tickAmount:3,
+                labels:{
+                    formatter:function (val){
+                        return Math.floor(val);
+                    }
+                }
+            },
+            grid:{
+                strokeDashArray:4,
+                xaxis:{
+                    lines:{
+                        show:false
+
+                    }
+                }
+            }
+        }
+
+        var chart = new ApexCharts(document.querySelector("#demographicsApexChart"), options); chart.render();
+    </script>
+
 
 @endsection
