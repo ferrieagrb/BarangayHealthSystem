@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CitizenController;
 use App\Http\Controllers\SupplyController;
+use App\Http\Controllers\CitizenSupplyController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\EventController;
@@ -101,7 +102,46 @@ Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function
 
         return view('citizen.dashboard');
     })->name('dashboard');
+
+    // Citizen Supplies Overview
+    Route::get('/supplies', [CitizenSupplyController::class, 'index'])->name('supplies');
+
+    // Citizen Calendar
+    Route::get('/calendar', function () {
+        $user = auth()->user();
+
+        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('citizen.calendar');
+    })->name('calendar');
+
+    // Citizen Vaccination Route
+    Route::get('/vaccination', function () {
+        $user = auth()->user();
+
+        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('citizen.vaccination');
+    })->name('vaccination');
+
+    // Citizen Announcements Route
+    Route::get('/announcements', function () {
+        $user = auth()->user();
+
+        if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $announcements = Announcement::latest()->get();
+
+        return view('citizen.announcements', compact('announcements'));
+    })->name('announcements');
 });
+
 
 /*
 |--------------------------------------------------------------------------
