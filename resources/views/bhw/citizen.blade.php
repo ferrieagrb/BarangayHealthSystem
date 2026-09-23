@@ -11,13 +11,6 @@
     <a href="{{ route('citizen.add') }}" class="btn-primary">+ Add Citizen</a>
 </div>
 
-<<<<<<< HEAD
-{{-- SUMMARY CARDS --}}
-<div class="summary-cards">
-    <div class="summary-card">
-        <span>Total Citizens</span>
-        <strong>{{ $totalCitizens }}</strong>
-=======
    <div class="summary-cards-wrapper" style="dsplay: grid; grid-template-columns: 1fr 2fr;gap:20px;margin-bottom:25px;">
     
     <!-- Total Citizens Summary Crads -->
@@ -25,7 +18,6 @@
     <div class="summary-card" style="background:#fff; padding: 25px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center">
         <span style="font-size:14px; color:#64748b; font-weight: 500; text-transform:uppercase; letter-spacing: 0.5px;"> Total Citizens </span>
         <strong style="font-size: 38px; color: #1e293b; margin-top:10px;"> {{$totalCitizens}} </strong>
->>>>>>> main
     </div>
     <div class="summary-card">
         <span>Kids</span>
