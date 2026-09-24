@@ -68,13 +68,13 @@ class SupplyController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'batches' => 'required|array|min:1',
-            'batches.*.item_number' => 'nullable|string|max:255',
-            'batches.*.serial_number' => 'nullable|string|max:255',
-            'batches.*.quantity' => 'required|integer|min:1',
-            'batches.*.unit' => 'nullable|string|max:50',
-            'batches.*.expiration_date' => 'required|date',
-            'batches.*.supplier' => 'nullable|string|max:255',
+            'packs' => 'required|array|min:1', // Updated from 'batches' to 'packs'
+            'packs.*.item_number' => 'nullable|string|max:255',
+            'packs.*.serial_number' => 'nullable|string|max:255',
+            'packs.*.quantity' => 'required|integer|min:1',
+            'packs.*.unit' => 'nullable|string|max:50',
+            'packs.*.expiration_date' => 'required|date',
+            'packs.*.supplier' => 'nullable|string|max:255',
         ]);
 
         $itemName = $request->input('name');
@@ -82,7 +82,8 @@ class SupplyController extends Controller
         // Pull shared catalog properties (like category and min_stock) from an existing record if available
         $template = Supply::where('name', $itemName)->first();
 
-        foreach ($request->input('batches') as $batchData) {
+        // Loop through 'packs' instead of 'batches'
+        foreach ($request->input('packs') as $batchData) {
             $supply = Supply::create([
                 'name' => $itemName,
                 'category' => $template->category ?? 'Supplies',
