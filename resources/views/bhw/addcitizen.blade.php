@@ -50,7 +50,7 @@
             <div class="form-group">
                 <label>Purok</label>
                 <select name="Citizen_Purok" required>
-                    @foreach(\App\Models\Purok::all()as $purok)
+                    @foreach(\App\Models\Purok::all() as $purok)
                     <option value = "{{$purok->name}}">{{$purok->name}}</option>
                     @endforeach
                 </select>
