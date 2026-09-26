@@ -19,54 +19,51 @@
 </div>
 
 
-{{-- SUMMARY CARDS --}}
-<div class="summary-cards"
-    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+{{-- CITIZEN OVERVIEW --}}
+<div class="citizen-overview">
 
-    {{-- TOTAL CITIZENS --}}
-    <div class="summary-card">
-        <span>Total Citizens</span>
-        <strong>{{ $totalCitizens }}</strong>
+    {{-- LEFT: SUMMARY CARDS --}}
+    <div class="summary-cards">
+
+        {{-- TOTAL CITIZENS --}}
+        <div class="summary-card">
+            <span>Total Citizens</span>
+            <strong>{{ $totalCitizens }}</strong>
+        </div>
+
+        {{-- KIDS --}}
+        <div class="summary-card">
+            <span>Kids</span>
+            <strong>{{ $kids }}</strong>
+        </div>
+
+        {{-- ADULTS --}}
+        <div class="summary-card">
+            <span>Adults</span>
+            <strong>{{ $adults }}</strong>
+        </div>
+
+        {{-- SENIORS --}}
+        <div class="summary-card">
+            <span>Seniors</span>
+            <strong>{{ $seniors }}</strong>
+        </div>
+
     </div>
 
-    {{-- KIDS --}}
-    <div class="summary-card">
-        <span>Kids</span>
-        <strong>{{ $kids }}</strong>
-    </div>
 
-    {{-- ADULTS --}}
-    <div class="summary-card">
-        <span>Adults</span>
-        <strong>{{ $adults }}</strong>
-    </div>
+    {{-- RIGHT: DEMOGRAPHICS --}}
+    <div class="chart-card">
 
-    {{-- SENIORS --}}
-    <div class="summary-card">
-        <span>Seniors</span>
-        <strong>{{ $seniors }}</strong>
+        <div class="chart-header">
+            <h3>Demographics Breakdown</h3>
+        </div>
+
+        <div id="demographicsApexChart"></div>
+
     </div>
 
 </div>
-
-
-{{-- DEMOGRAPHICS CHART --}}
-<div class="chart-card"
-    style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
-
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-
-        <h3 style="font-size: 15px; color: #1e293b; font-weight: 600; margin: 0;">
-            Demographics Breakdown
-        </h3>
-
-    </div>
-
-    <div id="demographicsApexChart"></div>
-
-</div>
-
 
 
 {{-- TOOLBAR: SEARCH, FILTERS, EXPORT, AND IMPORT --}}
@@ -121,6 +118,30 @@
             </form>
         </div>
 
+
+{{-- AGE FILTER --}}
+        <div class="filter-box">
+            <form method="GET"
+                action="{{ route('citizenlist') }}">
+
+                {{-- Keep existing search --}}
+                <input type="hidden"
+                    name="search"
+                    value="{{ request('search') }}">
+
+                {{-- Keep existing Purok --}}
+                <input type="hidden"
+                    name="purok"
+                    value="{{ request('purok', 'all') }}">
+
+                <input type="text"
+                    name="age"
+                    value="{{ request('age') }}"
+                    placeholder="Age or range (e.g. 8 or 4-10)"
+                    onchange="this.form.submit()">
+
+            </form>
+        </div>
 
         {{-- STATUS FILTER --}}
         <div class="filter-box">

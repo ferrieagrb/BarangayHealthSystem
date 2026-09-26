@@ -32,71 +32,88 @@
 }
 
 /* ==========================================
-   2. CITIZEN SUMMARY SECTION
+   CITIZEN OVERVIEW
+   2x2 SUMMARY + DEMOGRAPHICS
    ========================================== */
 
-.citizen-summary-wrapper,
-.summary-cards-wrapper {
+.citizen-overview {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 1.5fr;
     gap: 20px;
     margin-bottom: 25px;
+    align-items: stretch;
 }
 
-.citizen-summary-cards {
+
+/* ==========================================
+   SUMMARY CARDS - 2 x 2
+   ========================================== */
+
+.summary-cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
 }
 
-.citizen-summary-card,
-.citizen-demographics-card {
+.summary-card {
     background: #ffffff;
     border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
+    min-height: 110px;
 
-.citizen-summary-card {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 125px;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.citizen-summary-card span {
+.summary-card span {
     display: block;
     margin-bottom: 8px;
     color: #64748b;
     font-size: 13px;
+    font-weight: 500;
 }
 
-.citizen-summary-card strong {
+.summary-card strong {
     display: block;
     color: #0f172a;
     font-size: 28px;
     font-weight: 700;
 }
 
-.citizen-demographics-card {
+
+/* ==========================================
+   DEMOGRAPHICS CARD
+   ========================================== */
+
+.chart-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
     min-width: 0;
+
+    display: flex;
+    flex-direction: column;
 }
 
-.citizen-demographics-card .card-header {
-    margin-bottom: 12px;
+.chart-header {
+    margin-bottom: 5px;
 }
 
-.citizen-demographics-card .card-header h2 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 20px;
+.chart-header h3 {
+    font-size: 15px;
+    color: #1e293b;
     font-weight: 600;
+    margin: 0;
 }
 
-.citizen-demographics-card .card-header p {
-    margin-top: 4px;
-    color: #64748b;
-    font-size: 13px;
+#demographicsApexChart {
+    width: 100%;
+    min-height: 160px;
 }
 
 /* Supports the existing ApexCharts container */
@@ -300,4 +317,29 @@
         width: 100%;
         max-width: 100%;
     }
+}
+
+.filter-box input[name="age"] {
+    min-height: 40px;
+    width: 210px;
+    padding: 0 12px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #0f172a;
+
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    outline: none;
+}
+
+.filter-box input[name="age"]:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
+}
+
+.filter-box input[name="age"]::placeholder {
+    color: #94a3b8;
 }
