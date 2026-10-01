@@ -91,14 +91,6 @@ class CitizenController extends Controller
             'kids' => (clone $base)->where('Citizen_Age', '<=', 17)->count(),
             'adults' => (clone $base)->whereBetween('Citizen_Age', [18, 59])->count(),
             'seniors' => (clone $base)->where('Citizen_Age', '>=', 60)->count(),
-        ]);
-    }
-        return view('bhw.citizen', [
-            'citizens' => $citizens,
-            'totalCitizens' => $base->count(),
-            'kids' => (clone $base)->where('Citizen_Age', '<=', 17)->count(),
-            'adults' => (clone $base)->whereBetween('Citizen_Age', [18, 59])->count(),
-            'seniors' => (clone $base)->where('Citizen_Age', '>=', 60)->count(),
             'puroks' => $puroks,
         ]);
     }
@@ -302,57 +294,54 @@ class CitizenController extends Controller
         $request->validate([
             'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
-    public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
-    ]);
 
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-    if (($handle = fopen($path, 'r')) !== FALSE) {
-        // Read header row
-        $header = fgetcsv($handle, 1000, ',');
-        // Convert headers to lowercase/trimmed for safe matching
-        $header = array_map(function($h) {
-            return strtolower(trim(str_replace(' ', '_', $h)));
-        }, $header);
+        if (($handle = fopen($path, 'r')) !== false) {
+            // Read header row
+            $header = fgetcsv($handle, 1000, ',');
 
-        while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
-            // Combine header and row data to map by column name
-            if (count($header) === count($data)) {
-                $row = array_combine($header, $data);
+            // Convert headers to lowercase/trimmed for safe matching
+            $header = array_map(function ($h) {
+                return strtolower(trim(str_replace(' ', '_', $h)));
+            }, $header);
 
-                $birthDate = $row['citizen_birthdate'] ?? $row['birthdate'] ?? null;
-                
-                // Calculate age dynamically from birthdate if available
-                $age = 0;
-                if ($birthDate) {
-                    try {
-                        $age = Carbon::parse($birthDate)->age;
-                    } catch (\Exception $e) {
-                        $age = 0;
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                // Combine header and row data to map by column name
+                if (count($header) === count($data)) {
+                    $row = array_combine($header, $data);
+
+                    $birthDate = $row['citizen_birthdate'] ?? $row['birthdate'] ?? null;
+
+                    // Calculate age dynamically from birthdate if available
+                    $age = 0;
+                    if ($birthDate) {
+                        try {
+                            $age = Carbon::parse($birthDate)->age;
+                        } catch (\Exception $e) {
+                            $age = 0;
+                        }
                     }
-                }
 
-                citizens::create([
-                    'Citizen_FName'     => $row['citizen_fname'] ?? $row['first_name'] ?? '',
-                    'Citizen_LName'     => $row['citizen_lname'] ?? $row['last_name'] ?? '',
-                    'Citizen_Age'       => $age,
-                    'Citizen_BirthDate' => $birthDate,
-                    'Citizen_ContactNo' => $row['citizen_contactno'] ?? $row['contact_number'] ?? '',
-                    'Citizen_Purok'     => $row['citizen_purok'] ?? $row['purok'] ?? 'Purok 1',
-                ]);
+                    citizens::create([
+                        'Citizen_FName'     => $row['citizen_fname'] ?? $row['first_name'] ?? '',
+                        'Citizen_LName'     => $row['citizen_lname'] ?? $row['last_name'] ?? '',
+                        'Citizen_Age'       => $age,
+                        'Citizen_BirthDate' => $birthDate,
+                        'Citizen_ContactNo' => $row['citizen_contactno'] ?? $row['contact_number'] ?? '',
+                        'Citizen_Purok'     => $row['citizen_purok'] ?? $row['purok'] ?? 'Purok 1',
+                    ]);
+                }
             }
+
+            fclose($handle);
         }
-        fclose($handle);
-    }
 
         $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
 
-    return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
-}
+        return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+    }
 
     public function showElectronicCard($id)
     {
