@@ -338,7 +338,7 @@ class CitizenController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | STORE CITIZEN
+    | STORE CITIZEN & USER ACCOUNT
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
@@ -651,6 +651,7 @@ class CitizenController extends Controller
         $citizen =
             citizens::findOrFail($id);
 
+        $citizen->delete();
 
         $validated = $request->validate([
 

@@ -14,15 +14,8 @@
 
 
     <div class="page-title-group">
-
-        <h1>
-            Add Citizen & Account
-        </h1>
-
-        <p>
-            Register a new barangay resident and generate their portal login credentials.
-        </p>
-
+        <h1>Add Citizen & Account</h1>
+        <p>Register a new barangay resident and generate their portal login credentials.</p>
     </div>
 
 
@@ -40,15 +33,7 @@
 
 
 <div class="form-container">
-
-
-    <form
-        method="POST"
-        action="{{ route('citizen.store') }}"
-        id="citizen-form"
-        novalidate
-    >
-
+    <form method="POST" action="{{ route('citizen.store') }}" id="citizen-form">
         @csrf
 
 
@@ -98,11 +83,6 @@
 
             </div>
 
-
-            {{-- =====================================================
-                 DATE OF BIRTH
-                 ===================================================== --}}
-
             <div class="form-group">
 
                 <label for="birthdate">
@@ -125,26 +105,9 @@
 
             </div>
 
-
-            {{-- =====================================================
-                 AGE
-                 ===================================================== --}}
-
             <div class="form-group">
-
-                <label for="age">
-                    Age
-                </label>
-
-                <input
-                    type="number"
-                    name="Citizen_Age"
-                    id="age"
-                    readonly
-                    required
-                    min="0"
-                >
-
+                <label>Age</label>
+                <input type="number" name="Citizen_Age" id="age" readonly required>
             </div>
 
 
@@ -180,37 +143,13 @@
 
             </div>
 
-
-            {{-- =====================================================
-                 PUROK
-                 ===================================================== --}}
-
+            {{-- Dynamically loaded Puroks from the database --}}
             <div class="form-group">
-
-                <label for="purok">
-                    Purok
-                </label>
-
-                <select
-                    name="Citizen_Purok"
-                    id="purok"
-                    required
-                >
-
-                    <option
-                        value=""
-                        disabled
-                        selected
-                    >
-                        -- Select Purok --
-                    </option>
-
+                <label>Purok</label>
+                <select name="Citizen_Purok" required>
+                    <option value="" disabled selected>-- Select Purok --</option>
                     @foreach(\App\Models\Purok::all() as $purok)
-
-                        <option value="{{ $purok->name }}">
-                            {{ $purok->name }}
-                        </option>
-
+                    <option value="{{$purok->name}}">{{$purok->name}}</option>
                     @endforeach
 
                 </select>
@@ -262,6 +201,16 @@
 
             </div>
 
+            {{-- New Login Credentials Fields --}}
+            <div class="form-group">
+                <label>Email Address (For Login)</label>
+                <input type="email" name="email" required placeholder="resident@email.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="At least 6 characters">
+            </div>
 
         </div>
 
@@ -271,26 +220,8 @@
              ========================================================= --}}
 
         <div class="form-actions">
-
-
-            <button
-                type="submit"
-                class="btn-primary"
-            >
-                Save Citizen & Create Account
-            </button>
-
-
-            {{-- CANCEL BUTTON --}}
-
-            <a
-                href="{{ route('citizenlist') }}"
-                class="btn-secondary btn-form-cancel"
-            >
-                Cancel
-            </a>
-
-
+            <button type="submit" class="btn-primary">Save Citizen & Create Account</button>
+            <a href="{{ route('citizenlist') }}" class="btn-secondary">Cancel</a>
         </div>
 
 
@@ -299,214 +230,39 @@
 
 </div>
 
-
-{{-- =============================================================
-     CONFIRMATION MODAL
-     ============================================================= --}}
-
-<div
-    id="confirmation-modal"
->
-
-
+<!-- Custom centered confirmation modal window with separated backdrop and box layers -->
+<div id="confirmation-modal" style="display: none;">
     <div class="custom-modal-box">
-
-
-        <h3>
-            Confirm Citizen Registration
-        </h3>
-
-
-        <p id="modal-message">
-            Are you sure you want to save this record?
-        </p>
-
-
+        <h3 style="margin-top: 0; color: #111827; font-size: 18px;">Confirm Citizen Registration</h3>
+        <p id="modal-message" style="color: #4b5563; font-size: 14px; margin: 15px 0;">Are you sure you want to save this record?</p>
         <div class="custom-modal-actions">
-
-
-            <button
-                type="button"
-                id="modal-cancel-btn"
-                class="btn-modal-cancel"
-            >
-                Cancel
-            </button>
-
-
-            <button
-                type="button"
-                id="modal-confirm-btn"
-                class="btn-modal-confirm"
-            >
-                Yes, Save
-            </button>
-
-
+            <button type="button" id="modal-cancel-btn" class="btn-modal-cancel">Cancel</button>
+            <button type="button" id="modal-confirm-btn" class="btn-modal-confirm">Yes, Save</button>
         </div>
-
-
     </div>
-
-
 </div>
 
-
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ageInput = document.getElementById('age');
+    const birthdateInput = document.getElementById('birthdate');
+    const citizenForm = document.getElementById('citizen-form');
+    
+    const modal = document.getElementById('confirmation-modal');
+    const modalMessage = document.getElementById('modal-message');
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    const cancelBtn = document.getElementById('modal-cancel-btn');
 
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
+    let isFormVerified = false;
 
-
-        const ageInput =
-            document.getElementById('age');
-
-
-        const birthdateInput =
-            document.getElementById('birthdate');
-
-
-        const contactInput =
-            document.getElementById('contact');
-
-
-        const citizenForm =
-            document.getElementById('citizen-form');
-
-
-        const birthdateError =
-            document.getElementById('birthdate-error');
-
-
-        const contactError =
-            document.getElementById('contact-error');
-
-
-        const modal =
-            document.getElementById('confirmation-modal');
-
-
-        const modalMessage =
-            document.getElementById('modal-message');
-
-
-        const confirmBtn =
-            document.getElementById('modal-confirm-btn');
-
-
-        const cancelBtn =
-            document.getElementById('modal-cancel-btn');
-
-
-        let isFormVerified = false;
-
-
-        /*
-        =========================================================
-        SET MAXIMUM BIRTH DATE
-        =========================================================
-        */
-
-        const today =
-            new Date();
-
-
-        today.setDate(
-            today.getDate() - 1
-        );
-
-
-        const maxDate =
-            today
-                .toISOString()
-                .split('T')[0];
-
-
-        birthdateInput.max =
-            maxDate;
-
-
-        /*
-        =========================================================
-        VALIDATE BIRTH DATE + CALCULATE AGE
-        =========================================================
-        */
-
-        function validateBirthdate() {
-
-
-            if (!birthdateInput.value) {
-
-                birthdateError.classList.remove('show');
-
-                ageInput.value = '';
-
-                return false;
-            }
-
-
-            const birth =
-                new Date(
-                    birthdateInput.value + 'T00:00:00'
-                );
-
-
-            const currentDate =
-                new Date();
-
-
-            currentDate.setHours(
-                0,
-                0,
-                0,
-                0
-            );
-
-
-            /*
-            -----------------------------------------------------
-            TODAY OR FUTURE = INVALID
-            -----------------------------------------------------
-            */
-
-            if (birth >= currentDate) {
-
-                birthdateError.classList.add('show');
-
-                ageInput.value = '';
-
-                return false;
-            }
-
-
-            birthdateError.classList.remove('show');
-
-
-            /*
-            -----------------------------------------------------
-            CALCULATE AGE
-            -----------------------------------------------------
-            */
-
-            let age =
-                currentDate.getFullYear() -
-                birth.getFullYear();
-
-
-            const monthDifference =
-                currentDate.getMonth() -
-                birth.getMonth();
-
-
-            if (
-                monthDifference < 0 ||
-                (
-                    monthDifference === 0 &&
-                    currentDate.getDate() < birth.getDate()
-                )
-            ) {
-
+    // When Birth Date changes → update Age dynamically
+    birthdateInput.addEventListener('input', function() {
+        const birth = new Date(this.value);
+        const today = new Date();
+        if (!isNaN(birth.getTime())) {
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
                 age--;
 
             }
@@ -519,308 +275,39 @@ document.addEventListener(
             return true;
 
         }
+    });
 
+    // Intercepts form submission to open custom centered modal
+    citizenForm.addEventListener('submit', function(e) {
+        if (!isFormVerified) {
+            e.preventDefault();
 
-        /*
-        =========================================================
-        BIRTH DATE EVENTS
-        =========================================================
-        */
+            const firstName = document.querySelector('input[name="Citizen_FName"]').value;
+            const lastName = document.querySelector('input[name="Citizen_LName"]').value;
+            const purok = document.querySelector('select[name="Citizen_Purok"]').value;
 
-        birthdateInput.addEventListener(
-            'change',
-            validateBirthdate
-        );
-
-
-        birthdateInput.addEventListener(
-            'input',
-            validateBirthdate
-        );
-
-
-        /*
-        =========================================================
-        CONTACT NUMBER
-        =========================================================
-        */
-
-        contactInput.addEventListener(
-            'input',
-            function () {
-
-
-                /*
-                Remove anything that is not a number.
-                */
-
-                this.value =
-                    this.value
-                        .replace(/\D/g, '')
-                        .slice(0, 11);
-
-
-                /*
-                Show validation message until
-                exactly 11 digits are entered.
-                */
-
-                if (
-                    this.value.length === 11
-                ) {
-
-                    contactError.classList.remove('show');
-
-                } else {
-
-                    contactError.classList.add('show');
-
-                }
-
+            if(!firstName || !lastName || !purok) {
+                citizenForm.reportValidity();
+                return;
             }
-        );
 
-
-        /*
-        =========================================================
-        FORM SUBMISSION
-        =========================================================
-        */
-
-        citizenForm.addEventListener(
-            'submit',
-            function (e) {
-
-
-                if (isFormVerified) {
-                    return;
-                }
-
-
-                e.preventDefault();
-
-
-                /*
-                -------------------------------------------------
-                CHECK BIRTH DATE
-                -------------------------------------------------
-                */
-
-                if (
-                    !validateBirthdate()
-                ) {
-
-                    birthdateInput.focus();
-
-                    return;
-                }
-
-
-                /*
-                -------------------------------------------------
-                CHECK CONTACT NUMBER
-                -------------------------------------------------
-                */
-
-                const contact =
-                    contactInput.value;
-
-
-                if (
-                    !/^\d{11}$/.test(contact)
-                ) {
-
-                    contactError.classList.add('show');
-
-                    contactInput.focus();
-
-                    return;
-                }
-
-
-                /*
-                -------------------------------------------------
-                CHECK OTHER REQUIRED FIELDS
-                -------------------------------------------------
-                */
-
-                if (
-                    !citizenForm.checkValidity()
-                ) {
-
-                    citizenForm.reportValidity();
-
-                    return;
-                }
-
-
-                /*
-                -------------------------------------------------
-                GET CITIZEN INFORMATION
-                -------------------------------------------------
-                */
-
-                const firstName =
-                    document
-                        .querySelector(
-                            'input[name="Citizen_FName"]'
-                        )
-                        .value
-                        .trim();
-
-
-                const lastName =
-                    document
-                        .querySelector(
-                            'input[name="Citizen_LName"]'
-                        )
-                        .value
-                        .trim();
-
-
-                const purok =
-                    document
-                        .querySelector(
-                            'select[name="Citizen_Purok"]'
-                        )
-                        .value;
-
-
-                /*
-                -------------------------------------------------
-                SHOW CONFIRMATION MODAL
-                -------------------------------------------------
-                */
-
-                modalMessage.innerText =
-                    `Are you sure you want to save the record for ${firstName} ${lastName} under ${purok}?`;
-
-
-                modal.style.display =
-                    'flex';
-
-            }
-        );
-
-
-        /*
-        =========================================================
-        CONFIRM SAVE
-        =========================================================
-        */
-
-        confirmBtn.addEventListener(
-            'click',
-            function () {
-
-
-                /*
-                -------------------------------------------------
-                FINAL BIRTH DATE CHECK
-                -------------------------------------------------
-                */
-
-                if (
-                    !validateBirthdate()
-                ) {
-
-                    modal.style.display =
-                        'none';
-
-                    birthdateInput.focus();
-
-                    return;
-                }
-
-
-                /*
-                -------------------------------------------------
-                FINAL CONTACT CHECK
-                -------------------------------------------------
-                */
-
-                if (
-                    !/^\d{11}$/.test(
-                        contactInput.value
-                    )
-                ) {
-
-                    modal.style.display =
-                        'none';
-
-                    contactError.classList.add('show');
-
-                    contactInput.focus();
-
-                    return;
-                }
-
-
-                /*
-                -------------------------------------------------
-                SUBMIT FORM
-                -------------------------------------------------
-                */
-
-                isFormVerified =
-                    true;
-
-
-                modal.style.display =
-                    'none';
-
-
-                citizenForm.submit();
-
-            }
-        );
-
-
-        /*
-        =========================================================
-        CANCEL
-        =========================================================
-        */
-
-        cancelBtn.addEventListener(
-            'click',
-            function () {
-
-                modal.style.display =
-                    'none';
-
-            }
-        );
-
-
-        /*
-        =========================================================
-        CLOSE MODAL BY CLICKING BACKDROP
-        =========================================================
-        */
-
-        modal.addEventListener(
-            'click',
-            function (e) {
-
-
-                if (
-                    e.target === modal
-                ) {
-
-                    modal.style.display =
-                        'none';
-
-                }
-
-            }
-        );
-
-
-    }
-);
-
+            modalMessage.innerText = `Are you sure you want to save the record for ${firstName} ${lastName} under ${purok}?`;
+            modal.style.display = 'flex';
+        }
+    });
+
+    // If user clicks "Yes, Save" inside the modal, proceed with real form submission
+    confirmBtn.addEventListener('click', function() {
+        isFormVerified = true;
+        modal.style.display = 'none';
+        citizenForm.submit();
+    });
+
+    // If user clicks "Cancel" inside the modal, hide the modal and stay on page
+    cancelBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+});
 </script>
-
 
 @endsection
