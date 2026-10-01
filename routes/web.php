@@ -202,7 +202,8 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     })->name('home');
 
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
-    Route::get('/addcitizen', fn () => view('bhw.addcitizen'))->name('citizen.add');
+    Route::get('/addcitizen', function () {$puroks = \App\Models\Purok::all();return view('bhw.addcitizen', compact('puroks'));})->name('citizen.add');
+
     Route::post('/citizen-store', fn () => app(CitizenController::class)->store(request()))->name('citizen.store');
 
     // Electronic Health & Vaccination Card Routes (NEW)

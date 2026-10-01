@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\CitizenActivityLog;
 use App\Models\citizens;
 use App\Models\HealthRecord;
-use App\Models\CitizenActivityLog;
 use App\Models\HealthRecordActivityLog;
 use Illuminate\Support\Facades\Auth;
 use App\Models\VaccinationRecord;
@@ -98,7 +97,7 @@ class CitizenController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | STORE CITIZEN
+    | STORE CITIZEN & USER ACCOUNT
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
@@ -212,6 +211,8 @@ class CitizenController extends Controller
 
     public function citizendetails($id)
     {
+        $citizen = citizens::with('healthRecords')->findOrFail($id);
+    {
         $citizen = citizens::with('healthRecords','family.purok')->findOrFail($id);
 
         $this->logActivity(
@@ -221,6 +222,8 @@ class CitizenController extends Controller
             'Viewed citizen details page'
         );
 
+        return view('bhw.citizendetails', compact('citizen'));
+    }
         $families = Family::with('purok', 'subgroup')->get();
 
         return view('bhw.citizendetails', compact('citizen', 'families'));
@@ -254,6 +257,14 @@ class CitizenController extends Controller
             'Citizen_BirthDate' => $request->Citizen_BirthDate,
             'Citizen_ContactNo' => $request->Citizen_ContactNo,
             'Citizen_Purok' => $request->Citizen_Purok,
+        ]);
+        $citizen->update([
+            'Citizen_FName' => $request->Citizen_FName,
+            'Citizen_LName' => $request->Citizen_LName,
+            'Citizen_Age' => $request->Citizen_Age,
+            'Citizen_BirthDate' => $request->Citizen_BirthDate,
+            'Citizen_ContactNo' => $request->Citizen_ContactNo,
+            'Citizen_Purok' => $request->Citizen_Purok,
             'family_id' => $request->family_id,
         ]);
 
@@ -279,56 +290,58 @@ class CitizenController extends Controller
     }
 
     public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
-    ]);
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
+        ]);
 
-    $file = $request->file('file');
-    $path = $file->getRealPath();
+        $file = $request->file('file');
+        $path = $file->getRealPath();
 
-    if (($handle = fopen($path, 'r')) !== FALSE) {
-        // Read header row
-        $header = fgetcsv($handle, 1000, ',');
-        // Convert headers to lowercase/trimmed for safe matching
-        $header = array_map(function($h) {
-            return strtolower(trim(str_replace(' ', '_', $h)));
-        }, $header);
+        if (($handle = fopen($path, 'r')) !== false) {
+            // Read header row
+            $header = fgetcsv($handle, 1000, ',');
 
-        while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
-            // Combine header and row data to map by column name
-            if (count($header) === count($data)) {
-                $row = array_combine($header, $data);
+            // Convert headers to lowercase/trimmed for safe matching
+            $header = array_map(function ($h) {
+                return strtolower(trim(str_replace(' ', '_', $h)));
+            }, $header);
 
-                $birthDate = $row['citizen_birthdate'] ?? $row['birthdate'] ?? null;
-                
-                // Calculate age dynamically from birthdate if available
-                $age = 0;
-                if ($birthDate) {
-                    try {
-                        $age = Carbon::parse($birthDate)->age;
-                    } catch (\Exception $e) {
-                        $age = 0;
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                // Combine header and row data to map by column name
+                if (count($header) === count($data)) {
+                    $row = array_combine($header, $data);
+
+                    $birthDate = $row['citizen_birthdate'] ?? $row['birthdate'] ?? null;
+
+                    // Calculate age dynamically from birthdate if available
+                    $age = 0;
+                    if ($birthDate) {
+                        try {
+                            $age = Carbon::parse($birthDate)->age;
+                        } catch (\Exception $e) {
+                            $age = 0;
+                        }
                     }
+
+                    citizens::create([
+                        'Citizen_FName'     => $row['citizen_fname'] ?? $row['first_name'] ?? '',
+                        'Citizen_LName'     => $row['citizen_lname'] ?? $row['last_name'] ?? '',
+                        'Citizen_Age'       => $age,
+                        'Citizen_BirthDate' => $birthDate,
+                        'Citizen_ContactNo' => $row['citizen_contactno'] ?? $row['contact_number'] ?? '',
+                        'Citizen_Purok'     => $row['citizen_purok'] ?? $row['purok'] ?? 'Purok 1',
+                    ]);
                 }
-
-                citizens::create([
-                    'Citizen_FName'     => $row['citizen_fname'] ?? $row['first_name'] ?? '',
-                    'Citizen_LName'     => $row['citizen_lname'] ?? $row['last_name'] ?? '',
-                    'Citizen_Age'       => $age,
-                    'Citizen_BirthDate' => $birthDate,
-                    'Citizen_ContactNo' => $row['citizen_contactno'] ?? $row['contact_number'] ?? '',
-                    'Citizen_Purok'     => $row['citizen_purok'] ?? $row['purok'] ?? 'Purok 1',
-                ]);
             }
+
+            fclose($handle);
         }
-        fclose($handle);
+
+        $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
+
+        return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
     }
-
-    $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
-
-    return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
-}
 
     public function showElectronicCard($id)
     {

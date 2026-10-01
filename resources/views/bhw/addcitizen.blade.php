@@ -75,8 +75,8 @@
 
 <div class="page-top">
     <div class="page-title-group">
-        <h1>Add Citizen</h1>
-        <p>Register a new barangay resident and store their profile information.</p>
+        <h1>Add Citizen & Account</h1>
+        <p>Register a new barangay resident and generate their portal login credentials.</p>
     </div>
     <a href="{{ route('citizenlist') }}" class="btn-secondary">← Back</a>
 </div>
@@ -112,6 +112,7 @@
                 <input type="text" name="Citizen_ContactNo">
             </div>
 
+            {{-- Dynamically loaded Puroks from the database --}}
             <div class="form-group">
                 <label>Purok</label>
                 <select name="Citizen_Purok" required>
@@ -122,10 +123,21 @@
                 </select>
             </div>
 
+            {{-- New Login Credentials Fields --}}
+            <div class="form-group">
+                <label>Email Address (For Login)</label>
+                <input type="email" name="email" required placeholder="resident@email.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="At least 6 characters">
+            </div>
+
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary">Save Citizen</button>
+            <button type="submit" class="btn-primary">Save Citizen & Create Account</button>
             <a href="{{ route('citizenlist') }}" class="btn-secondary">Cancel</a>
         </div>
 
