@@ -58,4 +58,8 @@ class SuperAdminController extends Controller
         'sessions' => $activeSessions
     ]);
 }
+public function systemSettings()
+    {
+        return view('superadmin.settings');
+    }
 }

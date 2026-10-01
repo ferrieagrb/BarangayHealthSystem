@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Existing middleware aliases
         $middleware->alias([
             'role' => CheckRole::class,
+            'feature.write' => \App\Http\Middleware\CheckFeaturePermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

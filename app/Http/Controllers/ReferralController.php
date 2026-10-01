@@ -28,7 +28,9 @@ class ReferralController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
+        if (!Auth::check() || Auth::user()->role !== 'bhw') {
+            abort(403);
+        }
 
         $validated = $request->validate([
             'date_of_referral' => 'required|date',
@@ -54,6 +56,11 @@ class ReferralController extends Controller
         $fileName = 'referral_' . $referral->id . '_' . time() . '.pdf';
         $filePath = 'storage/referrals/' . $fileName;
 
+        // Ensure directory exists and save PDF
+        if (!file_exists(public_path('storage/referrals'))) {
+            mkdir(public_path('storage/referrals'), 0755, true);
+        }
+
         file_put_contents(
             public_path('storage/referrals/' . $fileName),
             $pdf->output()
@@ -61,6 +68,15 @@ class ReferralController extends Controller
 
         $referral->update([
             'file_path' => $filePath,
+        ]);
+
+        // ✅ Log the Referral Creation into citizen_activity_logs
+        \App\Models\CitizenActivityLog::create([
+            'user_id' => Auth::id() ?? 0,
+            'action' => 'create',
+            'module' => 'referral',
+            'citizen_id' => null, // Set to citizen ID if your referral table tracks it
+            'description' => 'Created medical referral for ' . $referral->name,
         ]);
 
         return redirect()->route('referrals.index')

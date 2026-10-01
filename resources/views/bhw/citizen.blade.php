@@ -76,60 +76,60 @@
     <div class="toolbar-left"
         style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
 
-        {{-- SEARCH --}}
-        <div class="search-box">
-            <form method="GET"
-                action="{{ route('citizenlist') }}"
-                id="filterForm">
+        {{-- SEARCH FORM --}}
+        <form method="GET" action="{{ route('citizenlist') }}" id="filterForm" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+            
+            {{-- Keep existing filters active on search change --}}
+            <input type="hidden" name="purok" value="{{ request('purok') }}">
+            <input type="hidden" name="subgroup" value="{{ request('subgroup') }}">
+            <input type="hidden" name="age_group" value="{{ request('age_group') }}">
 
+            {{-- SEARCH --}}
+            <div class="search-box">
                 <input type="text"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Search citizen name or ID"
-                    oninput="this.form.submit()">
-            </form>
-        </div>
+                    placeholder="Search citizen name or ID">
+            </div>
+        </form>
 
+        {{-- SEPARATE FILTER CONTROLS SUBMITTED VIA JS OR CHANGE --}}
+        <form method="GET" action="{{ route('citizenlist') }}" id="dropdownFilterForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            
+            {{-- Preserve search query if active --}}
+            <input type="hidden" name="search" value="{{ request('search') }}">
 
-        {{-- PUROK FILTER --}}
-        <div class="filter-box">
-            <form method="GET"
-                action="{{ route('citizenlist') }}">
-
-                <select name="purok"
-                    onchange="this.form.submit()">
-
-                    <option value="all">
-                        All Purok
-                    </option>
-
-                    <option value="Purok 1"
-                        {{ request('purok') == 'Purok 1' ? 'selected' : '' }}>
-                        Purok 1
-                    </option>
-
-                    <option value="Purok 2"
-                        {{ request('purok') == 'Purok 2' ? 'selected' : '' }}>
-                        Purok 2
-                    </option>
-
-                    <option value="Purok 3"
-                        {{ request('purok') == 'Purok 3' ? 'selected' : '' }}>
-                        Purok 3
-                    </option>
+            {{-- PUROK FILTER --}}
+            <div class="filter-box">
+                <select name="purok" id="purokFilter" onchange="onPurokChange(this)">
+                    <option value="">All Purok</option>
+                    @foreach($puroks ?? [] as $purok)
+                        <option value="{{ $purok->id }}" {{ request('purok') == $purok->id ? 'selected' : '' }}>
+                            {{ $purok->name }}
+                        </option>
+                    @endforeach
                 </select>
-            </form>
-        </div>
+            </div>
 
+            {{-- SUBGROUP FILTER (Depends on Purok) --}}
+            <div class="filter-box">
+                <select name="subgroup" id="subgroupFilter" onchange="this.form.submit()">
+                    <option value="">All Subgroups</option>
+                    {{-- Populated dynamically via script below based on selected purok --}}
+                </select>
+            </div>
 
-        {{-- STATUS FILTER --}}
-        <div class="filter-box">
-            <select>
-                <option>All Status</option>
-                <option>Active</option>
-                <option>Under Monitoring</option>
-            </select>
-        </div>
+            {{-- AGE GROUP FILTER (Kids, Adults, Seniors) --}}
+            <div class="filter-box">
+                <select name="age_group" onchange="this.form.submit()">
+                    <option value="">All Age Groups</option>
+                    <option value="kid" {{ request('age_group') == 'kid' ? 'selected' : '' }}>Kids</option>
+                    <option value="adult" {{ request('age_group') == 'adult' ? 'selected' : '' }}>Adults</option>
+                    <option value="senior" {{ request('age_group') == 'senior' ? 'selected' : '' }}>Seniors</option>
+                </select>
+            </div>
+        </form>
+
     </div>
 
 
@@ -316,9 +316,50 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 
-{{-- DEMOGRAPHICS CHART SCRIPT --}}
+{{-- DEMOGRAPHICS CHART & FILTER SCRIPT --}}
 <script>
+    // Pass Purok and Subgroups structure from backend to JS for dynamic cascading dropdowns
+    const puroksData = {!! json_encode($puroks ?? []) !!};
+    const selectedPurokId = "{{ request('purok') }}";
+    const selectedSubgroupId = "{{ request('subgroup') }}";
 
+    function populateSubgroups(purokId) {
+        const subgroupSelect = document.getElementById('subgroupFilter');
+        subgroupSelect.innerHTML = '<option value="">All Subgroups</option>';
+
+        if (!purokId) {
+            subgroupSelect.disabled = false;
+            return;
+        }
+
+        const foundPurok = puroksData.find(p => p.id == purokId);
+        if (foundPurok && foundPurok.subgroups) {
+            foundPurok.subgroups.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.textContent = sub.name;
+                if (sub.id == selectedSubgroupId) {
+                    opt.selected = true;
+                }
+                subgroupSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function onPurokChange(selectElement) {
+        // Reset subgroup selection when purok changes, then submit form
+        document.getElementById('subgroupFilter').value = '';
+        selectElement.form.submit();
+    }
+
+    // Initialize subgroup options on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (selectedPurokId) {
+            populateSubgroups(selectedPurokId);
+        }
+    });
+
+    // ApexCharts Setup
     var options = {
 
         series: [
