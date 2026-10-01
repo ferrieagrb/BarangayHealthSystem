@@ -26,16 +26,16 @@
                 <input type="text" name="name" required placeholder="e.g., Biogesic">
             </div>
 
-            <!-- CATEGORY -->
+            <!-- CATEGORY (Dynamic from Database) -->
             <div class="form-group" style="grid-column: span 2;">
                 <label>Category</label>
                 <select name="category" required>
-                    <option value="">Select Category</option>
-                    <option value="Medicine">Medicine</option>
-                    <option value="Medical Equipment">Medical Equipment</option>
-                    <option value="First Aid">First Aid</option>
-                    <option value="Vaccines">Vaccines</option>
-                    <option value="Supplies">Supplies</option>
+                    <option value="" disabled selected>Select Category</option>
+                    @isset($categories)
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                        @endforeach
+                    @endisset
                 </select>
             </div>
 

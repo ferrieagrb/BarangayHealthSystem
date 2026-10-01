@@ -66,130 +66,110 @@
 </div>
 
 
-{{-- TOOLBAR: SEARCH, FILTERS, EXPORT, AND IMPORT --}}
+{{-- TOOLBAR --}}
 <div class="toolbar">
 
-    {{-- LEFT TOOLBAR --}}
-    <div class="toolbar-left"
-        style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+    {{-- ALL SEARCH + FILTER CONTROLS --}}
+    <div class="toolbar-left">
 
         {{-- SEARCH --}}
-        <div class="search-box">
-            <form method="GET"
-                action="{{ route('citizenlist') }}"
-                id="filterForm">
+        <form method="GET"
+              action="{{ route('citizenlist') }}"
+              class="citizen-filter-form">
 
+            <div class="search-box">
                 <input type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search citizen name or ID"
-                    oninput="this.form.submit()">
-            </form>
-        </div>
+                       name="search"
+                       value="{{ request('search') }}"
+                       placeholder="Search citizen name or ID">
+            </div>
 
-
-        {{-- PUROK FILTER --}}
-        <div class="filter-box">
-            <form method="GET"
-                action="{{ route('citizenlist') }}">
-
+            {{-- PUROK --}}
+            <div class="filter-box">
                 <select name="purok"
-                    onchange="this.form.submit()">
+                        onchange="this.form.submit()">
 
-                    <option value="all">
+                    <option value="">
                         All Purok
                     </option>
 
-                    <option value="Purok 1"
-                        {{ request('purok') == 'Purok 1' ? 'selected' : '' }}>
-                        Purok 1
-                    </option>
+                    @foreach($puroks ?? [] as $purok)
 
-                    <option value="Purok 2"
-                        {{ request('purok') == 'Purok 2' ? 'selected' : '' }}>
-                        Purok 2
-                    </option>
+                        <option value="{{ $purok->id }}"
+                            {{ request('purok') == $purok->id ? 'selected' : '' }}>
 
-                    <option value="Purok 3"
-                        {{ request('purok') == 'Purok 3' ? 'selected' : '' }}>
-                        Purok 3
-                    </option>
+                            {{ $purok->name }}
+
+                        </option>
+
+                    @endforeach
+
                 </select>
-            </form>
-        </div>
+            </div>
 
+          
 
-{{-- AGE FILTER --}}
-        <div class="filter-box">
-            <form method="GET"
-                action="{{ route('citizenlist') }}">
-
-                {{-- Keep existing search --}}
-                <input type="hidden"
-                    name="search"
-                    value="{{ request('search') }}">
-
-                {{-- Keep existing Purok --}}
-                <input type="hidden"
-                    name="purok"
-                    value="{{ request('purok', 'all') }}">
-
+            {{-- AGE RANGE --}}
+            <div class="filter-box">
                 <input type="text"
-                    name="age"
-                    value="{{ request('age') }}"
-                    placeholder="Age or range (e.g. 8 or 4-10)"
-                    onchange="this.form.submit()">
+                       name="age"
+                       value="{{ request('age') }}"
+                       placeholder="Age or range (e.g. 8 or 4-10)"
+                       onchange="this.form.submit()">
+            </div>
 
-            </form>
-        </div>
+            
 
-        {{-- STATUS FILTER --}}
-        <div class="filter-box">
-            <select>
-                <option>All Status</option>
-                <option>Active</option>
-                <option>Under Monitoring</option>
-            </select>
-        </div>
+            {{-- STATUS --}}
+            <div class="filter-box">
+                <select>
+                    <option>All Status</option>
+                    <option>Active</option>
+                    <option>Under Monitoring</option>
+                </select>
+            </div>
+
+        </form>
+
     </div>
 
 
-    {{-- RIGHT TOOLBAR: EXPORT AND IMPORT --}}
-    <div
-        style="display: flex; gap: 10px; align-items: center;">
+    {{-- EXPORT / IMPORT --}}
+    <div class="toolbar-actions">
 
-        {{-- EXPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary">
+                class="btn-secondary">
             Export List
         </button>
 
 
-        {{-- HIDDEN IMPORT FORM --}}
         <form action="{{ route('citizen.import') }}"
-            method="POST"
-            enctype="multipart/form-data"
-            id="importForm"
-            style="display: none;">
+              method="POST"
+              enctype="multipart/form-data"
+              id="importForm"
+              style="display:none;">
 
             @csrf
 
             <input type="file"
-                name="file"
-                id="excelFileInput"
-                accept=".csv, .xlsx, .xls"
-                onchange="document.getElementById('importForm').submit()">
+                   name="file"
+                   id="excelFileInput"
+                   accept=".csv,.xlsx,.xls"
+                   onchange="document.getElementById('importForm').submit()">
+
         </form>
 
 
-        {{-- IMPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary"
-            onclick="document.getElementById('excelFileInput').click();">
+                class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();">
 
             Import Excel
+
         </button>
+
     </div>
+
 </div>
 
 
@@ -337,9 +317,50 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 
-{{-- DEMOGRAPHICS CHART SCRIPT --}}
+{{-- DEMOGRAPHICS CHART & FILTER SCRIPT --}}
 <script>
+    // Pass Purok and Subgroups structure from backend to JS for dynamic cascading dropdowns
+    const puroksData = {!! json_encode($puroks ?? []) !!};
+    const selectedPurokId = "{{ request('purok') }}";
+    const selectedSubgroupId = "{{ request('subgroup') }}";
 
+    function populateSubgroups(purokId) {
+        const subgroupSelect = document.getElementById('subgroupFilter');
+        subgroupSelect.innerHTML = '<option value="">All Subgroups</option>';
+
+        if (!purokId) {
+            subgroupSelect.disabled = false;
+            return;
+        }
+
+        const foundPurok = puroksData.find(p => p.id == purokId);
+        if (foundPurok && foundPurok.subgroups) {
+            foundPurok.subgroups.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.textContent = sub.name;
+                if (sub.id == selectedSubgroupId) {
+                    opt.selected = true;
+                }
+                subgroupSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function onPurokChange(selectElement) {
+        // Reset subgroup selection when purok changes, then submit form
+        document.getElementById('subgroupFilter').value = '';
+        selectElement.form.submit();
+    }
+
+    // Initialize subgroup options on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (selectedPurokId) {
+            populateSubgroups(selectedPurokId);
+        }
+    });
+
+    // ApexCharts Setup
     var options = {
 
         series: [

@@ -32,9 +32,10 @@ table {
     border-collapse: collapse;
 }
 
-td {
+th, td {
     padding: 10px;
     border-bottom: 1px solid #eee;
+    text-align: left;
 }
 
 .tag {
@@ -43,6 +44,10 @@ td {
     color: white;
     border-radius: 6px;
     font-size: 12px;
+}
+
+.pagination-container {
+    margin-top: 20px;
 }
 </style>
 @endsection
@@ -58,87 +63,111 @@ td {
 
 <!-- TABS -->
 <div class="tabs">
-    <!--<button class="tab active" onclick="openTab(event, 'citizens')">Citizens</button>-->
     <button class="tab active" onclick="openTab(event, 'supplies')">Supplies</button>
     <button class="tab" onclick="openTab(event, 'health')">Health Records</button>
     <button class="tab" onclick="openTab(event, 'vehicle')">Vehicle Borrowing</button>
-    <!--
-    <button class="tab" onclick="openTab(event, 'Immunization')">Immunization Recording</button>
-    <button class="tab" onclick="openTab(event, 'HomeVisit')">Home Visit Recording</button>
-    -->
 </div>
-
-<!-- CITIZEN LOGS 
-<div id="citizens" class="tab-content active">
-    <table>
-        @foreach($citizenLogs as $log)
-        <tr>
-            <td>#{{ $log->id }}</td>
-            <td><span class="tag">Citizen</span></td>
-            <td>{{ $log->description }}</td>
-            <td>{{ $log->created_at }}</td>
-        </tr>
-        @endforeach
-    </table>
-</div>
--->
 
 <!-- SUPPLY LOGS -->
 <div id="supplies" class="tab-content active">
     <table>
-        @foreach($supplyLogs as $log)
-        <tr>
-            <td>#{{ $log->id }}</td>
-            <td>#{{ $log->action }}</td>
-            <td><span class="tag">Supply</span></td>
-            <td>{{ $log->description }}</td>
-            <td>{{ $log->created_at }}</td>
-        </tr>
-        @endforeach
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Action</th>
+                <th>Type</th>
+                <th>Notes</th>
+                <th>Date / Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($supplyLogs as $log)
+            <tr>
+                <td>#{{ $log->id }}</td>
+                <td>{{ $log->user_id ?? 'N/A' }}</td>
+                <td>{{ $log->action }}</td>
+                <td><span class="tag">Supply</span></td>
+                <td>{{ $log->notes }}</td>
+                <td>{{ $log->created_at }}</td>
+            </tr>
+            @endforeach
+        </tbody>
     </table>
+
+    <div class="pagination-container">
+        {{ $supplyLogs->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 
 <!-- HEALTH LOGS -->
 <div id="health" class="tab-content">
     <table>
-        @foreach($healthRecordLogs as $log)
-        <tr>
-            <td>#{{ $log->id }}</td>
-            <td><span class="tag">Health</span></td>
-            <td>{{ $log->description }}</td>
-            <td>{{ $log->created_at }}</td>
-        </tr>
-        @endforeach
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Date / Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($healthRecordLogs as $log)
+            <tr>
+                <td>#{{ $log->id }}</td>
+                <td>{{ $log->user_id ?? 'N/A' }}</td>
+                <td><span class="tag">Health</span></td>
+                <td>{{ $log->description }}</td>
+                <td>{{ $log->created_at }}</td>
+            </tr>
+            @endforeach
+        </tbody>
     </table>
+
+    <div class="pagination-container">
+        {{ $healthRecordLogs->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 
+<!-- VEHICLE LOGS -->
 <div id="vehicle" class="tab-content">
-    
-    <button onclick="toggleVehicleForm()">+ Add Borrow Log</button>
+    <button onclick="toggleVehicleForm()" style="margin-bottom: 15px;">+ Add Borrow Log</button>
 
-    <div id="vehicleForm" style="display:none;">
+    <div id="vehicleForm" style="display:none; margin-top: 10px; margin-bottom: 15px;">
         <form method="POST" action="{{ route('vehicle.logs.store') }}">
             @csrf
-
             <input type="text" name="vehicle_name" placeholder="Vehicle Name" required>
             <input type="text" name="borrower" placeholder="Borrower Name" required>
             <input type="datetime-local" name="borrowed_at" required>
-
             <button type="submit">Save</button>
         </form>
     </div>
 
     <table>
-        @foreach($vehicleLogs as $log)
-        <tr>
-            <td>#{{ $log->id }}</td>
-            <td>{{ $log->vehicle_name }}</td>
-            <td>{{ $log->borrower }}</td>
-            <td>{{ $log->borrowed_at }}</td>
-        </tr>
-        @endforeach
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Vehicle Name</th>
+                <th>Borrower</th>
+                <th>Borrowed At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($vehicleLogs as $log)
+            <tr>
+                <td>#{{ $log->id }}</td>
+                <td>{{ $log->vehicle_name }}</td>
+                <td>{{ $log->borrower }}</td>
+                <td>{{ $log->borrowed_at }}</td>
+            </tr>
+            @endforeach
+        </tbody>
     </table>
 
+    <div class="pagination-container">
+        {{ $vehicleLogs->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 
 @endsection
@@ -152,6 +181,7 @@ function openTab(evt, tab) {
     document.getElementById(tab).classList.add('active');
     evt.currentTarget.classList.add('active');
 }
+
 function toggleVehicleForm() {
     let form = document.getElementById('vehicleForm');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';

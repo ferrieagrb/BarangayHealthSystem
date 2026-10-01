@@ -36,7 +36,9 @@
         <h1>Health Supplies Inventory</h1>
         <p>Monitor stock levels of medicines and health supplies.</p>
     </div>
-    <a href="{{ route('supplies.create') }}" class="btn-primary">+ Add New Item</a>
+    @if(auth()->user()->hasWriteAccess('supplies'))
+        <a href="{{ route('supplies.create') }}" class="btn-primary">+ Add New Item</a>
+    @endif
 </div>
 
 <!-- SUMMARY -->
@@ -118,14 +120,18 @@
         </td>
         <td>
             <!-- Triggers Multi-Pack Deposit Modal -->
-            <div onclick="event.stopPropagation();">
-                <button 
-                    type="button"
-                    class="btn-primary openDeposit"
-                    data-name="{{ $itemName }}">
-                    + Deposit Packs
-                </button>
-            </div>
+            @if(auth()->user()->hasWriteAccess('supplies'))
+        <div onclick="event.stopPropagation();">
+            <button 
+                type="button"
+                class="btn-primary openDeposit"
+                data-name="{{ $itemName }}">
+                + Deposit Packs
+            </button>
+        </div>
+    @else
+        <span style="color: #6b7280; font-size: 0.85rem;">Read Only</span>
+    @endif
         </td>
         <td>{{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}</td>
     </tr>
@@ -173,26 +179,30 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
-                                            <!-- Trash Button for Expired Packs -->
-                                            <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired pack entirely?');" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Pack">
-                                                    🗑️ Delete
+                                        @if(auth()->user()->hasWriteAccess('supplies'))
+                                            @if($supply->expiration_date && \Carbon\Carbon::parse($supply->expiration_date)->isPast())
+                                                <!-- Trash Button for Expired Packs -->
+                                                <form action="{{ route('supplies.destroy', $supply->id) }}" method="POST" onsubmit="return confirm('Remove this expired pack entirely?');" style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-secondary" style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;" title="Delete Expired Pack">
+                                                        🗑️ Delete
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <!-- Specific Pack Withdraw Button -->
+                                                <button 
+                                                    type="button" 
+                                                    class="btn-secondary openWithdrawModal" 
+                                                    style="padding: 4px 8px;"
+                                                    data-id="{{ $supply->id }}"
+                                                    data-max="{{ $supply->quantity }}"
+                                                    data-code="{{ $supply->item_number ?? 'N/A' }}">
+                                                    Withdraw
                                                 </button>
-                                            </form>
+                                            @endif
                                         @else
-                                            <!-- Specific Pack Withdraw Button -->
-                                            <button 
-                                                type="button" 
-                                                class="btn-secondary openWithdrawModal" 
-                                                style="padding: 4px 8px;"
-                                                data-id="{{ $supply->id }}"
-                                                data-max="{{ $supply->quantity }}"
-                                                data-code="{{ $supply->item_number ?? 'N/A' }}">
-                                                Withdraw
-                                            </button>
+                                            <span style="color: #6b7280; font-size: 0.85rem;">-</span>
                                         @endif
                                     </td>
                                 </tr>

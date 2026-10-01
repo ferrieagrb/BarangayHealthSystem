@@ -64,7 +64,7 @@
             </li>
             
             <li>
-                <a href = "{{route('admin.supplies')}}">
+                <a href = "{{route('admin.permissions.index')}}">
                     <i class = "bx bx-box"></i>
                     <span class = "nav-item"> Permissions </span>
                 </a>
@@ -98,6 +98,18 @@
 
 </div>
 
+    @auth
+<div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
+        <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
+        <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
+    </div>
+</div>
+
+    @endauth
+
 <!-- JS -->
 <script>
 const sidebar = document.querySelector(".sidebar");
@@ -107,6 +119,35 @@ toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("collapsed");
 });
 </script>
+
+@auth
+    
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Set timeout duration in milliseconds (1 minute = 60,000 ms)
+        const sessionLimit = 1 * 60 * 1000; 
+
+        let timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
+
+        function resetTimer() {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
+        }
+
+        function triggerTimeout() {
+            // Show the popup modal wherever the user is
+            document.getElementById('session-timeout-modal').style.display = 'flex';
+        }
+
+        // Reset timer on user interaction (mouse movement, clicks, keystrokes)
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keypress', resetTimer);
+        window.addEventListener('click', resetTimer);
+        window.addEventListener('scroll', resetTimer);
+    });
+</script>
+
+@endauth
 
 </body>
 </html>
