@@ -24,9 +24,7 @@
 
         </div>
 
-            <a href="#" class="btn-primary add-record-btn">
-                + Add Record
-            </a>
+            
 
     </div>
 

@@ -64,7 +64,7 @@
             </li>
             
             <li>
-                <a href = "{{route('admin.supplies')}}">
+                <a href = "{{route('admin.permissions.index')}}">
                     <i class = "bx bx-box"></i>
                     <span class = "nav-item"> Permissions </span>
                 </a>

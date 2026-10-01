@@ -28,6 +28,7 @@ class citizens extends Authenticatable
         'Citizen_ContactNo',
         'Citizen_Age',
         'Citizen_Purok',
+        'family_id'
     ];
 
     protected $table = 'citizens';
@@ -66,6 +67,11 @@ class citizens extends Authenticatable
     public function medications()
 {
     return $this->hasMany(MedicationRecord::class, 'citizen_id', 'id');
+}
+
+public function family()
+{
+    return $this->belongsTo(Family::class, 'family_id');
 }
 
 }

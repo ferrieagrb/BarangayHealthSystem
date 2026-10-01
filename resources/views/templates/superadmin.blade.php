@@ -65,7 +65,7 @@
             </li>
 
             <li>
-                <a href="{{ auth()->user()->isSuperAdmin() ? '#' : route('admin.settings') }}">
+                <a href="{{ route('superadmin.system.settings') }}">
                     <i class="bx bx-cog"></i>
                     <span class="nav-item">System Settings</span>
                 </a>

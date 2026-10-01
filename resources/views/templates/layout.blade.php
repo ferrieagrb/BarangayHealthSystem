@@ -46,6 +46,13 @@
             </li>
 
             <li>
+                <a href="/bhw/families">
+                    <i class="bx bx-group"></i>
+                    <span class="nav-item">Families</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="/healthrecord">
                     <i class="bx bx-heart"></i>
                     <span class="nav-item">Health Records</span>
@@ -73,13 +80,14 @@
                 </a>
         </li>
             -->
-
+            @if(auth()->user()->hasWriteAccess('audit_logs'))
             <li>
                 <a href="/logs">
                     <i class="bx bx-book"></i>
                     <span class="nav-item">Logs</span>
                 </a>
             </li>
+            @endif
 
             <li>
                 <a href="/referrals">
