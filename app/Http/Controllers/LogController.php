@@ -11,10 +11,10 @@ class LogController extends Controller
 {
     public function index()
     {
-        $citizenLogs = CitizenActivityLog::latest()->get();
-        $supplyLogs = SupplyLog::latest()->get();
-        $healthRecordLogs = HealthRecordActivityLog::latest()->get();
-        $vehicleLogs = VehicleLog::latest()->get();
+        $citizenLogs = CitizenActivityLog::latest()->paginate(20, ['*'], 'citizen_page');
+        $supplyLogs = SupplyLog::latest()->paginate(20, ['*'], 'supply_page');
+        $healthRecordLogs = HealthRecordActivityLog::latest()->paginate(20, ['*'], 'health_page');
+        $vehicleLogs = VehicleLog::latest()->paginate(20, ['*'], 'vehicle_page');
 
         return view('bhw.logs', compact(
             'citizenLogs',

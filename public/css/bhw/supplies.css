@@ -37,8 +37,9 @@
     color: #fff;
     border: none;
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .btn-secondary {

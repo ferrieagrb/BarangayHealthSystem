@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
 
+    <!-- 1. DITO MO ILALAGAY ANG DALA WANG CSS LINKS -->
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
+
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
 
-    
-
     @yield('CSSown')
 </head>
-
-
-
 <body>
+
+    
 @yield('scripts')
 <div class="dashboard">
 
@@ -42,6 +42,13 @@
                 <a href="/citizenlist">
                     <i class="bx bx-group"></i>
                     <span class="nav-item">Citizen</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/bhw/families">
+                    <i class="bx bx-group"></i>
+                    <span class="nav-item">Families</span>
                 </a>
             </li>
 
@@ -73,13 +80,14 @@
                 </a>
         </li>
             -->
-
+            @if(auth()->user()->hasWriteAccess('audit_logs'))
             <li>
                 <a href="/logs">
                     <i class="bx bx-book"></i>
                     <span class="nav-item">Logs</span>
                 </a>
             </li>
+            @endif
 
             <li>
                 <a href="/referrals">
@@ -123,6 +131,19 @@
 
 </div>
 
+@auth
+
+<div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+    <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
+        <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
+        <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
+    </div>
+</div>
+
+@endauth
+
 <!-- JS -->
 <script>
 const sidebar = document.querySelector(".sidebar");
@@ -132,6 +153,35 @@ toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("collapsed");
 });
 </script>
+
+@auth
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Set timeout duration in milliseconds (1 minute = 60,000 ms)
+        const sessionLimit = 1 * 60 * 1000; 
+
+        let timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
+
+        function resetTimer() {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
+        }
+
+        function triggerTimeout() {
+            // Show the popup modal wherever the user is
+            document.getElementById('session-timeout-modal').style.display = 'flex';
+        }
+
+        // Reset timer on user interaction (mouse movement, clicks, keystrokes)
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keypress', resetTimer);
+        window.addEventListener('click', resetTimer);
+        window.addEventListener('scroll', resetTimer);
+    });
+</script>
+
+@endauth
 
 </body>
 </html>

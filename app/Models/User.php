@@ -61,4 +61,32 @@ class User extends Authenticatable
         return $this->belongsTo(citizens::class, 'citizen_id');
     }
 
+    public function permissions()
+{
+    return $this->hasMany(\App\Models\UserPermission::class);
+}
+
+// Helper method to check if user has write access to a specific feature
+public function hasWriteAccess(string $feature): bool
+{
+    if ($this->role === 'admin') {
+        return true; // Admins always have write access everywhere
+    }
+
+    $permission = $this->permissions()->where('feature', $feature)->first();
+    $access = $permission ? $permission->access : 'none';
+    
+    // Default to 'read' (false for write) if not explicitly set
+    return $permission && $permission->access === 'write';
+}
+
+public function hasReadAccess($feature)
+{
+    $permission = $this->permissions()->where('feature', $feature)->first();
+    $access = $permission ? $permission->access : 'none'; // default fallback
+
+    // 'read' and 'write' both allow reading, but 'none' blocks it
+    return in_array($access, ['read', 'write']);
+}
+
 }

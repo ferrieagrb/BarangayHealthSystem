@@ -8,6 +8,7 @@ use App\Models\Log;
 use App\Models\SupplyLog;
 use Illuminate\Support\Facades\Auth;
 use App\Models\citizens;
+use App\Models\Category;
 
 class SupplyController extends Controller
 {
@@ -40,6 +41,8 @@ class SupplyController extends Controller
 
         $supplies = $query->get();
 
+        $categories = Category::all();
+
         // Phase 1: Backend Metrics & Analytics Calculations
         $totalsupply = Supply::sum('quantity');
         $wellStocked = Supply::whereColumn('quantity', '>', 'min_stock')->count();
@@ -60,7 +63,8 @@ class SupplyController extends Controller
             'totalsupply',
             'wellStocked',
             'lowStock',
-            'citizens'
+            'citizens',
+            'categories'
         ));
     }
 
@@ -68,13 +72,13 @@ class SupplyController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'batches' => 'required|array|min:1',
-            'batches.*.item_number' => 'nullable|string|max:255',
-            'batches.*.serial_number' => 'nullable|string|max:255',
-            'batches.*.quantity' => 'required|integer|min:1',
-            'batches.*.unit' => 'nullable|string|max:50',
-            'batches.*.expiration_date' => 'required|date',
-            'batches.*.supplier' => 'nullable|string|max:255',
+            'packs' => 'required|array|min:1', // Updated from 'batches' to 'packs'
+            'packs.*.item_number' => 'nullable|string|max:255',
+            'packs.*.serial_number' => 'nullable|string|max:255',
+            'packs.*.quantity' => 'required|integer|min:1',
+            'packs.*.unit' => 'nullable|string|max:50',
+            'packs.*.expiration_date' => 'required|date',
+            'packs.*.supplier' => 'nullable|string|max:255',
         ]);
 
         $itemName = $request->input('name');
@@ -82,7 +86,8 @@ class SupplyController extends Controller
         // Pull shared catalog properties (like category and min_stock) from an existing record if available
         $template = Supply::where('name', $itemName)->first();
 
-        foreach ($request->input('batches') as $batchData) {
+        // Loop through 'packs' instead of 'batches'
+        foreach ($request->input('packs') as $batchData) {
             $supply = Supply::create([
                 'name' => $itemName,
                 'category' => $template->category ?? 'Supplies',
@@ -138,6 +143,13 @@ class SupplyController extends Controller
 
         return back();
     }
+
+    public function create()
+    {
+        $categories = Category::all(); // Fetch categories from the database
+        
+        return view('bhw.supply_create', compact('categories')); // Pass them to the form
+    }
     
     public function store(Request $request)
     {
@@ -147,6 +159,12 @@ class SupplyController extends Controller
             'min_stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
         ]);
+
+        if (!auth()->user()->hasWriteAccess('supplies')) {
+        abort(403, 'Unauthorized action. Your account has read-only access to supplies.');
+    }
+
+        $categories = Category::all();
 
         // Ensure we don't duplicate or create phantom stock rows
         Supply::create([
@@ -212,5 +230,27 @@ class SupplyController extends Controller
         $supply->delete();
 
         return back()->with('success', 'Expired batch successfully removed.');
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $request->validate(['name' => 'required|string|unique:categories,name|max:255']);
+        Category::create(['name' => $request->name]);
+        return redirect()->back()->with('success', 'Category added successfully.');
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $request->validate(['name' => 'required|string|unique:categories,name,' . $id . '|max:255']);
+        $category = Category::findOrFail($id);
+        $category->update(['name' => $request->name]);
+        return redirect()->back()->with('success', 'Category updated successfully.');
+    }
+
+    public function destroyCategory($id)
+    {
+        $category = Category::findOrFail($id);
+        $category->delete();
+        return redirect()->back()->with('success', 'Category deleted successfully.');
     }
 }

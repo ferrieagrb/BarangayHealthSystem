@@ -19,6 +19,8 @@ use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\AdminPermissionController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -222,7 +224,7 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
 
     // Supplies
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies.index');
-    Route::get('/supplies/create', fn () => view('bhw.supply_create'))->name('supplies.create');
+    Route::get('/supplies/create', [SupplyController::class, 'create'])->name('supplies.create');
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
@@ -253,6 +255,15 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 });
 
+Route::middleware(['auth'])->prefix('bhw')->name('bhw.')->group(function () {
+    Route::get('/families', [FamilyController::class, 'index'])->name('families.index');
+    Route::post('/families', [FamilyController::class, 'store'])->name('families.store');
+    Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
+    Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
+    Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
+    Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -261,16 +272,34 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
 */
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/home', fn () => view('admin.admin_home'))->name('home');
+    Route::get('/home',[AdminSettings::class,'dashboard'])->name('home');
     Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies');
+    Route::post('/supplies/deposit', [SupplyController::class, 'deposit'])->name('supplies.deposit');
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
-    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
+    Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(),$id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
+
+    Route::get('/demographics',[AdminSettings::class,'demographicsIndex'])->name('demographics');
+    Route::post('/demographics/purok',[AdminSettings::class,'storePurok'])->name('puroks.store');
+    Route::delete('/demographics/purok/{id}',[AdminSettings::class,'destroyPurok'])->name('puroks.destroy');
+    Route::put('/admin/puroks/{id}', [AdminSettings::class, 'updatePurok'])->name('puroks.update');
+
+    Route::post('/purok-subgroups', [AdminSettings::class, 'storeSubgroup'])->name('subgroups.store');
+    Route::delete('/purok-subgroups/{id}', [AdminSettings::class, 'destroySubgroup'])->name('subgroups.destroy');
+
+    Route::post('/categories', [SupplyController::class, 'storeCategory'])->name('categories.store');
+    Route::put('/categories/{id}', [SupplyController::class, 'updateCategory'])->name('categories.update');
+    Route::delete('/categories/{id}', [SupplyController::class, 'destroyCategory'])->name('categories.destroy');
+
+
+
+    Route::get('/permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
+    Route::put('/permissions/{user}', [AdminPermissionController::class, 'update'])->name('permissions.update');
 });
 
 /*
@@ -319,4 +348,13 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);
 
     Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
+
+    Route::get('/system-settings', [SuperAdminController::class, 'systemSettings'])->name('system.settings');
+});
+
+
+Route::middleware(['auth', 'feature.write:supplies'])->group(function () {
+    Route::post('/supplies', [SupplyController::class, 'store']);
+    Route::put('/supplies/{id}', [SupplyController::class, 'update']);
+    Route::delete('/supplies/{id}', [SupplyController::class, 'destroy']);
 });
