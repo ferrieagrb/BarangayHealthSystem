@@ -3,42 +3,33 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/addcitizen.css') }}">
 <style>
-    /* Main overlay container taking up the full screen */
-    .custom-modal-overlay {
+    /* 1. The dark backdrop covering the screen */
+    #confirmation-modal {
         display: none;
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6); /* Dark dim effect */
         z-index: 99999;
         justify-content: center;
         align-items: center;
-    }
-    
-    /* Layer 1: The dark dimming background sits behind */
-    .custom-modal-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(2px);
-        z-index: 1;
     }
 
-    /* Layer 2: The modal box sits strictly on top, completely unaffected */
+    /* 2. The modal box itself - completely isolated, solid white, and crisp */
     .custom-modal-box {
-        position: relative;
-        background: #ffffff;
+        background: #ffffff !important;
+        opacity: 1 !important;
         padding: 30px;
-        border-radius: 10px;
+        border-radius: 12px;
         width: 100%;
         max-width: 400px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
         text-align: center;
-        z-index: 100000; 
+        position: relative;
+        z-index: 100000;
         animation: modalFadeIn 0.2s ease-in-out;
     }
 
@@ -142,7 +133,7 @@
 </div>
 
 <!-- Custom centered confirmation modal window with separated backdrop and box layers -->
-<div id="confirmation-modal" class="custom-modal-overlay">
+<div id="confirmation-modal" style="display: none;">
     <div class="custom-modal-box">
         <h3 style="margin-top: 0; color: #111827; font-size: 18px;">Confirm Citizen Registration</h3>
         <p id="modal-message" style="color: #4b5563; font-size: 14px; margin: 15px 0;">Are you sure you want to save this record?</p>
@@ -151,7 +142,6 @@
             <button type="button" id="modal-confirm-btn" class="btn-modal-confirm">Yes, Save</button>
         </div>
     </div>
-    <div class="custom-modal-backdrop"></div>
 </div>
 
 <script>
