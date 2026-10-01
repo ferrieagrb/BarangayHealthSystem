@@ -124,8 +124,9 @@ toggleBtn.addEventListener("click", () => {
     
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Set timeout duration in milliseconds (1 minute = 60,000 ms)
-        const sessionLimit = 1 * 60 * 1000; 
+        // Dynamically grab SESSION_LIFETIME from Laravel config (in minutes) and convert to milliseconds
+        const sessionLifetimeMinutes = {{ config('session.lifetime', 120) }};
+        const sessionLimit = sessionLifetimeMinutes * 60 * 1000; 
 
         let timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
 
