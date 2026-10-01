@@ -12,6 +12,7 @@ use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
 use App\Models\Family;
 use App\Models\Purok;
+use Carbon\Carbon;
 
 class CitizenController extends Controller
 {
@@ -278,34 +279,56 @@ class CitizenController extends Controller
     }
 
     public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
-        ]);
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
+    ]);
 
-        $file = $request->file('file');
-        $path = $file->getRealPath();
+    $file = $request->file('file');
+    $path = $file->getRealPath();
 
-        if (($handle = fopen($path, 'r')) !== FALSE) {
-            $header = fgetcsv($handle, 1000, ',');
+    if (($handle = fopen($path, 'r')) !== FALSE) {
+        // Read header row
+        $header = fgetcsv($handle, 1000, ',');
+        // Convert headers to lowercase/trimmed for safe matching
+        $header = array_map(function($h) {
+            return strtolower(trim(str_replace(' ', '_', $h)));
+        }, $header);
 
-            while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
+        while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+            // Combine header and row data to map by column name
+            if (count($header) === count($data)) {
+                $row = array_combine($header, $data);
+
+                $birthDate = $row['citizen_birthdate'] ?? $row['birthdate'] ?? null;
+                
+                // Calculate age dynamically from birthdate if available
+                $age = 0;
+                if ($birthDate) {
+                    try {
+                        $age = Carbon::parse($birthDate)->age;
+                    } catch (\Exception $e) {
+                        $age = 0;
+                    }
+                }
+
                 citizens::create([
-                    'Citizen_FName'     => $row[0] ?? '',
-                    'Citizen_LName'     => $row[1] ?? '',
-                    'Citizen_Age'       => $row[2] ?? 0,
-                    'Citizen_BirthDate' => $row[3] ?? null,
-                    'Citizen_ContactNo' => $row[4] ?? '',
-                    'Citizen_Purok'     => $row[5] ?? 'Purok 1',
+                    'Citizen_FName'     => $row['citizen_fname'] ?? $row['first_name'] ?? '',
+                    'Citizen_LName'     => $row['citizen_lname'] ?? $row['last_name'] ?? '',
+                    'Citizen_Age'       => $age,
+                    'Citizen_BirthDate' => $birthDate,
+                    'Citizen_ContactNo' => $row['citizen_contactno'] ?? $row['contact_number'] ?? '',
+                    'Citizen_Purok'     => $row['citizen_purok'] ?? $row['purok'] ?? 'Purok 1',
                 ]);
             }
-            fclose($handle);
         }
-
-        $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
-
-        return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+        fclose($handle);
     }
+
+    $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
+
+    return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+}
 
     public function showElectronicCard($id)
     {

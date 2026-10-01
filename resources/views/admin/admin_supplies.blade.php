@@ -21,7 +21,7 @@
 <!-- Page Header -->
 <div class="page-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px;">
     <div>
-        <h1 style="font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 4px 0;">🏥 BHW Health Supplies Analytics</h1>
+        <h1 style="font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 4px 0;">Manage Inventory</h1>
         <p style="font-size: 14px; color: #6b7280; margin: 0;">Monitor health center medical supplies, stock levels, and hierarchical batch distributions.</p>
     </div>
     <div style="display: flex; gap: 12px;">
