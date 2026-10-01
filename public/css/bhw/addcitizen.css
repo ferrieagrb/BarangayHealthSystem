@@ -1,49 +1,395 @@
-/* FORM CONTAINER */
+/* =========================================================
+   ADD CITIZEN FORM
+   ========================================================= */
+
+
+/* =========================================================
+   FORM CONTAINER
+   ========================================================= */
+
 .form-container {
-    background: white;
+    background: #ffffff;
+
     padding: 25px;
+
     border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* GRID */
+
+/* =========================================================
+   FORM GRID
+   ========================================================= */
+
 .form-grid {
     display: grid;
+
     grid-template-columns: repeat(2, 1fr);
+
     gap: 15px;
 }
 
-/* FORM GROUP */
+
+/* =========================================================
+   FORM GROUP
+   ========================================================= */
+
 .form-group {
     display: flex;
+
     flex-direction: column;
 }
 
+
 .form-group label {
     font-size: 13px;
+
     color: #64748b;
+
     margin-bottom: 6px;
 }
+
 
 .form-group input,
 .form-group select {
     padding: 10px 12px;
+
     border: 1px solid #cbd5e1;
+
     border-radius: 8px;
+
     font-size: 14px;
+
     outline: none;
+
+    font-family: 'Poppins', sans-serif;
+
+    background: #ffffff;
+
+    box-sizing: border-box;
 }
 
-/* ACTIONS */
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #16a34a;
+
+    box-shadow:
+        0 0 0 2px rgba(22, 163, 74, 0.08);
+}
+
+
+/* =========================================================
+   DATE OF BIRTH
+   ========================================================= */
+
+#birthdate {
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   READONLY AGE
+   ========================================================= */
+
+#age {
+    background-color: #f8fafc;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CONTACT NUMBER
+   ========================================================= */
+
+#contact {
+    letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   VALIDATION
+   ========================================================= */
+
+.form-group input:invalid:not(:placeholder-shown),
+.form-group select:invalid {
+    border-color: #ef4444;
+}
+
+
+.validation-message {
+    display: none;
+
+    margin-top: 5px;
+
+    color: #dc2626;
+
+    font-size: 12px;
+}
+
+
+.validation-message.show {
+    display: block;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
 .form-actions {
     margin-top: 20px;
+
     display: flex;
+
     gap: 10px;
 }
 
-/* RESPONSIVE */
+
+/* =========================================================
+   BACK LINK AS BUTTON
+   ========================================================= */
+
+.btn-page-back {
+    text-decoration: none;
+}
+
+
+.btn-page-back:hover {
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   CANCEL LINK AS BUTTON
+   ========================================================= */
+
+.btn-form-cancel {
+    text-decoration: none;
+}
+
+
+.btn-form-cancel:hover {
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   CONFIRMATION MODAL
+   ========================================================= */
+
+#confirmation-modal {
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.6);
+
+    z-index: 99999;
+
+    justify-content: center;
+
+    align-items: center;
+
+    backdrop-filter: blur(2px);
+}
+
+
+/* =========================================================
+   MODAL BOX
+   ========================================================= */
+
+.custom-modal-box {
+    background: #ffffff !important;
+
+    opacity: 1 !important;
+
+    padding: 30px;
+
+    border-radius: 12px;
+
+    width: 100%;
+
+    max-width: 400px;
+
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.4),
+        0 10px 10px -5px rgba(0, 0, 0, 0.2);
+
+    text-align: center;
+
+    position: relative;
+
+    z-index: 100000;
+
+    animation: modalFadeIn 0.2s ease-in-out;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MODAL ANIMATION
+   ========================================================= */
+
+@keyframes modalFadeIn {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+
+}
+
+
+/* =========================================================
+   MODAL TEXT
+   ========================================================= */
+
+.custom-modal-box h3 {
+    margin-top: 0;
+
+    color: #111827;
+
+    font-size: 18px;
+}
+
+
+#modal-message {
+    color: #4b5563;
+
+    font-size: 14px;
+
+    margin: 15px 0;
+}
+
+
+/* =========================================================
+   MODAL ACTIONS
+   ========================================================= */
+
+.custom-modal-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   MODAL CANCEL
+   ========================================================= */
+
+.btn-modal-cancel {
+    background: #e5e7eb;
+
+    color: #374151;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 6px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    font-family: 'Poppins', sans-serif;
+
+    text-decoration: none;
+}
+
+
+.btn-modal-cancel:hover {
+    background: #d1d5db;
+
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   MODAL CONFIRM
+   ========================================================= */
+
+.btn-modal-confirm {
+    background: #2563eb;
+
+    color: #ffffff;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 6px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    font-family: 'Poppins', sans-serif;
+
+    text-decoration: none;
+}
+
+
+.btn-modal-confirm:hover {
+    background: #1d4ed8;
+
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media (max-width: 640px) {
+
     .form-grid {
         grid-template-columns: 1fr;
     }
+
+
+    .form-container {
+        padding: 20px;
+    }
+
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+
+    .form-actions .btn-primary,
+    .form-actions .btn-secondary {
+        width: 100%;
+    }
+
+
+    .custom-modal-box {
+        width: calc(100% - 30px);
+
+        padding: 25px;
+    }
+
 }

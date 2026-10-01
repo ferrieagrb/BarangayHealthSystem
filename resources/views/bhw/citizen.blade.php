@@ -19,156 +19,157 @@
 </div>
 
 
-{{-- SUMMARY CARDS --}}
-<div class="summary-cards"
-    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+{{-- CITIZEN OVERVIEW --}}
+<div class="citizen-overview">
 
-    {{-- TOTAL CITIZENS --}}
-    <div class="summary-card">
-        <span>Total Citizens</span>
-        <strong>{{ $totalCitizens }}</strong>
+    {{-- LEFT: SUMMARY CARDS --}}
+    <div class="summary-cards">
+
+        {{-- TOTAL CITIZENS --}}
+        <div class="summary-card">
+            <span>Total Citizens</span>
+            <strong>{{ $totalCitizens }}</strong>
+        </div>
+
+        {{-- KIDS --}}
+        <div class="summary-card">
+            <span>Kids</span>
+            <strong>{{ $kids }}</strong>
+        </div>
+
+        {{-- ADULTS --}}
+        <div class="summary-card">
+            <span>Adults</span>
+            <strong>{{ $adults }}</strong>
+        </div>
+
+        {{-- SENIORS --}}
+        <div class="summary-card">
+            <span>Seniors</span>
+            <strong>{{ $seniors }}</strong>
+        </div>
+
     </div>
 
-    {{-- KIDS --}}
-    <div class="summary-card">
-        <span>Kids</span>
-        <strong>{{ $kids }}</strong>
-    </div>
 
-    {{-- ADULTS --}}
-    <div class="summary-card">
-        <span>Adults</span>
-        <strong>{{ $adults }}</strong>
-    </div>
+    {{-- RIGHT: DEMOGRAPHICS --}}
+    <div class="chart-card">
 
-    {{-- SENIORS --}}
-    <div class="summary-card">
-        <span>Seniors</span>
-        <strong>{{ $seniors }}</strong>
+        <div class="chart-header">
+            <h3>Demographics Breakdown</h3>
+        </div>
+
+        <div id="demographicsApexChart"></div>
+
     </div>
 
 </div>
 
 
-{{-- DEMOGRAPHICS CHART --}}
-<div class="chart-card"
-    style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
-
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-
-        <h3 style="font-size: 15px; color: #1e293b; font-weight: 600; margin: 0;">
-            Demographics Breakdown
-        </h3>
-
-    </div>
-
-    <div id="demographicsApexChart"></div>
-
-</div>
-
-
-
-{{-- TOOLBAR: SEARCH, FILTERS, EXPORT, AND IMPORT --}}
+{{-- TOOLBAR --}}
 <div class="toolbar">
 
-    {{-- LEFT TOOLBAR --}}
-    <div class="toolbar-left"
-        style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+    {{-- ALL SEARCH + FILTER CONTROLS --}}
+    <div class="toolbar-left">
 
-        {{-- SEARCH FORM --}}
-        <form method="GET" action="{{ route('citizenlist') }}" id="filterForm" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
-            
-            {{-- Keep existing filters active on search change --}}
-            <input type="hidden" name="purok" value="{{ request('purok') }}">
-            <input type="hidden" name="subgroup" value="{{ request('subgroup') }}">
-            <input type="hidden" name="age_group" value="{{ request('age_group') }}">
+        {{-- SEARCH --}}
+        <form method="GET"
+              action="{{ route('citizenlist') }}"
+              class="citizen-filter-form">
 
-            {{-- SEARCH --}}
             <div class="search-box">
                 <input type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search citizen name or ID">
+                       name="search"
+                       value="{{ request('search') }}"
+                       placeholder="Search citizen name or ID">
             </div>
-        </form>
 
-        {{-- SEPARATE FILTER CONTROLS SUBMITTED VIA JS OR CHANGE --}}
-        <form method="GET" action="{{ route('citizenlist') }}" id="dropdownFilterForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
-            
-            {{-- Preserve search query if active --}}
-            <input type="hidden" name="search" value="{{ request('search') }}">
-
-            {{-- PUROK FILTER --}}
+            {{-- PUROK --}}
             <div class="filter-box">
-                <select name="purok" id="purokFilter" onchange="onPurokChange(this)">
-                    <option value="">All Purok</option>
+                <select name="purok"
+                        onchange="this.form.submit()">
+
+                    <option value="">
+                        All Purok
+                    </option>
+
                     @foreach($puroks ?? [] as $purok)
-                        <option value="{{ $purok->id }}" {{ request('purok') == $purok->id ? 'selected' : '' }}>
+
+                        <option value="{{ $purok->id }}"
+                            {{ request('purok') == $purok->id ? 'selected' : '' }}>
+
                             {{ $purok->name }}
+
                         </option>
+
                     @endforeach
+
                 </select>
             </div>
 
-            {{-- SUBGROUP FILTER (Depends on Purok) --}}
+          
+
+            {{-- AGE RANGE --}}
             <div class="filter-box">
-                <select name="subgroup" id="subgroupFilter" onchange="this.form.submit()">
-                    <option value="">All Subgroups</option>
-                    {{-- Populated dynamically via script below based on selected purok --}}
+                <input type="text"
+                       name="age"
+                       value="{{ request('age') }}"
+                       placeholder="Age or range (e.g. 8 or 4-10)"
+                       onchange="this.form.submit()">
+            </div>
+
+            
+
+            {{-- STATUS --}}
+            <div class="filter-box">
+                <select>
+                    <option>All Status</option>
+                    <option>Active</option>
+                    <option>Under Monitoring</option>
                 </select>
             </div>
 
-            {{-- AGE GROUP FILTER (Kids, Adults, Seniors) --}}
-            <div class="filter-box">
-                <select name="age_group" onchange="this.form.submit()">
-                    <option value="">All Age Groups</option>
-                    <option value="kid" {{ request('age_group') == 'kid' ? 'selected' : '' }}>Kids</option>
-                    <option value="adult" {{ request('age_group') == 'adult' ? 'selected' : '' }}>Adults</option>
-                    <option value="senior" {{ request('age_group') == 'senior' ? 'selected' : '' }}>Seniors</option>
-                </select>
-            </div>
         </form>
 
     </div>
 
 
-    {{-- RIGHT TOOLBAR: EXPORT AND IMPORT --}}
-    <div
-        style="display: flex; gap: 10px; align-items: center;">
+    {{-- EXPORT / IMPORT --}}
+    <div class="toolbar-actions">
 
-        {{-- EXPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary">
+                class="btn-secondary">
             Export List
         </button>
 
 
-        {{-- HIDDEN IMPORT FORM --}}
         <form action="{{ route('citizen.import') }}"
-            method="POST"
-            enctype="multipart/form-data"
-            id="importForm"
-            style="display: none;">
+              method="POST"
+              enctype="multipart/form-data"
+              id="importForm"
+              style="display:none;">
 
             @csrf
 
             <input type="file"
-                name="file"
-                id="excelFileInput"
-                accept=".csv, .xlsx, .xls"
-                onchange="document.getElementById('importForm').submit()">
+                   name="file"
+                   id="excelFileInput"
+                   accept=".csv,.xlsx,.xls"
+                   onchange="document.getElementById('importForm').submit()">
+
         </form>
 
 
-        {{-- IMPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary"
-            onclick="document.getElementById('excelFileInput').click();">
+                class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();">
 
             Import Excel
+
         </button>
+
     </div>
+
 </div>
 
 
