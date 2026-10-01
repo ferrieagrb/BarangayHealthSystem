@@ -344,59 +344,47 @@ class CitizenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-
-            'Citizen_FName' =>
-                'required|string|max:255',
-
-            'Citizen_LName' =>
-                'required|string|max:255',
-
-            'Citizen_BirthDate' =>
-                'required|date|before_or_equal:today',
-
-            'Citizen_ContactNo' =>
-                'nullable|string|max:50',
-
-            'Citizen_Purok' =>
-                'required|string|max:255',
-
-            'family_id' =>
-                'nullable|exists:families,id',
+            'Citizen_FName' => 'required|string|max:255',
+            'Citizen_LName' => 'required|string|max:255',
+            'Citizen_BirthDate' => 'required|date|before_or_equal:today',
+            'Citizen_ContactNo' => 'required|string|max:50',
+            'Citizen_Purok' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
         ]);
 
+        // Calculate age
+        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-        /*
-        |--------------------------------------------------------------------------
-        | CALCULATE AGE FROM BIRTH DATE
-        |--------------------------------------------------------------------------
-        */
-        $validated['Citizen_Age'] =
-            Carbon::parse(
-                $validated['Citizen_BirthDate']
-            )->age;
+        // 1. Create the citizen profile record first
+        $citizen = citizens::create([
+            'Citizen_FName' => $validated['Citizen_FName'],
+            'Citizen_LName' => $validated['Citizen_LName'],
+            'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
+            'Citizen_Age' => $validated['Citizen_Age'],
+            'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
+            'Citizen_Purok' => $validated['Citizen_Purok'],
+        ]);
 
-
-        $citizen =
-            citizens::create($validated);
-
+        // 2. Create the corresponding login account in the users table with role 'citizen'
+        \App\Models\User::create([
+            'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
+            'email' => $validated['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'role' => 'citizen',         // Automatically sets the role to citizen
+            'citizen_id' => $citizen->id // Links the user account back to the citizen profile
+        ]);
 
         $this->logActivity(
             'create',
             'citizen',
             $citizen->id,
-            'Added new citizen: ' .
-            $citizen->Citizen_FName .
-            ' ' .
-            $citizen->Citizen_LName
+            'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
         );
-
 
         return redirect()
             ->route('citizenlist')
-            ->with(
-                'success',
-                'Citizen added successfully.'
-            );
+            ->with('success', 'Citizen and portal account created successfully.');
     }
 
 
@@ -650,8 +638,6 @@ class CitizenController extends Controller
 
         $citizen =
             citizens::findOrFail($id);
-
-        $citizen->delete();
 
         $validated = $request->validate([
 

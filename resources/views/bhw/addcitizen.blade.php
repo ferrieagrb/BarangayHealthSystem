@@ -201,17 +201,6 @@
 
             </div>
 
-            {{-- New Login Credentials Fields --}}
-            <div class="form-group">
-                <label>Email Address (For Login)</label>
-                <input type="email" name="email" required placeholder="resident@email.com">
-            </div>
-
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required placeholder="At least 6 characters">
-            </div>
-
         </div>
 
 

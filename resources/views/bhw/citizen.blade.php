@@ -72,58 +72,63 @@
     {{-- ALL SEARCH + FILTER CONTROLS --}}
     <div class="toolbar-left">
 
-        {{-- SEARCH FORM --}}
-        <form method="GET" action="{{ route('citizenlist') }}" id="filterForm" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
-            
-            {{-- Keep existing filters active on search change --}}
-            <input type="hidden" name="purok" value="{{ request('purok') }}">
-            <input type="hidden" name="subgroup" value="{{ request('subgroup') }}">
-            <input type="hidden" name="age_group" value="{{ request('age_group') }}">
+        {{-- SEARCH --}}
+        <form method="GET"
+              action="{{ route('citizenlist') }}"
+              class="citizen-filter-form">
 
-            {{-- SEARCH --}}
             <div class="search-box">
                 <input type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search citizen name or ID">
+                       name="search"
+                       value="{{ request('search') }}"
+                       placeholder="Search citizen name or ID">
             </div>
-        </form>
 
-        {{-- SEPARATE FILTER CONTROLS SUBMITTED VIA JS OR CHANGE --}}
-        <form method="GET" action="{{ route('citizenlist') }}" id="dropdownFilterForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
-            
-            {{-- Preserve search query if active --}}
-            <input type="hidden" name="search" value="{{ request('search') }}">
-
-            {{-- PUROK FILTER --}}
+            {{-- PUROK --}}
             <div class="filter-box">
-                <select name="purok" id="purokFilter" onchange="onPurokChange(this)">
-                    <option value="">All Purok</option>
+                <select name="purok"
+                        onchange="this.form.submit()">
+
+                    <option value="">
+                        All Purok
+                    </option>
+
                     @foreach($puroks ?? [] as $purok)
-                        <option value="{{ $purok->id }}" {{ request('purok') == $purok->id ? 'selected' : '' }}>
+
+                        <option value="{{ $purok->id }}"
+                            {{ request('purok') == $purok->id ? 'selected' : '' }}>
+
                             {{ $purok->name }}
+
                         </option>
+
                     @endforeach
+
                 </select>
             </div>
 
-            {{-- SUBGROUP FILTER (Depends on Purok) --}}
+          
+
+            {{-- AGE RANGE --}}
             <div class="filter-box">
-                <select name="subgroup" id="subgroupFilter" onchange="this.form.submit()">
-                    <option value="">All Subgroups</option>
-                    {{-- Populated dynamically via script below based on selected purok --}}
+                <input type="text"
+                       name="age"
+                       value="{{ request('age') }}"
+                       placeholder="Age or range (e.g. 8 or 4-10)"
+                       onchange="this.form.submit()">
+            </div>
+
+            
+
+            {{-- STATUS --}}
+            <div class="filter-box">
+                <select>
+                    <option>All Status</option>
+                    <option>Active</option>
+                    <option>Under Monitoring</option>
                 </select>
             </div>
 
-            {{-- AGE GROUP FILTER (Kids, Adults, Seniors) --}}
-            <div class="filter-box">
-                <select name="age_group" onchange="this.form.submit()">
-                    <option value="">All Age Groups</option>
-                    <option value="kid" {{ request('age_group') == 'kid' ? 'selected' : '' }}>Kids</option>
-                    <option value="adult" {{ request('age_group') == 'adult' ? 'selected' : '' }}>Adults</option>
-                    <option value="senior" {{ request('age_group') == 'senior' ? 'selected' : '' }}>Seniors</option>
-                </select>
-            </div>
         </form>
 
     </div>
