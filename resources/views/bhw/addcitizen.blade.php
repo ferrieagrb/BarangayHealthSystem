@@ -1,105 +1,108 @@
 @extends('templates.layout')
 
 @section('CSSown')
+
 <link rel="stylesheet" href="{{ asset('css/bhw/addcitizen.css') }}">
-<style>
-    /* 1. The dark backdrop covering the screen */
-    #confirmation-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.6); /* Dark dim effect */
-        z-index: 99999;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(2px);
-    }
 
-    /* 2. The modal box itself - completely isolated, solid white, and crisp */
-    .custom-modal-box {
-        background: #ffffff !important;
-        opacity: 1 !important;
-        padding: 30px;
-        border-radius: 12px;
-        width: 100%;
-        max-width: 400px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        position: relative;
-        z-index: 100000;
-        animation: modalFadeIn 0.2s ease-in-out;
-    }
-
-    @keyframes modalFadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .custom-modal-actions {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 20px;
-    }
-    .btn-modal-cancel {
-        background: #e5e7eb;
-        color: #374151;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .btn-modal-cancel:hover {
-        background: #d1d5db;
-    }
-    .btn-modal-confirm {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .btn-modal-confirm:hover {
-        background: #1d4ed8;
-    }
-</style>
 @endsection
+
 
 @section('content')
 
+
 <div class="page-top">
+
+
     <div class="page-title-group">
         <h1>Add Citizen & Account</h1>
         <p>Register a new barangay resident and generate their portal login credentials.</p>
     </div>
-    <a href="{{ route('citizenlist') }}" class="btn-secondary">← Back</a>
+
+
+    {{-- BACK BUTTON --}}
+
+    <a
+        href="{{ route('citizenlist') }}"
+        class="btn-secondary btn-page-back"
+    >
+        ← Back
+    </a>
+
+
 </div>
+
 
 <div class="form-container">
     <form method="POST" action="{{ route('citizen.store') }}" id="citizen-form">
         @csrf
 
+
         <div class="form-grid">
 
+
+            {{-- =====================================================
+                 FIRST NAME
+                 ===================================================== --}}
+
             <div class="form-group">
-                <label>First Name</label>
-                <input type="text" name="Citizen_FName" required>
+
+                <label for="first_name">
+                    First Name
+                </label>
+
+                <input
+                    type="text"
+                    name="Citizen_FName"
+                    id="first_name"
+                    required
+                    maxlength="255"
+                    autocomplete="given-name"
+                >
+
+            </div>
+
+
+            {{-- =====================================================
+                 LAST NAME
+                 ===================================================== --}}
+
+            <div class="form-group">
+
+                <label for="last_name">
+                    Last Name
+                </label>
+
+                <input
+                    type="text"
+                    name="Citizen_LName"
+                    id="last_name"
+                    required
+                    maxlength="255"
+                    autocomplete="family-name"
+                >
+
             </div>
 
             <div class="form-group">
-                <label>Last Name</label>
-                <input type="text" name="Citizen_LName" required>
-            </div>
 
-            <div class="form-group">
-                <label>Date of Birth</label>
-                <input type="date" name="Citizen_BirthDate" id="birthdate" required>
+                <label for="birthdate">
+                    Date of Birth
+                </label>
+
+                <input
+                    type="date"
+                    name="Citizen_BirthDate"
+                    id="birthdate"
+                    required
+                >
+
+                <small
+                    id="birthdate-error"
+                    class="validation-message"
+                >
+                    Date of birth must be before today.
+                </small>
+
             </div>
 
             <div class="form-group">
@@ -107,9 +110,37 @@
                 <input type="number" name="Citizen_Age" id="age" readonly required>
             </div>
 
+
+            {{-- =====================================================
+                 CONTACT NUMBER
+                 ===================================================== --}}
+
             <div class="form-group">
-                <label>Contact Number</label>
-                <input type="text" name="Citizen_ContactNo">
+
+                <label for="contact">
+                    Contact Number
+                </label>
+
+                <input
+                    type="text"
+                    name="Citizen_ContactNo"
+                    id="contact"
+                    required
+                    inputmode="numeric"
+                    autocomplete="tel"
+                    maxlength="11"
+                    minlength="11"
+                    pattern="[0-9]{11}"
+                    placeholder="09XXXXXXXXX"
+                >
+
+                <small
+                    id="contact-error"
+                    class="validation-message"
+                >
+                    Contact number must contain exactly 11 digits.
+                </small>
+
             </div>
 
             {{-- Dynamically loaded Puroks from the database --}}
@@ -120,7 +151,54 @@
                     @foreach(\App\Models\Purok::all() as $purok)
                     <option value="{{$purok->name}}">{{$purok->name}}</option>
                     @endforeach
+
                 </select>
+
+            </div>
+
+
+            {{-- =====================================================
+                 EMAIL
+                 ===================================================== --}}
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address (For Login)
+                </label>
+
+                <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    required
+                    placeholder="resident@email.com"
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            {{-- =====================================================
+                 PASSWORD
+                 ===================================================== --}}
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    required
+                    minlength="6"
+                    placeholder="At least 6 characters"
+                    autocomplete="new-password"
+                >
+
             </div>
 
             {{-- New Login Credentials Fields --}}
@@ -136,12 +214,20 @@
 
         </div>
 
+
+        {{-- =========================================================
+             FORM ACTIONS
+             ========================================================= --}}
+
         <div class="form-actions">
             <button type="submit" class="btn-primary">Save Citizen & Create Account</button>
             <a href="{{ route('citizenlist') }}" class="btn-secondary">Cancel</a>
         </div>
 
+
     </form>
+
+
 </div>
 
 <!-- Custom centered confirmation modal window with separated backdrop and box layers -->
@@ -178,10 +264,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const m = today.getMonth() - birth.getMonth();
             if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
                 age--;
+
             }
-            ageInput.value = age;
-        } else {
-            ageInput.value = '';
+
+
+            ageInput.value =
+                age;
+
+
+            return true;
+
         }
     });
 

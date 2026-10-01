@@ -19,62 +19,58 @@
 </div>
 
 
-{{-- SUMMARY CARDS --}}
-<div class="summary-cards"
-    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+{{-- CITIZEN OVERVIEW --}}
+<div class="citizen-overview">
 
-    {{-- TOTAL CITIZENS --}}
-    <div class="summary-card">
-        <span>Total Citizens</span>
-        <strong>{{ $totalCitizens }}</strong>
+    {{-- LEFT: SUMMARY CARDS --}}
+    <div class="summary-cards">
+
+        {{-- TOTAL CITIZENS --}}
+        <div class="summary-card">
+            <span>Total Citizens</span>
+            <strong>{{ $totalCitizens }}</strong>
+        </div>
+
+        {{-- KIDS --}}
+        <div class="summary-card">
+            <span>Kids</span>
+            <strong>{{ $kids }}</strong>
+        </div>
+
+        {{-- ADULTS --}}
+        <div class="summary-card">
+            <span>Adults</span>
+            <strong>{{ $adults }}</strong>
+        </div>
+
+        {{-- SENIORS --}}
+        <div class="summary-card">
+            <span>Seniors</span>
+            <strong>{{ $seniors }}</strong>
+        </div>
+
     </div>
 
-    {{-- KIDS --}}
-    <div class="summary-card">
-        <span>Kids</span>
-        <strong>{{ $kids }}</strong>
-    </div>
 
-    {{-- ADULTS --}}
-    <div class="summary-card">
-        <span>Adults</span>
-        <strong>{{ $adults }}</strong>
-    </div>
+    {{-- RIGHT: DEMOGRAPHICS --}}
+    <div class="chart-card">
 
-    {{-- SENIORS --}}
-    <div class="summary-card">
-        <span>Seniors</span>
-        <strong>{{ $seniors }}</strong>
+        <div class="chart-header">
+            <h3>Demographics Breakdown</h3>
+        </div>
+
+        <div id="demographicsApexChart"></div>
+
     </div>
 
 </div>
 
 
-{{-- DEMOGRAPHICS CHART --}}
-<div class="chart-card"
-    style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px;">
-
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-
-        <h3 style="font-size: 15px; color: #1e293b; font-weight: 600; margin: 0;">
-            Demographics Breakdown
-        </h3>
-
-    </div>
-
-    <div id="demographicsApexChart"></div>
-
-</div>
-
-
-
-{{-- TOOLBAR: SEARCH, FILTERS, EXPORT, AND IMPORT --}}
+{{-- TOOLBAR --}}
 <div class="toolbar">
 
-    {{-- LEFT TOOLBAR --}}
-    <div class="toolbar-left"
-        style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+    {{-- ALL SEARCH + FILTER CONTROLS --}}
+    <div class="toolbar-left">
 
         {{-- SEARCH FORM --}}
         <form method="GET" action="{{ route('citizenlist') }}" id="filterForm" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
@@ -133,42 +129,42 @@
     </div>
 
 
-    {{-- RIGHT TOOLBAR: EXPORT AND IMPORT --}}
-    <div
-        style="display: flex; gap: 10px; align-items: center;">
+    {{-- EXPORT / IMPORT --}}
+    <div class="toolbar-actions">
 
-        {{-- EXPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary">
+                class="btn-secondary">
             Export List
         </button>
 
 
-        {{-- HIDDEN IMPORT FORM --}}
         <form action="{{ route('citizen.import') }}"
-            method="POST"
-            enctype="multipart/form-data"
-            id="importForm"
-            style="display: none;">
+              method="POST"
+              enctype="multipart/form-data"
+              id="importForm"
+              style="display:none;">
 
             @csrf
 
             <input type="file"
-                name="file"
-                id="excelFileInput"
-                accept=".csv, .xlsx, .xls"
-                onchange="document.getElementById('importForm').submit()">
+                   name="file"
+                   id="excelFileInput"
+                   accept=".csv,.xlsx,.xls"
+                   onchange="document.getElementById('importForm').submit()">
+
         </form>
 
 
-        {{-- IMPORT BUTTON --}}
         <button type="button"
-            class="btn-secondary"
-            onclick="document.getElementById('excelFileInput').click();">
+                class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();">
 
             Import Excel
+
         </button>
+
     </div>
+
 </div>
 
 
