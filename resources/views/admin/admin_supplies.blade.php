@@ -229,7 +229,7 @@
             <button type="button" onclick="closeDepositModal()" style="background:none; border:none; font-size: 20px; cursor:pointer; color: #6b7280;">&times;</button>
         </div>
         
-        <form action="{{ route('supplies.deposit') }}" method="POST">
+        <form action="{{ route('admin.supplies.deposit') }}" method="POST">
             @csrf
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Main Item Name / Target</label>

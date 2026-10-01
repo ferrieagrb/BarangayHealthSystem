@@ -276,6 +276,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies');
+    Route::post('/supplies/deposit', [SupplyController::class, 'deposit'])->name('supplies.deposit');
 
     Route::get('/users', fn () => app(AdminUserManagementController::class)->index(request()))->name('users');
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
