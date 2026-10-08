@@ -105,7 +105,15 @@
 
                 <td>{{ $user->created_at->format('M d, Y') }}</td>
 
-                <td>{{ ucfirst($user->status ?? 'active') }}</td>
+                <td>@if($user->is_locked)
+                    <form action="{{ route('admin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-sm btn-warning">Unlock Account</button>
+                    </form>
+                @else
+                    <span class="badge bg-success">Active</span>
+                @endif</td>
 
                 <td>
                     <div class="action-group">
@@ -156,10 +164,7 @@
                     <label for="add_username">Username</label>
                     <input type="text" id="add_username" name="username" style="width: 100%;">
                 </div>
-                <div class="input-group" style="margin-bottom: 10px;">
-                    <label for="add_password">Password</label>
-                    <input type="password" id="add_password" name="password" required style="width: 100%;">
-                </div>
+                
                 <div class="input-group" style="margin-bottom: 10px;">
                     <label for="add_role">User Role</label>
                     <select id="add_role" name="role" required style="width: 100%;">

@@ -1,10 +1,18 @@
+@php
+    $user = auth()->user();
+    // Get theme preference, default to 'light' if not set
+    $currentTheme = ($user && $user->theme === 'dark') ? 'dark' : 'light';
+    
+    // Get font size preference, default to 'normal'
+    $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
+@endphp
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
 
-    <!-- 1. DITO MO ILALAGAY ANG DALA WANG CSS LINKS -->
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
 
@@ -14,14 +22,13 @@
 
     @yield('CSSown')
 </head>
-<body>
+<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 
-    
 @yield('scripts')
 <div class="dashboard">
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">
 
         <!-- TOP TOGGLE -->
         <div class="top">
@@ -30,7 +37,8 @@
             </div>
         </div>
 
-        <ul>
+        <!-- MAIN NAVIGATION LINKS -->
+        <ul style="flex-grow: 1; list-style: none; padding: 0; margin: 0;">
             <li>
                 <a href="/home">
                     <i class="bx bx-home"></i>
@@ -72,14 +80,7 @@
                     <span class="nav-item">Calendar</span>
                 </a>
             </li>
-        <!--
-             <li>
-                <a href="/calendar">
-                    <i class="bx bx-calendar"></i>
-                    <span class="nav-item">Schedule</span>
-                </a>
-        </li>
-            -->
+
             @if(auth()->user()->hasWriteAccess('audit_logs'))
             <li>
                 <a href="/logs">
@@ -98,7 +99,7 @@
 
             <li>
                 <a href="/announcements">
-                    <i class="bi bi-megaphone"></i>
+                    <i class="bx bx-megaphone"></i>
                     <span class="nav-item">Announcements</span>
                 </a>
             </li>
@@ -109,23 +110,34 @@
                     <span class="nav-item">QR Checker</span>
                 </a>
             </li>
-            
         </ul>
+
+        <!-- SEPARATE BOTTOM SETTINGS SECTION -->
+        <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="/settings">
+                        <i class="bx bx-cog"></i>
+                        <span class="nav-item">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
     </div>
 
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-    <div></div> <!-- empty left space -->
+            <div></div> <!-- empty left space -->
 
-    <form method="POST" action="{{ url('/logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">
-                Logout
-            </button>
-        </form>
-    </div>
+            <form method="POST" action="{{ url('/logout') }}">
+                @csrf
+                <button type="submit" class="btn-logout">
+                    Logout
+                </button>
+            </form>
+        </div>
         @yield('content')
     </div>
 
@@ -154,13 +166,9 @@ toggleBtn.addEventListener("click", () => {
 });
 </script>
 
-
-
 @auth
-    
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Dynamically grab SESSION_LIFETIME from Laravel config (in minutes) and convert to milliseconds
         const sessionLifetimeMinutes = {{ config('session.lifetime', 120) }};
         const sessionLimit = sessionLifetimeMinutes * 60 * 1000; 
 
@@ -172,18 +180,15 @@ toggleBtn.addEventListener("click", () => {
         }
 
         function triggerTimeout() {
-            // Show the popup modal wherever the user is
             document.getElementById('session-timeout-modal').style.display = 'flex';
         }
 
-        // Reset timer on user interaction (mouse movement, clicks, keystrokes)
         window.addEventListener('mousemove', resetTimer);
         window.addEventListener('keypress', resetTimer);
         window.addEventListener('click', resetTimer);
         window.addEventListener('scroll', resetTimer);
     });
 </script>
-
 @endauth
 
 </body>

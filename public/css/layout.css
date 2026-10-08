@@ -43,7 +43,7 @@
     display: flex;
     flex-direction: column;
 
-    background: #fff;
+    background: #3e5894; /* Ginawang asul ang background ng sidebar */
     padding: 0.4rem;
 
     z-index: 1000;
@@ -83,7 +83,7 @@
 
 .sidebar .top .topbutton i {
     font-size: 28px;
-    color: #0E42B1;
+    color: #ffffff; /* Ginawang puti ang toggle button icon */
 
     cursor: pointer;
 
@@ -102,6 +102,7 @@
 
 .tpro h2 {
     font-size: 35px;
+    color: #ffffff;
 }
 
 
@@ -132,7 +133,7 @@
     width: 100%;
 
     text-decoration: none;
-    color: #0E42B1;
+    color: #ffffff; /* Ginawang puti ang mga link text sa loob ng sidebar */
 
     padding-left: 25px;
     gap: 20px;
@@ -147,6 +148,7 @@
 
     text-align: center;
     font-size: 22px;
+    color: #ffffff; /* Ginawang puti ang mga icon */
 
     display: flex;
     justify-content: center;
@@ -183,7 +185,7 @@
 }
 
 .sidebar ul li a:hover {
-    background: rgba(0, 188, 178, 0.08);
+    background: rgba(255, 255, 255, 0.1); /* Banayad na puti kapag nai-hover */
 }
 
 
@@ -423,4 +425,43 @@
 
         padding: 20px;
     }
+}
+
+
+
+/* --- DARK MODE STYLES --- */
+body.theme-dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.theme-dark .sidebar {
+    background-color: #1e1e1e;
+    border-right: 1px solid #333;
+}
+
+body.theme-dark .main-content {
+    background-color: #121212;
+}
+
+/* Add custom selectors for your cards/tables in dark mode if needed */
+body.theme-dark .card, 
+body.theme-dark .top-bar {
+    background-color: #1e1e1e;
+    color: #fff;
+    border-color: #333;
+}
+
+
+/* --- FONT SIZE ACCESSIBILITY STYLES --- */
+body.font-normal {
+    font-size: 1rem; /* Standard */
+}
+
+body.font-large {
+    font-size: 1.15rem; /* Large scaling */
+}
+
+body.font-xl {
+    font-size: 1.3rem; /* Extra Large scaling */
 }
