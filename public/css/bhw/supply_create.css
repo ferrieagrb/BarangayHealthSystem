@@ -98,3 +98,167 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* SUPPLY ITEM CONFIRMATION MODAL */
+
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 99999;
+}
+
+
+/* Show modal */
+
+.confirm-overlay.active {
+    display: flex;
+}
+
+
+/* MODAL BOX */
+
+.confirm-modal {
+    width: 515px;
+    max-width: 90%;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 40px 45px;
+
+    text-align: center;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+
+    animation: confirmModalIn 0.2s ease-out;
+}
+
+
+/* MODAL TITLE */
+
+.confirm-modal h2 {
+    margin: 0 0 22px;
+
+    font-size: 25px;
+
+    font-weight: 700;
+
+    color: #172033;
+}
+
+
+/*  MODAL MESSAGE */
+
+.confirm-modal p {
+    margin: 0 auto;
+
+    max-width: 430px;
+
+    font-size: 17px;
+
+    line-height: 1.5;
+
+    font-weight: 500;
+
+    color: #526174;
+}
+
+.confirm-modal p strong {
+    color: #172033;
+
+    font-weight: 700;
+}
+
+
+/* BUTTON CONTAINER */
+
+.confirm-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 28px;
+}
+
+
+/* MODAL BUTTONS */
+
+.confirm-cancel,
+.confirm-save {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 14px 25px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+/* Cancel */
+
+.confirm-cancel {
+    background: #e5e7eb;
+
+    color: #374151;
+}
+
+.confirm-cancel:hover {
+    background: #d7dbe1;
+}
+
+
+/* Yes, Save */
+
+.confirm-save {
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+.confirm-save:hover {
+    background: #1d4ed8;
+}
+
+
+/* MODAL ANIMATION */
+
+@keyframes confirmModalIn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+}
