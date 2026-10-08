@@ -36,6 +36,8 @@ use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
 use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
+use App\Http\Controllers\UserPreferenceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +98,7 @@ Route::get('/dashboard', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function () {
+Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citizen.')->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
@@ -157,7 +159,7 @@ Route::middleware(['auth'])->prefix('citizen')->name('citizen.')->group(function
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:bhw'])->group(function () {
+Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::get('/home', function () {
         $totalCitizens = citizens::count();
@@ -255,13 +257,14 @@ Route::middleware(['auth', 'role:bhw'])->group(function () {
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 });
 
-Route::middleware(['auth'])->prefix('bhw')->name('bhw.')->group(function () {
+Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
     Route::get('/families', [FamilyController::class, 'index'])->name('families.index');
     Route::post('/families', [FamilyController::class, 'store'])->name('families.store');
     Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
     Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
     Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');
+    
 });
 
 
@@ -271,7 +274,7 @@ Route::middleware(['auth'])->prefix('bhw')->name('bhw.')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/home',[AdminSettings::class,'dashboard'])->name('home');
     Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
@@ -300,6 +303,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
     Route::put('/permissions/{user}', [AdminPermissionController::class, 'update'])->name('permissions.update');
+
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
 });
 
 /*
@@ -308,7 +313,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
     Route::get('/referrals/create', [ReferralController::class, 'create'])->name('referrals.create');
     Route::post('/referrals/store', [ReferralController::class, 'store'])->name('referrals.store');
@@ -325,7 +330,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'index'])->name('dashboard');
     Route::get('/active-sessions-json', [SuperAdminController::class, 'getActiveSessionsData'])->name('sessions.json');
 
@@ -350,11 +355,25 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('supe
     Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
 
     Route::get('/system-settings', [SuperAdminController::class, 'systemSettings'])->name('system.settings');
+
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
 });
 
 
-Route::middleware(['auth', 'feature.write:supplies'])->group(function () {
+Route::middleware(['auth', 'feature.write:supplies', 'password.changed'])->group(function () {
     Route::post('/supplies', [SupplyController::class, 'store']);
     Route::put('/supplies/{id}', [SupplyController::class, 'update']);
     Route::delete('/supplies/{id}', [SupplyController::class, 'destroy']);
+});
+
+
+
+// Routes that require authentication
+Route::middleware(['auth'])->group(function () {
+    Route::get('/force-password-change', [ForcePasswordChangeController::class, 'show'])->name('password.force-change');
+    Route::post('/force-password-change', [ForcePasswordChangeController::class, 'update'])->name('password.force-update');
+    Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
+    Route::post('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
+    Route::put('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
+    Route::put('/settings/password', [UserPreferenceController::class, 'updatePassword'])->name('user.password.update');
 });

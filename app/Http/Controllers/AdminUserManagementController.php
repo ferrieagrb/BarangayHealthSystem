@@ -67,17 +67,32 @@ public function store(Request $request)
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
-        'password' => 'required|min:6',
         'role' => 'required'
     ]);
+
+    // Define the uniform default temporary password for all new users
+    $defaultPassword = 'TemporaryPassword123!';
 
     User::create([
         'name' => $request->name,
         'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => $request->role
+        'password' => Hash::make($defaultPassword),
+        'role' => $request->role,
+        'must_change_password' => true,
     ]);
 
-    return redirect()->route(auth()->user()->isSuperAdmin() ? 'superadmin.users' : 'admin.users')->with('success', 'User created successfully.');
+    return redirect()->route(auth()->user()->isSuperAdmin() ? 'superadmin.users' : 'admin.users')->with('success', 'User created successfully. Default temporary password is: ' . $defaultPassword);
+}
+
+public function unlockAccount($id)
+{
+    $user = \App\Models\User::findOrFail($id);
+
+    $user->update([
+        'failed_login_attempts' => 0,
+        'is_locked' => false,
+    ]);
+
+    return back()->with('success', "User {$user->name}'s account has been unlocked successfully.");
 }
 }

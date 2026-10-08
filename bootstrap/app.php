@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => CheckRole::class,
             'feature.write' => \App\Http\Middleware\CheckFeaturePermission::class,
+            'password.changed' => \App\Http\Middleware\EnsurePasswordIsChanged::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

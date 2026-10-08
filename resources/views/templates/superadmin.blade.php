@@ -1,5 +1,13 @@
+@php
+    $user = auth()->user();
+    // Get theme preference, default to 'light' if not set
+    $currentTheme = ($user && $user->theme === 'dark') ? 'dark' : 'light';
+    
+    // Get font size preference, default to 'normal'
+    $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
+@endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
@@ -21,7 +29,7 @@
 
 
 
-<body>
+<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 @yield('scripts')
 <div class="dashboard">
 
@@ -78,6 +86,17 @@
                 </a>
             </li>
         </ul>
+
+        <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li>
+                    <a href="/settings">
+                        <i class="bx bx-cog"></i>
+                        <span class="nav-item">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
     </div>
 
