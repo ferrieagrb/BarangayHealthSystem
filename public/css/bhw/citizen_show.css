@@ -231,3 +231,318 @@ form button:hover {
         font-size: 13px;
     }
 }
+
+/* ================================================================
+   ADD DIAGNOSIS CONFIRMATION MODAL
+   ================================================================ */
+
+.diagnosis-confirm-overlay {
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    z-index: 99999;
+
+    overflow-y: auto;
+}
+
+
+/* Show confirmation modal */
+
+.diagnosis-confirm-overlay.active {
+    display: flex;
+}
+
+
+/* ================================================================
+   CONFIRMATION MODAL BOX
+   ================================================================ */
+
+.diagnosis-confirm-modal {
+    width: 515px;
+
+    max-width: 90%;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 40px 45px;
+
+    text-align: center;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.25);
+
+    animation:
+        diagnosisConfirmModalIn 0.2s ease-out;
+}
+
+
+/* ================================================================
+   TITLE
+   ================================================================ */
+
+.diagnosis-confirm-modal h2 {
+    margin: 0 0 20px;
+
+    font-size: 25px;
+
+    font-weight: 700;
+
+    color: #172033;
+}
+
+
+/* ================================================================
+   DESCRIPTION
+   ================================================================ */
+
+.diagnosis-confirm-modal > p {
+    margin: 0 auto;
+
+    max-width: 440px;
+
+    font-size: 17px;
+
+    line-height: 1.5;
+
+    font-weight: 500;
+
+    color: #526174;
+}
+
+
+.diagnosis-confirm-modal > p strong {
+    color: #172033;
+
+    font-weight: 700;
+}
+
+
+/* ================================================================
+   DIAGNOSIS DETAILS
+   ================================================================ */
+
+.diagnosis-confirm-details {
+    margin-top: 25px;
+
+    padding: 15px 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    text-align: left;
+
+    box-sizing: border-box;
+}
+
+
+.diagnosis-confirm-detail {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.diagnosis-confirm-detail:first-child {
+    padding-top: 0;
+}
+
+
+.diagnosis-confirm-detail:last-child {
+    padding-bottom: 0;
+
+    border-bottom: none;
+}
+
+
+.diagnosis-confirm-detail span {
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #64748b;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.3px;
+}
+
+
+.diagnosis-confirm-detail strong {
+    font-size: 15px;
+
+    font-weight: 600;
+
+    color: #172033;
+
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ================================================================
+   CONFIRMATION BUTTONS
+   ================================================================ */
+
+.diagnosis-confirm-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 28px;
+}
+
+
+.diagnosis-confirm-cancel,
+.diagnosis-confirm-save {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 14px 25px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+/* ================================================================
+   CANCEL BUTTON
+   ================================================================ */
+
+.diagnosis-confirm-cancel {
+    background: #e5e7eb;
+
+    color: #374151;
+}
+
+
+.diagnosis-confirm-cancel:hover {
+    background: #d7dbe1;
+}
+
+
+/* ================================================================
+   SAVE BUTTON
+   ================================================================ */
+
+.diagnosis-confirm-save {
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+
+.diagnosis-confirm-save:hover {
+    background: #1d4ed8;
+}
+
+
+/* Disabled confirmation save button */
+
+.diagnosis-confirm-save:disabled {
+    background: #93c5fd;
+
+    cursor: not-allowed;
+
+    opacity: 0.8;
+}
+
+
+/* ================================================================
+   ANIMATION
+   ================================================================ */
+
+@keyframes diagnosisConfirmModalIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            scale(0.96)
+            translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            scale(1)
+            translateY(0);
+    }
+
+}
+
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 600px) {
+
+    .diagnosis-confirm-overlay {
+        padding: 10px;
+    }
+
+
+    .diagnosis-confirm-modal {
+        width: 100%;
+
+        max-width: 100%;
+
+        padding: 30px 25px;
+    }
+
+
+    .diagnosis-confirm-buttons {
+        flex-direction: column;
+    }
+
+
+    .diagnosis-confirm-cancel,
+    .diagnosis-confirm-save {
+        width: 100%;
+    }
+
+}

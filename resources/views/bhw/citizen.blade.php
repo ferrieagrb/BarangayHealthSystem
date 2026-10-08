@@ -271,7 +271,8 @@
                             {{-- DELETE BUTTON --}}
                             <form action="{{ route('citizen.delete', $citizen->id) }}"
                                 method="POST"
-                                onsubmit="return confirm('Delete this citizen?')">
+                                class="deleteCitizenForm"
+                                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
 
                                 @csrf
                                 @method('DELETE')
@@ -313,114 +314,400 @@
 </div>
 
 
+{{-- ================================================================
+     DELETE CONFIRMATION MODAL
+     ================================================================ --}}
+
+<div id="citizenDeleteConfirmModal"
+     class="citizen-delete-confirm-overlay">
+
+    <div class="citizen-delete-confirm-modal">
+
+        <h2>
+            Delete Citizen?
+        </h2>
+
+        <p>
+            Are you sure you want to delete
+            <strong id="confirmCitizenName"></strong>?
+            <br>
+            This action cannot be undone.
+        </p>
+
+        <div class="citizen-delete-confirm-buttons">
+
+            <button type="button"
+                    id="cancelCitizenDelete"
+                    class="citizen-delete-cancel">
+
+                Cancel
+
+            </button>
+
+
+            <button type="button"
+                    id="confirmCitizenDelete"
+                    class="citizen-delete-save">
+
+                Yes, Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 {{-- APEXCHARTS CDN --}}
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 
 {{-- DEMOGRAPHICS CHART & FILTER SCRIPT --}}
 <script>
+
+    // ============================================================
+    // ORIGINAL PUROK / SUBGROUP CODE
+    // ============================================================
+
     // Pass Purok and Subgroups structure from backend to JS for dynamic cascading dropdowns
     const puroksData = {!! json_encode($puroks ?? []) !!};
     const selectedPurokId = "{{ request('purok') }}";
     const selectedSubgroupId = "{{ request('subgroup') }}";
 
     function populateSubgroups(purokId) {
-        const subgroupSelect = document.getElementById('subgroupFilter');
-        subgroupSelect.innerHTML = '<option value="">All Subgroups</option>';
+
+        const subgroupSelect =
+            document.getElementById('subgroupFilter');
+
+        subgroupSelect.innerHTML =
+            '<option value="">All Subgroups</option>';
 
         if (!purokId) {
+
             subgroupSelect.disabled = false;
+
             return;
         }
 
-        const foundPurok = puroksData.find(p => p.id == purokId);
-        if (foundPurok && foundPurok.subgroups) {
+        const foundPurok =
+            puroksData.find(
+                p => p.id == purokId
+            );
+
+        if (
+            foundPurok &&
+            foundPurok.subgroups
+        ) {
+
             foundPurok.subgroups.forEach(sub => {
-                const opt = document.createElement('option');
+
+                const opt =
+                    document.createElement('option');
+
                 opt.value = sub.id;
+
                 opt.textContent = sub.name;
-                if (sub.id == selectedSubgroupId) {
+
+                if (
+                    sub.id == selectedSubgroupId
+                ) {
+
                     opt.selected = true;
+
                 }
+
                 subgroupSelect.appendChild(opt);
+
             });
+
         }
+
     }
+
 
     function onPurokChange(selectElement) {
+
         // Reset subgroup selection when purok changes, then submit form
         document.getElementById('subgroupFilter').value = '';
+
         selectElement.form.submit();
+
     }
 
-    // Initialize subgroup options on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        if (selectedPurokId) {
-            populateSubgroups(selectedPurokId);
-        }
-    });
 
-    // ApexCharts Setup
+    // ============================================================
+    // ORIGINAL PAGE LOAD
+    // ============================================================
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        function() {
+
+            if (selectedPurokId) {
+
+                populateSubgroups(
+                    selectedPurokId
+                );
+
+            }
+
+
+            // ====================================================
+            // DELETE CONFIRMATION
+            // ====================================================
+
+            const deleteConfirmModal =
+                document.getElementById(
+                    'citizenDeleteConfirmModal'
+                );
+
+            const confirmCitizenName =
+                document.getElementById(
+                    'confirmCitizenName'
+                );
+
+            const cancelCitizenDelete =
+                document.getElementById(
+                    'cancelCitizenDelete'
+                );
+
+            const confirmCitizenDelete =
+                document.getElementById(
+                    'confirmCitizenDelete'
+                );
+
+
+            let selectedDeleteForm = null;
+
+
+            // ----------------------------------------------------
+            // Open confirmation modal
+            // ----------------------------------------------------
+
+            document
+                .querySelectorAll('.deleteCitizenForm')
+                .forEach(function(form) {
+
+                    form.addEventListener(
+                        'submit',
+                        function(event) {
+
+                            event.preventDefault();
+
+                            selectedDeleteForm = form;
+
+
+                            const citizenName =
+                                form.dataset.citizenName;
+
+
+                            confirmCitizenName.textContent =
+                                citizenName;
+
+
+                            deleteConfirmModal.classList.add(
+                                'active'
+                            );
+
+                        }
+                    );
+
+                });
+
+
+            // ----------------------------------------------------
+            // Cancel deletion
+            // ----------------------------------------------------
+
+            cancelCitizenDelete.addEventListener(
+                'click',
+                function() {
+
+                    selectedDeleteForm = null;
+
+                    deleteConfirmModal.classList.remove(
+                        'active'
+                    );
+
+                }
+            );
+
+
+            // ----------------------------------------------------
+            // Confirm deletion
+            // ----------------------------------------------------
+
+            confirmCitizenDelete.addEventListener(
+                'click',
+                function() {
+
+                    if (!selectedDeleteForm) {
+
+                        return;
+
+                    }
+
+
+                    deleteConfirmModal.classList.remove(
+                        'active'
+                    );
+
+
+                    /*
+                     * Use native form.submit() so the submit
+                     * event does not trigger the confirmation
+                     * again.
+                     */
+
+                    selectedDeleteForm.submit();
+
+                }
+            );
+
+
+            // ----------------------------------------------------
+            // Click outside confirmation modal
+            // ----------------------------------------------------
+
+            deleteConfirmModal.addEventListener(
+                'click',
+                function(event) {
+
+                    if (
+                        event.target ===
+                        deleteConfirmModal
+                    ) {
+
+                        selectedDeleteForm = null;
+
+                        deleteConfirmModal.classList.remove(
+                            'active'
+                        );
+
+                    }
+
+                }
+            );
+
+
+            // ----------------------------------------------------
+            // ESC key closes confirmation
+            // ----------------------------------------------------
+
+            document.addEventListener(
+                'keydown',
+                function(event) {
+
+                    if (
+                        event.key === 'Escape' &&
+                        deleteConfirmModal.classList.contains('active')
+                    ) {
+
+                        selectedDeleteForm = null;
+
+                        deleteConfirmModal.classList.remove(
+                            'active'
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    // ============================================================
+    // ORIGINAL APEXCHARTS SETUP
+    // ============================================================
+
     var options = {
 
         series: [
+
             {
                 name: 'Count',
+
                 data: [
                     {{ $kids }},
                     {{ $adults }},
                     {{ $seniors }}
                 ]
             }
+
         ],
 
         chart: {
+
             type: 'bar',
+
             height: 160,
 
             toolbar: {
                 show: false
             }
+
         },
 
         plotOptions: {
 
             bar: {
+
                 borderRadius: 4,
+
                 distributed: true,
+
                 columnWidth: '45%'
+
             }
+
         },
 
         colors: [
+
             '#3b82f6',
             '#14b8a6',
             '#f97316'
+
         ],
 
         dataLabels: {
+
             enabled: false
+
         },
 
         legend: {
+
             show: false
+
         },
 
         xaxis: {
 
             categories: [
+
                 'Kids',
                 'Adults',
                 'Seniors'
+
             ],
 
             axisBorder: {
+
                 show: false
+
             },
 
             axisTicks: {
+
                 show: false
+
             }
+
         },
 
         yaxis: {
@@ -430,9 +717,13 @@
             labels: {
 
                 formatter: function (val) {
+
                     return Math.floor(val);
+
                 }
+
             }
+
         },
 
         grid: {
@@ -442,17 +733,28 @@
             xaxis: {
 
                 lines: {
+
                     show: false
+
                 }
+
             }
+
         }
+
     };
 
 
     var chart = new ApexCharts(
-        document.querySelector("#demographicsApexChart"),
+
+        document.querySelector(
+            "#demographicsApexChart"
+        ),
+
         options
+
     );
+
 
     chart.render();
 
