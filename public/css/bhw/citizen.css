@@ -661,3 +661,251 @@ button {
         padding: 12px;
     }
 }
+
+/* ================================================================
+   CITIZEN DELETE CONFIRMATION MODAL
+   ================================================================ */
+
+.citizen-delete-confirm-overlay {
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    z-index: 99999;
+
+    overflow-y: auto;
+}
+
+
+/* ================================================================
+   SHOW MODAL
+   ================================================================ */
+
+.citizen-delete-confirm-overlay.active {
+    display: flex;
+}
+
+
+/* ================================================================
+   MODAL BOX
+   ================================================================ */
+
+.citizen-delete-confirm-modal {
+    width: 515px;
+
+    max-width: 90%;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 40px 45px;
+
+    text-align: center;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.25);
+
+    animation:
+        citizenDeleteConfirmModalIn 0.2s ease-out;
+}
+
+
+/* ================================================================
+   TITLE
+   ================================================================ */
+
+.citizen-delete-confirm-modal h2 {
+    margin: 0 0 20px;
+
+    font-size: 25px;
+
+    font-weight: 700;
+
+    color: #172033;
+}
+
+
+/* ================================================================
+   MESSAGE
+   ================================================================ */
+
+.citizen-delete-confirm-modal p {
+    margin: 0 auto;
+
+    max-width: 440px;
+
+    font-size: 17px;
+
+    line-height: 1.5;
+
+    font-weight: 500;
+
+    color: #526174;
+}
+
+
+/* Citizen Name */
+
+.citizen-delete-confirm-modal p strong {
+    color: #172033;
+
+    font-weight: 700;
+}
+
+
+/* ================================================================
+   BUTTON CONTAINER
+   ================================================================ */
+
+.citizen-delete-confirm-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 28px;
+}
+
+
+/* ================================================================
+   BOTH BUTTONS
+   ================================================================ */
+
+.citizen-delete-cancel,
+.citizen-delete-save {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 14px 25px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+/* ================================================================
+   CANCEL BUTTON
+   ================================================================ */
+
+.citizen-delete-cancel {
+    background: #e5e7eb;
+
+    color: #374151;
+}
+
+
+.citizen-delete-cancel:hover {
+    background: #d7dbe1;
+}
+
+
+/* ================================================================
+   DELETE / CONFIRM BUTTON
+   ================================================================ */
+
+.citizen-delete-save {
+    background: #dc2626;
+
+    color: #ffffff;
+}
+
+
+.citizen-delete-save:hover {
+    background: #b91c1c;
+}
+
+
+/* ================================================================
+   MODAL ANIMATION
+   ================================================================ */
+
+@keyframes citizenDeleteConfirmModalIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            scale(0.96)
+            translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            scale(1)
+            translateY(0);
+    }
+
+}
+
+
+/* ================================================================
+   MOBILE RESPONSIVENESS
+   ================================================================ */
+
+@media (max-width: 600px) {
+
+    .citizen-delete-confirm-overlay {
+        padding: 10px;
+    }
+
+
+    .citizen-delete-confirm-modal {
+
+        width: 100%;
+
+        max-width: 100%;
+
+        padding: 30px 25px;
+
+    }
+
+
+    .citizen-delete-confirm-buttons {
+
+        flex-direction: column;
+
+    }
+
+
+    .citizen-delete-cancel,
+    .citizen-delete-save {
+
+        width: 100%;
+
+    }
+
+}

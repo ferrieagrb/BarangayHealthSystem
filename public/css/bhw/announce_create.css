@@ -144,3 +144,309 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ================================================================
+   ANNOUNCEMENT CONFIRMATION MODAL
+   ================================================================ */
+
+.announcement-confirm-overlay {
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    z-index: 100000;
+
+    overflow-y: auto;
+}
+
+
+.announcement-confirm-overlay.active {
+    display: flex;
+}
+
+
+/* ================================================================
+   CONFIRMATION MODAL BOX
+   ================================================================ */
+
+.announcement-confirm-modal {
+    width: 560px;
+    max-width: 95%;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 40px 45px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.25);
+
+    animation:
+        announcementConfirmModalIn 0.2s ease-out;
+}
+
+
+/* ================================================================
+   TITLE
+   ================================================================ */
+
+.announcement-confirm-modal h2 {
+    margin: 0 0 15px;
+
+    font-size: 25px;
+
+    font-weight: 700;
+
+    color: #172033;
+}
+
+
+/* ================================================================
+   MAIN MESSAGE
+   ================================================================ */
+
+.announcement-confirm-modal > p {
+    margin: 0 auto 25px;
+
+    font-size: 16px;
+
+    line-height: 1.5;
+
+    font-weight: 500;
+
+    color: #526174;
+}
+
+
+/* ================================================================
+   ANNOUNCEMENT PREVIEW
+   ================================================================ */
+
+.announcement-preview {
+    width: 100%;
+
+    margin: 0 auto;
+
+    padding: 18px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
+
+    text-align: left;
+}
+
+
+/* Individual Preview Item */
+
+.announcement-preview-item {
+    margin-bottom: 15px;
+}
+
+
+.announcement-preview-item:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Preview Labels */
+
+.announcement-preview-label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #64748b;
+
+    text-transform: uppercase;
+}
+
+
+/* Preview Values */
+
+.announcement-preview-item strong {
+    display: block;
+
+    font-size: 15px;
+
+    line-height: 1.4;
+
+    color: #172033;
+
+    font-weight: 700;
+
+    word-break: break-word;
+}
+
+
+/* Description */
+
+#confirmAnnouncementDescription {
+    margin: 0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    color: #475569;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    max-height: 150px;
+
+    overflow-y: auto;
+}
+
+
+/* ================================================================
+   CONFIRMATION BUTTONS
+   ================================================================ */
+
+.announcement-confirm-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 28px;
+}
+
+
+.announcement-confirm-cancel,
+.announcement-confirm-save {
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 14px 22px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+    box-sizing: border-box;
+}
+
+
+/* ================================================================
+   CANCEL BUTTON
+   ================================================================ */
+
+.announcement-confirm-cancel {
+    background: #e5e7eb;
+
+    color: #374151;
+}
+
+
+.announcement-confirm-cancel:hover {
+    background: #d7dbe1;
+}
+
+
+/* ================================================================
+   CONFIRM / POST BUTTON
+   ================================================================ */
+
+.announcement-confirm-save {
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+
+.announcement-confirm-save:hover {
+    background: #1d4ed8;
+}
+
+
+/* ================================================================
+   MODAL ANIMATION
+   ================================================================ */
+
+@keyframes announcementConfirmModalIn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+}
+
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 600px) {
+
+    .announcement-confirm-overlay {
+        padding: 10px;
+    }
+
+
+    .announcement-confirm-modal {
+        width: 100%;
+        max-width: 100%;
+
+        padding: 30px 25px;
+    }
+
+    .announcement-confirm-buttons {
+        flex-direction: column;
+    }
+
+
+    .announcement-confirm-cancel,
+    .announcement-confirm-save {
+        width: 100%;
+    }
+
+}
