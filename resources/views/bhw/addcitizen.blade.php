@@ -32,12 +32,36 @@
 </div>
 
 
+
 <div class="form-container">
-    <form method="POST" action="{{ route('citizen.store') }}" id="citizen-form">
+    <form method="POST"
+          action="{{ route('citizen.store') }}"
+          id="citizen-form"
+          enctype="multipart/form-data">
         @csrf
 
+        {{-- DISPLAY VALIDATION ERRORS --}}
+        @if ($errors->any())
+            <div style="background:#fee2e2; color:#991b1b; padding:15px; margin-bottom:20px; border:1px solid #f87171; border-radius:8px;">
+                <strong>Citizen registration failed:</strong>
+
+                <ul style="margin-top:8px; padding-left:20px; list-style:disc;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- DISPLAY SESSION ERROR MESSAGES --}}
+        @if (session('error'))
+            <div style="background:#fee2e2; color:#991b1b; padding:15px; margin-bottom:20px; border-radius:8px;">
+                {{ session('error') }}
+            </div>
+        @endif
 
         <div class="form-grid">
+
 
 
             {{-- =====================================================
@@ -110,6 +134,21 @@
                 <input type="number" name="Citizen_Age" id="age" readonly required>
             </div>
 
+            {{-- =====================================================
+                 PHOTO UPLOAD
+                ===================================================== --}}
+            <div class="form-group">
+                <label for="photo">Citizen Photo</label>
+
+                <input
+                    type="file"
+                    name="photo"
+                    id="photo"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+
+                <small>Optional. JPG, PNG, or WEBP; maximum 2 MB.</small>
+            </div>
 
             {{-- =====================================================
                  CONTACT NUMBER

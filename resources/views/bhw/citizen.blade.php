@@ -6,6 +6,44 @@
 
 @section('content')
 
+{{-- SUCCESS POPUP: CITIZEN ACCOUNT CREATED --}}
+@if (session('success'))
+    <div id="citizen-success-popup"
+         style="position:fixed; inset:0; background:rgba(0,0,0,0.5);
+                display:flex; align-items:center; justify-content:center;
+                z-index:99999; padding:20px;">
+
+        <div style="background:white; width:100%; max-width:400px;
+                    padding:30px; border-radius:14px; text-align:center;
+                    box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+
+            <div style="width:58px; height:58px; margin:0 auto 15px;
+                        border-radius:50%; background:#16a34a; color:white;
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:32px;">
+                ✓
+            </div>
+
+            <h2 style="color:#166534; font-size:22px; font-weight:bold;
+                       margin-bottom:10px;">
+                Success!
+            </h2>
+
+            <p style="color:#4b5563; margin-bottom:22px;">
+                {{ session('success') }}
+            </p>
+
+            <button type="button"
+                    onclick="closeCitizenSuccessPopup()"
+                    style="background:#1646bd; color:white; border:none;
+                           border-radius:7px; padding:10px 30px;
+                           cursor:pointer; font-weight:bold;">
+                OK
+            </button>
+        </div>
+    </div>
+@endif
+
 {{-- PAGE TOP HEADER --}}
 <div class="page-top">
     <div class="page-title-group">
@@ -134,43 +172,52 @@
     </div>
 
 
-    {{-- EXPORT / IMPORT --}}
-    <div class="toolbar-actions">
+    
+{{-- EXPORT / IMPORT --}}
+<div class="toolbar-actions">
 
-        <button type="button"
-                class="btn-secondary">
-            Export List
-        </button>
+    {{-- EXPORT CITIZENS TO EXCEL --}} 
+    <a href="{{ route('citizen.export') }}"
+    class="btn-secondary"
+    style="text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            vertical-align: middle;">
 
+        Export List
 
-        <form action="{{ route('citizen.import') }}"
-              method="POST"
-              enctype="multipart/form-data"
-              id="importForm"
-              style="display:none;">
+    </a>
 
-            @csrf
+    {{-- HIDDEN EXCEL IMPORT FORM --}}
+    <form action="{{ route('citizen.import') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          id="importForm"
+          style="display:none;">
 
-            <input type="file"
-                   name="file"
-                   id="excelFileInput"
-                   accept=".csv,.xlsx,.xls"
-                   onchange="document.getElementById('importForm').submit()">
+        @csrf
 
-        </form>
+        <input type="file"
+               name="file"
+               id="excelFileInput"
+               accept=".csv,.xlsx,.xls"
+               onchange="document.getElementById('importForm').submit()">
 
+    </form>
 
-        <button type="button"
-                class="btn-secondary"
-                onclick="document.getElementById('excelFileInput').click();">
+    {{-- IMPORT BUTTON --}}
+    <button type="button"
+            class="btn-secondary"
+            onclick="document.getElementById('excelFileInput').click();">
 
-            Import Excel
+        Import Excel
 
-        </button>
-
-    </div>
+    </button>
 
 </div>
+
 
 
 {{-- TABLE CONTAINER --}}
@@ -365,7 +412,18 @@
 
 
 {{-- DEMOGRAPHICS CHART & FILTER SCRIPT --}}
-<script>
+<script>    
+    // ============================================================
+    // SUCCESS POPUP SCRIPT
+    // ============================================================
+        
+    function closeCitizenSuccessPopup() {
+        const popup = document.getElementById('citizen-success-popup');
+
+        if (popup) {
+            popup.remove();
+        }
+    }
 
     // ============================================================
     // ORIGINAL PUROK / SUBGROUP CODE

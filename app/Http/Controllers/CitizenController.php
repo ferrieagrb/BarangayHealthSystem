@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\SvgWriter;
 use App\Models\CitizenActivityLog;
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -10,6 +17,7 @@ use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
 use App\Models\Family;
 use App\Models\Purok;
+use App\Exports\CitizensExport;
 use App\Imports\CitizensImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -341,6 +349,7 @@ class CitizenController extends Controller
     | STORE CITIZEN & USER ACCOUNT
     |--------------------------------------------------------------------------
     */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -351,41 +360,71 @@ class CitizenController extends Controller
             'Citizen_Purok' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Calculate age
-        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+        $validated['Citizen_Age'] =
+            Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-        // 1. Create the citizen profile record first
-        $citizen = citizens::create([
-            'Citizen_FName' => $validated['Citizen_FName'],
-            'Citizen_LName' => $validated['Citizen_LName'],
-            'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
-            'Citizen_Age' => $validated['Citizen_Age'],
-            'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
-            'Citizen_Purok' => $validated['Citizen_Purok'],
-        ]);
+        $photoPath = $request->hasFile('photo')
+            ? $request->file('photo')->store('citizen-photos', 'public')
+            : null;
 
-        // 2. Create the corresponding login account in the users table with role 'citizen'
-        \App\Models\User::create([
-            'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
-            'email' => $validated['email'],
-            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
-            'role' => 'citizen',         // Automatically sets the role to citizen
-            'citizen_id' => $citizen->id // Links the user account back to the citizen profile
-        ]);
+        try {
+            $citizen = DB::transaction(function () use (
+                $validated,
+                $photoPath
+            ) {
+                // Create the citizen profile and generate a unique QR token.
+                $citizen = citizens::create([
+                    'Citizen_FName' => $validated['Citizen_FName'],
+                    'Citizen_LName' => $validated['Citizen_LName'],
+                    'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
+                    'Citizen_Age' => $validated['Citizen_Age'],
+                    'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
+                    'Citizen_Purok' => $validated['Citizen_Purok'],
+                    'qr_token' => (string) Str::uuid(),
+                    'photo_path' => $photoPath,
+                ]);
+
+                // Create the linked citizen login account.
+                User::create([
+                    'name' => $validated['Citizen_FName']
+                        . ' ' . $validated['Citizen_LName'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role' => 'citizen',
+                    'citizen_id' => $citizen->id,
+                ]);
+
+                return $citizen;
+            });
+        } catch (\Throwable $e) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+
+            throw $e;
+        }
 
         $this->logActivity(
             'create',
             'citizen',
             $citizen->id,
-            'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
+            'Added new citizen and account: '
+                . $citizen->Citizen_FName . ' '
+                . $citizen->Citizen_LName
         );
 
         return redirect()
             ->route('citizenlist')
-            ->with('success', 'Citizen and portal account created successfully.');
+            ->with(
+                'success',
+                'Citizen account and health ID created successfully.'
+            );
     }
+
+
 
 
     /*
@@ -725,6 +764,26 @@ class CitizenController extends Controller
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT CITIZENS
+    |--------------------------------------------------------------------------
+    | Supports:
+    | CSV
+    | XLS
+    | XLSX
+    |--------------------------------------------------------------------------
+    */
+    
+    public function export()
+    {
+        return Excel::download(
+            new CitizensExport(),
+            'citizen_records_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+        );
+    }
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -785,6 +844,7 @@ class CitizenController extends Controller
     }
 
 
+    
     /*
     |--------------------------------------------------------------------------
     | BHW ELECTRONIC CARD
@@ -792,19 +852,56 @@ class CitizenController extends Controller
     */
     public function showElectronicCard($id)
     {
-        $citizen =
-            citizens::with([
-                'vaccinations',
-                'medications',
-                'healthRecords'
-            ])->findOrFail($id);
-
+        $citizen = citizens::with([
+            'vaccinations',
+            'medications',
+            'healthRecords'
+        ])->findOrFail($id);
 
         return view(
             'bhw.ecard',
             compact('citizen')
         );
     }
+
+
+    // ADD NUMBER 9 BELOW THIS METHOD
+
+    public function showElectronicCardByToken(string $token)
+    {
+        $citizen = citizens::with([
+            'vaccinations',
+            'medications',
+            'healthRecords',
+        ])
+        ->where('qr_token', $token)
+        ->firstOrFail();
+
+        return view('bhw.ecard', compact('citizen'));
+    }
+
+    private function makeCitizenQrImage(citizens $citizen): string
+    {
+        if (!$citizen->qr_token) {
+            $citizen->qr_token = (string) Str::uuid();
+            $citizen->save();
+        }
+
+        $url = route('bhw.citizen.qr', [
+            'token' => $citizen->qr_token,
+        ]);
+
+        $qrCode = new QrCode(
+            data: $url,
+            size: 180,
+            margin: 8,
+        );
+
+        return (new SvgWriter())
+            ->write($qrCode)
+            ->getDataUri();
+    }
+
 
 
     /*
@@ -924,28 +1021,32 @@ class CitizenController extends Controller
     | CITIZEN SELF-SERVICE E-CARD
     |--------------------------------------------------------------------------
     */
+    
+    
     public function citizenViewECard()
     {
-        $user =
-            Auth::user();
+        $user = Auth::user();
 
+        if (!$user->citizen_id) {
+            abort(403, 'This account is not linked to a citizen profile.');
+        }
 
-        $citizen =
-            citizens::with([
-                'vaccinations',
-                'medications',
-                'healthRecords'
-            ])
-            ->where(
-                'id',
-                $user->citizen_id
-            )
-            ->firstOrFail();
+        $citizen = citizens::with([
+            'vaccinations',
+            'medications',
+            'healthRecords',
+        ])
+        ->where('id', $user->citizen_id)
+        ->firstOrFail();
 
+        // Generate the QR image for this citizen.
+        $qrImage = $this->makeCitizenQrImage($citizen);
 
-        return view(
-            'citizen.ecard',
-            compact('citizen')
-        );
+        return view('citizen.ecard', [
+            'citizen' => $citizen,
+            'qrImage' => $qrImage,
+        ]);
     }
-}
+
+    }
+

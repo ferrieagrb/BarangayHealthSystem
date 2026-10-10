@@ -28,7 +28,9 @@ class citizens extends Authenticatable
         'Citizen_ContactNo',
         'Citizen_Age',
         'Citizen_Purok',
-        'family_id'
+        'family_id',
+        'qr_token',
+        'photo_path',
     ];
 
     protected $table = 'citizens';
