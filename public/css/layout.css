@@ -384,46 +384,208 @@
 }
 
 
-/* ==========================================
-   RESPONSIVE DESIGN
-   ========================================== */
+
+/* =========================================
+   RESPONSIVE DESIGN — MOBILE
+   ========================================= */
 
 @media (max-width: 768px) {
 
-    .sidebar {
-        width: 90px;
-        min-width: 90px;
-        max-width: 90px;
+    html,
+    body {
+        width: 100%;
+        min-width: 0;
+        overflow-x: clip;
+    }
+
+    .dashboard {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        min-height: 100vh;
+    }
+
+    /* Fixed icon sidebar */
+    .sidebar,
+    .sidebar.collapsed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+        height: 100vh;
+        height: 100dvh;
+
+        padding: 4px;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        z-index: 1000;
+    }
+
+    /* Sidebar toggle */
+    .sidebar .top {
+        justify-content: center;
+        margin-top: 12px;
+        padding-right: 0;
+        flex-shrink: 0;
+    }
+
+    .sidebar .top .topbutton {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar .top .topbutton i {
+        font-size: 22px;
+    }
+
+    /* Navigation links */
+    .sidebar ul {
+        margin-top: 12px;
+    }
+
+    .sidebar ul li {
+        width: 100%;
+        height: 48px;
     }
 
     .sidebar ul li a {
         justify-content: center;
         padding-left: 0;
+        gap: 0;
     }
 
+    /* Icons only on mobile */
     .sidebar ul li a span {
-        opacity: 0;
-        width: 0;
-
-        position: absolute;
-        overflow: hidden;
+        display: none;
     }
 
     .sidebar ul li a i {
         width: 100%;
-        text-align: center;
+        min-width: 0;
+        font-size: 21px;
     }
 
-    .sidebar .top {
-        justify-content: center;
-        padding-right: 0;
+    /* Settings at the bottom */
+    .sidebar .sidebar-bottom {
+        margin-top: auto !important;
+        flex-shrink: 0;
     }
 
-    .main-content {
-        margin-left: 90px;
-        width: calc(100% - 90px);
+    .sidebar .sidebar-bottom ul {
+        margin-top: 0;
+    }
 
-        padding: 20px;
+    /* Main content: normal page scrolling */
+    .main-content,
+    .sidebar.collapsed ~ .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        min-width: 0;
+
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+
+        padding: 18px 14px;
+
+        overflow-x: clip;
+        overflow-y: visible;
+    }
+
+    /* Top bar and logout */
+    .top-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        width: 100%;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .btn-logout {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    /* Page headings */
+    .main-content h1 {
+        max-width: 100%;
+        font-size: clamp(22px, 5.5vw, 30px);
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .main-content h2 {
+        max-width: 100%;
+        font-size: clamp(18px, 4.5vw, 24px);
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    /* Media */
+    .main-content img,
+    .main-content video,
+    .main-content canvas {
+        max-width: 100%;
+    }
+
+    /* Tables scroll inside their containers */
+    .main-content .table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Form controls */
+    .main-content input,
+    .main-content select,
+    .main-content textarea {
+        max-width: 100%;
+    }
+
+    /* Popups */
+    .user-popup {
+        left: 68px;
+        width: calc(100vw - 84px);
+        max-width: 300px;
+        box-sizing: border-box;
+    }
+}
+
+/* Extra-small phones */
+@media (max-width: 380px) {
+
+    .sidebar,
+    .sidebar.collapsed {
+        width: 52px;
+        min-width: 52px;
+        max-width: 52px;
+    }
+
+    .main-content,
+    .sidebar.collapsed ~ .main-content {
+        margin-left: 52px;
+        width: calc(100% - 52px);
+        padding: 14px 9px;
+    }
+
+    .sidebar ul li a i {
+        font-size: 19px;
+    }
+
+    .btn-logout {
+        padding: 7px 10px;
+        font-size: 12px;
     }
 }
 

@@ -19,8 +19,6 @@
     @yield('CSSown')
 </head>
 
-
-
 <body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 @yield('scripts')
 <div class="dashboard">
@@ -38,50 +36,50 @@
         <ul>
             <li>
                 <a href="/admin/home">
-                    <i class="bx bx-home"></i>
+                    <i class="bx bx-home-alt"></i>
                     <span class="nav-item">Home</span>
                 </a>
             </li>
 
             <li>
                 <a href="/admin/users">
-                    <i class="bx bx-user"></i>
+                    <i class="bx bx-group"></i>
                     <span class="nav-item">Users</span>
                 </a>
             </li>
 
             <li>
                 <a href="/admin/analytics">
-                    <i class="bx bx-network-chart"></i>
+                    <i class="bx bx-bar-chart-alt-2"></i>
                     <span class="nav-item">Reports</span>
                 </a>
             </li>
 
             <li>
                 <a href="{{ route('admin.supplies') }}">
-                    <i class="bx bx-box"></i>
+                    <i class="bx bx-package"></i>
                     <span class="nav-item">Supplies</span>
                 </a>
             </li>
 
             <li>
-                <a href="{{route('admin.demographics')}}">
-                    <i class = "bx bx-box"></i>
-                    <span class = "nav-item"> Demographics </span>
+                <a href="{{ route('admin.demographics') }}">
+                    <i class="bx bx-pie-chart-alt-2"></i>
+                    <span class="nav-item">Demographics</span>
                 </a>
             </li>
             
             <li>
-                <a href = "{{route('admin.permissions.index')}}">
-                    <i class = "bx bx-box"></i>
-                    <span class = "nav-item"> Permissions </span>
+                <a href="{{ route('admin.permissions.index') }}">
+                    <i class="bx bx-shield-quarter"></i>
+                    <span class="nav-item">Permissions</span>
                 </a>
             </li>
             
             <li>
                 <a href="#">
-                    <i class = "bx bx-box"></i>
-                    <span class = "nav-item"> Audit Logs </span>
+                    <i class="bx bx-history"></i>
+                    <span class="nav-item">Audit Logs</span>
                 </a>
             </li>    
 
@@ -103,21 +101,21 @@
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-    <div></div> <!-- empty left space -->
+            <div></div> <!-- empty left space -->
 
-    <form method="POST" action="{{ url('/logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">
-                Logout
-            </button>
-        </form>
-    </div>
+            <form method="POST" action="{{ url('/logout') }}">
+                @csrf
+                <button type="submit" class="btn-logout">
+                    Logout
+                </button>
+            </form>
+        </div>
         @yield('content')
     </div>
 
 </div>
 
-    @auth
+@auth
 <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
     <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
@@ -126,8 +124,7 @@
         <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
     </div>
 </div>
-
-    @endauth
+@endauth
 
 <!-- JS -->
 <script>
@@ -140,7 +137,6 @@ toggleBtn.addEventListener("click", () => {
 </script>
 
 @auth
-    
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Dynamically grab SESSION_LIFETIME from Laravel config (in minutes) and convert to milliseconds
@@ -166,7 +162,6 @@ toggleBtn.addEventListener("click", () => {
         window.addEventListener('scroll', resetTimer);
     });
 </script>
-
 @endauth
 
 </body>
