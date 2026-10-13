@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-top" style="margin-bottom: 20px;">
     <h1>BHW User Permissions Management</h1>
-    <p>Configure Read-Only or Read/Write access for each BHW feature tab.</p>
+    <p>Configure Read-Only, Read/Write, or Global Access for each BHW feature tab.</p>
 </div>
 
 @if(session('success'))
@@ -12,7 +12,7 @@
     </div>
 @endif
 
-<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto;">
     <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <thead>
             <tr style="border-bottom: 2px solid #e5e7eb; color: #374151;">
@@ -40,11 +40,16 @@
                                 $currentAccess = $userPerm ? $userPerm->access : 'none';
                             @endphp
                             <td style="padding: 12px; text-align: center;">
-                                <select name="permissions[{{ $featureKey }}]" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 13px;">
-                                    <option value="none" {{ $currentAccess === 'none' ? 'selected' : '' }}>No Access</option>
-                                    <option value="read" {{ $currentAccess === 'read' ? 'selected' : '' }}>Read Only</option>
-                                    <option value="write" {{ $currentAccess === 'write' ? 'selected' : '' }}>Read / Write</option>
-                                </select>
+                                @if($featureKey === 'view_all_citizens')
+                                    {{-- Global view option rendered as an active/inactive checkbox toggle --}}
+                                    <input type="checkbox" name="permissions[{{ $featureKey }}]" value="write" {{ $currentAccess !== 'none' ? 'checked' : '' }} style="width: 18px; height: 18px; cursor: pointer;">
+                                @else
+                                    <select name="permissions[{{ $featureKey }}]" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 13px;">
+                                        <option value="none" {{ $currentAccess === 'none' ? 'selected' : '' }}>No Access</option>
+                                        <option value="read" {{ $currentAccess === 'read' ? 'selected' : '' }}>Read Only</option>
+                                        <option value="write" {{ $currentAccess === 'write' ? 'selected' : '' }}>Read / Write</option>
+                                    </select>
+                                @endif
                             </td>
                         @endforeach
 

@@ -15,6 +15,7 @@ class AdminPermissionController extends Controller
         'reports'  => 'Reports & Analytics',
         'family'   => 'Family Profiles',
         'audit_logs' => 'Audit Logs',
+        'view_all_citizens'  => 'View All Citizens (Global)',
     ];
 
     public function index()
@@ -31,25 +32,27 @@ class AdminPermissionController extends Controller
 }
 
     public function update(Request $request, User $user)
-{
-    // $request->permissions will be an array like: ['supplies' => 'write', 'patients' => 'none']
-    $inputPermissions = $request->input('permissions', []);
+    {
+        $inputPermissions = $request->input('permissions', []);
 
-    foreach (self::$availableFeatures as $featureKey => $featureLabel) {
-        // Get the submitted access level, default to 'none' (or 'read' if you prefer existing behavior)
-        $accessLevel = $inputPermissions[$featureKey] ?? 'none'; 
+        foreach (self::$availableFeatures as $featureKey => $featureLabel) {
+            $accessLevel = $inputPermissions[$featureKey] ?? 'none'; 
 
-        // Ensure the value is strictly valid before saving
-        if (!in_array($accessLevel, ['none', 'read', 'write'])) {
-            $accessLevel = 'none';
+            // For the view_all_citizens feature, treat 'write' or 'read' as enabled, 'none' as disabled
+            if ($featureKey === 'view_all_citizens') {
+                $accessLevel = ($accessLevel !== 'none') ? 'write' : 'none';
+            } else {
+                if (!in_array($accessLevel, ['none', 'read', 'write'])) {
+                    $accessLevel = 'none';
+                }
+            }
+
+            UserPermission::updateOrCreate(
+                ['user_id' => $user->id, 'feature' => $featureKey],
+                ['access' => $accessLevel]
+            );
         }
 
-        UserPermission::updateOrCreate(
-            ['user_id' => $user->id, 'feature' => $featureKey],
-            ['access' => $accessLevel]
-        );
+        return redirect()->back()->with('success', "Permissions updated successfully for {$user->name}.");
     }
-
-    return redirect()->back()->with('success', "Permissions updated successfully for {$user->name}.");
-}
 }

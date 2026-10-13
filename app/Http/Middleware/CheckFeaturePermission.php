@@ -16,7 +16,7 @@ class CheckFeaturePermission
         }
 
         // Check if user has 'write' permission for this specific feature
-        $hasWriteAccess = /* query user_permissions or check json field */;
+        $hasWriteAccess = false;
 
         if (!$hasWriteAccess) {
             abort(403, 'Unauthorized action. Your account has read-only access to this feature.');
