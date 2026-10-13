@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\SvgWriter;
 use App\Models\CitizenActivityLog;
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -10,6 +17,7 @@ use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
 use App\Models\Family;
 use App\Models\Purok;
+use App\Exports\CitizensExport;
 use App\Imports\CitizensImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +28,31 @@ use App\Models\UserPermission;
 
 class CitizenController extends Controller
 {
+    /**
+     * Helper method to apply BHW subgroup scope & permission checks.
+     */
+    private function applyBhwSubgroupScope($query)
+    {
+        $user = auth()->user();
+
+        if ($user && $user->role === 'bhw') {
+            $canViewAll = UserPermission::where('user_id', $user->id)
+                ->where('feature', 'view_all_citizens')
+                ->where('access', '!=', 'none')
+                ->exists();
+
+            if (!$canViewAll) {
+                $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+
+                $query->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
+                    $q->whereIn('subgroup_id', $assignedSubgroupIDs);
+                });
+            }
+        }
+
+        return $query;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | CITIZEN LIST PAGE
@@ -27,73 +60,38 @@ class CitizenController extends Controller
     */
     public function index(Request $request)
     {
-        $user = auth()->user();
-
         /*
         |--------------------------------------------------------------------------
         | FIX EXISTING AGE VALUES
         |--------------------------------------------------------------------------
-        | Birth date is the source of truth.
-        | This corrects old records where Citizen_Age does not match
-        | Citizen_BirthDate.
-        |--------------------------------------------------------------------------
         */
         citizens::whereNotNull('Citizen_BirthDate')
             ->chunkById(100, function ($citizens) {
-
-                foreach ($citizens as$citizen) {
-
+                foreach ($citizens as $citizen) {
                     try {
-
-                        $birthDate = Carbon::parse($citizen->Citizen_BirthDate
-                        );
+                        $birthDate = Carbon::parse($citizen->Citizen_BirthDate);
 
                         if ($birthDate->isFuture()) {
                             continue;
                         }
 
-                        $correctAge =$birthDate->age;
+                        $correctAge = $birthDate->age;
 
-                        if ((int) $citizen->Citizen_Age !==$correctAge) {
-
+                        if ((int) $citizen->Citizen_Age !== $correctAge) {
                             $citizen->update([
                                 'Citizen_Age' => $correctAge
                             ]);
                         }
-
                     } catch (\Exception $e) {
                         // Ignore invalid birth dates
                     }
                 }
             });
 
-
         $query = citizens::query();
 
-        /*
-        |--------------------------------------------------------------------------
-        | BHW SUBGROUP SCOPE & PERMISSION ENFORCEMENT
-        |--------------------------------------------------------------------------
-        | If the user is a BHW, check if they have the 'view_all_citizens' permission.
-        | If not, restrict visibility strictly to their assigned purok subgroups.
-        |--------------------------------------------------------------------------
-        */
-        if ($user &&$user->role === 'bhw') {
-            $canViewAll = UserPermission::where('user_id',$user->id)
-                ->where('feature', 'view_all_citizens')
-                ->where('access', '!=', 'none')
-                ->exists();
-
-            if (!$canViewAll) {
-                // Get all subgroup IDs assigned to this BHW in `purok_subgroups` via `user_id`
-                $assignedSubgroupIDs = PurokSubgroup::where('user_id',$user->id)->pluck('id');
-
-                $query->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
-                    $q->whereIn('subgroup_id',$assignedSubgroupIDs);
-                });
-            }
-        }
-
+        // Apply BHW scoping enforcement
+        $this->applyBhwSubgroupScope($query);
 
         /*
         |--------------------------------------------------------------------------
@@ -101,106 +99,49 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('search')) {
-
             $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
-
-                $q->where(
-                    'Citizen_FName',
-                    'like',
-                    '%' . $search . '%'
-                )
-
-                ->orWhere(
-                    'Citizen_LName',
-                    'like',
-                    '%' . $search . '%'
-                )
-
-                ->orWhere(
-                    'id',
-                    $search
-                )
-
-                ->orWhereHas(
-                    'healthRecords',
-                    function ($q2) use ($search) {
-
-                        $q2->where(
-                            'diagnosis',
-                            'like',
-                            '%' . $search . '%'
-                        );
-                    }
-                );
+                $q->where('Citizen_FName', 'like', '%' . $search . '%')
+                  ->orWhere('Citizen_LName', 'like', '%' . $search . '%')
+                  ->orWhere('id', $search)
+                  ->orWhereHas('healthRecords', function ($q2) use ($search) {
+                      $q2->where('diagnosis', 'like', '%' . $search . '%');
+                  });
             });
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | FILTER BY PUROK
         |--------------------------------------------------------------------------
         */
-        if (
-            $request->filled('purok') &&$request->purok !== 'all'
-        ) {
-
-            $purokValue =$request->purok;
-
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purokValue = $request->purok;
             $purokRecord = Purok::find($purokValue);
 
             if ($purokRecord) {
-
-                $query->where(function ($q) use (
-                    $purokRecord,$purokValue
-                ) {
-
-                    $q->where(
-                        'Citizen_Purok',
-                        $purokRecord->name
-                    )
-
-                    ->orWhere(
-                        'Citizen_Purok',
-                        $purokValue
-                    );
+                $query->where(function ($q) use ($purokRecord, $purokValue) {
+                    $q->where('Citizen_Purok', $purokRecord->name)
+                      ->orWhere('Citizen_Purok', $purokValue);
                 });
-
             } else {
-
-                $query->where(
-                    'Citizen_Purok',
-                    $purokValue
-                );
+                $query->where('Citizen_Purok', $purokValue);
             }
         }
-
 
         /*
         |--------------------------------------------------------------------------
         | FILTER BY SUBGROUP
         |--------------------------------------------------------------------------
         */
-        if (
-            $request->filled('subgroup') &&$request->subgroup !== 'all'
-        ) {
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroupId = $request->subgroup;
 
-            $subgroupId =$request->subgroup;
-
-            $query->whereHas(
-                'family',
-                function ($q) use ($subgroupId) {
-
-                    $q->where(
-                        'subgroup_id',
-                        $subgroupId
-                    );
-                }
-            );
+            $query->whereHas('family', function ($q) use ($subgroupId) {
+                $q->where('subgroup_id', $subgroupId);
+            });
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -208,39 +149,21 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('age')) {
-
             $age = trim($request->age);
 
-            if (
-                preg_match(
-                    '/^(\d+)\s*-\s*(\d+)$/',
-                    $age,$matches
-                )
-            ) {
+            if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $age, $matches)) {
+                $minAge = (int) $matches[1];
+                $maxAge = (int) $matches[2];
 
-                $minAge = (int)$matches[1];
-                $maxAge = (int)$matches[2];
-
-                if ($minAge >$maxAge) {
-
-                    [$minAge,$maxAge] =
-                        [$maxAge,$minAge];
+                if ($minAge > $maxAge) {
+                    [$minAge, $maxAge] = [$maxAge, $minAge];
                 }
 
-                $query->whereBetween(
-                    'Citizen_Age',
-                    [$minAge,$maxAge]
-                );
-
+                $query->whereBetween('Citizen_Age', [$minAge, $maxAge]);
             } elseif (is_numeric($age)) {
-
-                $query->where(
-                    'Citizen_Age',
-                    (int) $age
-                );
+                $query->where('Citizen_Age', (int) $age);
             }
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -248,58 +171,31 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         if ($request->filled('age_group')) {
-
-            $ageGroup =$request->age_group;
+            $ageGroup = $request->age_group;
 
             if ($ageGroup === 'kid') {
-
-                $query->where(
-                    'Citizen_Age',
-                    '<=',
-                    17
-                );
-
+                $query->where('Citizen_Age', '<=', 17);
             } elseif ($ageGroup === 'adult') {
-
-                $query->whereBetween(
-                    'Citizen_Age',
-                    [18, 59]
-                );
-
+                $query->whereBetween('Citizen_Age', [18, 59]);
             } elseif ($ageGroup === 'senior') {
-
-                $query->where(
-                    'Citizen_Age',
-                    '>=',
-                    60
-                );
+                $query->where('Citizen_Age', '>=', 60);
             }
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | PUROKS + SUBGROUPS
-        |--------------------------------------------------------------------------
-        */
         $puroks = Purok::with('subgroups')->get();
-
 
         /*
         |--------------------------------------------------------------------------
         | PAGINATION
         |--------------------------------------------------------------------------
         */
-        $citizens =$query
-            ->paginate(10)
-            ->appends([
-                'search' => $request->search,
-                'purok' => $request->purok,
-                'subgroup' => $request->subgroup,
-                'age' => $request->age,
-                'age_group' => $request->age_group,
-            ]);
-
+        $citizens = $query->paginate(10)->appends([
+            'search' => $request->search,
+            'purok' => $request->purok,
+            'subgroup' => $request->subgroup,
+            'age' => $request->age,
+            'age_group' => $request->age_group,
+        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -307,61 +203,22 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         $base = citizens::query();
+        $this->applyBhwSubgroupScope($base);
 
-        if ($user &&$user->role === 'bhw') {
-            $canViewAll = UserPermission::where('user_id',$user->id)
-                ->where('feature', 'view_all_citizens')
-                ->where('access', '!=', 'none')
-                ->exists();
+        $totalCitizens = $base->count();
+        $kids = (clone $base)->where('Citizen_Age', '<=', 17)->count();
+        $adults = (clone $base)->whereBetween('Citizen_Age', [18, 59])->count();
+        $seniors = (clone $base)->where('Citizen_Age', '>=', 60)->count();
 
-            if (!$canViewAll) {$assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');$base->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
-                    $q->whereIn('subgroup_id',$assignedSubgroupIDs);
-                });
-            }
-        }
-
-        $totalCitizens =$base->count();
-
-        $kids =
-            (clone $base)
-                ->where(
-                    'Citizen_Age',
-                    '<=',
-                    17
-                )
-                ->count();
-
-        $adults =
-            (clone $base)
-                ->whereBetween(
-                    'Citizen_Age',
-                    [18, 59]
-                )
-                ->count();
-
-        $seniors =
-            (clone $base)
-                ->where(
-                    'Citizen_Age',
-                    '>=',
-                    60
-                )
-                ->count();
-
-
-        return view(
-            'bhw.citizen',
-            compact(
-                'citizens',
-                'totalCitizens',
-                'kids',
-                'adults',
-                'seniors',
-                'puroks'
-            )
-        );
+        return view('bhw.citizen', compact(
+            'citizens',
+            'totalCitizens',
+            'kids',
+            'adults',
+            'seniors',
+            'puroks'
+        ));
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -369,54 +226,73 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'Citizen_FName' => 'required|string|max:255',
-        'Citizen_LName' => 'required|string|max:255',
-        'Citizen_BirthDate' => 'required|date|before_or_equal:today',
-        'Citizen_ContactNo' => 'required|string|max:50',
-        'Citizen_Purok' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-    ]);
+    {
+        $validated = $request->validate([
+            'Citizen_FName' => 'required|string|max:255',
+            'Citizen_LName' => 'required|string|max:255',
+            'Citizen_BirthDate' => 'required|date|before_or_equal:today',
+            'Citizen_ContactNo' => 'nullable|string|max:50',
+            'Citizen_Purok' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'nullable|string|min:6',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
 
-    // Calculate age automatically using Carbon
-    $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-    // 1. Create the citizen profile record
-    $citizen = citizens::create([
-        'Citizen_FName' => $validated['Citizen_FName'],
-        'Citizen_LName' => $validated['Citizen_LName'],
-        'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
-        'Citizen_Age' => $validated['Citizen_Age'],
-        'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
-        'Citizen_Purok' => $validated['Citizen_Purok'],
-    ]);
+        $photoPath = $request->hasFile('photo')
+            ? $request->file('photo')->store('citizen-photos', 'public')
+            : null;
 
-    // 2. Set default initial password (e.g., using contact number or standard default)
-    $defaultPassword = 'Barangay123!';
+        try {
+            $citizen = DB::transaction(function () use ($validated, $photoPath, $request) {
+                // Create the citizen profile and generate a unique QR token[cite: 2].
+                $citizen = citizens::create([
+                    'Citizen_FName' => $validated['Citizen_FName'],
+                    'Citizen_LName' => $validated['Citizen_LName'],
+                    'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
+                    'Citizen_Age' => $validated['Citizen_Age'],
+                    'Citizen_ContactNo' => $validated['Citizen_ContactNo'] ?? null,
+                    'Citizen_Purok' => $validated['Citizen_Purok'],
+                    'qr_token' => (string) Str::uuid(),
+                    'photo_path' => $photoPath,
+                ]);
 
-    // 3. Create the user portal login account
-    \App\Models\User::create([
-        'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
-        'email' => $validated['email'],
-        'password' => \Illuminate\Support\Facades\Hash::make($defaultPassword),
-        'role' => 'citizen',
-        'citizen_id' => $citizen->id,
-        'must_change_password' => 1,
-    ]);
+                $password = $request->filled('password') 
+                    ? Hash::make($request->password) 
+                    : Hash::make('Barangay123!');
 
-    $this->logActivity(
-        'create',
-        'citizen',
-        $citizen->id,
-        'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
-    );
+                // Create the linked citizen login account[cite: 2].
+                User::create([
+                    'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
+                    'email' => $validated['email'],
+                    'password' => $password,
+                    'role' => 'citizen',
+                    'citizen_id' => $citizen->id,
+                    'must_change_password' => $request->filled('password') ? 0 : 1,
+                ]);
 
-    return redirect()
-        ->route('citizenlist')
-        ->with('success', 'Citizen and portal account created successfully.');
-}
+                return $citizen;
+            });
+        } catch (\Throwable $e) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
 
+            throw $e;
+        }
+
+        $this->logActivity(
+            'create',
+            'citizen',
+            $citizen->id,
+            'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
+        );
+
+        return redirect()
+            ->route('citizenlist')
+            ->with('success', 'Citizen account and health ID created successfully.');
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -426,65 +302,29 @@ class CitizenController extends Controller
     public function storeHealthRecord(Request $request)
     {
         $request->validate([
-
-            'citizen_id' =>
-                'required|exists:citizens,id',
-
-            'diagnosis' =>
-                'required|string',
-
-            'record_date' =>
-                'required|date',
-
-            'comments' =>
-                'nullable|string',
+            'citizen_id' => 'required|exists:citizens,id',
+            'diagnosis' => 'required|string',
+            'record_date' => 'required|date',
+            'comments' => 'nullable|string',
         ]);
-
 
         $record = HealthRecord::create([
-
-            'citizen_id' =>
-                $request->citizen_id,
-
-            'diagnosis' =>
-                $request->diagnosis,
-
-            'record_date' =>
-                $request->record_date,
-
-            'comments' =>
-                $request->comments,
+            'citizen_id' => $request->citizen_id,
+            'diagnosis' => $request->diagnosis,
+            'record_date' => $request->record_date,
+            'comments' => $request->comments,
         ]);
-
 
         HealthRecordActivityLog::create([
-
-            'user_id' =>
-                Auth::id(),
-
-            'action' =>
-                'create',
-
-            'citizen_id' =>
-                $request->citizen_id,
-
-            'health_record_id' =>
-                $record->id,
-
-            'description' =>
-                'Added health record: ' .
-                $request->diagnosis,
+            'user_id' => Auth::id(),
+            'action' => 'create',
+            'citizen_id' => $request->citizen_id,
+            'health_record_id' => $record->id,
+            'description' => 'Added health record: ' . $request->diagnosis,
         ]);
 
-
-        return redirect()
-            ->back()
-            ->with(
-                'success',
-                'Health record added!'
-            );
+        return redirect()->back()->with('success', 'Health record added!');
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -493,50 +333,20 @@ class CitizenController extends Controller
     */
     public function healthIndex()
     {
-        $citizens =
-            citizens::paginate(10);
-
-
-        $recentDiagnoses =
-            HealthRecord::with('citizen')
-                ->latest()
-                ->take(5)
-                ->get();
-
-
-        $totalRecords =
-            HealthRecord::count();
-
+        $citizens = citizens::paginate(10);
+        $recentDiagnoses = HealthRecord::with('citizen')->latest()->take(5)->get();
+        $totalRecords = HealthRecord::count();
 
         HealthRecordActivityLog::create([
-
-            'user_id' =>
-                Auth::id(),
-
-            'action' =>
-                'view',
-
-            'citizen_id' =>
-                null,
-
-            'health_record_id' =>
-                null,
-
-            'description' =>
-                'Viewed health record dashboard',
+            'user_id' => Auth::id(),
+            'action' => 'view',
+            'citizen_id' => null,
+            'health_record_id' => null,
+            'description' => 'Viewed health record dashboard',
         ]);
 
-
-        return view(
-            'bhw.healthrecord',
-            compact(
-                'citizens',
-                'recentDiagnoses',
-                'totalRecords'
-            )
-        );
+        return view('bhw.healthrecord', compact('citizens', 'recentDiagnoses', 'totalRecords'));
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -545,46 +355,20 @@ class CitizenController extends Controller
     */
     public function show($id)
     {
-        $citizen =
-            citizens::with([
-                'healthRecords'
-            ])->findOrFail($id);
+        $citizen = citizens::with(['healthRecords'])->findOrFail($id);
 
-
-        $this->logActivity(
-            'view',
-            'citizen',
-            $citizen->id,
-            'Viewed citizen health record'
-        );
-
+        $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen health record');
 
         HealthRecordActivityLog::create([
-
-            'user_id' =>
-                Auth::id(),
-
-            'action' =>
-                'view',
-
-            'citizen_id' =>
-                $citizen->id,
-
-            'health_record_id' =>
-                null,
-
-            'description' =>
-                'Viewed health records of citizen ID ' .
-                $citizen->id,
+            'user_id' => Auth::id(),
+            'action' => 'view',
+            'citizen_id' => $citizen->id,
+            'health_record_id' => null,
+            'description' => 'Viewed health records of citizen ID ' . $citizen->id,
         ]);
 
-
-        return view(
-            'bhw.citizen_show',
-            compact('citizen')
-        );
+        return view('bhw.citizen_show', compact('citizen'));
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -593,37 +377,13 @@ class CitizenController extends Controller
     */
     public function citizendetails($id)
     {
-        $citizen =
-            citizens::with([
-                'healthRecords',
-                'family.purok'
-            ])->findOrFail($id);
+        $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
+        $families = Family::with(['purok', 'subgroup'])->get();
 
+        $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen details page');
 
-        $families =
-            Family::with([
-                'purok',
-                'subgroup'
-            ])->get();
-
-
-        $this->logActivity(
-            'view',
-            'citizen',
-            $citizen->id,
-            'Viewed citizen details page'
-        );
-
-
-        return view(
-            'bhw.citizendetails',
-            compact(
-                'citizen',
-                'families'
-            )
-        );
+        return view('bhw.citizendetails', compact('citizen', 'families'));
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -632,188 +392,92 @@ class CitizenController extends Controller
     */
     public function destroy($id)
     {
-        $citizen =
-            citizens::findOrFail($id);
+        $citizen = citizens::findOrFail($id);
 
-
-        $this->logActivity(
-            'delete',
-            'citizen',
-            $citizen->id,
-            'Deleted citizen'
-        );
-
-
+        $this->logActivity('delete', 'citizen', $citizen->id, 'Deleted citizen');
         $citizen->delete();
 
-
-        return redirect()
-            ->route('citizenlist')
-            ->with(
-                'success',
-                'Citizen deleted successfully.'
-            );
+        return redirect()->route('citizenlist')->with('success', 'Citizen deleted successfully.');
     }
-
 
     /*
     |--------------------------------------------------------------------------
     | UPDATE CITIZEN
     |--------------------------------------------------------------------------
     */
-    public function update(
-        Request $request,
-        $id
-    ) {
-
-        $citizen =
-            citizens::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $citizen = citizens::findOrFail($id);
 
         $validated = $request->validate([
-
-            'Citizen_FName' =>
-                'required|string|max:255',
-
-            'Citizen_LName' =>
-                'required|string|max:255',
-
-            'Citizen_BirthDate' =>
-                'required|date|before_or_equal:today',
-
-            'Citizen_ContactNo' =>
-                'nullable|string|max:50',
-
-            'Citizen_Purok' =>
-                'required|string|max:255',
-
-            'family_id' =>
-                'nullable|exists:families,id',
+            'Citizen_FName' => 'required|string|max:255',
+            'Citizen_LName' => 'required|string|max:255',
+            'Citizen_BirthDate' => 'required|date|before_or_equal:today',
+            'Citizen_ContactNo' => 'nullable|string|max:50',
+            'Citizen_Purok' => 'required|string|max:255',
+            'family_id' => 'nullable|exists:families,id',
         ]);
 
+        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-        /*
-        |--------------------------------------------------------------------------
-        | ALWAYS RECALCULATE AGE
-        |--------------------------------------------------------------------------
-        */
-        $validated['Citizen_Age'] =
-            Carbon::parse(
-                $validated['Citizen_BirthDate']
-            )->age;
+        $citizen->update($validated);
 
+        $this->logActivity('update', 'citizen', $citizen->id, 'Updated citizen details');
 
-        $citizen->update(
-            $validated
-        );
-
-
-        $this->logActivity(
-            'update',
-            'citizen',
-            $citizen->id,
-            'Updated citizen details'
-        );
-
-
-        return redirect()
-            ->back()
-            ->with(
-                'success',
-                'Citizen updated successfully.'
-            );
+        return redirect()->back()->with('success', 'Citizen updated successfully.');
     }
-
 
     /*
     |--------------------------------------------------------------------------
     | ACTIVITY LOG
     |--------------------------------------------------------------------------
     */
-    private function logActivity(
-        $action,
-        $module,
-        $citizenId = null,
-        $description = null
-    ) {
-
+    private function logActivity($action, $module, $citizenId = null, $description = null)
+    {
         CitizenActivityLog::create([
-
-            'user_id' =>
-                Auth::id() ?? 0,
-
-            'action' =>
-                $action,
-
-            'module' =>
-                $module,
-
-            'citizen_id' =>
-                $citizenId,
-
-            'description' =>
-                $description,
+            'user_id' => Auth::id() ?? 0,
+            'action' => $action,
+            'module' => $module,
+            'citizen_id' => $citizenId,
+            'description' => $description,
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | EXPORT CITIZENS
+    |--------------------------------------------------------------------------
+    */
+    public function export()
+    {
+        return Excel::download(
+            new CitizensExport(),
+            'citizen_records_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+        );
+    }
 
     /*
     |--------------------------------------------------------------------------
     | IMPORT CITIZENS
     |--------------------------------------------------------------------------
-    | Supports:
-    | CSV
-    | XLS
-    | XLSX
-    |--------------------------------------------------------------------------
     */
     public function import(Request $request)
     {
         $request->validate([
-
-            'file' =>
-                'required|mimes:csv,txt,xlsx,xls|max:2048',
+            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
 
-
         try {
+            $file = $request->file('file');
+            Excel::import(new CitizensImport, $file);
 
-            $file =
-                $request->file('file');
+            $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
 
-
-            Excel::import(
-                new CitizensImport,
-                $file
-            );
-
-
-            $this->logActivity(
-                'import',
-                'citizen',
-                null,
-                'Imported citizens via CSV/Excel spreadsheet'
-            );
-
-
-            return redirect()
-                ->route('citizenlist')
-                ->with(
-                    'success',
-                    'Citizens imported successfully!'
-                );
-
+            return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
         } catch (\Exception $e) {
-
-            return redirect()
-                ->back()
-                ->with(
-                    'error',
-                    'Import failed: ' .
-                    $e->getMessage()
-                );
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -822,132 +486,97 @@ class CitizenController extends Controller
     */
     public function showElectronicCard($id)
     {
-        $citizen =
-            citizens::with([
-                'vaccinations',
-                'medications',
-                'healthRecords'
-            ])->findOrFail($id);
+        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])->findOrFail($id);
 
-
-        return view(
-            'bhw.ecard',
-            compact('citizen')
-        );
+        return view('bhw.ecard', compact('citizen'));
     }
 
+    public function showElectronicCardByToken(string $token)
+    {
+        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+            ->where('qr_token', $token)
+            ->firstOrFail();
+
+        return view('bhw.ecard', compact('citizen'));
+    }
+
+    private function makeCitizenQrImage(citizens $citizen): string
+    {
+        if (!$citizen->qr_token) {
+            $citizen->qr_token = (string) Str::uuid();
+            $citizen->save();
+        }
+
+        $url = route('bhw.citizen.qr', [
+            'token' => $citizen->qr_token,
+        ]);
+
+        // Generate a reliable QR code SVG data URI using a public API service
+        $encodedUrl = urlencode($url);
+        $svgContent = @file_get_contents("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={$encodedUrl}");
+
+        if ($svgContent) {
+            return 'data:image/png;base64,' . base64_encode($svgContent);
+        }
+
+        return '';
+    }
 
     /*
     |--------------------------------------------------------------------------
     | STORE VACCINATION RECORD
     |--------------------------------------------------------------------------
     */
-    public function storeVaccination(
-        Request $request,
-        $id
-    ) {
+    public function storeVaccination(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'vaccine_name' => 'required|string|max:255',
+            'dose_number' => 'required|string|max:100',
+            'date_administered' => 'required|date',
+            'administered_by' => 'required|string|max:255',
+        ]);
 
-        $validated =
-            $request->validate([
+        $validated['citizen_id'] = $id;
 
-                'vaccine_name' =>
-                    'required|string|max:255',
-
-                'dose_number' =>
-                    'required|string|max:100',
-
-                'date_administered' =>
-                    'required|date',
-
-                'administered_by' =>
-                    'required|string|max:255',
-            ]);
-
-
-        $validated['citizen_id'] =
-            $id;
-
-
-        VaccinationRecord::create(
-            $validated
-        );
-
+        VaccinationRecord::create($validated);
 
         $this->logActivity(
             'create',
             'vaccination',
             $id,
-            'Administered vaccine (' .
-            $validated['vaccine_name'] .
-            ' - ' .
-            $validated['dose_number'] .
-            ') to citizen ID ' .
-            $id
+            'Administered vaccine (' . $validated['vaccine_name'] . ' - ' . $validated['dose_number'] . ') to citizen ID ' . $id
         );
 
-
-        return back()->with(
-            'success',
-            'Vaccination record added successfully.'
-        );
+        return back()->with('success', 'Vaccination record added successfully.');
     }
-
 
     /*
     |--------------------------------------------------------------------------
     | STORE MEDICATION RECORD
     |--------------------------------------------------------------------------
     */
-    public function storeMedication(
-        Request $request,
-        $id
-    ) {
+    public function storeMedication(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'medicine_name' => 'required|string|max:255',
+            'dosage' => 'required|string|max:100',
+            'quantity_dispensed' => 'required|integer|min:1',
+            'date_dispensed' => 'required|date',
+        ]);
 
-        $validated =
-            $request->validate([
+        $validated['citizen_id'] = $id;
 
-                'medicine_name' =>
-                    'required|string|max:255',
-
-                'dosage' =>
-                    'required|string|max:100',
-
-                'quantity_dispensed' =>
-                    'required|integer|min:1',
-
-                'date_dispensed' =>
-                    'required|date',
-            ]);
-
-
-        $validated['citizen_id'] =
-            $id;
-
-
-        MedicationRecord::create(
-            $validated
-        );
-
+        MedicationRecord::create($validated);
 
         $this->logActivity(
             'create',
             'medication',
             $id,
-            'Dispensed medication (' .
-            $validated['medicine_name'] .
-            ' x' .
-            $validated['quantity_dispensed'] .
-            ') to citizen ID ' .
-            $id
+            'Dispensed medication (' . $validated['medicine_name'] . ' x' . $validated['quantity_dispensed'] . ') to citizen ID ' . $id
         );
 
-
-        return back()->with(
-            'success',
-            'Medication log added successfully.'
-        );
+        return back()->with('success', 'Medication log added successfully.');
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -956,26 +585,21 @@ class CitizenController extends Controller
     */
     public function citizenViewECard()
     {
-        $user =
-            Auth::user();
+        $user = Auth::user();
 
+        if (!$user->citizen_id) {
+            abort(403, 'This account is not linked to a citizen profile.');
+        }
 
-        $citizen =
-            citizens::with([
-                'vaccinations',
-                'medications',
-                'healthRecords'
-            ])
-            ->where(
-                'id',
-                $user->citizen_id
-            )
+        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+            ->where('id', $user->citizen_id)
             ->firstOrFail();
 
+        $qrImage = $this->makeCitizenQrImage($citizen);
 
-        return view(
-            'citizen.ecard',
-            compact('citizen')
-        );
+        return view('citizen.ecard', [
+            'citizen' => $citizen,
+            'qrImage' => $qrImage,
+        ]);
     }
 }

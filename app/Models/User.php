@@ -21,13 +21,14 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'citizen_id',
         'must_change_password',
-        'theme',      
+        'theme',
         'font_size',
         'failed_login_attempts',
         'is_locked',
     ];
-
+    
     protected $hidden = [
         'password',
         'remember_token',

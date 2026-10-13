@@ -255,8 +255,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/vehicle-logs', [VehicleLogController::class, 'store'])->name('vehicle.logs.store');
 
     // QR Scanner
-    Route::get('/qr-scanner', fn () => app(QRScannerController::class)->index())->name('qr.scanner');
-
+    //Route::get('/qr-scanner', fn () => app(QRScannerController::class)->index())->name('qr.scanner');
+    Route::get('/citizen/qr/{token}',[CitizenController::class, 'showElectronicCardByToken'])->name('bhw.citizen.qr');
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
@@ -264,6 +264,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::post('/bhw/supplies/batch-release', [BhwSupplyRequestController::class, 'storeBatchRelease'])
     ->name('bhw.supplies.batch.release');
+
+    Route::get('/citizen-export', [CitizenController::class,'export'])->name('citizen.export');
 });
 
 Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
@@ -276,7 +278,6 @@ Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->gr
 
     Route::get('/supply-requests', [BhwSupplyRequestController::class, 'index'])->name('supply.requests');
     Route::put('/supply-requests/{id}', [BhwSupplyRequestController::class, 'updateStatus'])->name('supply.requests.update');
-    
 });
 
 
