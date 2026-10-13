@@ -16,6 +16,7 @@ class User extends Authenticatable
     public const ROLE_CITIZEN = 'citizen';
 
     protected $fillable = [
+        'citizen_id',
         'name',
         'email',
         'password',
@@ -92,6 +93,13 @@ public function hasReadAccess($feature)
 
     // 'read' and 'write' both allow reading, but 'none' blocks it
     return in_array($access, ['read', 'write']);
+}
+
+public function assignedSubgroup()
+{
+    return $this->hasMany(PurokSubgroup::class, 'user_id');
+
+    
 }
 
 }

@@ -19,14 +19,14 @@ class AdminSettings extends Controller
 
     public function demographicsIndex()
     {
-        // Fetch puroks along with their assigned BHW relationship
-        $puroks = Purok::with('bhw')->get();
+        // Fetch puroks (no longer bound directly to a single BHW)
+        $puroks = Purok::all();
         
         // Fetch users who have the 'bhw' role to populate the dropdown
         $bhws = User::where('role', 'bhw')->get();
 
-        $subgroups = PurokSubgroup::with('purok')->get();
-
+        // Fetch subgroups along with their parent purok and assigned BHW
+        $subgroups = PurokSubgroup::with(['purok', 'bhw'])->get();
 
         return view('admin.demographics', compact('puroks', 'bhws', 'subgroups'));
     }
@@ -35,12 +35,10 @@ class AdminSettings extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:puroks,name',
-            'user_id' => 'nullable|exists:users,id',
         ]);
 
         Purok::create([
             'name' => $request->name,
-            'user_id' => $request->user_id,
         ]);
 
         return back()->with('success', 'Purok added successfully!');
@@ -50,14 +48,12 @@ class AdminSettings extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:puroks,name,' . $id,
-            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $purok = Purok::findOrFail($id);
         
         $purok->update([
             'name' => $request->name,
-            'user_id' => $request->user_id,
         ]);
 
         return back()->with('success', 'Purok updated successfully!');
@@ -71,52 +67,74 @@ class AdminSettings extends Controller
     }
 
     public function storeSubgroup(Request $request)
-{
-    $request->validate([
-        'purok_id' => 'required|exists:puroks,id',
-        'name' => 'required|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'purok_id' => 'required|exists:puroks,id',
+            'name' => 'required|string|max:255',
+            'user_id' => 'nullable|exists:users,id', // 👈 BHW assigned to this subgroup
+        ]);
 
-    PurokSubgroup::create($request->only(['purok_id', 'name']));
+        PurokSubgroup::create([
+            'purok_id' => $request->purok_id,
+            'name' => $request->name,
+            'user_id' => $request->user_id,
+        ]);
 
-    return back()->with('success', 'Purok group added successfully!');
-}
+        return back()->with('success', 'Purok subgroup added successfully!');
+    }
 
-public function destroySubgroup($id)
-{
-    PurokSubgroup::findOrFail($id)->delete();
-    return back()->with('success', 'Purok group deleted successfully!');
-}
+    public function updateSubgroup(Request $request, $id)
+    {
+        $request->validate([
+            'purok_id' => 'required|exists:puroks,id',
+            'name' => 'required|string|max:255',
+            'user_id' => 'nullable|exists:users,id', // 👈 Validate user_id
+        ]);
 
+        $subgroup = PurokSubgroup::findOrFail($id);
+        
+        $subgroup->update([
+            'purok_id' => $request->purok_id,
+            'name' => $request->name,
+            'user_id' => $request->user_id, // 👈 Save user_id to the database table
+        ]);
+
+        return back()->with('success', 'Purok subgroup updated successfully!');
+    }
+
+    public function destroySubgroup($id)
+    {
+        PurokSubgroup::findOrFail($id)->delete();
+        return back()->with('success', 'Purok subgroup deleted successfully!');
+    }
 
     public function dashboard()
-{
-    // Existing counts...
-    $bhwCount = User::where('role', 'bhw')->count();
-    $lowStockCount = Supply::where('quantity', '<=', 5)->count();
+    {
+        $bhwCount = User::where('role', 'bhw')->count();
+        $lowStockCount = Supply::where('quantity', '<=', 5)->count();
 
-    // 1. Chart 2 Data: Supply Category Distribution
-    $categories = Supply::select('category')
-        ->selectRaw('SUM(quantity) as total_qty')
-        ->groupBy('category')
-        ->pluck('total_qty', 'category');
+        // Chart 2 Data: Supply Category Distribution
+        $categories = Supply::select('category')
+            ->selectRaw('SUM(quantity) as total_qty')
+            ->groupBy('category')
+            ->pluck('total_qty', 'category');
 
-    $categoryLabels = $categories->keys()->toArray();
-    $categoryValues = $categories->values()->toArray();
+        $categoryLabels = $categories->keys()->toArray();
+        $categoryValues = $categories->values()->toArray();
 
-    // 2. Chart 3 Data: BHW Permission Access Breakdown
-    $writeCount = UserPermission::where('access', 'write')->count();
-    $readCount = UserPermission::where('access', 'read')->count();
-    $noneCount = UserPermission::where('access', 'none')->count();
+        // Chart 3 Data: BHW Permission Access Breakdown
+        $writeCount = UserPermission::where('access', 'write')->count();
+        $readCount = UserPermission::where('access', 'read')->count();
+        $noneCount = UserPermission::where('access', 'none')->count();
 
-    return view('admin.admin_home', compact(
-        'bhwCount',
-        'lowStockCount',
-        'categoryLabels',
-        'categoryValues',
-        'writeCount',
-        'readCount',
-        'noneCount'
-    ));
-}
+        return view('admin.admin_home', compact(
+            'bhwCount',
+            'lowStockCount',
+            'categoryLabels',
+            'categoryValues',
+            'writeCount',
+            'readCount',
+            'noneCount'
+        ));
+    }
 }

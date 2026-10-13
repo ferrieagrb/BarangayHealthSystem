@@ -14,12 +14,11 @@
     }
 
     .demographics-container h1 {
-        font-size: clamp(1.25rem, 2vw, 1.75rem); /* Scales dynamically with screen size */
+        font-size: clamp(1.25rem, 2vw, 1.75rem);
         margin-bottom: 20px;
         color: #2c3e50;
     }
 
-    /* Dynamic CSS Grid for full width layout */
     .grid-row {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -30,7 +29,7 @@
 
     .card {
         background: #ffffff;
-        padding: clamp(16px, 2vw, 24px); /* Scales padding based on viewport */
+        padding: clamp(16px, 2vw, 24px);
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         display: flex;
@@ -52,7 +51,6 @@
         flex: 1;
     }
 
-    /* Responsive Form Row that wraps on small screens if needed */
     .form-row {
         display: flex;
         flex-wrap: wrap;
@@ -60,7 +58,7 @@
     }
 
     .form-control {
-        flex: 1 1 200px; /* Allows inputs to wrap and scale gracefully */
+        flex: 1 1 200px;
         padding: 10px 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -112,7 +110,6 @@
         border-radius: 4px;
     }
 
-    /* List item styles wrapped securely for responsiveness */
     .purok-item {
         display: flex;
         justify-content: space-between;
@@ -159,29 +156,23 @@
 
     <!-- Row 1: Add Purok Form & Add Subgroup Form -->
     <div class="grid-row">
-        <!-- Add Purok Form Card -->
+        <!-- Add Purok Form Card (Cleaned: No BHW assignment here anymore) -->
         <div class="card">
-            <h2>Add New Purok & Assign BHW</h2>
+            <h2>Add New Purok</h2>
             <form action="{{ route('admin.puroks.store') }}" method="POST" style="display: flex; flex-direction: column; flex: 1;">
                 @csrf
                 <div class="form-group">
                     <div class="form-row">
                         <input type="text" name="name" placeholder="Enter Purok name (e.g., Purok 1)" class="form-control" required>
-                        <select name="user_id" class="form-control">
-                            <option value="">-- Assign BHW (Optional) --</option>
-                            @foreach($bhws as $bhw)
-                                <option value="{{ $bhw->id }}">{{ $bhw->name ?? $bhw->email }}</option>
-                            @endforeach
-                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Add Purok</button>
                 </div>
             </form>
         </div>
 
-        <!-- Add Purok Subgroup Form Card -->
+        <!-- Add Purok Subgroup Form Card (Includes BHW Assignment) -->
         <div class="card">
-            <h2>Add Purok Sub-group (e.g., P1A, P1B)</h2>
+            <h2>Add Purok Sub-group & Assign BHW</h2>
             <form action="{{ route('admin.subgroups.store') }}" method="POST" style="display: flex; flex-direction: column; flex: 1;">
                 @csrf
                 <div class="form-group">
@@ -194,6 +185,14 @@
                         </select>
                         <input type="text" name="name" placeholder="Subgroup name (e.g., P1A)" class="form-control" required>
                     </div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <select name="user_id" class="form-control">
+                            <option value="">-- Assign BHW (Optional) --</option>
+                            @foreach($bhws as $bhw)
+                                <option value="{{ $bhw->id }}">{{ $bhw->name ?? $bhw->email }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Add Subgroup</button>
                 </div>
             </form>
@@ -202,23 +201,16 @@
 
     <!-- Row 2: Existing Puroks List & Existing Subgroups List -->
     <div class="grid-row">
+        <!-- Puroks List (Only name updates and deletion) -->
         <div class="card">
-            <h2>Existing Puroks & Assigned BHWs</h2>
+            <h2>Existing Puroks</h2>
             <ul style="list-style: none; padding:0; margin:0; flex: 1;">
                 @forelse($puroks as $purok)
                     <li class="purok-item">
                         <form action="{{ route('admin.puroks.update', $purok->id) }}" method="POST" class="purok-update-form">
                             @csrf
                             @method('PUT')
-                            <input type="text" name="name" value="{{ $purok->name }}" class="form-control" style="flex: 1 1 100px;" required>
-                            <select name="user_id" class="form-control" style="flex: 2 1 140px;">
-                                <option value="">-- No BHW --</option>
-                                @foreach($bhws as $bhw)
-                                    <option value="{{ $bhw->id }}" {{ $purok->user_id == $bhw->id ? 'selected' : '' }}>
-                                        {{ $bhw->name ?? $bhw->email }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="name" value="{{ $purok->name }}" class="form-control" style="flex: 1 1 150px;" required>
                             <button type="submit" class="btn btn-success">Save</button>
                         </form>
                         <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" onsubmit="return confirm('Delete purok and its subgroups?')">
@@ -232,12 +224,38 @@
             </ul>
         </div>
 
+        <!-- Subgroups List (Editable with Purok dropdown, Subgroup name, and BHW assignment) -->
         <div class="card">
-            <h2>Existing Subgroups</h2>
+            <h2>Existing Subgroups & Assigned BHWs</h2>
             <ul style="list-style: none; padding:0; margin:0; flex: 1;">
                 @forelse($subgroups as $sub)
                     <li class="purok-item">
-                        <span style="flex: 1; word-break: break-word;"><strong>{{ $sub->purok->name ?? 'Unknown' }}</strong> ➔ {{ $sub->name }}</span>
+                        <form action="{{ route('admin.subgroups.update', $sub->id) }}" method="POST" class="purok-update-form">
+    @csrf
+    @method('PUT')
+    
+    <select name="purok_id" class="form-control" style="flex: 1 1 100px;" required>
+        @foreach($puroks as $purok)
+            <option value="{{ $purok->id }}" {{ $sub->purok_id == $purok->id ? 'selected' : '' }}>
+                {{ $purok->name }}
+            </option>
+        @endforeach
+    </select>
+
+    <input type="text" name="name" value="{{ $sub->name }}" class="form-control" style="flex: 1 1 90px;" required>
+
+    {{-- 👇 CHECK THIS SELECT ELEMENT --}}
+    <select name="user_id" class="form-control" style="flex: 2 1 130px;">
+        <option value="">-- No BHW --</option>
+        @foreach($bhws as $bhw)
+            <option value="{{ $bhw->id }}" {{ $sub->user_id == $bhw->id ? 'selected' : '' }}>
+                {{ $bhw->name ?? $bhw->email }}
+            </option>
+        @endforeach
+    </select>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
                         <form action="{{ route('admin.subgroups.destroy', $sub->id) }}" method="POST" onsubmit="return confirm('Delete this subgroup?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger">Delete</button>

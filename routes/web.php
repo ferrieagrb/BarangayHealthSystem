@@ -38,6 +38,7 @@ use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
+use App\Http\Controllers\BhwSupplyRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -149,6 +150,9 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
     //  STATIC ROUTE PLACED SAFELY AT THE TOP OF THE PREFIX GROUP
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
+
+
+    Route::post('/supplies/request', [CitizenSupplyController::class, 'storeRequest'])->name('supplies.request');
 });
 
 
@@ -255,6 +259,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
+
+    Route::post('/supply-reservations', [BhwSupplyRequestController::class, 'storeReservation'])->name('bhw.supply.reserve');
+
+    Route::post('/bhw/supplies/batch-release', [BhwSupplyRequestController::class, 'storeBatchRelease'])
+    ->name('bhw.supplies.batch.release');
 });
 
 Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
@@ -264,6 +273,9 @@ Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->gr
     Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
     Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');
+
+    Route::get('/supply-requests', [BhwSupplyRequestController::class, 'index'])->name('supply.requests');
+    Route::put('/supply-requests/{id}', [BhwSupplyRequestController::class, 'updateStatus'])->name('supply.requests.update');
     
 });
 
@@ -293,6 +305,7 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::put('/admin/puroks/{id}', [AdminSettings::class, 'updatePurok'])->name('puroks.update');
 
     Route::post('/purok-subgroups', [AdminSettings::class, 'storeSubgroup'])->name('subgroups.store');
+    Route::put('/purok-subgroups/{id}', [AdminSettings::class, 'updateSubgroup'])->name('subgroups.update'); 
     Route::delete('/purok-subgroups/{id}', [AdminSettings::class, 'destroySubgroup'])->name('subgroups.destroy');
 
     Route::post('/categories', [SupplyController::class, 'storeCategory'])->name('categories.store');

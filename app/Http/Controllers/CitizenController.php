@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
+use App\Models\PurokSubgroup;
+use App\Models\UserPermission;
 
 class CitizenController extends Controller
 {
@@ -25,7 +27,7 @@ class CitizenController extends Controller
     */
     public function index(Request $request)
     {
-        Auth::id();
+        $user = auth()->user();
 
         /*
         |--------------------------------------------------------------------------
@@ -39,21 +41,20 @@ class CitizenController extends Controller
         citizens::whereNotNull('Citizen_BirthDate')
             ->chunkById(100, function ($citizens) {
 
-                foreach ($citizens as $citizen) {
+                foreach ($citizens as$citizen) {
 
                     try {
 
-                        $birthDate = Carbon::parse(
-                            $citizen->Citizen_BirthDate
+                        $birthDate = Carbon::parse($citizen->Citizen_BirthDate
                         );
 
                         if ($birthDate->isFuture()) {
                             continue;
                         }
 
-                        $correctAge = $birthDate->age;
+                        $correctAge =$birthDate->age;
 
-                        if ((int) $citizen->Citizen_Age !== $correctAge) {
+                        if ((int) $citizen->Citizen_Age !==$correctAge) {
 
                             $citizen->update([
                                 'Citizen_Age' => $correctAge
@@ -68,6 +69,30 @@ class CitizenController extends Controller
 
 
         $query = citizens::query();
+
+        /*
+        |--------------------------------------------------------------------------
+        | BHW SUBGROUP SCOPE & PERMISSION ENFORCEMENT
+        |--------------------------------------------------------------------------
+        | If the user is a BHW, check if they have the 'view_all_citizens' permission.
+        | If not, restrict visibility strictly to their assigned purok subgroups.
+        |--------------------------------------------------------------------------
+        */
+        if ($user &&$user->role === 'bhw') {
+            $canViewAll = UserPermission::where('user_id',$user->id)
+                ->where('feature', 'view_all_citizens')
+                ->where('access', '!=', 'none')
+                ->exists();
+
+            if (!$canViewAll) {
+                // Get all subgroup IDs assigned to this BHW in `purok_subgroups` via `user_id`
+                $assignedSubgroupIDs = PurokSubgroup::where('user_id',$user->id)->pluck('id');
+
+                $query->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
+                    $q->whereIn('subgroup_id',$assignedSubgroupIDs);
+                });
+            }
+        }
 
 
         /*
@@ -119,19 +144,17 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         if (
-            $request->filled('purok') &&
-            $request->purok !== 'all'
+            $request->filled('purok') &&$request->purok !== 'all'
         ) {
 
-            $purokValue = $request->purok;
+            $purokValue =$request->purok;
 
             $purokRecord = Purok::find($purokValue);
 
             if ($purokRecord) {
 
                 $query->where(function ($q) use (
-                    $purokRecord,
-                    $purokValue
+                    $purokRecord,$purokValue
                 ) {
 
                     $q->where(
@@ -161,11 +184,10 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         if (
-            $request->filled('subgroup') &&
-            $request->subgroup !== 'all'
+            $request->filled('subgroup') &&$request->subgroup !== 'all'
         ) {
 
-            $subgroupId = $request->subgroup;
+            $subgroupId =$request->subgroup;
 
             $query->whereHas(
                 'family',
@@ -184,11 +206,6 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         | FILTER BY AGE RANGE
         |--------------------------------------------------------------------------
-        | Examples:
-        | 8
-        | 4-10
-        | 10-4
-        |--------------------------------------------------------------------------
         */
         if ($request->filled('age')) {
 
@@ -197,23 +214,22 @@ class CitizenController extends Controller
             if (
                 preg_match(
                     '/^(\d+)\s*-\s*(\d+)$/',
-                    $age,
-                    $matches
+                    $age,$matches
                 )
             ) {
 
-                $minAge = (int) $matches[1];
-                $maxAge = (int) $matches[2];
+                $minAge = (int)$matches[1];
+                $maxAge = (int)$matches[2];
 
-                if ($minAge > $maxAge) {
+                if ($minAge >$maxAge) {
 
-                    [$minAge, $maxAge] =
-                        [$maxAge, $minAge];
+                    [$minAge,$maxAge] =
+                        [$maxAge,$minAge];
                 }
 
                 $query->whereBetween(
                     'Citizen_Age',
-                    [$minAge, $maxAge]
+                    [$minAge,$maxAge]
                 );
 
             } elseif (is_numeric($age)) {
@@ -233,7 +249,7 @@ class CitizenController extends Controller
         */
         if ($request->filled('age_group')) {
 
-            $ageGroup = $request->age_group;
+            $ageGroup =$request->age_group;
 
             if ($ageGroup === 'kid') {
 
@@ -274,7 +290,7 @@ class CitizenController extends Controller
         | PAGINATION
         |--------------------------------------------------------------------------
         */
-        $citizens = $query
+        $citizens =$query
             ->paginate(10)
             ->appends([
                 'search' => $request->search,
@@ -287,13 +303,24 @@ class CitizenController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | DASHBOARD COUNTS
+        | DASHBOARD COUNTS (Scoped to BHW if applicable)
         |--------------------------------------------------------------------------
         */
         $base = citizens::query();
 
-        $totalCitizens =
-            $base->count();
+        if ($user &&$user->role === 'bhw') {
+            $canViewAll = UserPermission::where('user_id',$user->id)
+                ->where('feature', 'view_all_citizens')
+                ->where('access', '!=', 'none')
+                ->exists();
+
+            if (!$canViewAll) {$assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');$base->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
+                    $q->whereIn('subgroup_id',$assignedSubgroupIDs);
+                });
+            }
+        }
+
+        $totalCitizens =$base->count();
 
         $kids =
             (clone $base)
@@ -342,50 +369,53 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'Citizen_FName' => 'required|string|max:255',
-            'Citizen_LName' => 'required|string|max:255',
-            'Citizen_BirthDate' => 'required|date|before_or_equal:today',
-            'Citizen_ContactNo' => 'required|string|max:50',
-            'Citizen_Purok' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-        ]);
+{
+    $validated = $request->validate([
+        'Citizen_FName' => 'required|string|max:255',
+        'Citizen_LName' => 'required|string|max:255',
+        'Citizen_BirthDate' => 'required|date|before_or_equal:today',
+        'Citizen_ContactNo' => 'required|string|max:50',
+        'Citizen_Purok' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+    ]);
 
-        // Calculate age
-        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+    // Calculate age automatically using Carbon
+    $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-        // 1. Create the citizen profile record first
-        $citizen = citizens::create([
-            'Citizen_FName' => $validated['Citizen_FName'],
-            'Citizen_LName' => $validated['Citizen_LName'],
-            'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
-            'Citizen_Age' => $validated['Citizen_Age'],
-            'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
-            'Citizen_Purok' => $validated['Citizen_Purok'],
-        ]);
+    // 1. Create the citizen profile record
+    $citizen = citizens::create([
+        'Citizen_FName' => $validated['Citizen_FName'],
+        'Citizen_LName' => $validated['Citizen_LName'],
+        'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
+        'Citizen_Age' => $validated['Citizen_Age'],
+        'Citizen_ContactNo' => $validated['Citizen_ContactNo'],
+        'Citizen_Purok' => $validated['Citizen_Purok'],
+    ]);
 
-        // 2. Create the corresponding login account in the users table with role 'citizen'
-        \App\Models\User::create([
-            'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
-            'email' => $validated['email'],
-            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
-            'role' => 'citizen',         // Automatically sets the role to citizen
-            'citizen_id' => $citizen->id // Links the user account back to the citizen profile
-        ]);
+    // 2. Set default initial password (e.g., using contact number or standard default)
+    $defaultPassword = 'Barangay123!';
 
-        $this->logActivity(
-            'create',
-            'citizen',
-            $citizen->id,
-            'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
-        );
+    // 3. Create the user portal login account
+    \App\Models\User::create([
+        'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
+        'email' => $validated['email'],
+        'password' => \Illuminate\Support\Facades\Hash::make($defaultPassword),
+        'role' => 'citizen',
+        'citizen_id' => $citizen->id,
+        'must_change_password' => 1,
+    ]);
 
-        return redirect()
-            ->route('citizenlist')
-            ->with('success', 'Citizen and portal account created successfully.');
-    }
+    $this->logActivity(
+        'create',
+        'citizen',
+        $citizen->id,
+        'Added new citizen and account: ' . $citizen->Citizen_FName . ' ' . $citizen->Citizen_LName
+    );
+
+    return redirect()
+        ->route('citizenlist')
+        ->with('success', 'Citizen and portal account created successfully.');
+}
 
 
     /*

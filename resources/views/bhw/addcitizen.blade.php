@@ -183,23 +183,7 @@
                  PASSWORD
                  ===================================================== --}}
 
-            <div class="form-group">
-
-                <label for="password">
-                    Password
-                </label>
-
-                <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    required
-                    minlength="6"
-                    placeholder="At least 6 characters"
-                    autocomplete="new-password"
-                >
-
-            </div>
+            
 
         </div>
 

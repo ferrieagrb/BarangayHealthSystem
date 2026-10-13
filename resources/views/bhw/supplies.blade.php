@@ -9,14 +9,21 @@
 <!-- HEADER -->
 <div class="page-top">
     <div class="page-title">
-        <h1>Health Supplies Inventory</h1>
-        <p>Monitor stock levels of medicines and health supplies.</p>
+        <h1>Health Supplies Inventory & Requests</h1>
+        <p>Monitor stock levels, manage packs, and review citizen supply requests.</p>
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
+        <button type="button" class="btn-primary" id="openReservationModal" style="background: #10b981; margin-left: 10px;">
+            + Direct Citizen Reservation
+        </button>
+
+        <button type="button" class="btn-primary" id="openBatchReleaseModal" style="background: #2563eb; margin-left: 10px;">
+        📦 Batch Release Supplies
+    </button>
     @endif
 </div>
 
@@ -39,6 +46,101 @@
         <strong>{{ $wellStocked }}</strong>
     </div>
 
+</div>
+
+
+<!-- ================================================================
+     CITIZEN SUPPLY REQUESTS MANAGEMENT SECTION
+     ================================================================ -->
+<div class="section-container" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h2 style="margin-bottom: 15px; font-size: 1.25rem; color: #1f2937;">Incoming Citizen Supply Requests</h2>
+
+    @if(session('success'))
+        <div style="background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background: #f8d7da; color: #721c24; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="table-container" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb; color: #374151; background: #f9fafb;">
+                    <th style="padding: 10px;">Citizen Name</th>
+                    <th style="padding: 10px;">Requested Item</th>
+                    <th style="padding: 10px; text-align: center;">Qty</th>
+                    <th style="padding: 10px;">Citizen Remarks</th>
+                    <th style="padding: 10px; text-align: center;">Priority</th>
+                    <th style="padding: 10px; text-align: center;">Status</th>
+                    <th style="padding: 10px;">Action / BHW Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                @isset($supplyRequests)
+                    @forelse($supplyRequests as $req)
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <form action="{{ route('bhw.supply.requests.update', $req->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                
+                                <td style="padding: 10px;">
+                                    <strong>{{ $req->citizen->Citizen_FName ?? 'N/A' }} {{ $req->citizen->Citizen_LName ?? '' }}</strong>
+                                </td>
+
+                                <td style="padding: 10px;">
+                                    {{ $req->supply->name ?? 'Unknown Item' }}
+                                    <br><small style="color: #6b7280;">Category: {{ $req->supply->category ?? 'N/A' }}</small>
+                                </td>
+
+                                <td style="padding: 10px; text-align: center;">
+                                    <strong>{{ $req->quantity }}</strong>
+                                </td>
+
+                                <td style="padding: 10px; color: #555;">
+                                    {{ $req->remarks ?? 'None' }}
+                                </td>
+
+                                <!-- Priority Management -->
+                                <td style="padding: 10px; text-align: center;">
+                                    <select name="priority" style="padding: 5px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 12px;">
+                                        <option value="normal" {{ $req->priority === 'normal' ? 'selected' : '' }}>Normal</option>
+                                        <option value="high" {{ $req->priority === 'high' ? 'selected' : '' }}>High</option>
+                                        <option value="urgent" {{ $req->priority === 'urgent' ? 'selected' : '' }}>Urgent</option>
+                                    </select>
+                                </td>
+
+                                <!-- Status Management -->
+                                <td style="padding: 10px; text-align: center;">
+                                    <select name="status" style="padding: 5px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 12px;">
+                                        <option value="pending" {{ $req->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="approved" {{ $req->status === 'approved' ? 'selected' : '' }}>Approved</option>
+                                        <option value="rejected" {{ $req->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                        <option value="fulfilled" {{ $req->status === 'fulfilled' ? 'selected' : '' }}>Fulfilled</option>
+                                    </select>
+                                </td>
+
+                                <td style="padding: 10px;">
+                                    <input type="text" name="bhw_remarks" value="{{ $req->bhw_remarks }}" placeholder="Optional BHW notes..." style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 11px;">
+                                    <button type="submit" style="padding: 4px 10px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Update</button>
+                                </td>
+                            </form>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="padding: 20px; text-align: center; color: #6b7280;">
+                                No pending citizen supply requests found.
+                            </td>
+                        </tr>
+                    @endforelse
+                @endisset
+            </tbody>
+        </table>
+    </div>
 </div>
 
 
@@ -88,14 +190,11 @@
 
                     $totalQty = $itemsOfKind->sum('quantity');
 
-                    $minStockThreshold =
-                        $itemsOfKind->first()->min_stock ?? 5;
+                    $minStockThreshold = $itemsOfKind->first()->min_stock ?? 5;
 
-                    $category =
-                        $itemsOfKind->first()->category;
+                    $category = $itemsOfKind->first()->category;
 
-                    $lastUpdated =
-                        $itemsOfKind->max('updated_at');
+                    $lastUpdated = $itemsOfKind->max('updated_at');
                 @endphp
 
 
@@ -204,8 +303,8 @@
 
                         <div class="pack-details-wrapper">
 
+                            <!-- Inventory Packs Table -->
                             <div>
-
                                 <table class="table pack-table">
 
                                     <thead>
@@ -394,6 +493,63 @@
 
                                 </table>
 
+                            </div>
+
+                            <!-- Citizens with Direct Reservations Sub-Table -->
+                            @php
+                                $itemIds = $itemsOfKind->pluck('id');
+                                $reservationsForThisItem = collect();
+                                if(isset($bhwReservations)) {
+                                    foreach($itemIds as $id) {
+                                        if(isset($bhwReservations[$id])) {
+                                            $reservationsForThisItem = $reservationsForThisItem->merge($bhwReservations[$id]);
+                                        }
+                                    }
+                                }
+                            @endphp
+
+                            <div style="padding: 10px 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
+                                <h4 style="font-size: 13px; color: #1f2937; margin-bottom: 8px;">👤 Citizens with Direct Reservations</h4>
+                                <table class="table" style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; border: 1px solid #e5e7eb; border-radius: 4px;">
+                                    <thead>
+                                        <tr style="background: #f3f4f6; text-align: left;">
+                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Citizen Name</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Reserved Qty</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Priority</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">BHW Notes</th>
+                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Date Reserved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($reservationsForThisItem as $res)
+                                            <tr style="border-bottom: 1px solid #f9f9f9;">
+                                                <td style="padding: 8px; font-weight: 500;">
+                                                    {{ $res->citizen->Citizen_FName ?? 'N/A' }} {{ $res->citizen->Citizen_LName ?? '' }}
+                                                </td>
+                                                <td style="padding: 8px; text-align: center;">
+                                                    <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
+                                                        {{ $res->quantity }}
+                                                    </span>
+                                                </td>
+                                                <td style="padding: 8px; text-align: center; text-transform: capitalize;">
+                                                    {{ $res->priority }}
+                                                </td>
+                                                <td style="padding: 8px; color: #555;">
+                                                    {{ $res->bhw_remarks }}
+                                                </td>
+                                                <td style="padding: 8px; text-align: center; color: #6b7280; font-size: 12px;">
+                                                    {{ $res->created_at->format('M d, Y h:i A') }}
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" style="padding: 10px; text-align: center; color: #6b7280;">
+                                                    No active BHW citizen reservations for this item.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
 
                         </div>
@@ -1290,6 +1446,190 @@
 
     });
 
+</script>
+
+<!-- ================================================================
+     DIRECT BHW RESERVATION MODAL
+     ================================================================ -->
+<div id="reservationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; padding: 25px; border-radius: 8px; width: 450px; max-width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Direct Citizen Supply Reservation</h3>
+
+        <form action="{{ route('bhw.supply.reserve') }}" method="POST">
+            @csrf
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Citizen:</label>
+                <select name="citizen_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
+                    <option value="">-- Choose Citizen --</option>
+                    @foreach(\App\Models\citizens::all() as $citizen)
+                        <option value="{{ $citizen->id }}">{{ $citizen->Citizen_FName ?? '' }} {{ $citizen->Citizen_LName ?? '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Supply Item:</label>
+                <select name="supply_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
+                    <option value="">-- Choose Supply --</option>
+                    @foreach($supplies->where('quantity', '>', 0) as $sup)
+                        <option value="{{ $sup->id }}">{{ $sup->name }} (Available: {{$sup->quantity }})</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Quantity to Reserve:</label>
+                <input type="number" name="quantity" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Priority Level:</label>
+                <select name="priority" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">BHW Remarks / Notes:</label>
+                <textarea name="bhw_remarks" placeholder="Optional notes regarding this reservation..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="closeReservationModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
+                <button type="submit" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Reservation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const resModal = document.getElementById("reservationModal");
+        const openBtn = document.getElementById("openReservationModal");
+        const closeBtn = document.getElementById("closeReservationModalBtn");
+
+        if(openBtn) {
+            openBtn.addEventListener("click", () => { resModal.style.display = "flex"; });
+        }
+        if(closeBtn) {
+            closeBtn.addEventListener("click", () => { resModal.style.display = "none"; });
+        }
+        window.addEventListener("click", (e) => {
+            if(e.target === resModal) { resModal.style.display = "none"; }
+        });
+    });
+</script>
+
+<!-- Batch Release Modal Overlay -->
+<div id="batchReleaseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1050;">
+    <div style="background: white; padding: 25px; border-radius: 8px; width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Batch Release Supplies to Reserved Citizens</h3>
+
+        <form action="{{ route('bhw.supplies.batch.release') }}" method="POST">
+            @csrf
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Approved Reservations to Release:</label>
+                
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 4px; padding: 10px;">
+                    @php
+                        // Fetch all currently approved requests across items
+                        $approvedReservations = \App\Models\SupplyRequest::with(['citizen', 'supply'])
+                            ->where('status', 'approved')
+                            ->get();
+                    @endphp
+
+                    @forelse($approvedReservations as $res)
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; cursor: pointer;">
+                            <input type="checkbox" name="supply_request_ids[]" value="{{ $res->id }}" data-supply="{{ $res->supply->name ?? 'Item' }}" data-qty="{{ $res->quantity }}" data-citizen="{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}" class="release-checkbox">
+                            <div>
+                                <strong>{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}</strong> — 
+                                <span style="color: #0369a1;">{{ $res->quantity }}x {{ $res->supply->name ?? 'N/A' }}</span>
+                                <br><small style="color: #6b7280;">Priority: {{ ucfirst($res->priority) }} | Reserved on: {{ $res->created_at->format('M d, Y') }}</small>
+                            </div>
+                        </label>
+                    @empty
+                        <p style="text-align: center; color: #6b7280; font-size: 13px; margin: 10px 0;">No approved citizen reservations available for release.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Dynamic Preview Box when items are checked -->
+            <div id="releasePreviewBox" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; color: #166534;">
+                <strong>Selected Summary:</strong> <span id="releasePreviewText"></span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="batch_title" style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Batch Release Title / Event Name:</label>
+                <input 
+                    type="text" 
+                    name="batch_title" 
+                    id="batch_title" 
+                    class="form-control" 
+                    placeholder="e.g., Q3 Barangay Health Supply Distribution" 
+                    required
+                    style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;"
+                >
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Scheduled Release Date (Reflected on Calendar):</label>
+                <input type="date" name="release_date" value="{{ date('Y-m-d') }}" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Release Notes / Remarks:</label>
+                <textarea name="notes" placeholder="Optional notes for distribution event..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="closeBatchReleaseModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
+                <button type="submit" style="padding: 8px 14px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Batch Release & Log Schedule</button>
+            </div>
+        </form>
+    </div>
+</div>  
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("batchReleaseModal");
+        const openBtn = document.getElementById("openBatchReleaseModal");
+        const closeBtn = document.getElementById("closeBatchReleaseModalBtn");
+        const checkboxes = document.querySelectorAll(".release-checkbox");
+        const previewBox = document.getElementById("releasePreviewBox");
+        const previewText = document.getElementById("releasePreviewText");
+
+        if(openBtn) {
+            openBtn.addEventListener("click", () => { modal.style.display = "flex"; });
+        }
+        if(closeBtn) {
+            closeBtn.addEventListener("click", () => { modal.style.display = "none"; });
+        }
+        window.addEventListener("click", (e) => {
+            if(e.target === modal) { modal.style.display = "none"; }
+        });
+
+        // Update preview dynamically when checkboxes are toggled
+        checkboxes.forEach(chk => {
+            chk.addEventListener("change", function() {
+                let selected = [];
+                checkboxes.forEach(c => {
+                    if(c.checked) {
+                        selected.push(`${c.dataset.qty}x ${c.dataset.supply} (${c.dataset.citizen})`);
+                    }
+                });
+
+                if(selected.length > 0) {
+                    previewBox.style.display = "block";
+                    previewText.innerText = selected.join(", ");
+                } else {
+                    previewBox.style.display = "none";
+                }
+            });
+        });
+    });
 </script>
 
 @endsection
