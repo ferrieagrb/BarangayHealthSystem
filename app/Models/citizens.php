@@ -10,6 +10,7 @@ use App\Models\HealthRecord;
 use App\Models\Vaccination;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\PurokSubgroup;
 
 class citizens extends Authenticatable
 {

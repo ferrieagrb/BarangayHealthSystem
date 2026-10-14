@@ -29,11 +29,16 @@ use App\Models\UserPermission;
 class CitizenController extends Controller
 {
     /**
-     * Helper method to apply BHW subgroup scope & permission checks.
+     * Helper method to authorize BHW edit/delete actions based on assigned subgroups.
      */
-    private function applyBhwSubgroupScope($query)
+    private function authorizeCitizenEdit(citizens $citizen)
     {
         $user = auth()->user();
+
+        // Non-BHWs (e.g., Admins) have full access
+        if ($user && $user->role !== 'bhw') {
+            return true;
+        }
 
         if ($user && $user->role === 'bhw') {
             $canViewAll = UserPermission::where('user_id', $user->id)
@@ -41,21 +46,26 @@ class CitizenController extends Controller
                 ->where('access', '!=', 'none')
                 ->exists();
 
-            if (!$canViewAll) {
-                $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+            if ($canViewAll) {
+                return true;
+            }
 
-                $query->whereHas('family', function ($q) use ($assignedSubgroupIDs) {
-                    $q->whereIn('subgroup_id', $assignedSubgroupIDs);
-                });
+            // Check if citizen belongs to one of the BHW's assigned purok subgroups
+            $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+            
+            $belongsToAssignedSubgroup = $citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id);
+
+            if ($belongsToAssignedSubgroup) {
+                return true;
             }
         }
 
-        return $query;
+        abort(403, 'Unauthorized action. You can only edit citizens assigned to your purok subgroup.');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | CITIZEN LIST PAGE
+    | CITIZEN LIST PAGE (All BHWs can view all citizens)
     |--------------------------------------------------------------------------
     */
     public function index(Request $request)
@@ -88,10 +98,7 @@ class CitizenController extends Controller
                 }
             });
 
-        $query = citizens::query();
-
-        // Apply BHW scoping enforcement
-        $this->applyBhwSubgroupScope($query);
+        $query = citizens::query(); // Unrestricted viewing for all BHWs[cite: 3]
 
         /*
         |--------------------------------------------------------------------------
@@ -199,16 +206,13 @@ class CitizenController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | DASHBOARD COUNTS (Scoped to BHW if applicable)
+        | DASHBOARD COUNTS (Unrestricted full barangay totals)
         |--------------------------------------------------------------------------
         */
-        $base = citizens::query();
-        $this->applyBhwSubgroupScope($base);
-
-        $totalCitizens = $base->count();
-        $kids = (clone $base)->where('Citizen_Age', '<=', 17)->count();
-        $adults = (clone $base)->whereBetween('Citizen_Age', [18, 59])->count();
-        $seniors = (clone $base)->where('Citizen_Age', '>=', 60)->count();
+        $totalCitizens = citizens::count();
+        $kids = citizens::where('Citizen_Age', '<=', 17)->count();
+        $adults = citizens::whereBetween('Citizen_Age', [18, 59])->count();
+        $seniors = citizens::where('Citizen_Age', '>=', 60)->count();
 
         return view('bhw.citizen', compact(
             'citizens',
@@ -246,7 +250,6 @@ class CitizenController extends Controller
 
         try {
             $citizen = DB::transaction(function () use ($validated, $photoPath, $request) {
-                // Create the citizen profile and generate a unique QR token[cite: 2].
                 $citizen = citizens::create([
                     'Citizen_FName' => $validated['Citizen_FName'],
                     'Citizen_LName' => $validated['Citizen_LName'],
@@ -262,7 +265,6 @@ class CitizenController extends Controller
                     ? Hash::make($request->password) 
                     : Hash::make('Barangay123!');
 
-                // Create the linked citizen login account[cite: 2].
                 User::create([
                     'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
                     'email' => $validated['email'],
@@ -387,12 +389,15 @@ class CitizenController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | DELETE CITIZEN
+    | DELETE CITIZEN (Restricted to Assigned BHW)
     |--------------------------------------------------------------------------
     */
     public function destroy($id)
     {
         $citizen = citizens::findOrFail($id);
+
+        // Enforce subgroup assignment check
+        $this->authorizeCitizenEdit($citizen);
 
         $this->logActivity('delete', 'citizen', $citizen->id, 'Deleted citizen');
         $citizen->delete();
@@ -402,12 +407,15 @@ class CitizenController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | UPDATE CITIZEN
+    | UPDATE CITIZEN (Restricted to Assigned BHW)
     |--------------------------------------------------------------------------
     */
     public function update(Request $request, $id)
     {
         $citizen = citizens::findOrFail($id);
+
+        // Enforce subgroup assignment check
+        $this->authorizeCitizenEdit($citizen);
 
         $validated = $request->validate([
             'Citizen_FName' => 'required|string|max:255',
@@ -511,7 +519,6 @@ class CitizenController extends Controller
             'token' => $citizen->qr_token,
         ]);
 
-        // Generate a reliable QR code SVG data URI using a public API service
         $encodedUrl = urlencode($url);
         $svgContent = @file_get_contents("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={$encodedUrl}");
 

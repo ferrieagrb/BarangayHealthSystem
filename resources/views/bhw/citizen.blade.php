@@ -296,9 +296,15 @@
 
                     {{-- ACTIONS --}}
                     <td>
+                        @php
+                            $user = auth()->user();
+                            // Use fully qualified model namespace in Blade
+                            $isAssigned = $user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)->where('id', optional($citizen->family)->subgroup_id)->exists();
+                        @endphp
 
                         <div class="action-group">
 
+                            
                             {{-- VIEW BUTTON --}}
                             <a href="{{ route('citizendetails', $citizen->id) }}"
                                 class="btn-primary">
@@ -306,7 +312,7 @@
                                 View
                             </a>
 
-
+                            @if($isAssigned)
                             {{-- MANAGE E-CARD BUTTON --}}
                             <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}"
                                 class="btn-primary">
@@ -330,6 +336,10 @@
                                     Delete
                                 </button>
                             </form>
+                            
+                            @else
+                                <span class="text-muted" style="font-size: 11px;">View Only (Unassigned)</span>
+                            @endif
 
                         </div>
                     </td>

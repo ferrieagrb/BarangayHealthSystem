@@ -15,7 +15,6 @@ class AdminPermissionController extends Controller
         'reports'  => 'Reports & Analytics',
         'family'   => 'Family Profiles',
         'audit_logs' => 'Audit Logs',
-        'view_all_citizens'  => 'View All Citizens (Global)',
     ];
 
     public function index()
