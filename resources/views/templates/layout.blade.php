@@ -25,7 +25,60 @@
 <body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 
 @yield('scripts')
-<div class="dashboard">
+    <div class="dashboard">
+
+        <div id="global-loader">
+    <div class="logo-spinner-wrapper">
+        <div class="spinner-ring-blue"></div>
+        <div class="spinner-ring-white"></div>
+        <img src="{{ asset('images/amuyong.png') }}" alt="Logo" class="spinner-logo">
+    </div>
+    <span class="loader-status-text">Processing, please wait...</span>
+</div>
+
+<script>
+    (function() {
+        const loader = document.getElementById('global-loader');
+        if (!loader) return;
+
+        // Function to show loader
+        window.showLoader = function() {
+            loader.classList.add('active');
+        };
+
+        // Function to hide loader
+        window.hideLoader = function() {
+            loader.classList.remove('active');
+        };
+
+        // Trigger on any form submission across the site
+        document.addEventListener('submit', function(e) {
+            // Optional: check if form is valid before showing loader
+            showLoader();
+        });
+
+        // Trigger on regular link clicks (excluding anchors or target="_blank")
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && link.href && 
+                link.getAttribute('target') !== '_blank' && 
+                !link.href.startsWith('#') && 
+                !link.href.startsWith('javascript:') &&
+                link.hostname === window.location.hostname) {
+                showLoader();
+            }
+        });
+
+        // Hide loader when page finishes fully loading or comes from cache (back button)
+        window.addEventListener('pageshow', function(event) {
+            hideLoader();
+        });
+        
+        window.addEventListener('load', function() {
+            hideLoader();
+        });
+    })();
+</script>
 
     <!-- SIDEBAR -->
     <div class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">

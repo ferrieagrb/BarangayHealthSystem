@@ -627,3 +627,98 @@ body.font-large {
 body.font-xl {
     font-size: 1.3rem; /* Extra Large scaling */
 }
+
+
+
+
+
+
+
+
+#global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999; /* 👈 Boosted to ensure it covers everything */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none; /* 👈 Prevents blocking clicks when hidden */
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+#global-loader.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Spinner Outer Container */
+.logo-spinner-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+/* Rotating Blue Ring */
+.spinner-ring-blue {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 4px solid #e0f2fe; /* Soft Light Blue Base */
+    border-top: 4px solid #2563eb; /* Primary Vibrant Blue */
+    border-radius: 50%;
+    animation: spinClockwise 1.2s linear infinite;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
+}
+
+/* Rotating White/Accent Ring (Counter-Clockwise Accent) */
+.spinner-ring-white {
+    position: absolute;
+    width: 116%;
+    height: 116%;
+    border: 3px solid transparent;
+    border-bottom: 3px solid #ffffff;
+    border-left: 3px solid #60a5fa; /* Soft Accent Blue */
+    border-radius: 50%;
+    animation: spinCounterClockwise 1.8s ease-in-out infinite;
+}
+
+/* Center Fixed Logo Styling */
+.spinner-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.loader-status-text {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e3a8a; /* Deep Navy Blue */
+    letter-spacing: 0.5px;
+}
+
+/* Rotation Keyframes */
+@keyframes spinClockwise {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spinCounterClockwise {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
