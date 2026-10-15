@@ -288,6 +288,11 @@ document.addEventListener("DOMContentLoaded", function () {
         "submit",
         function (event) {
 
+            // If the form has already been confirmed via the modal, let it submit normally and show the loader
+            if (announcementForm.classList.contains("confirmed-ready-to-submit")) {
+                return;
+            }
+
             event.preventDefault();
 
 
@@ -372,8 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ============================================================
        CONFIRM POST
        
-       Native form.submit() bypasses the submit event,
-       so the confirmation modal will NOT appear again.
+       Flags the form as ready, closes modal, and triggers submission.
        ============================================================ */
 
     confirmAnnouncementSubmission.addEventListener(
@@ -384,6 +388,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 "active"
             );
 
+            // Flag the form so the global loader and submit listener know it's approved
+            announcementForm.classList.add("confirmed-ready-to-submit");
 
             announcementForm.submit();
 
