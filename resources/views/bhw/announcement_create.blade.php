@@ -90,7 +90,8 @@
         <div class="form-actions">
 
             <button
-                type="submit"
+                type="button"
+                id="openModalBtn"
                 class="btn-primary"
             >
                 Post Announcement
@@ -225,15 +226,18 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     /* ============================================================
-       ANNOUNCEMENT FORM
+       ANNOUNCEMENT FORM & BUTTONS
        ============================================================ */
 
     const announcementForm =
         document.getElementById("announcementForm");
 
+    const openModalBtn =
+        document.getElementById("openModalBtn");
+
 
     /* ============================================================
-       CONFIRMATION MODAL
+       CONFIRMATION MODAL ELEMENTS
        ============================================================ */
 
     const announcementConfirmModal =
@@ -278,23 +282,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ============================================================
-       FORM SUBMIT
-       
-       Stop the original POST temporarily and show the
-       confirmation modal instead.
+       OPEN MODAL ON BUTTON CLICK (Validates form first)
        ============================================================ */
 
-    announcementForm.addEventListener(
-        "submit",
-        function (event) {
-
-            // If the form has already been confirmed via the modal, let it submit normally and show the loader
-            if (announcementForm.classList.contains("confirmed-ready-to-submit")) {
-                return;
-            }
-
-            event.preventDefault();
-
+    openModalBtn.addEventListener(
+        "click",
+        function () {
 
             /* ----------------------------------------------------
                Get current form values
@@ -323,6 +316,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 announcementForm
                     .querySelector('[name="post_to_facebook"]')
                     .checked;
+
+
+            /* ----------------------------------------------------
+               Trigger browser validation if fields are empty
+               ---------------------------------------------------- */
+
+            if (!title || !category || !description) {
+                announcementForm.reportValidity();
+                return;
+            }
 
 
             /* ----------------------------------------------------
@@ -377,7 +380,8 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ============================================================
        CONFIRM POST
        
-       Flags the form as ready, closes modal, and triggers submission.
+       Safely triggers the true submit action, allowing your 
+       global loader script to run only now.
        ============================================================ */
 
     confirmAnnouncementSubmission.addEventListener(
@@ -388,10 +392,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "active"
             );
 
-            // Flag the form so the global loader and submit listener know it's approved
-            announcementForm.classList.add("confirmed-ready-to-submit");
-
-            announcementForm.submit();
+            HTMLFormElement.prototype.submit.call(
+                announcementForm
+            );
 
         }
     );
