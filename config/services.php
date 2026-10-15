@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'facebook' => [
+    'page_id' => env('FACEBOOK_PAGE_ID'),
+    'access_token' => env('FACEBOOK_PAGE_ACCESS_TOKEN'),
+],
+
 ];

@@ -62,104 +62,70 @@
 
         <div class="form-grid">
 
-
-
             {{-- =====================================================
-                 FIRST NAME
+                 BASIC INFORMATION
                  ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Basic Information</h3>
 
             <div class="form-group">
-
-                <label for="first_name">
-                    First Name
-                </label>
-
+                <label for="first_name">First Name</label>
                 <input
                     type="text"
                     name="Citizen_FName"
                     id="first_name"
                     required
                     maxlength="255"
+                    value="{{ old('Citizen_FName') }}"
                     autocomplete="given-name"
                 >
-
             </div>
 
-
-            {{-- =====================================================
-                 LAST NAME
-                 ===================================================== --}}
+            <div class="form-group">
+                <label for="middle_name">Middle Name</label>
+                <input
+                    type="text"
+                    name="Citizen_MName"
+                    id="middle_name"
+                    maxlength="255"
+                    value="{{ old('Citizen_MName') }}"
+                    placeholder="Enter middle name"
+                >
+            </div>
 
             <div class="form-group">
-
-                <label for="last_name">
-                    Last Name
-                </label>
-
+                <label for="last_name">Last Name</label>
                 <input
                     type="text"
                     name="Citizen_LName"
                     id="last_name"
                     required
                     maxlength="255"
+                    value="{{ old('Citizen_LName') }}"
                     autocomplete="family-name"
                 >
-
             </div>
 
             <div class="form-group">
-
-                <label for="birthdate">
-                    Date of Birth
-                </label>
-
+                <label for="birthdate">Date of Birth</label>
                 <input
                     type="date"
                     name="Citizen_BirthDate"
                     id="birthdate"
                     required
+                    value="{{ old('Citizen_BirthDate') }}"
                 >
-
-                <small
-                    id="birthdate-error"
-                    class="validation-message"
-                >
+                <small id="birthdate-error" class="validation-message">
                     Date of birth must be before today.
                 </small>
-
             </div>
 
             <div class="form-group">
                 <label>Age</label>
-                <input type="number" name="Citizen_Age" id="age" readonly required>
+                <input type="number" name="Citizen_Age" id="age" readonly required value="{{ old('Citizen_Age') }}">
             </div>
 
-            {{-- =====================================================
-                 PHOTO UPLOAD
-                ===================================================== --}}
             <div class="form-group">
-                <label for="photo">Citizen Photo</label>
-
-                <input
-                    type="file"
-                    name="photo"
-                    id="photo"
-                    accept="image/jpeg,image/png,image/webp"
-                >
-
-                <small>Optional. JPG, PNG, or WEBP; maximum 2 MB.</small>
-            </div>
-
-            {{-- =====================================================
-                 CONTACT NUMBER
-                 ===================================================== --}}
-
-            <div class="form-group">
-
-                <label for="contact">
-                    Contact Number
-                </label>
-
+                <label for="contact">Contact Number</label>
                 <input
                     type="text"
                     name="Citizen_ContactNo"
@@ -171,58 +137,140 @@
                     minlength="11"
                     pattern="[0-9]{11}"
                     placeholder="09XXXXXXXXX"
+                    value="{{ old('Citizen_ContactNo') }}"
                 >
-
-                <small
-                    id="contact-error"
-                    class="validation-message"
-                >
+                <small id="contact-error" class="validation-message">
                     Contact number must contain exactly 11 digits.
                 </small>
-
             </div>
 
-            {{-- Dynamically loaded Puroks from the database --}}
             <div class="form-group">
                 <label>Purok</label>
                 <select name="Citizen_Purok" required>
                     <option value="" disabled selected>-- Select Purok --</option>
                     @foreach(\App\Models\Purok::all() as $purok)
-                    <option value="{{$purok->name}}">{{$purok->name}}</option>
+                    <option value="{{$purok->name}}" {{ old('Citizen_Purok') == $purok->name ? 'selected' : '' }}>{{$purok->name}}</option>
                     @endforeach
-
                 </select>
+            </div>
 
+            <div class="form-group">
+                <label for="photo">Citizen Photo</label>
+                <input
+                    type="file"
+                    name="photo"
+                    id="photo"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+                <small>Optional. JPG, PNG, or WEBP; maximum 2 MB.</small>
             </div>
 
 
             {{-- =====================================================
-                 EMAIL
+                 PHYSICAL INFORMATION
                  ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Physical Information</h3>
 
             <div class="form-group">
+                <label for="Citizen_Height">Height (cm)</label>
+                <input type="number"
+                       id="Citizen_Height"
+                       name="Citizen_Height"
+                       min="0"
+                       step="0.01"
+                       value="{{ old('Citizen_Height') }}"
+                       placeholder="e.g. 165.50">
+            </div>
 
-                <label for="email">
-                    Email Address (For Login)
-                </label>
+            <div class="form-group">
+                <label for="Citizen_Weight">Weight (kg)</label>
+                <input type="number"
+                       id="Citizen_Weight"
+                       name="Citizen_Weight"
+                       min="0"
+                       step="0.01"
+                       value="{{ old('Citizen_Weight') }}"
+                       placeholder="e.g. 55.50">
+            </div>
 
+            <div class="form-group">
+                <label for="Citizen_Sex">Sex</label>
+                <select id="Citizen_Sex" name="Citizen_Sex" required>
+                    <option value="">Select Sex</option>
+                    <option value="Male" {{ old('Citizen_Sex') === 'Male' ? 'selected' : '' }}>Male</option>
+                    <option value="Female" {{ old('Citizen_Sex') === 'Female' ? 'selected' : '' }}>Female</option>
+                </select>
+            </div>
+
+
+            {{-- =====================================================
+                 HOUSING STATUS
+                 ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Housing Status</h3>
+
+            <div class="form-group">
+                <label for="Citizen_HousingStatus">Residence Type</label>
+                <select id="Citizen_HousingStatus" name="Citizen_HousingStatus">
+                    <option value="">Select Housing Status</option>
+                    <option value="Permanent Resident" {{ old('Citizen_HousingStatus') === 'Permanent Resident' ? 'selected' : '' }}>Permanent Resident</option>
+                    <option value="Renter" {{ old('Citizen_HousingStatus') === 'Renter' ? 'selected' : '' }}>Renter</option>
+                </select>
+            </div>
+
+
+            {{-- =====================================================
+                 HEALTH & FAMILY PLANNING
+                 ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Health &amp; Family Planning</h3>
+
+            <div class="form-group">
+                <label for="Citizen_Pregnant">Pregnant</label>
+                <select id="Citizen_Pregnant" name="Citizen_Pregnant">
+                    <option value="0" {{ old('Citizen_Pregnant') === '0' ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('Citizen_Pregnant') === '1' ? 'selected' : '' }}>Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Citizen_InPills">Using Birth Control Pills</label>
+                <select id="Citizen_InPills" name="Citizen_InPills">
+                    <option value="0" {{ old('Citizen_InPills') === '0' ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('Citizen_InPills') === '1' ? 'selected' : '' }}>Yes</option>
+                </select>
+            </div>
+
+
+            {{-- =====================================================
+                 VITAL STATUS
+                 ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Vital Status</h3>
+
+            <div class="form-group">
+                <label for="Citizen_IsDeceased">Resident Status</label>
+                <select id="Citizen_IsDeceased" name="Citizen_IsDeceased">
+                    <option value="0" {{ old('Citizen_IsDeceased') === '0' ? 'selected' : '' }}>Living</option>
+                    <option value="1" {{ old('Citizen_IsDeceased') === '1' ? 'selected' : '' }}>Deceased</option>
+                </select>
+            </div>
+
+
+            {{-- =====================================================
+                 LOGIN CREDENTIALS
+                 ===================================================== --}}
+            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Portal Login Credentials</h3>
+
+            <div class="form-group">
+                <label for="email">Email Address (For Login)</label>
                 <input
                     type="email"
                     name="email"
                     id="email"
                     required
                     placeholder="resident@email.com"
+                    value="{{ old('email') }}"
                     autocomplete="email"
                 >
-
             </div>
-
-
-            {{-- =====================================================
-                 PASSWORD
-                 ===================================================== --}}
-
-            
 
         </div>
 
@@ -276,16 +324,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const m = today.getMonth() - birth.getMonth();
             if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
                 age--;
-
             }
-
-
-            ageInput.value =
-                age;
-
-
+            ageInput.value = age;
             return true;
-
         }
     });
 

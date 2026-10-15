@@ -240,6 +240,7 @@ class CitizenController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'Citizen_Sex' => 'required|string|max:255',
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
@@ -259,6 +260,7 @@ class CitizenController extends Controller
                     'Citizen_Purok' => $validated['Citizen_Purok'],
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
+                    'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
                 ]);
 
                 $password = $request->filled('password') 
@@ -424,6 +426,13 @@ class CitizenController extends Controller
             'Citizen_ContactNo' => 'nullable|string|max:50',
             'Citizen_Purok' => 'required|string|max:255',
             'family_id' => 'nullable|exists:families,id',
+            'Citizen_Height' => 'nullable|numeric|min:0',
+            'Citizen_Weight' => 'nullable|numeric|min:0',
+            'Citizen_Sex' => 'nullable|string|in:Male,Female',
+            'Citizen_HousingStatus' => 'nullable|string|max:255',
+            'Citizen_Pregnant' => 'nullable|boolean',
+            'Citizen_InPills' => 'nullable|boolean',
+            'Citizen_IsDeceased' => 'nullable|boolean',
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;

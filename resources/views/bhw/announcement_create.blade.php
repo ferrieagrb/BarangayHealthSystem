@@ -69,6 +69,21 @@
                 ></textarea>
             </div>
 
+            <!-- FACEBOOK CROSS-POST CHECKBOX -->
+            <div class="form-group" style="grid-column: span 2; margin-top: 5px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: normal;">
+                    <input
+                        type="checkbox"
+                        name="post_to_facebook"
+                        value="1"
+                        id="postToFacebookCheckbox"
+                        checked
+                        style="width: 18px; height: 18px; cursor: pointer;"
+                    >
+                    <span>Also cross-post this announcement directly to the Official Facebook Page</span>
+                </label>
+            </div>
+
         </div>
 
         <!-- ACTIONS -->
@@ -157,6 +172,18 @@
 
             </div>
 
+            <div class="announcement-preview-item">
+
+                <span class="announcement-preview-label">
+                    Facebook Posting
+                </span>
+
+                <strong id="confirmAnnouncementFacebook">
+                    —
+                </strong>
+
+            </div>
+
         </div>
 
 
@@ -232,6 +259,11 @@ document.addEventListener("DOMContentLoaded", function () {
             "confirmAnnouncementDescription"
         );
 
+    const confirmAnnouncementFacebook =
+        document.getElementById(
+            "confirmAnnouncementFacebook"
+        );
+
 
     const cancelAnnouncementConfirmation =
         document.getElementById(
@@ -282,6 +314,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     .value
                     .trim();
 
+            const postToFacebook =
+                announcementForm
+                    .querySelector('[name="post_to_facebook"]')
+                    .checked;
+
 
             /* ----------------------------------------------------
                Display values in confirmation modal
@@ -297,6 +334,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             confirmAnnouncementDescription.textContent =
                 description || "—";
+
+            confirmAnnouncementFacebook.textContent =
+                postToFacebook ? "Yes (Will publish to Facebook)" : "No (Local only)";
 
 
             /* ----------------------------------------------------
