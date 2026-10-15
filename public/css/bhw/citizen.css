@@ -2,31 +2,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 /* =========================================================
-   CITIZEN PAGE
+   CITIZEN MANAGEMENT — GLOBAL
    ========================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
 .page-top,
 .citizen-overview,
 .toolbar,
 .table-container {
     font-family: 'Poppins', sans-serif;
+    min-width: 0;
 }
 
+.page-top,
+.citizen-overview,
+.toolbar,
+.table-container,
+.summary-card,
+.chart-card {
+    min-width: 0;
+}
 
-/* PAGE HEADER AREA */
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
 .page-top {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    gap: 15px;
+    justify-content: space-between;
     flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.page-title-group,
+.page-title {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .page-title-group h1,
 .page-title h1 {
-    font-size: 30px;
     color: #0f172a;
+    font-size: clamp(22px, 2.5vw, 30px);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
 }
 
 .page-title-group p,
@@ -34,353 +60,322 @@
     margin-top: 6px;
     color: #64748b;
     font-size: 14px;
+    overflow-wrap: anywhere;
 }
 
 .header {
-    font-size: 22px;
-    font-weight: 700;
     margin-bottom: 20px;
     color: #0f172a;
+    font-size: 22px;
+    font-weight: 700;
 }
 
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
-/* ==========================================
-   2. BUTTONS & ACTIONS
-   ========================================== */
 button {
-    padding: 6px 12px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
+    padding: 10px 14px;
     cursor: pointer;
 }
 
 .btn-primary {
-    background: #0E42B1;
-    color: #ffffff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
+    background: #0e42b1;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #123a9d;
 }
 
 .btn-secondary {
     background: #e2e8f0;
     color: #0f172a;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
 }
 
 .btn-danger {
     background: #ef4444;
-    color: #ffffff;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
 }
 
 .action-group {
     display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
     gap: 6px;
-    text-decoration: none;
-    color: #800080;
 }
 
-.action-group button {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;    
+.action-group .btn-primary,
+.action-group .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 9px;
+    border-radius: 7px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-
-/* ==========================================
+/* =========================================================
    CITIZEN OVERVIEW
-   ========================================== */
+   ========================================================= */
 
 .citizen-overview {
     display: grid;
-
-    grid-template-columns: 1fr 1.5fr;
-
-    gap: 18px;
-
-    margin-bottom: 18px;
-
-    /* IMPORTANT */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
     align-items: stretch;
+    gap: 18px;
+    margin-bottom: 18px;
 }
-
-
-/* ==========================================
-   SUMMARY CARDS - 2 x 2
-   ========================================== */
 
 .summary-cards {
     display: grid;
-
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    /* FORCE BOTH ROWS TO SHARE THE FULL HEIGHT */
-    grid-template-rows: repeat(2, 1fr);
-
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 12px;
-
-    /* IMPORTANT */
-    height: 100%;
-    align-self: stretch;
-}
-
-
-/* ==========================================
-   INDIVIDUAL SUMMARY CARD
-   ========================================== */
-
-.summary-card {
     width: 100%;
-    height: 100%;
-
-    min-height: 0;
-
-    box-sizing: border-box;
-
-    background: #ffffff;
-
-    border-radius: 11px;
-
-    padding: 16px 18px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    box-shadow:
-        0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-
-/* ==========================================
-   DEMOGRAPHICS CARD
-   ========================================== */
-
-.chart-card {
-    width: 100%;
-    height: 100%;
-
-    min-height: 0;
-
-    box-sizing: border-box;
-
-    background: #ffffff;
-
-    padding: 16px 18px;
-
-    border-radius: 11px;
-
-    box-shadow:
-        0 1px 4px rgba(0, 0, 0, 0.05);
-
-    display: flex;
-    flex-direction: column;
-
-    align-self: stretch;
-}
-
-
-/* =========================================================
-   CITIZEN TOOLBAR
-   ========================================================= */
-
-.toolbar {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 16px 20px;
-    margin-bottom: 18px;
-
-    background: #ffffff;
-    border-radius: 11px;
-
-    box-sizing: border-box;
-
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-
-/* LEFT SIDE */
-
-.toolbar-left {
-    flex: 1;
     min-width: 0;
 }
 
-
-/* ALL FILTERS IN ONE ROW */
-
-.citizen-filter-form {
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
+    min-height: 0;
+    padding: 16px 18px;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    overflow-wrap: anywhere;
+}
 
+.chart-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+    padding: 16px 18px;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.chart-card canvas,
+.chart-card svg {
+    max-width: 100%;
+}
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.toolbar {
     display: flex;
     align-items: center;
-
-    gap: 8px;
-
-    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 16px 20px;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-
-/* SEARCH */
-
-.search-box {
-    flex-shrink: 0;
+.toolbar-left {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
-.search-box input {
-    width: 275px;
-    height: 40px;
+/*
+   Desktop layout:
+   Search | Purok | Age | Status Filters
 
-    padding: 0 12px;
+   The search field has a maximum width so it does not
+   stretch excessively across the whole toolbar.
+*/
 
-    box-sizing: border-box;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-
-    background: #ffffff;
-
-    color: #0f172a;
-
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-
-    outline: none;
+.citizen-filter-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 420px) 140px 190px 145px;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-.search-box input:focus {
-    border-color: #16a34a;
-
-    box-shadow:
-        0 0 0 2px rgba(22, 163, 74, 0.08);
-}
-
-
-/* FILTER BOX */
-
+.search-box,
 .filter-box {
     display: flex;
     align-items: center;
-
-    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
 }
 
+.search-box input,
+.filter-box select,
+.filter-box input[name="age"],
+.citizen-status-filter-btn {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    margin: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #334155;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    outline: none;
+}
 
-/* SELECTS */
+.search-box input {
+    padding: 0 14px;
+}
+
+.search-box input::placeholder,
+.filter-box input[name="age"]::placeholder {
+    color: #64748b;
+    opacity: 1;
+}
+
+.search-box input:focus,
+.filter-box select:focus,
+.filter-box input[name="age"]:focus,
+.citizen-status-filter-btn:focus-visible {
+    border-color: #1646bd;
+    box-shadow: 0 0 0 3px rgba(22, 70, 189, 0.1);
+}
 
 .filter-box select {
-    width: 125px;
-    height: 40px;
-
     padding: 0 10px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-
-    background: #ffffff;
-
-    color: #334155;
-
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-
-    outline: none;
 }
-
-
-/* AGE RANGE */
 
 .filter-box input[name="age"] {
-    width: 155px;
-    height: 40px;
-
     padding: 0 10px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-
-    background: #ffffff;
-
-    color: #334155;
-
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-
-    outline: none;
 }
 
+/* =========================================================
+   STATUS FILTER BUTTON AND ARROW
+   ========================================================= */
 
-/* EXPORT / IMPORT */
+.citizen-status-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.citizen-status-filter-btn:hover {
+    border-color: #1646bd;
+}
+
+.citizen-status-filter-btn:focus-visible,
+.citizen-status-close:focus-visible,
+.citizen-status-footer button:focus-visible {
+    outline: 3px solid rgba(22, 70, 189, 0.22);
+    outline-offset: 2px;
+}
+
+.status-filter-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 12px;
+    width: 12px;
+    height: 12px;
+    color: #64748b;
+    font-size: 0;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.status-filter-arrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+}
+
+.citizen-status-filter-btn.active .status-filter-arrow {
+    transform: rotate(180deg);
+}
+
+/* =========================================================
+   EXPORT AND IMPORT BUTTONS
+   ========================================================= */
 
 .toolbar-actions {
     display: flex;
     align-items: center;
-
-    gap: 8px;
-
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    gap: 10px;
 }
 
 .toolbar-actions .btn-secondary {
-    height: 40px;
-
-    padding: 0 15px;
-
-    box-sizing: border-box;
-
-    border-radius: 8px;
-
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 10px;
     font-family: 'Poppins', sans-serif;
     font-size: 12px;
     font-weight: 600;
-
     white-space: nowrap;
 }
 
-
-
 /* =========================================================
-   11. TABLE CONTAINER
+   CITIZEN TABLE CONTAINER
    ========================================================= */
 
 .table-container {
     width: 100%;
-
     padding: 18px;
-
-    box-sizing: border-box;
-
-    background: #ffffff;
-
     border-radius: 11px;
-
-    box-shadow:
-        0 1px 4px rgba(0, 0, 0, 0.05);
-
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
-
-
-/* =========================================================
-   12. TABLE HEADER
-   ========================================================= */
 
 .table-container .card-header {
     margin-bottom: 14px !important;
@@ -388,21 +383,18 @@ button {
 
 .table-container .card-header h2 {
     margin: 0;
-
     color: #0f172a;
-
     font-size: 17px;
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .table-container .card-header p {
     margin: 4px 0 0;
-
     color: #64748b;
-
     font-size: 12px;
+    overflow-wrap: anywhere;
 }
-
 
 /* =========================================================
    CITIZEN TABLE
@@ -411,502 +403,733 @@ button {
 .table-container table {
     width: 100%;
     border-collapse: collapse;
-
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
 }
 
-
-/* TABLE HEADER */
-
 .table-container thead th {
     padding: 12px 14px;
-
     background: #f8fafc;
-
     color: #64748b;
-
     font-size: 13px;
     font-weight: 600;
-
     text-align: left;
-
     white-space: nowrap;
 }
-
-
-/* TABLE BODY */
 
 .table-container tbody td {
     padding: 14px;
-
-    color: #334155;
-
-    font-size: 14px;
-
     border-top: 1px solid #e2e8f0;
-
+    color: #334155;
+    font-size: 14px;
     vertical-align: middle;
-
     white-space: nowrap;
 }
 
-
-/* =========================================================
-   CITIZEN NAME
-   ========================================================= */
-
 .record-name {
     display: block;
-
     color: #0f172a;
-
     font-size: 14px;
     font-weight: 600;
-
     line-height: 1.4;
 }
 
 .record-sub {
     display: block;
-
     margin-top: 3px;
-
     color: #94a3b8;
-
     font-size: 12px;
-
     line-height: 1.3;
 }
 
-
-/* =========================================================
-   ACTION BUTTONS
-   ========================================================= */
-
-.action-group {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    flex-wrap: nowrap;
-}
-
-.action-group .btn-primary,
-.action-group .btn-danger {
-    min-height: 40px;
-
-    padding: 0 11px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 8px;
-
-    font-family: 'Poppins', sans-serif;
-
-    font-size: 12px;
-    font-weight: 600;
-
-    white-space: nowrap;
-}
-
-/* =========================================================
-   15. ACTION BUTTONS
-   ========================================================= */
-
-.action-group {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    flex-wrap: nowrap;
-}
-
-.action-group .btn-primary,
-.action-group .btn-danger {
-    min-height: 32px;
-
-    padding: 0 9px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 7px;
-
-    font-family: 'Poppins', sans-serif;
-
-    font-size: 10px;
-    font-weight: 600;
-
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   16. EMPTY STATE
-   ========================================================= */
-
 .empty-text {
     color: #94a3b8;
-
     font-size: 12px;
 }
-
-
-/* =========================================================
-   17. PAGINATION
-   ========================================================= */
 
 .table-container .pagination {
     margin-bottom: 0;
 }
 
-
 /* =========================================================
-   18. RESPONSIVE
+   DELETE CONFIRMATION MODAL
    ========================================================= */
 
-@media (max-width: 1200px) {
-
-    .citizen-overview {
-        grid-template-columns: 1fr;
-    }
-
-    .toolbar {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .toolbar-left {
-        width: 100%;
-    }
-
-    .toolbar > div:last-child {
-        width: 100%;
-    }
-}
-
-
-@media (max-width: 800px) {
-
-    .summary-cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .toolbar-left {
-        gap: 8px;
-    }
-
-    .toolbar-left form {
-        width: 100%;
-    }
-
-    .toolbar-left .search-box input {
-        width: 100%;
-    }
-}
-
-
-@media (max-width: 600px) {
-
-    .page-top {
-        align-items: flex-start;
-    }
-
-    .page-title-group h1 {
-        font-size: 22px;
-    }
-
-    .summary-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .filter-box,
-    .filter-box select,
-    .filter-box input[name="age"] {
-        width: 100%;
-    }
-
-    .toolbar-left {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .toolbar-left form {
-        width: 100%;
-    }
-
-    .toolbar-left .filter-box {
-        width: 100%;
-    }
-
-    .toolbar > div:last-child {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .toolbar > div:last-child .btn-secondary {
-        flex: 1;
-    }
-
-    .table-container {
-        padding: 12px;
-    }
-}
-
-/* ================================================================
-   CITIZEN DELETE CONFIRMATION MODAL
-   ================================================================ */
-
 .citizen-delete-confirm-overlay {
-    display: none;
-
     position: fixed;
-
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-
-    width: 100vw;
-    height: 100vh;
-
-    background: rgba(0, 0, 0, 0.55);
-
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-
+    inset: 0;
+    z-index: 99999;
+    display: none;
     align-items: center;
     justify-content: center;
-
+    width: 100%;
+    height: 100%;
     padding: 20px;
-
-    box-sizing: border-box;
-
-    z-index: 99999;
-
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
-
-
-/* ================================================================
-   SHOW MODAL
-   ================================================================ */
 
 .citizen-delete-confirm-overlay.active {
     display: flex;
 }
 
-
-/* ================================================================
-   MODAL BOX
-   ================================================================ */
-
 .citizen-delete-confirm-modal {
     width: 515px;
-
-    max-width: 90%;
-
-    background: #ffffff;
-
-    border-radius: 16px;
-
+    max-width: 100%;
+    max-height: calc(100% - 20px);
     padding: 40px 45px;
-
+    overflow-y: auto;
+    border-radius: 16px;
+    background: #fff;
     text-align: center;
-
-    box-sizing: border-box;
-
-    box-shadow:
-        0 15px 40px rgba(0, 0, 0, 0.25);
-
-    animation:
-        citizenDeleteConfirmModalIn 0.2s ease-out;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    animation: citizenDeleteConfirmModalIn 0.2s ease-out;
 }
-
-
-/* ================================================================
-   TITLE
-   ================================================================ */
 
 .citizen-delete-confirm-modal h2 {
     margin: 0 0 20px;
-
-    font-size: 25px;
-
-    font-weight: 700;
-
     color: #172033;
+    font-size: clamp(20px, 4vw, 25px);
+    font-weight: 700;
+    overflow-wrap: anywhere;
 }
-
-
-/* ================================================================
-   MESSAGE
-   ================================================================ */
 
 .citizen-delete-confirm-modal p {
-    margin: 0 auto;
-
     max-width: 440px;
-
-    font-size: 17px;
-
-    line-height: 1.5;
-
-    font-weight: 500;
-
+    margin: 0 auto;
     color: #526174;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
-
-
-/* Citizen Name */
 
 .citizen-delete-confirm-modal p strong {
     color: #172033;
-
     font-weight: 700;
 }
-
-
-/* ================================================================
-   BUTTON CONTAINER
-   ================================================================ */
 
 .citizen-delete-confirm-buttons {
     display: flex;
-
-    justify-content: center;
-
     align-items: center;
-
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 15px;
-
     margin-top: 28px;
 }
 
-
-/* ================================================================
-   BOTH BUTTONS
-   ================================================================ */
-
 .citizen-delete-cancel,
 .citizen-delete-save {
+    min-height: 44px;
+    padding: 12px 25px;
     border: none;
-
     border-radius: 8px;
-
-    padding: 14px 25px;
-
-    font-size: 16px;
-
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
     font-weight: 700;
-
     cursor: pointer;
-
-    transition: 0.2s ease;
+    transition: background 0.2s ease;
 }
-
-
-/* ================================================================
-   CANCEL BUTTON
-   ================================================================ */
 
 .citizen-delete-cancel {
     background: #e5e7eb;
-
     color: #374151;
 }
-
 
 .citizen-delete-cancel:hover {
     background: #d7dbe1;
 }
 
-
-/* ================================================================
-   DELETE / CONFIRM BUTTON
-   ================================================================ */
-
 .citizen-delete-save {
     background: #dc2626;
-
-    color: #ffffff;
+    color: #fff;
 }
-
 
 .citizen-delete-save:hover {
     background: #b91c1c;
 }
 
-
-/* ================================================================
-   MODAL ANIMATION
-   ================================================================ */
-
 @keyframes citizenDeleteConfirmModalIn {
-
     from {
         opacity: 0;
-
-        transform:
-            scale(0.96)
-            translateY(8px);
+        transform: scale(0.96) translateY(8px);
     }
 
     to {
         opacity: 1;
-
-        transform:
-            scale(1)
-            translateY(0);
+        transform: scale(1) translateY(0);
     }
-
 }
 
+/* =========================================================
+   STATUS FILTER MODAL
+   ========================================================= */
 
-/* ================================================================
-   MOBILE RESPONSIVENESS
-   ================================================================ */
+.citizen-status-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
 
-@media (max-width: 600px) {
+.citizen-status-overlay.active {
+    display: flex;
+}
+
+.citizen-status-modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100dvh - 40px);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+    font-family: 'Poppins', sans-serif;
+    animation: citizenStatusModalIn 0.18s ease-out;
+}
+
+.citizen-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.citizen-status-header h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.citizen-status-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-family: Arial, sans-serif;
+    font-size: 27px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.citizen-status-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.citizen-status-body {
+    padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.citizen-status-section {
+    margin: 0 0 26px;
+}
+
+.citizen-status-section:last-child {
+    margin-bottom: 0;
+}
+
+.citizen-status-section h3 {
+    margin: 0 0 11px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.citizen-status-radio-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 26px;
+}
+
+.citizen-status-radio-group label,
+.citizen-status-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 28px;
+    margin: 0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.citizen-status-option {
+    margin-bottom: 6px;
+}
+
+.citizen-status-option:last-child {
+    margin-bottom: 0;
+}
+
+.citizen-status-body input[type="radio"],
+.citizen-status-body input[type="checkbox"] {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #1646bd;
+    cursor: pointer;
+}
+
+.citizen-status-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.citizen-status-footer button {
+    min-height: 40px;
+    padding: 9px 17px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.citizen-status-clear {
+    border-color: #cbd5e1 !important;
+    background: #fff;
+    color: #475569;
+}
+
+.citizen-status-clear:hover {
+    border-color: #94a3b8 !important;
+    background: #f8fafc;
+}
+
+.citizen-status-apply {
+    border-color: #1646bd !important;
+    background: #1646bd;
+    color: #fff;
+}
+
+.citizen-status-apply:hover {
+    border-color: #123a9d !important;
+    background: #123a9d;
+}
+
+@keyframes citizenStatusModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
+   TABLETS AND SMALL LAPTOPS
+   ========================================================= */
+
+@media screen and (max-width: 1200px) {
+    .citizen-overview {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .summary-cards {
+        grid-template-rows: auto;
+    }
+
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left {
+        width: 100%;
+    }
+
+    .citizen-filter-form {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) 140px 170px 145px;
+        width: 100%;
+    }
+
+    .toolbar-actions {
+        align-self: flex-end;
+    }
+}
+
+/* =========================================================
+   TABLETS
+   ========================================================= */
+
+@media screen and (max-width: 800px) {
+    .page-top {
+        align-items: flex-start;
+    }
+
+    .summary-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
+    }
+
+    .summary-card {
+        min-height: 110px;
+    }
+
+    .toolbar {
+        padding: 16px;
+    }
+
+    .citizen-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .search-box {
+        grid-column: 1 / -1;
+    }
+
+    .filter-box,
+    .citizen-status-filter-btn {
+        width: 100%;
+    }
+
+    .filter-box select,
+    .filter-box input[name="age"] {
+        width: 100%;
+    }
+
+    .toolbar-actions {
+        align-self: stretch;
+        flex-wrap: wrap;
+    }
+
+    .table-container {
+        padding: 14px;
+    }
+
+    .citizen-status-filter-btn {
+        min-height: 40px;
+    }
+}
+
+/* =========================================================
+   MOBILE PHONES
+   ========================================================= */
+
+@media screen and (max-width: 600px) {
+    .page-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .page-title-group h1,
+    .page-title h1 {
+        font-size: 22px;
+    }
+
+    .page-title-group p,
+    .page-title p {
+        font-size: 13px;
+    }
+
+    .page-top .btn-primary {
+        align-self: flex-start;
+        max-width: 100%;
+    }
+
+    .header {
+        margin-bottom: 14px;
+        font-size: 19px;
+    }
+
+    .summary-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .summary-card {
+        min-height: 100px;
+        padding: 14px 12px;
+    }
+
+    .chart-card {
+        min-height: 0;
+        padding: 14px;
+    }
+
+    .toolbar {
+        gap: 12px;
+        margin-bottom: 14px;
+        padding: 14px;
+    }
+
+    .citizen-filter-form {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .search-box {
+        grid-column: auto;
+    }
+
+    .search-box input,
+    .filter-box select,
+    .filter-box input[name="age"],
+    .citizen-status-filter-btn {
+        height: 42px;
+        font-size: 13px;
+    }
+
+    .toolbar-actions {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .toolbar-actions .btn-secondary {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 42px;
+        padding-inline: 10px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .table-container {
+        width: 100%;
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    .table-container table {
+        width: 100%;
+        min-width: 650px;
+    }
+
+    .table-container thead th {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .table-container tbody td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .record-name {
+        font-size: 13px;
+    }
+
+    .record-sub {
+        font-size: 11px;
+    }
+
+    .action-group {
+        gap: 6px;
+    }
+
+    .action-group .btn-primary,
+    .action-group .btn-danger {
+        min-height: 34px;
+        padding-inline: 9px;
+        font-size: 11px;
+    }
 
     .citizen-delete-confirm-overlay {
-        padding: 10px;
+        padding: 12px;
     }
-
 
     .citizen-delete-confirm-modal {
-
         width: 100%;
-
-        max-width: 100%;
-
-        padding: 30px 25px;
-
+        max-width: 420px;
+        max-height: calc(100% - 24px);
+        padding: 26px 20px;
+        border-radius: 14px;
     }
 
+    .citizen-delete-confirm-modal h2 {
+        margin-bottom: 14px;
+    }
+
+    .citizen-delete-confirm-modal p {
+        font-size: 14px;
+    }
 
     .citizen-delete-confirm-buttons {
-
-        flex-direction: column;
-
+        flex-direction: column-reverse;
+        gap: 10px;
+        margin-top: 22px;
     }
-
 
     .citizen-delete-cancel,
     .citizen-delete-save {
-
         width: 100%;
-
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: 14px;
     }
 
+    .citizen-status-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .citizen-status-modal {
+        width: 100%;
+        max-width: none;
+        max-height: 90dvh;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .citizen-status-header {
+        padding: 16px 18px;
+    }
+
+    .citizen-status-header h2 {
+        font-size: 16px;
+    }
+
+    .citizen-status-body {
+        padding: 22px 18px;
+    }
+
+    .citizen-status-section {
+        margin-bottom: 24px;
+    }
+
+    .citizen-status-footer {
+        padding: 13px 18px;
+        padding-bottom: max(13px, env(safe-area-inset-bottom));
+    }
+
+    .citizen-status-footer button {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .citizen-status-radio-group {
+        gap: 12px 20px;
+    }
 }
 
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media screen and (max-width: 380px) {
+    .summary-cards {
+        gap: 8px;
+    }
+
+    .summary-card {
+        padding: 12px 9px;
+    }
+
+    .toolbar {
+        padding: 12px;
+    }
+
+    .table-container {
+        padding: 10px;
+    }
+
+    .citizen-delete-confirm-overlay {
+        padding: 8px;
+    }
+
+    .citizen-delete-confirm-modal {
+        padding: 22px 16px;
+    }
+
+    .citizen-status-header {
+        padding-inline: 15px;
+    }
+
+    .citizen-status-body {
+        padding: 20px 15px;
+    }
+
+    .citizen-status-footer {
+        padding-inline: 15px;
+    }
+
+    .citizen-status-radio-group {
+        gap: 12px 15px;
+    }
+
+    .citizen-status-radio-group label,
+    .citizen-status-option {
+        font-size: 12px;
+    }
+}
+
+/* =========================================================
+   SHORT SCREENS / LANDSCAPE PHONES
+   ========================================================= */
+
+@media screen and (max-width: 768px) and (max-height: 500px) {
+    .citizen-delete-confirm-overlay,
+    .citizen-status-overlay {
+        align-items: flex-start;
+        padding: 8px;
+    }
+
+    .citizen-delete-confirm-modal {
+        margin-block: 8px;
+        max-height: calc(100% - 16px);
+        padding-block: 20px;
+    }
+
+    .citizen-status-modal {
+        max-height: calc(100dvh - 16px);
+        border-radius: 12px;
+    }
+
+    .citizen-status-body {
+        padding-block: 16px;
+    }
+
+    .citizen-status-section {
+        margin-bottom: 16px;
+    }
+}
