@@ -1,8 +1,45 @@
-
 @extends('templates.layout')
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/citizenfields.css') }}">
+<style>
+    /* Deceased warning section and confirmation modal styling */
+    .deceased-section-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        padding: 18px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+    .deceased-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        padding: 20px;
+    }
+    .deceased-modal-overlay.active {
+        display: flex;
+    }
+    .deceased-modal-box {
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        padding: 30px;
+        border-radius: 14px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .deceased-modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -15,7 +52,11 @@
 
     <div class="right">
         <a href="{{ route('citizenlist') }}" class="btn-secondary">← Back</a>
-        <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()">Edit</button>
+        @if((int) $citizen->Citizen_IsDeceased !== 1)
+            <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()">Edit</button>
+        @else
+            <span class="text-danger" style="font-weight: bold; font-size: 13px; background: #fee2e2; padding: 8px 12px; border-radius: 6px; color: #991b1b;">Record Locked (Deceased)</span>
+        @endif
     </div>
 </div>
 
@@ -183,19 +224,17 @@
             {{-- VITAL STATUS --}}
             <h3 class="citizen-section-title">Vital Status</h3>
 
-            <label for="Citizen_IsDeceased">Resident Status</label>
-            <select id="Citizen_IsDeceased"
-                    name="Citizen_IsDeceased"
-                    disabled>
-                <option value="0"
-                    {{ (string) old('Citizen_IsDeceased', (int) $citizen->Citizen_IsDeceased) === '0' ? 'selected' : '' }}>
-                    Living
-                </option>
-                <option value="1"
-                    {{ (string) old('Citizen_IsDeceased', (int) $citizen->Citizen_IsDeceased) === '1' ? 'selected' : '' }}>
-                    Deceased
-                </option>
-            </select>
+            <label>Resident Status</label>
+            <input type="text"
+                   id="displayDeceasedStatus"
+                   value="{{ (int) $citizen->Citizen_IsDeceased === 1 ? 'Deceased' : 'Living' }}"
+                   disabled>
+
+            {{-- Hidden input ensuring value is properly submitted to controller --}}
+            <input type="hidden"
+                   id="Citizen_IsDeceased"
+                   name="Citizen_IsDeceased"
+                   value="{{ old('Citizen_IsDeceased', $citizen->Citizen_IsDeceased ?? 0) }}">
 
             <hr class="citizen-section-divider">
 
@@ -247,11 +286,26 @@
                 </select>
             </div>
 
+            <hr class="citizen-section-divider">
+
+            {{-- DECEASED STATUS MARKER SECTION (BEFORE SAVE) --}}
+            <div class="deceased-section-box">
+                <h3 class="citizen-section-title" style="color: #991b1b; margin-top: 0;">Deceased Registry Status</h3>
+                <p style="font-size: 13px; color: #b91c1c; margin-bottom: 12px;">
+                    Marking this resident as deceased will archive their active status across barangay tracking records.
+                </p>
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; cursor: pointer;">
+                    <input type="checkbox" id="markDeceasedCheckbox" disabled style="width: 18px; height: 18px;">
+                    <span>Mark this resident as Deceased</span>
+                </label>
+            </div>
+
             <div class="citizen-form-actions">
-                <button type="submit"
+                <button type="button"
                         class="btn-primary"
                         id="saveBtn"
-                        style="display: none;">
+                        style="display: none;"
+                        onclick="handlePreSaveCheck()">
                     Save Changes
                 </button>
 
@@ -268,6 +322,22 @@
     </div>
 </div>
 
+{{-- DECEASED CONFIRMATION MODAL --}}
+<div id="deceasedConfirmModal" class="deceased-modal-overlay">
+    <div class="deceased-modal-box">
+        <h2 style="color: #991b1b; font-size: 20px; font-weight: bold; margin-bottom: 10px;">
+            Mark Citizen as Deceased?
+        </h2>
+        <p style="color: #4b5563; margin-bottom: 20px; font-size: 14px;">
+            Are you sure you want to update <strong>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}</strong> as deceased? This will change their vital status record.
+        </p>
+        <div class="deceased-modal-buttons">
+            <button type="button" class="btn-secondary" onclick="closeDeceasedModal()">Cancel</button>
+            <button type="button" class="btn-danger" id="confirmDeceasedSaveBtn" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Yes, Mark Deceased</button>
+        </div>
+    </div>
+</div>
+
 <script>
 let originalData = {};
 let originalFamilyId = @json((string) ($citizen->family_id ?? ''));
@@ -276,17 +346,23 @@ let originalFamilySubgroup = @json($citizen->family->subgroup->name ?? 'None');
 
 function enableEdit() {
     const form = document.getElementById('citizenForm');
-    const inputs = form.querySelectorAll('input[name], select[name]');
+    const inputs = form.querySelectorAll('input:not([type="hidden"]), select');
 
     originalData = {};
 
     inputs.forEach(field => {
-        originalData[field.name] = field.value;
-        field.disabled = false;
+        if (field.name) {
+            originalData[field.name] = field.value;
+            field.disabled = false;
+        }
     });
 
-    // These fields are previews, not editable form fields.
-    ['displayFamilyId', 'displayFamilyName', 'displaySubgroupName'].forEach(id => {
+    const deceasedInput = document.getElementById('Citizen_IsDeceased');
+    const markCheckbox = document.getElementById('markDeceasedCheckbox');
+    markCheckbox.disabled = false;
+    markCheckbox.checked = deceasedInput.value === '1';
+
+    ['displayFamilyId', 'displayFamilyName', 'displaySubgroupName', 'displayDeceasedStatus'].forEach(id => {
         document.getElementById(id).disabled = true;
     });
 
@@ -300,16 +376,18 @@ function enableEdit() {
 
 function disableEdit() {
     const form = document.getElementById('citizenForm');
-    const fields = form.querySelectorAll('input[name], select[name]');
+    const fields = form.querySelectorAll('input:not([type="hidden"]), select');
 
     fields.forEach(field => {
-        if (Object.prototype.hasOwnProperty.call(originalData, field.name)) {
+        if (field.name && Object.prototype.hasOwnProperty.call(originalData, field.name)) {
             field.value = originalData[field.name];
         }
 
         field.disabled = true;
     });
 
+    document.getElementById('markDeceasedCheckbox').disabled = true;
+    document.getElementById('displayDeceasedStatus').value = document.getElementById('Citizen_IsDeceased').value === '1' ? 'Deceased' : 'Living';
     document.getElementById('familySelect').value = originalFamilyId;
     document.getElementById('displayFamilyId').value = originalFamilyId || 'None';
     document.getElementById('displayFamilyName').value = originalFamilyName;
@@ -322,6 +400,33 @@ function disableEdit() {
     document.getElementById('cancelBtn').style.display = 'none';
     document.getElementById('editBtn').style.display = 'inline-block';
 }
+
+document.getElementById('markDeceasedCheckbox').addEventListener('change', function() {
+    const deceasedInput = document.getElementById('Citizen_IsDeceased');
+    const displayStatus = document.getElementById('displayDeceasedStatus');
+    
+    deceasedInput.value = this.checked ? '1' : '0';
+    displayStatus.value = this.checked ? 'Deceased' : 'Living';
+});
+
+function handlePreSaveCheck() {
+    const deceasedInput = document.getElementById('Citizen_IsDeceased');
+    const wasAlreadyDeceased = @json((string) $citizen->Citizen_IsDeceased) === '1';
+    
+    if (deceasedInput.value === '1' && !wasAlreadyDeceased) {
+        document.getElementById('deceasedConfirmModal').classList.add('active');
+    } else {
+        document.getElementById('citizenForm').submit();
+    }
+}
+
+function closeDeceasedModal() {
+    document.getElementById('deceasedConfirmModal').classList.remove('active');
+}
+
+document.getElementById('confirmDeceasedSaveBtn').addEventListener('click', function() {
+    document.getElementById('citizenForm').submit();
+});
 
 document.getElementById('familySelect').addEventListener('change', function () {
     const selectedOption = this.options[this.selectedIndex];
