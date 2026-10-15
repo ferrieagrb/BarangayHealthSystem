@@ -97,14 +97,6 @@
                 </a>
             </li>
 
-            <!-- Supplies -->
-            <li>
-                <a href="{{ route('citizen.supplies') }}">
-                    <i class="bx bx-package"></i>
-                    <span class="nav-item">Supplies</span>
-                </a>
-            </li>
-
             <!-- Calendar -->
             <li>
                 <a href="{{ route('citizen.calendar') }}">
