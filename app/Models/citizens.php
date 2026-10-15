@@ -32,6 +32,13 @@ class citizens extends Authenticatable
         'family_id',
         'qr_token',
         'photo_path',
+        'Citizen_Sex',
+        'Citizen_Height',
+        'Citizen_Weight',
+        'Citizen_HousingStatus',
+        'Citizen_Pregnant',
+        'Citizen_InPills',
+        'Citizen_IsDeceased',
     ];
 
     protected $table = 'citizens';
