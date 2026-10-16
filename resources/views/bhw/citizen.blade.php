@@ -250,7 +250,7 @@
 
 <div class="toolbar-actions">
 
-    {{-- EXPORT CITIZENS TO EXCEL --}}&#x20;
+    {{-- EXPORT CITIZENS TO EXCEL --}} 
 
     <a href="{{ route('citizen.export') }}"
 
@@ -325,21 +325,21 @@
                 <h3>Sex</h3>
                 <div class="citizen-status-radio-group">
                 <label><input type="radio" name="filter_sex" value="all" checked><span>All</span></label>
-                <label><input type="radio" name="filter_sex" value="male"><span>Male</span></label>
-                <label><input type="radio" name="filter_sex" value="female"><span>Female</span></label>
+                <label><input type="radio" name="filter_sex" value="Male"><span>Male</span></label>
+                <label><input type="radio" name="filter_sex" value="Female"><span>Female</span></label>
                 </div>
             </section>
 
             <section class="citizen-status-section">
                 <h3>Housing Status</h3>
-                <label class="citizen-status-option"><input type="checkbox" name="filter_housing" value="permanent_resident"><span>Permanent Resident</span></label>
-                <label class="citizen-status-option"><input type="checkbox" name="filter_housing" value="renter"><span>Renter</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_housing[]" value="Permanent Resident"><span>Permanent Resident</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_housing[]" value="Renter"><span>Renter</span></label>
             </section>
 
             <section class="citizen-status-section">
                 <h3>Health &amp; Family Planning</h3>
-                <label class="citizen-status-option"><input type="checkbox" name="filter_health" value="pregnant"><span>Pregnant</span></label>
-                <label class="citizen-status-option"><input type="checkbox" name="filter_health" value="in_pills"><span>In-Pills</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="pregnant"><span>Pregnant</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="in_pills"><span>In-Pills</span></label>
             </section>
 
             <section class="citizen-status-section">
@@ -372,6 +372,39 @@
             Showing registered barangay residents and their current profile status.
 
         </p>
+
+        @php
+            $activeFilters = [];
+
+            if (request()->filled('search')) {
+                $activeFilters[] = 'Search: ' . request('search');
+            }
+            if (request()->filled('purok')) {
+                $purokObj = \App\Models\Purok::find(request('purok'));
+                $activeFilters[] = 'Purok: ' . ($purokObj ? $purokObj->name : request('purok'));
+            }
+            if (request()->filled('age')) {
+                $activeFilters[] = 'Age: ' . request('age');
+            }
+            if (request()->filled('filter_sex') && request('filter_sex') !== 'all') {
+                $activeFilters[] = 'Sex: ' . request('filter_sex');
+            }
+            if (request()->has('filter_housing')) {
+                $activeFilters[] = 'Housing: ' . implode(', ', (array) request('filter_housing'));
+            }
+            if (request()->has('filter_health')) {
+                $activeFilters[] = 'Health: ' . implode(', ', (array) request('filter_health'));
+            }
+            if (request()->boolean('filter_deceased')) {
+                $activeFilters[] = 'Including Deceased';
+            }
+        @endphp
+
+        @if(count($activeFilters) > 0)
+            <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
+                (Showing {{ implode(', ', $activeFilters) }})
+            </p>
+        @endif
 
     </div>
 
@@ -469,7 +502,7 @@
 
                 // Use fully qualified model namespace in Blade
 
-                $isAssigned = $user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)->where('id', optional($citizen->family)->subgroup_id)->exists();
+                $isAssigned =$user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)->where('id', optional($citizen->family)->subgroup_id)->exists();
 
                 @endphp
 
@@ -505,7 +538,7 @@
 
                 class="deleteCitizenForm"
 
-                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
+                data-citizen-name="{{ $citizen->Citizen_FName }} {{$citizen->Citizen_LName }}">
 
                 @csrf
 
@@ -625,7 +658,7 @@
 
 {{-- APEXCHARTS CDN --}}
 
-<script src="https\://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 {{-- DEMOGRAPHICS CHART & FILTER SCRIPT --}}
 
@@ -1141,24 +1174,20 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!modal || !openButton || !closeButton || !clearButton || !applyButton) return;
 
     function openModal() {
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        openButton.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        closeButton.focus();
+    }
 
-    openButton.classList.add('active');
-
-    document.body.style.overflow = 'hidden';
-    closeButton.focus();
-}
-
-function closeModal() {
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-
-    openButton.classList.remove('active');
-
-    document.body.style.overflow = '';
-    openButton.focus();
-}
+    function closeModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        openButton.classList.remove('active');
+        document.body.style.overflow = '';
+        openButton.focus();
+    }
 
     openButton.addEventListener('click', openModal);
     closeButton.addEventListener('click', closeModal);
@@ -1169,42 +1198,65 @@ function closeModal() {
         if (event.key === 'Escape' && modal.classList.contains('active')) closeModal();
     });
 
+    // Populate modal inputs from current URL parameters on load
     const params = new URLSearchParams(window.location.search);
     const savedSex = params.get('filter_sex') || 'all';
     const savedSexInput = modal.querySelector('input[name="filter_sex"][value="' + savedSex + '"]');
     if (savedSexInput) savedSexInput.checked = true;
 
     params.getAll('filter_housing[]').forEach(function (value) {
-        const input = modal.querySelector('input[name="filter_housing"][value="' + value + '"]');
+        const input = modal.querySelector('input[name="filter_housing[]"][value="' + value + '"]');
         if (input) input.checked = true;
     });
     params.getAll('filter_health[]').forEach(function (value) {
-        const input = modal.querySelector('input[name="filter_health"][value="' + value + '"]');
+        const input = modal.querySelector('input[name="filter_health[]"][value="' + value + '"]');
         if (input) input.checked = true;
     });
 
     const deceased = document.getElementById('filterIncludeDeceased');
     if (deceased) deceased.checked = params.get('filter_deceased') === '1';
 
+    // Clear filters button handler
     clearButton.addEventListener('click', function () {
         const allSex = modal.querySelector('input[name="filter_sex"][value="all"]');
         if (allSex) allSex.checked = true;
         modal.querySelectorAll('input[type="checkbox"]').forEach(function (input) { input.checked = false; });
     });
 
+    // Apply filters button handler
     applyButton.addEventListener('click', function () {
-        const url = new URL(window.location.href);
-        const query = url.searchParams;
-        ['filter_sex', 'filter_housing[]', 'filter_health[]', 'filter_deceased', 'page'].forEach(function (key) { query.delete(key); });
+        // Start with the current URL and its existing query parameters (like search, purok, age)
+        const targetUrl = new URL(window.location.href);
+        const query = targetUrl.searchParams;
 
+        // Clear out old status filter parameters and pagination page before setting fresh ones
+        ['filter_sex', 'filter_housing[]', 'filter_health[]', 'filter_deceased', 'page'].forEach(function (key) {
+            query.delete(key);
+        });
+
+        // Add Sex filter if not 'all'
         const selectedSex = modal.querySelector('input[name="filter_sex"]:checked');
-        if (selectedSex && selectedSex.value !== 'all') query.set('filter_sex', selectedSex.value);
+        if (selectedSex && selectedSex.value !== 'all') {
+            query.set('filter_sex', selectedSex.value);
+        }
 
-        modal.querySelectorAll('input[name="filter_housing"]:checked').forEach(function (input) { query.append('filter_housing[]', input.value); });
-        modal.querySelectorAll('input[name="filter_health"]:checked').forEach(function (input) { query.append('filter_health[]', input.value); });
-        if (deceased && deceased.checked) query.set('filter_deceased', '1');
+        // Add Housing Status checkboxes
+        modal.querySelectorAll('input[name="filter_housing[]"]:checked').forEach(function (input) {
+            query.append('filter_housing[]', input.value);
+        });
 
-        window.location.href = url.toString();
+        // Add Health checkboxes
+        modal.querySelectorAll('input[name="filter_health[]"]:checked').forEach(function (input) {
+            query.append('filter_health[]', input.value);
+        });
+
+        // Add Deceased flag if checked
+        if (deceased && deceased.checked) {
+            query.set('filter_deceased', '1');
+        }
+
+        // Navigate directly to the fully constructed URL query string
+        window.location.href = targetUrl.toString();
     });
 });
 </script>

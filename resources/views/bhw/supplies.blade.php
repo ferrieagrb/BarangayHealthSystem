@@ -49,25 +49,6 @@
 </div>
 
 
-<!-- ================================================================
-     CITIZEN SUPPLY REQUESTS MANAGEMENT SECTION
-     ================================================================ -->
-<div class="section-container" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 30px;">
-    <h2 style="margin-bottom: 15px; font-size: 1.25rem; color: #1f2937;">Incoming Citizen Supply Requests</h2>
-
-    @if(session('success'))
-        <div style="background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div style="background: #f8d7da; color: #721c24; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;">
-            {{ session('error') }}
-        </div>
-    @endif
-
-</div>
 
 
 <!-- TOOLBAR -->
