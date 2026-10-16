@@ -1,131 +1,514 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* MAIN LAYOUT */
+/* =========================================================
+   CITIZEN DETAILS — BASE
+   ========================================================= */
+
 .main {
-    padding: 40px;
-    background: #f2f3f8;
     min-height: 100vh;
+    padding: 32px 40px;
+    background: #f2f3f8;
+    color: #0f172a;
+    font-family: 'Poppins', sans-serif;
 }
 
-/* HEADER (same style as your system) */
+.main *,
+.main *::before,
+.main *::after {
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
 .page-top {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    min-width: 0;
 }
 
 .page-title h1 {
-    font-size: 30px;
+    margin: 0;
     color: #0f172a;
+    font-size: clamp(24px, 2.5vw, 30px);
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
 
 .page-title p {
+    margin-top: 6px;
     color: #64748b;
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
-/* BUTTONS (consistent with your UI) */
-.btn-primary {
-    background: #0E42B1;
-    color: #fff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.btn-secondary {
-    background: #e2e8f0;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-/* RIGHT BUTTON GROUP */
 .right {
     display: flex;
-    gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-/* INFO CARD (same feel as summary-card / table container) */
-.info-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    padding: 20px;
-    max-width: 700px;
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.main .btn-primary,
+.main .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+                box-shadow 0.2s ease;
 }
 
-/* INNER CARD */
-.card h2 {
-    font-size: 22px;
-    margin-bottom: 15px;
+.main .btn-primary {
+    background: #0e42b1;
+    color: #fff;
+}
+
+.main .btn-primary:hover {
+    background: #123a9d;
+}
+
+.main .btn-secondary {
+    border-color: #e2e8f0;
+    background: #e2e8f0;
     color: #0f172a;
 }
 
-/* LABELS */
-label {
-    display: block;
-    margin-top: 12px;
-    font-size: 13px;
-    color: #64748b;
+.main .btn-secondary:hover {
+    border-color: #cbd5e1;
+    background: #cbd5e1;
 }
 
-/* INPUT FIELDS */
-input {
+.page-top .right a.btn-secondary,
+.page-top .right a.btn-secondary:hover,
+.page-top .right a.btn-secondary:focus {
+    text-decoration: none;
+}
+
+.main .btn-primary:focus-visible,
+.main .btn-secondary:focus-visible {
+    outline: 3px solid rgba(22, 70, 189, 0.2);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   INFORMATION CARD
+   ========================================================= */
+
+.info-card {
     width: 100%;
+    max-width: none;
+    padding: 26px;
+    border: 1px solid #eef0f5;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.info-card .card {
+    width: 100%;
+    min-width: 0;
+}
+
+.info-card .card h2 {
+    grid-column: 1 / -1;
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   FORM GRID
+   Desktop: Label | Input | Label | Input
+   ========================================================= */
+
+#citizenForm {
+    display: grid;
+    grid-template-columns:
+        minmax(100px, 0.65fr)
+        minmax(0, 1.4fr)
+        minmax(100px, 0.65fr)
+        minmax(0, 1.4fr);
+    align-items: center;
+    column-gap: 18px;
+    row-gap: 14px;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Remove legacy BR elements that disrupt grid placement */
+#citizenForm > br {
+    display: none;
+}
+
+/* Full-width form elements */
+#citizenForm > h2,
+#citizenForm > .citizen-section-title,
+#citizenForm > .citizen-section-divider,
+#citizenForm > #familyEditContainer,
+#citizenForm > .citizen-form-actions {
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   SECTION HEADINGS
+   ========================================================= */
+
+.citizen-section-title {
+    margin: 16px 0 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.info-card .card h2 + .citizen-section-title {
+    margin-top: 8px;
+}
+
+.citizen-section-divider {
+    width: 100%;
+    height: 1px;
+    margin: 12px 0;
+    border: 0;
+    background: #e2e8f0;
+}
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+#citizenForm > label {
+    display: block;
+    align-self: center;
+    margin: 0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   INPUTS AND SELECTS
+   ========================================================= */
+
+#citizenForm > input,
+#citizenForm > select,
+#citizenForm input,
+#citizenForm select {
+    min-width: 0;
+    font-family: inherit;
+}
+
+#citizenForm > input,
+#citizenForm > select {
+    display: block;
+    width: 100%;
+    min-height: 43px;
+    margin: 0;
     padding: 10px 12px;
-    margin-top: 6px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 14px;
     background: #fff;
     color: #0f172a;
+    font-size: 13px;
+    line-height: 1.5;
     outline: none;
-    transition: 0.2s;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
-    border-color: #0E42B1;
+#citizenForm > input:focus,
+#citizenForm > select:focus,
+#citizenForm input:focus,
+#citizenForm select:focus {
+    border-color: #0e42b1;
+    box-shadow: 0 0 0 3px rgba(14, 66, 177, 0.08);
 }
 
-/* DISABLED STATE (READ MODE LOOK) */
-input:disabled {
+#citizenForm input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+/* Read-only fields */
+#citizenForm input:disabled,
+#citizenForm select:disabled {
+    border-color: #e2e8f0;
     background: #f8fafc;
     color: #64748b;
     cursor: not-allowed;
+    opacity: 1;
 }
 
-/* BUTTON GROUP INSIDE FORM */
-form .btn-primary,
-form .btn-secondary {
-    margin-top: 15px;
-    margin-right: 8px;
+/* =========================================================
+   HEALTH AND STATUS FIELDS
+   ========================================================= */
+
+.citizen-status-field {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    margin: 0;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .page-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+.citizen-status-field label {
+    display: block;
+    margin: 0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.citizen-status-field select {
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 13px;
+}
+
+/* =========================================================
+   FAMILY SELECTOR
+   ========================================================= */
+
+#familyEditContainer {
+    min-width: 0;
+    margin-top: 8px;
+}
+
+#familyEditContainer label {
+    display: block;
+    margin: 0 0 7px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#citizenForm #familySelect {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 13px;
+}
+
+#citizenForm #familySelect optgroup {
+    color: #334155;
+    font-weight: 600;
+}
+
+#citizenForm #familySelect option {
+    color: #0f172a;
+    font-weight: 400;
+}
+
+/* =========================================================
+   SAVE AND CANCEL ACTIONS
+   ========================================================= */
+
+.citizen-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.citizen-form-actions .btn-primary,
+.citizen-form-actions .btn-secondary {
+    margin: 0;
+}
+
+#citizenForm #saveBtn,
+#citizenForm #cancelBtn {
+    min-width: 115px;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media screen and (max-width: 1000px) {
+    .main {
+        padding: 26px 24px;
     }
 
     .info-card {
+        padding: 22px;
+    }
+
+    #citizenForm {
+        grid-template-columns:
+            minmax(90px, 0.6fr)
+            minmax(0, 1.4fr);
+        column-gap: 16px;
+        row-gap: 12px;
+    }
+
+    #citizenForm > h2,
+    #citizenForm > .citizen-section-title,
+    #citizenForm > .citizen-section-divider,
+    #citizenForm > #familyEditContainer,
+    #citizenForm > .citizen-form-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media screen and (max-width: 600px) {
+    .main {
+        padding: 20px 14px;
+    }
+
+    .page-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .page-title h1 {
+        font-size: 24px;
+    }
+
+    .page-title p {
+        font-size: 12px;
+    }
+
+    .right {
         width: 100%;
+    }
+
+    .right .btn-primary,
+    .right .btn-secondary {
+        flex: 1;
+    }
+
+    .info-card {
+        padding: 18px 14px;
+        border-radius: 12px;
+    }
+
+    .info-card .card h2 {
+        margin-bottom: 12px;
+        font-size: 19px;
+    }
+
+    #citizenForm {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 7px;
+    }
+
+    #citizenForm > h2,
+    #citizenForm > .citizen-section-title,
+    #citizenForm > .citizen-section-divider,
+    #citizenForm > #familyEditContainer,
+    #citizenForm > .citizen-form-actions {
+        grid-column: 1;
+    }
+
+    .citizen-section-title {
+        margin-top: 18px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    #citizenForm > label {
+        margin-top: 7px;
+        font-size: 12px;
+    }
+
+    #citizenForm > input,
+    #citizenForm > select {
+        min-height: 42px;
+        font-size: 13px;
+    }
+
+    .citizen-status-field {
+        margin-top: 8px;
+    }
+
+    .citizen-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        margin-top: 18px;
+    }
+
+    #citizenForm #saveBtn,
+    #citizenForm #cancelBtn {
+        width: 100%;
+        min-height: 44px;
+    }
+}
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media screen and (max-width: 380px) {
+    .main {
+        padding: 16px 10px;
+    }
+
+    .info-card {
+        padding: 15px 12px;
+    }
+
+    .right {
+        gap: 8px;
+    }
+
+    .main .btn-primary,
+    .main .btn-secondary {
+        padding: 9px 11px;
+        font-size: 12px;
     }
 }
