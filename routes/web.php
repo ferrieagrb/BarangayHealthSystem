@@ -46,6 +46,11 @@ use App\Http\Controllers\BhwSupplyRequestController;
 |--------------------------------------------------------------------------
 */
 
+// Public QR landing page. It never exposes private medical records.
+Route::get('/health-id/{token}', [QRScannerController::class, 'publicHealthId'])
+    ->whereUuid('token')
+    ->name('health-id.public');
+
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
     $recentAnnouncements = Announcement::latest()->take(5)->get();
@@ -107,7 +112,23 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        return view('citizen.dashboard');
+        $announcements = Announcement::latest()->take(5)->get();
+        $citizen = null;
+        if ($user->citizen_id) {
+            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+                ->where('id', $user->citizen_id)->first();
+        }
+
+        $qrImage = $citizen
+            ? app(\App\Http\Controllers\CitizenController::class)
+                ->makeCitizenQrImage($citizen)
+            : null;
+
+        return view('citizen.dashboard', compact(
+            'announcements',
+            'citizen',
+            'qrImage'
+        ));
     })->name('dashboard');
 
     // Citizen Supplies Overview
@@ -254,9 +275,16 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::post('/vehicle-logs', [VehicleLogController::class, 'store'])->name('vehicle.logs.store');
 
-    // QR Scanner
-    //Route::get('/qr-scanner', fn () => app(QRScannerController::class)->index())->name('qr.scanner');
-    Route::get('/citizen/qr/{token}',[CitizenController::class, 'showElectronicCardByToken'])->name('bhw.citizen.qr');
+    // QR Scanner (BHW-only routes; protected by this group's auth + role middleware).
+    Route::get('/qr-scanner', [QRScannerController::class, 'index'])->name('qr.scanner');
+    Route::get('/qr-scanner/lookup/{token}', [QRScannerController::class, 'lookup'])
+        ->whereUuid('token')
+        ->name('qr.scanner.lookup');
+
+    // Legacy authenticated route retained for existing QR links/bookmarks.
+    Route::get('/citizen/qr/{token}', [CitizenController::class, 'showElectronicCardByToken'])
+        ->whereUuid('token')
+        ->name('bhw.citizen.qr');
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 

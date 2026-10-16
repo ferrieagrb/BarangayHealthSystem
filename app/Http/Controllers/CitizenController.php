@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\SvgWriter;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Color\Color;
 use App\Models\CitizenActivityLog;
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -508,25 +512,36 @@ class CitizenController extends Controller
         return view('bhw.ecard', compact('citizen'));
     }
 
-    private function makeCitizenQrImage(citizens $citizen): string
+    public function makeCitizenQrImage(citizens $citizen): string
     {
         if (!$citizen->qr_token) {
             $citizen->qr_token = (string) Str::uuid();
             $citizen->save();
         }
 
-        $url = route('bhw.citizen.qr', [
+        // Use a stable public Health ID URL. The public page does not expose
+        // medical information; authorized providers must sign in to view records.
+        $url = route('health-id.public', [
             'token' => $citizen->qr_token,
         ]);
 
-        $encodedUrl = urlencode($url);
-        $svgContent = @file_get_contents("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={$encodedUrl}");
+        // Generate the QR locally instead of sending the citizen token to a
+        // third-party QR-generation service.
+        $qrCode = new QrCode(
+            data: $url,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Low,
+            size: 180,
+            margin: 10,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+            foregroundColor: new Color(0, 0, 0),
+            backgroundColor: new Color(255, 255, 255),
+        );
 
-        if ($svgContent) {
-            return 'data:image/png;base64,' . base64_encode($svgContent);
-        }
+        $writer = new SvgWriter();
+        $result = $writer->write($qrCode);
 
-        return '';
+        return 'data:image/svg+xml;base64,' . base64_encode($result->getString());
     }
 
     /*
