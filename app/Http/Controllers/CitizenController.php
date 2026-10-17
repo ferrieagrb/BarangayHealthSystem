@@ -106,6 +106,40 @@ class CitizenController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | STATUS / MODAL FILTERS
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $query->where('Citizen_Sex', $request->filter_sex);
+        }
+
+        if ($request->filled('filter_housing')) {
+            $housing = $request->filter_housing;
+            $housingValues = is_array($housing) ? $housing : [$housing];
+            $query->whereIn('Citizen_HousingStatus', $housingValues);
+        }
+
+        if ($request->filled('filter_health')) {
+            $health = $request->filter_health;
+            $healthValues = is_array($health) ? $health : [$health];
+
+            if (in_array('pregnant', $healthValues)) {
+                $query->where('Citizen_Pregnant', 1);
+            }
+            if (in_array('in_pills', $healthValues)) {
+                $query->where('Citizen_InPills', 1);
+            }
+        }
+
+        if (!$request->boolean('filter_deceased')) {
+            $query->where(function ($q) {
+                $q->whereNull('Citizen_IsDeceased')
+                  ->orWhere('Citizen_IsDeceased', 0);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | SEARCH
         |--------------------------------------------------------------------------
         */
@@ -206,6 +240,11 @@ class CitizenController extends Controller
             'subgroup' => $request->subgroup,
             'age' => $request->age,
             'age_group' => $request->age_group,
+            'sex' => $request->sex,
+            'housing_status' => $request->housing_status,
+            'pregnant' => $request->pregnant,
+            'in_pills' => $request->in_pills,
+            'include_deceased' => $request->include_deceased,
         ]);
 
         /*

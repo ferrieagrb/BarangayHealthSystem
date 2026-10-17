@@ -647,7 +647,7 @@ body.font-xl {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 999999; /* 👈 Boosted to ensure it covers everything */
+    z-index: 9999 ; /* 👈 Boosted to ensure it covers everything */
     opacity: 0;
     visibility: hidden;
     pointer-events: none; /* 👈 Prevents blocking clicks when hidden */
