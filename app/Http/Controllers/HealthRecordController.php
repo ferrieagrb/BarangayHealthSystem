@@ -8,6 +8,7 @@ use App\Models\Vaccination;
 use App\Models\citizens;
 use App\Models\MaintenanceRecord;
 use App\Models\Supply;
+use App\Models\Purok;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -47,19 +48,11 @@ class HealthRecordController extends Controller
 
     $citizens = $query->paginate(10)->appends($request->all());
 
-    // Define geographic coordinates for each Purok in Brgy. Amuyong
-    $amuyongPurokCoordinates = [
-        '1' => ['lat' => 14.0680, 'lng' => 120.8515],
-        '2' => ['lat' => 14.0655, 'lng' => 120.8540],
-        '3' => ['lat' => 14.0630, 'lng' => 120.8500],
-        '4' => ['lat' => 14.0690, 'lng' => 120.8550],
-        '5' => ['lat' => 14.0640, 'lng' => 120.8525],
-    ];
-
     $allCitizens = citizens::with('healthRecords')->get();
     $heatmapData = [];
 
-    foreach ($amuyongPurokCoordinates as $purokKey => $coords) {
+    foreach (Purok::whereNotNull('latitude')->whereNotNull('longitude')->get() as $purok) {
+        $purokKey = preg_replace('/[^0-9]/', '', (string) $purok->name);
         $matchingCitizens = $allCitizens->filter(function($c) use ($purokKey) {
             $dbPurok = preg_replace('/[^0-9]/', '', (string)$c->Citizen_Purok);
             return $dbPurok === (string)$purokKey;
@@ -71,10 +64,10 @@ class HealthRecordController extends Controller
         // STRICT REQUIREMENT: Only include zones that have 1 or more diagnoses
         if ($recordCount > 0) {
             $heatmapData[] = [
-                'location' => $coords,
+                'location' => ['lat' => (float) $purok->latitude, 'lng' => (float) $purok->longitude],
                 // Severity scaled threefold based on the number of diagnoses
                 'weight' => $recordCount * 3,
-                'purok' => $purokKey,
+                'purok' => $purok->name,
                 'citizens_count' => $matchingCitizens->count(),
                 'records_count' => $recordCount
             ];
