@@ -178,71 +178,30 @@
         <div class="alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Row 1: Add Purok Form & Add Subgroup Form -->
+    <!-- Manage Puroks and subgroups -->
     <div class="grid-row">
-        <!-- Add Purok Form Card (Cleaned: No BHW assignment here anymore) -->
+        <!-- Manage Puroks, including their saved map pins -->
         <div class="card">
-            <h2>Add New Purok</h2>
-            <form action="{{ route('admin.puroks.store') }}" method="POST" style="display: flex; flex-direction: column; flex: 1;">
+            <h2>Manage Puroks</h2>
+            <form action="{{ route('admin.puroks.store') }}" method="POST" style="margin-bottom: 20px;">
                 @csrf
-                <div class="form-group">
-                    <div class="form-row">
-                        <input type="text" name="name" placeholder="Enter Purok name (e.g., Purok 1)" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Add Purok</button>
+                <div class="form-row">
+                    <input type="text" name="name" placeholder="Enter Purok name (e.g., Purok 1)" class="form-control" required>
+                    <button type="submit" class="btn btn-primary">Add Purok</button>
                 </div>
             </form>
-        </div>
-
-        <!-- Add Purok Subgroup Form Card (Includes BHW Assignment) -->
-        <div class="card">
-            <h2>Add Purok Sub-group & Assign BHW</h2>
-            <form action="{{ route('admin.subgroups.store') }}" method="POST" style="display: flex; flex-direction: column; flex: 1;">
-                @csrf
-                <div class="form-group">
-                    <div class="form-row">
-                        <select name="purok_id" class="form-control" required>
-                            <option value="">-- Select Parent Purok --</option>
-                            @foreach($puroks as $purok)
-                                <option value="{{ $purok->id }}">{{ $purok->name }}</option>
-                            @endforeach
-                        </select>
-                        <input type="text" name="name" placeholder="Subgroup name (e.g., P1A)" class="form-control" required>
-                    </div>
-                    <div class="form-row" style="margin-top: 10px;">
-                        <select name="user_id" class="form-control">
-                            <option value="">-- Assign BHW (Optional) --</option>
-                            @foreach($bhws as $bhw)
-                                <option value="{{ $bhw->id }}">{{ $bhw->name ?? $bhw->email }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Add Subgroup</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="card" style="margin-bottom: 20px;">
-        <h2>Pin Purok Location</h2>
-        <p class="location-status" id="purokLocationStatus">Select a Purok, then click the map to add or move its pin.</p>
-        <div class="form-row" style="margin-bottom: 12px;">
-            <select id="purokLocationSelect" class="form-control">
-                <option value="">-- Select Purok --</option>
-                @foreach($puroks as $purok)
-                    <option value="{{ $purok->id }}" data-lat="{{ $purok->latitude ?? '' }}" data-lng="{{ $purok->longitude ?? '' }}">{{ $purok->name }}</option>
-                @endforeach
-            </select>
-            <button type="button" id="savePurokLocation" class="btn btn-primary" disabled>Save Location</button>
-        </div>
-        <div id="purokLocationMap" class="purok-location-map"></div>
-    </div>
-
-    <!-- Row 2: Existing Puroks List & Existing Subgroups List -->
-    <div class="grid-row">
-        <!-- Puroks List (Only name updates and deletion) -->
-        <div class="card">
-            <h2>Existing Puroks</h2>
+            <h3 style="margin: 0 0 10px; color: #34495e; font-size: 15px;">Purok Locations</h3>
+            <p class="location-status" id="purokLocationStatus">Select a Purok, then click the map to add or move its pin.</p>
+            <div class="form-row" style="margin-bottom: 12px;">
+                <select id="purokLocationSelect" class="form-control">
+                    <option value="">-- Select Purok --</option>
+                    @foreach($puroks as $purok)
+                        <option value="{{ $purok->id }}" data-lat="{{ $purok->latitude ?? '' }}" data-lng="{{ $purok->longitude ?? '' }}">{{ $purok->name }}</option>
+                    @endforeach
+                </select>
+                <button type="button" id="savePurokLocation" class="btn btn-primary" disabled>Save Location</button>
+            </div>
+            <div id="purokLocationMap" class="purok-location-map" style="margin-bottom: 18px;"></div>
             <ul style="list-style: none; padding:0; margin:0; flex: 1;">
                 @forelse($puroks as $purok)
                     <li class="purok-item">
@@ -266,9 +225,28 @@
             </ul>
         </div>
 
-        <!-- Subgroups List (Editable with Purok dropdown, Subgroup name, and BHW assignment) -->
+        <!-- Manage subgroups and assigned BHWs -->
         <div class="card">
-            <h2>Existing Subgroups & Assigned BHWs</h2>
+            <h2>Manage Subgroups & Assigned BHWs</h2>
+            <form action="{{ route('admin.subgroups.store') }}" method="POST" style="margin-bottom: 20px;">
+                @csrf
+                <div class="form-row">
+                    <select name="purok_id" class="form-control" required>
+                        <option value="">-- Select Parent Purok --</option>
+                        @foreach($puroks as $purok)
+                            <option value="{{ $purok->id }}">{{ $purok->name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="name" placeholder="Subgroup name (e.g., P1A)" class="form-control" required>
+                    <select name="user_id" class="form-control">
+                        <option value="">-- Assign BHW (Optional) --</option>
+                        @foreach($bhws as $bhw)
+                            <option value="{{ $bhw->id }}">{{ $bhw->name ?? $bhw->email }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-primary">Add Subgroup</button>
+                </div>
+            </form>
             <ul style="list-style: none; padding:0; margin:0; flex: 1;">
                 @forelse($subgroups as $sub)
                     <li class="purok-item">
