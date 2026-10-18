@@ -119,7 +119,7 @@ function initBhwHomeMap() {
         const count = point.count || 0;
         const fillColor = count >= 10 ? '#b30000' : (count >= 3 ? '#ff4d4d' : '#ffcc00');
         const strokeColor = count >= 10 ? '#800000' : (count >= 3 ? '#cc0000' : '#ff9900');
-        const radius = count >= 10 ? 90 : (count >= 3 ? 65 : 45);
+        const radius = count >= 10 ? 150 : (count >= 3 ? 110 : 75);
         const circle = new google.maps.Circle({
             strokeColor,
             strokeOpacity: .9,
@@ -128,7 +128,7 @@ function initBhwHomeMap() {
             fillOpacity: .5,
             map,
             center: { lat: point.lat, lng: point.lng },
-            radius: Math.max(radius, point.weight * 90)
+            radius: Math.max(radius, point.weight * 140)
         });
 
         circle.addListener('click', function () {

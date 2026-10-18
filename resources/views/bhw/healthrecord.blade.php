@@ -462,7 +462,7 @@
 
             let strokeColor = "#ff9900";
 
-            let baseRadius = 45;
+            let baseRadius = 75;
 
 
             if (actualCount >= 10) {
@@ -471,7 +471,7 @@
 
                 strokeColor = "#800000";
 
-                baseRadius = 90;
+                baseRadius = 150;
 
             }
 
@@ -481,7 +481,7 @@
 
                 strokeColor = "#cc0000";
 
-                baseRadius = 65;
+                baseRadius = 110;
 
             }
 
@@ -512,7 +512,7 @@
 
                     baseRadius,
 
-                    weight * 10
+                    weight * 20
 
                 )
 
