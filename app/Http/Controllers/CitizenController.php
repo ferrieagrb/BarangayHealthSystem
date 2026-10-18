@@ -136,6 +136,7 @@ class CitizenController extends Controller
             });
 
         $query = $this->restrictToAssignedCitizens(citizens::query());
+        $summaryQuery = clone $query;
 
         /*
         |--------------------------------------------------------------------------
@@ -285,10 +286,10 @@ class CitizenController extends Controller
         | DASHBOARD COUNTS (Unrestricted full barangay totals)
         |--------------------------------------------------------------------------
         */
-        $totalCitizens = (clone $query)->count();
-        $kids = (clone $query)->where('Citizen_Age', '<=', 17)->count();
-        $adults = (clone $query)->whereBetween('Citizen_Age', [18, 59])->count();
-        $seniors = (clone $query)->where('Citizen_Age', '>=', 60)->count();
+        $totalCitizens = (clone $summaryQuery)->count();
+        $kids = (clone $summaryQuery)->where('Citizen_Age', '<=', 17)->count();
+        $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
+        $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
 
         return view('bhw.citizen', compact(
             'citizens',
