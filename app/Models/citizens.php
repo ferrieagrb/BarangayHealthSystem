@@ -30,6 +30,7 @@ class citizens extends Authenticatable
         'Citizen_ContactNo',
         'Citizen_Age',
         'Citizen_Purok',
+        'subgroup_id',
         'family_id',
         'qr_token',
         'photo_path',
@@ -88,6 +89,11 @@ class citizens extends Authenticatable
 public function family()
 {
     return $this->belongsTo(Family::class, 'family_id');
+}
+
+public function subgroup()
+{
+    return $this->belongsTo(PurokSubgroup::class, 'subgroup_id');
 }
 
 }
