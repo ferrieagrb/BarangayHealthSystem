@@ -10,6 +10,7 @@ use App\Models\Referral;
 use App\Models\Announcement;
 use App\Models\MaintenanceRecord;
 use App\Models\SupplyRelease;
+use App\Models\Purok;
 use Illuminate\Support\Facades\DB;
 
 class BhwHomeController extends Controller
@@ -58,25 +59,22 @@ class BhwHomeController extends Controller
         })->count();
         $scheduledReleases = SupplyRelease::where('status', 'scheduled')->count();
 
-        $purokCoordinates = [
-            '1' => [14.0680, 120.8515],
-            '2' => [14.0655, 120.8540],
-            '3' => [14.0630, 120.8500],
-            '4' => [14.0690, 120.8550],
-            '5' => [14.0640, 120.8525],
-        ];
         $citizensByPurok = citizens::select('Citizen_Purok')->get()
             ->groupBy(function ($citizen) {
                 return preg_replace('/[^0-9]/', '', (string) $citizen->Citizen_Purok);
             })
             ->map->count();
-        $purokHeatmapData = collect($purokCoordinates)->map(function ($coordinates, $purok) use ($citizensByPurok) {
-            $count = (int) $citizensByPurok->get($purok, 0);
+        $purokHeatmapData = Purok::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get()
+            ->map(function ($purok) use ($citizensByPurok) {
+            $purokKey = preg_replace('/[^0-9]/', '', (string) $purok->name);
+            $count = (int) $citizensByPurok->get($purokKey, 0);
             return [
-                'lat' => $coordinates[0],
-                'lng' => $coordinates[1],
+                'lat' => (float) $purok->latitude,
+                'lng' => (float) $purok->longitude,
                 'weight' => max(.25, min(1, $count / 10)),
-                'label' => 'Purok ' . $purok,
+                'label' => $purok->name,
                 'count' => $count,
             ];
         })->values();
