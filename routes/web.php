@@ -196,8 +196,9 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
     Route::get('/addcitizen', function () {
         $puroks = \App\Models\Purok::with('subgroups')->get();
+        $families = \App\Models\Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
 
-        return view('bhw.addcitizen', compact('puroks'));
+        return view('bhw.addcitizen', compact('puroks', 'families'));
     })->name('citizen.add');
 
     Route::post('/citizen-store', fn () => app(CitizenController::class)->store(request()))->name('citizen.store');
@@ -267,6 +268,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
     Route::get('/families', [FamilyController::class, 'index'])->name('families.index');
     Route::post('/families', [FamilyController::class, 'store'])->name('families.store');
+    Route::post('/families/quick-store', [FamilyController::class, 'storeQuick'])->name('families.quick.store');
     Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
     Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
