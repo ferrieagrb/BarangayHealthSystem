@@ -4,6 +4,12 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
 
+<script>
+    window.__healthRecordMapsReady = false;
+    window.initMap = function () {
+        window.__healthRecordMapsReady = true;
+    };
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
 @endsection
 
@@ -538,6 +544,11 @@
 
         });
 
+    }
+
+    window.initMap = initMap;
+    if (window.__healthRecordMapsReady) {
+        initMap();
     }
 
 </script>
