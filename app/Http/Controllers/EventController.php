@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use Illuminate\Support\Facades\Auth;
 
 
 class EventController extends Controller
@@ -54,9 +55,20 @@ class EventController extends Controller
         $event = Event::create([
             'title' => $request->title,
             'start' => $request->start,
+            'user_id' => Auth::id(),
         ]);
 
         return response()->json($event);
+    }
+
+    public function createBatchReleaseEvent(string $title, string $start, ?string $description = null): Event
+    {
+        return Event::create([
+            'title' => $title,
+            'start' => $start,
+            'description' => $description,
+            'user_id' => Auth::id(),
+        ]);
     }
 
     public function destroy($id)

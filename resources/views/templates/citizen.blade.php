@@ -845,6 +845,10 @@ body,
         @endif
 
         <div class="c-header-actions">
+            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
+                <i class="bx bx-menu" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

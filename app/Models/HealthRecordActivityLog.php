@@ -17,4 +17,9 @@ class HealthRecordActivityLog extends Model
         'health_record_id',
         'description',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

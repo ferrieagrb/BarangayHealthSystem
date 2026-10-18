@@ -25,6 +25,7 @@
         id="announcementForm"
         method="POST"
         action="{{ route('announcements.store') }}"
+        enctype="multipart/form-data"
     >
         @csrf
 
@@ -67,6 +68,19 @@
                     placeholder="Write announcement details..."
                     required
                 ></textarea>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="announcementImages">Pictures</label>
+                <input
+                    type="file"
+                    name="images[]"
+                    id="announcementImages"
+                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                    multiple
+                    required
+                >
+                <small>Select one or more pictures for this public announcement.</small>
             </div>
 
             <!-- FACEBOOK CROSS-POST CHECKBOX -->

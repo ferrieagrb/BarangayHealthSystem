@@ -19,6 +19,7 @@ use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\Supply;
 use App\Models\Family;
 use App\Models\Purok;
 use App\Exports\CitizensExport;
@@ -29,9 +30,11 @@ use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
+use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
 {
+    use LogsActivity;
     /**
      * Helper method to authorize BHW edit/delete actions based on assigned subgroups.
      */
@@ -402,7 +405,16 @@ class CitizenController extends Controller
     */
     public function show($id)
     {
-        $citizen = citizens::with(['healthRecords'])->findOrFail($id);
+        $citizen = citizens::with([
+            'healthRecords' => fn($q) => $q->latest(),
+            'maintenanceRecords' => fn($q) => $q->latest(),
+        ])->findOrFail($id);
+
+        $availableMedicines = Supply::where('quantity', '>', 0)
+            ->select('name')
+            ->distinct()
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'medicine_page');
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen health record');
 
@@ -414,7 +426,7 @@ class CitizenController extends Controller
             'description' => 'Viewed health records of citizen ID ' . $citizen->id,
         ]);
 
-        return view('bhw.citizen_show', compact('citizen'));
+        return view('bhw.citizen_show', compact('citizen', 'availableMedicines'));
     }
 
     /*
@@ -510,6 +522,8 @@ class CitizenController extends Controller
     */
     public function export()
     {
+        $this->logAdminActivity('citizens.exported', 'Exported citizen records to Excel.', 'data');
+
         return Excel::download(
             new CitizensExport(),
             'citizen_records_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
@@ -532,9 +546,11 @@ class CitizenController extends Controller
             Excel::import(new CitizensImport, $file);
 
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
+            $this->logAdminActivity('citizens.imported', 'Imported citizen records from Excel.', 'data');
 
             return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
         } catch (\Exception $e) {
+            $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }

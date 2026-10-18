@@ -75,14 +75,19 @@
         @else
             <div class="announcements-grid">
                 @foreach($announcements as $announcement)
-                    <article class="announcement-card">
+                    <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-card">
+                        <div class="announcement-gallery">
+                            @foreach($announcement->images as $image)
+                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}">
+                            @endforeach
+                        </div>
                         <div class="announcement-header">
                             <span class="category-badge">{{ $announcement->category ?? 'General' }}</span>
                             <time class="post-date"><i class="fa-regular fa-clock"></i> {{ $announcement->created_at->format('M d, Y') }}</time>
                         </div>
                         <h3 class="announcement-title">{{ $announcement->title }}</h3>
                         <p class="announcement-body">{{ $announcement->description }}</p>
-                    </article>
+                    </a>
                 @endforeach
             </div>
         @endif

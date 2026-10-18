@@ -14,4 +14,19 @@ class SupplyLog extends Model
         'citizen_id',
         'notes'
     ];
+
+    public function supply()
+    {
+        return $this->belongsTo(Supply::class, 'supply_id');
+    }
+
+    public function citizen()
+    {
+        return $this->belongsTo(citizens::class, 'citizen_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

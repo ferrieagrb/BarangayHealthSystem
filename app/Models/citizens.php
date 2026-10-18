@@ -10,6 +10,7 @@ use App\Models\HealthRecord;
 use App\Models\Vaccination;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\MaintenanceRecord;
 use App\Models\PurokSubgroup;
 
 class citizens extends Authenticatable
@@ -77,6 +78,11 @@ class citizens extends Authenticatable
     public function medications()
 {
     return $this->hasMany(MedicationRecord::class, 'citizen_id', 'id');
+}
+
+    public function maintenanceRecords()
+{
+    return $this->hasMany(MaintenanceRecord::class, 'citizen_id');
 }
 
 public function family()

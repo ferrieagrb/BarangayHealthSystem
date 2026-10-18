@@ -77,14 +77,11 @@
 
             <div class="cards-grid">
                 @forelse($recentEvents as $event)
-                    <article class="card">
-                        <div class="card-image-wrapper">
-                            <img src="{{ asset($event->image ?? 'images/mission.jpg') }}" alt="{{ $event->title }}" class="card-img">
+                    <article class="card event-list-item">
+                        <div class="card-body">
                             <span class="card-date-badge">
                                 <i class="fa-regular fa-calendar"></i> {{ \Carbon\Carbon::parse($event->start)->format('M d, Y') }}
                             </span>
-                        </div>
-                        <div class="card-body">
                             <h3 class="card-title">{{ $event->title }}</h3>
                             <p class="card-text">{{ \Illuminate\Support\Str::limit($event->description ?? 'No description available', 120) }}</p>
                         </div>
@@ -107,7 +104,10 @@
 
             <div class="announcements-list">
                 @forelse($recentAnnouncements as $announcement)
-                    <div class="announcement-item">
+                    <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-item announcement-link">
+                        @if($announcement->images->isNotEmpty())
+                            <img src="{{ asset('storage/' . $announcement->images->first()->path) }}" alt="{{ $announcement->title }}" class="announcement-image">
+                        @endif
                         <div class="announcement-icon">
                             <i class="fa-solid fa-bullhorn"></i>
                         </div>
@@ -120,7 +120,7 @@
                             </div>
                             <p class="announcement-text">{{ \Illuminate\Support\Str::limit($announcement->description, 150) }}</p>
                         </div>
-                    </div>
+                    </a>
                 @empty
                     <div class="empty-state">
                         <i class="fa-solid fa-inbox"></i>
