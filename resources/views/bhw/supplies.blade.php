@@ -214,19 +214,25 @@
 <div class="page-top">
     <div class="page-title">
         <h1>Health Supplies Inventory</h1>
+<<<<<<< HEAD
         <p>Monitor stock levels and manage supply packs.</p>
+=======
+        <p>Monitor stock levels and manage health supply inventory.</p>
+>>>>>>> main
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
+<<<<<<< HEAD
         <button type="button" id="openBatchReleaseModal" class="btn-primary" style="margin-left: 10px;">
             Schedule Batch Release
         </button>
+=======
+>>>>>>> main
     @endif
 </div>
-
 
 <!-- SUMMARY -->
 <div class="summary">
@@ -263,6 +269,7 @@
     </form>
 </div>
 
+<<<<<<< HEAD
 
 <!-- BATCH RELEASES -->
 <div class="table-container" style="margin-bottom: 24px;">
@@ -303,10 +310,12 @@
     </table>
 </div>
 
+=======
+>>>>>>> main
 <!-- TABLE -->
-<div class="table-container">
+<div class="table-container supplies-main-table-wrapper">
 
-    <table>
+    <table class="supplies-main-table">
 
         <thead>
             <tr>
@@ -343,7 +352,6 @@
                     $lastUpdated = $itemsOfKind->max('updated_at');
                 @endphp
 
-
                 <!-- =====================================================
                      MASTER ROW / DROPDOWN TRIGGER
                      ===================================================== -->
@@ -363,16 +371,13 @@
                         </small>
                     </td>
 
-
                     <td>
                         {{ $category }}
                     </td>
 
-
                     <td>
                         {{ $totalQty }}
                     </td>
-
 
                     <td>
 
@@ -397,7 +402,6 @@
                         @endif
 
                     </td>
-
 
                     <td>
 
@@ -425,13 +429,11 @@
 
                     </td>
 
-
                     <td>
                         {{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}
                     </td>
 
                 </tr>
-
 
                 <!-- =====================================================
                      EXPANDABLE CHILD ROW
@@ -450,7 +452,7 @@
                         <div class="pack-details-wrapper">
 
                             <!-- Inventory Packs Table -->
-                            <div>
+                            <div class="pack-table-wrapper">
                                 <table class="table pack-table">
 
                                     <thead>
@@ -463,10 +465,6 @@
 
                                             <th>
                                                 Serial #
-                                            </th>
-
-                                            <th>
-                                                Unit
                                             </th>
 
                                             <th>
@@ -493,7 +491,6 @@
 
                                     </thead>
 
-
                                     <tbody>
 
                                         @foreach ($itemsOfKind as $supply)
@@ -510,23 +507,15 @@
                                                         {{ $supply->item_number ?? 'N/A' }}
                                                     </td>
 
-
                                                     <td>
                                                         {{ $supply->serial_number ?? 'N/A' }}
                                                     </td>
-
-
-                                                    <td>
-                                                        {{ $supply->unit ?? 'N/A' }}
-                                                    </td>
-
 
                                                     <td>
                                                         <strong>
                                                             {{ $supply->quantity }}
                                                         </strong>
                                                     </td>
-
 
                                                     <td>
 
@@ -542,11 +531,9 @@
 
                                                     </td>
 
-
                                                     <td>
                                                         {{ $supply->supplier ?? 'N/A' }}
                                                     </td>
-
 
                                                     <td>
 
@@ -568,7 +555,6 @@
                                                         @endif
 
                                                     </td>
-
 
                                                     <td>
 
@@ -655,7 +641,6 @@
 
 </div>
 
-
 <!-- ================================================================
      MULTI-DEPOSIT MODAL
      ================================================================ -->
@@ -677,7 +662,6 @@
             class="deposit-item-name"
         ></p>
 
-
         <!-- DEPOSIT FORM -->
 
         <form
@@ -693,7 +677,6 @@
                 name="name"
                 id="depositNameInput"
             >
-
 
             <!-- DEPOSIT TABLE -->
 
@@ -721,10 +704,6 @@
                             </th>
 
                             <th>
-                                Unit
-                            </th>
-
-                            <th>
                                 Expiry Date
                             </th>
 
@@ -740,7 +719,6 @@
 
                     </thead>
 
-
                     <tbody>
 
                         <tr>
@@ -754,7 +732,6 @@
                                 >
                             </td>
 
-
                             <td>
                                 <input
                                     type="text"
@@ -762,7 +739,6 @@
                                     placeholder="Serial #"
                                 >
                             </td>
-
 
                             <td>
                                 <input
@@ -774,16 +750,6 @@
                                 >
                             </td>
 
-
-                            <td>
-                                <input
-                                    type="text"
-                                    name="packs[0][unit]"
-                                    placeholder="e.g. box"
-                                >
-                            </td>
-
-
                             <td>
                                 <input
                                     type="date"
@@ -792,7 +758,6 @@
                                 >
                             </td>
 
-
                             <td>
                                 <input
                                     type="text"
@@ -800,7 +765,6 @@
                                     placeholder="Supplier"
                                 >
                             </td>
-
 
                             <td>
 
@@ -823,18 +787,15 @@
 
             </div>
 
-
             <!-- ADD ROW -->
 
             <button
                 type="button"
                 id="addRowBtn"
-                class="btn-secondary"
-                style="margin-bottom: 15px;"
+                class="supplies-add-row-btn"
             >
                 + Add Another Pack Row
             </button>
-
 
             <!-- ACTION BUTTONS -->
 
@@ -862,7 +823,6 @@
 
 </div>
 
-
 <!-- ================================================================
      DEPOSIT CONFIRMATION MODAL
      ================================================================ -->
@@ -878,7 +838,6 @@
             Confirm Deposit
         </h2>
 
-
         <p>
             Are you sure you want to submit
             <strong id="confirmDepositCount">
@@ -890,7 +849,6 @@
             </strong>?
         </p>
 
-
         <div class="deposit-confirm-buttons">
 
             <button
@@ -900,7 +858,6 @@
             >
                 Cancel
             </button>
-
 
             <button
                 type="button"
@@ -915,7 +872,6 @@
     </div>
 
 </div>
-
 
 <!-- ================================================================
      SPECIFIC PACK WITHDRAW MODAL
@@ -933,12 +889,10 @@
             Withdraw Pack Quantity
         </h3>
 
-
         <p
             id="withdrawPackInfo"
             class="withdraw-pack-info"
         ></p>
-
 
         <form
             method="POST"
@@ -952,7 +906,6 @@
                 name="supply_id"
                 id="withdrawSupplyId"
             >
-
 
             <!-- QUANTITY -->
 
@@ -978,7 +931,6 @@
 
             </div>
 
-
             <!-- NOTES -->
 
             <div
@@ -1000,7 +952,6 @@
                 >
 
             </div>
-
 
             <!-- ACTIONS -->
 
@@ -1028,9 +979,7 @@
 
 </div>
 
-
 @endsection
-
 
 @section('scripts')
 
@@ -1079,7 +1028,6 @@
 
     }
 
-
     /* ============================================================
        PAGE JAVASCRIPT
        ============================================================ */
@@ -1110,7 +1058,6 @@
         const addRowBtn =
             document.getElementById("addRowBtn");
 
-
         /* ========================================================
            DEPOSIT CONFIRMATION MODAL
            ======================================================== */
@@ -1130,7 +1077,6 @@
         const confirmDepositSubmission =
             document.getElementById("confirmDepositSubmission");
 
-
         /* ========================================================
            WITHDRAW MODAL ELEMENTS
            ======================================================== */
@@ -1147,13 +1093,11 @@
         const withdrawQtyInput =
             document.getElementById("withdrawQtyInput");
 
-
         /* ========================================================
            ROW INDEX
            ======================================================== */
 
         let rowIndex = 1;
-
 
         /* ========================================================
            FIX:
@@ -1166,7 +1110,6 @@
         document.body.appendChild(depositModal);
         document.body.appendChild(depositConfirmModal);
         document.body.appendChild(withdrawModal);
-
 
         /* ========================================================
            ADD DYNAMIC DEPOSIT ROW
@@ -1208,14 +1151,6 @@
 
                 <td>
                     <input
-                        type="text"
-                        name="packs[${rowIndex}][unit]"
-                        placeholder="e.g. box"
-                    >
-                </td>
-
-                <td>
-                    <input
                         type="date"
                         name="packs[${rowIndex}][expiration_date]"
                         required
@@ -1250,7 +1185,6 @@
 
         });
 
-
         /* ========================================================
            REMOVE DEPOSIT ROW
            ======================================================== */
@@ -1268,7 +1202,6 @@
             }
 
         });
-
 
         /* ========================================================
            ENABLE / DISABLE REMOVE BUTTONS
@@ -1302,7 +1235,6 @@
 
         }
 
-
         /* ========================================================
            CLOSE ALL MODALS
            ======================================================== */
@@ -1316,7 +1248,6 @@
             depositConfirmModal.classList.remove("active");
 
         }
-
 
         /* ========================================================
            OPEN DEPOSIT MODAL
@@ -1346,7 +1277,6 @@
 
             });
 
-
         /* ========================================================
            DEPOSIT FORM SUBMISSION
            
@@ -1359,18 +1289,14 @@
 
             event.preventDefault();
 
-
             const itemName =
                 depositNameInput.value;
-
 
             const rows =
                 depositRowsTable.querySelectorAll("tr");
 
-
             const depositCount =
                 rows.length;
-
 
             /* Display number of deposits */
 
@@ -1379,19 +1305,16 @@
                     ? "1 deposit"
                     : depositCount + " deposits";
 
-
             /* Display item name */
 
             confirmDepositItem.textContent =
                 itemName;
-
 
             /* Show confirmation */
 
             depositConfirmModal.classList.add("active");
 
         });
-
 
         /* ========================================================
            CANCEL DEPOSIT CONFIRMATION
@@ -1408,7 +1331,6 @@
             }
         );
 
-
         /* ========================================================
            CONFIRM DEPOSIT
            ======================================================== */
@@ -1424,7 +1346,6 @@
                 depositModal.style.display =
                     "none";
 
-
                 /*
                  * Native form.submit() bypasses the submit
                  * event, so the confirmation will NOT appear
@@ -1435,7 +1356,6 @@
 
             }
         );
-
 
         /* ========================================================
            OPEN SPECIFIC PACK WITHDRAW MODAL
@@ -1451,7 +1371,6 @@
 
                         e.stopPropagation();
 
-
                         const supplyId =
                             this.dataset.id;
 
@@ -1461,22 +1380,17 @@
                         const itemCode =
                             this.dataset.code;
 
-
                         withdrawSupplyId.value =
                             supplyId;
-
 
                         withdrawPackInfo.innerText =
                             `Pack Code: ${itemCode} | Available Stock: ${maxQty}`;
 
-
                         withdrawQtyInput.max =
                             maxQty;
 
-
                         withdrawQtyInput.value =
                             1;
-
 
                         withdrawModal.style.display =
                             "flex";
@@ -1485,7 +1399,6 @@
                 );
 
             });
-
 
         /* ========================================================
            CLOSE BUTTONS
@@ -1503,7 +1416,6 @@
                 );
 
             });
-
 
         /* ========================================================
            CLICK OUTSIDE MODAL
@@ -1535,7 +1447,6 @@
             }
         );
 
-
         /* ========================================================
            ESC KEY
            ======================================================== */
@@ -1557,6 +1468,7 @@
 
 </script>
 
+<<<<<<< HEAD
 <div id="batchReleaseModal" class="batch-release-modal" role="dialog" aria-modal="true" aria-labelledby="batchReleaseTitle" aria-hidden="true">
     <div class="batch-release-dialog">
         <div class="batch-release-header">
@@ -1804,4 +1716,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+=======
+>>>>>>> main
 @endsection

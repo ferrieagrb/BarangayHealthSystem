@@ -21,6 +21,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
 
+    <style>
+        /* CSS para sa pantay at maayos na alignment ng sidebar icons at text */
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .sidebar ul li a i {
+            font-size: 20px;
+            min-width: 25px;
+            text-align: center;
+        }
+    </style>
+
     @yield('CSSown')
 </head>
 <body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
@@ -42,23 +57,18 @@
         const loader = document.getElementById('global-loader');
         if (!loader) return;
 
-        // Function to show loader
         window.showLoader = function() {
             loader.classList.add('active');
         };
 
-        // Function to hide loader
         window.hideLoader = function() {
             loader.classList.remove('active');
         };
 
-        // Trigger on any form submission across the site
         document.addEventListener('submit', function(e) {
-            // Optional: check if form is valid before showing loader
             showLoader();
         });
 
-        // Trigger on regular link clicks (excluding anchors or target="_blank")
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             if (link && link.href && 
@@ -70,7 +80,6 @@
             }
         });
 
-        // Hide loader when page finishes fully loading or comes from cache (back button)
         window.addEventListener('pageshow', function(event) {
             hideLoader();
         });
@@ -102,7 +111,7 @@
 
             <li>
                 <a href="/citizenlist">
-                    <i class="bx bx-group"></i>
+                    <i class="bx bx-user"></i>
                     <span class="nav-item">Citizen</span>
                 </a>
             </li>
@@ -116,14 +125,14 @@
 
             <li>
                 <a href="/healthrecord">
-                    <i class="bx bx-heart"></i>
+                    <i class="bx bx-first-aid"></i>
                     <span class="nav-item">Health Records</span>
                 </a>
             </li>
 
             <li>
                 <a href="/supplies">
-                    <i class="bx bx-box"></i>
+                    <i class="bx bx-package"></i>
                     <span class="nav-item">Supplies</span>
                 </a>
             </li>
@@ -146,14 +155,14 @@
 
             <li>
                 <a href="/referrals">
-                    <i class="bx bx-heart"></i>
+                    <i class="bx bx-export"></i>
                     <span class="nav-item">Referrals</span>
                 </a>
             </li>
 
             <li>
                 <a href="/announcements">
-                    <i class="bx bx-megaphone"></i>
+                    <i class="bx bxs-megaphone"></i>
                     <span class="nav-item">Announcements</span>
                 </a>
             </li>

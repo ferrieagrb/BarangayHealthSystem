@@ -428,7 +428,7 @@
 
 
         {{-- RIGHT: EXISTING ELECTRONIC HEALTH RECORD --}}
-        <section class="min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
+        <section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
 
             <div class="mb-5 border-b-2 border-gray-800 pb-3">
                 <h2 class="text-2xl font-black uppercase text-gray-900">
@@ -587,9 +587,15 @@
         margin: 10mm;
     }
 
-    body {
-        background: white !important;
-    }
+    html, body, .dashboard, .main-content { background: #fff !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+    body * { visibility: hidden !important; }
+    .bheams-id-card, .bheams-id-card *, .print-health-record, .print-health-record * { visibility: visible !important; }
+    .top-bar, .sidebar, .sidebar-backdrop, .announcements-page, .print\:hidden { display: none !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .mx-auto.max-w-7xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .bheams-id-card { width: 100% !important; max-width: 100% !important; margin: 0 0 8mm !important; box-shadow: none !important; }
+    .print-health-record { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; break-inside: avoid; }
+    .print-health-record .mt-6 { display: none !important; }
 
     .print\:hidden {
         display: none !important;

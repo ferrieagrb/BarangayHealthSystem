@@ -46,6 +46,11 @@ use App\Http\Controllers\UserPreferenceController;
 |--------------------------------------------------------------------------
 */
 
+// Public QR landing page. It never exposes private medical records.
+Route::get('/health-id/{token}', [QRScannerController::class, 'publicHealthId'])
+    ->whereUuid('token')
+    ->name('health-id.public');
+
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
     $recentAnnouncements = Announcement::with('images')
@@ -112,7 +117,23 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        return view('citizen.dashboard');
+        $announcements = Announcement::latest()->take(5)->get();
+        $citizen = null;
+        if ($user->citizen_id) {
+            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+                ->where('id', $user->citizen_id)->first();
+        }
+
+        $qrImage = $citizen
+            ? app(\App\Http\Controllers\CitizenController::class)
+                ->makeCitizenQrImage($citizen)
+            : null;
+
+        return view('citizen.dashboard', compact(
+            'announcements',
+            'citizen',
+            'qrImage'
+        ));
     })->name('dashboard');
 
     // Citizen Supplies Overview
@@ -155,6 +176,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
     //  STATIC ROUTE PLACED SAFELY AT THE TOP OF THE PREFIX GROUP
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
+    Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
 
 });
@@ -222,9 +244,16 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::post('/vehicle-logs', [VehicleLogController::class, 'store'])->name('vehicle.logs.store');
 
-    // QR Scanner
-    //Route::get('/qr-scanner', fn () => app(QRScannerController::class)->index())->name('qr.scanner');
-    Route::get('/citizen/qr/{token}',[CitizenController::class, 'showElectronicCardByToken'])->name('bhw.citizen.qr');
+    // QR Scanner (BHW-only routes; protected by this group's auth + role middleware).
+    Route::get('/qr-scanner', [QRScannerController::class, 'index'])->name('qr.scanner');
+    Route::get('/qr-scanner/lookup/{token}', [QRScannerController::class, 'lookup'])
+        ->whereUuid('token')
+        ->name('qr.scanner.lookup');
+
+    // Legacy authenticated route retained for existing QR links/bookmarks.
+    Route::get('/citizen/qr/{token}', [CitizenController::class, 'showElectronicCardByToken'])
+        ->whereUuid('token')
+        ->name('bhw.citizen.qr');
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
@@ -351,4 +380,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/password', [UserPreferenceController::class, 'updatePassword'])->name('user.password.update');
+});
+
+// Standard signed email-verification flow for authenticated accounts.
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route(auth()->user()->isCitizen() ? 'citizen.settings' : 'settings')
+            ->with('success', 'Your email address has been verified.');
+    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        if ($request->user()->hasVerifiedEmail()) {
+            return back()->with('success', 'Your email address is already verified.');
+        }
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('success', 'A verification link has been sent to your email address.');
+    })->middleware('throttle:6,1')->name('verification.send');
 });

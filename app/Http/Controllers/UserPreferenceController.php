@@ -27,6 +27,10 @@ class UserPreferenceController extends Controller
     public function edit()
     {
         $user = auth()->user();
+        if ($user->isCitizen()) {
+            return view('citizen.settings', compact('user'));
+        }
+
         return view('settings', compact('user'));
     }
 
