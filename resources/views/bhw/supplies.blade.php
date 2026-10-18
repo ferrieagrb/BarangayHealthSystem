@@ -40,6 +40,9 @@
 
 </div>
 
+
+
+
 <!-- TOOLBAR -->
 <div class="toolbar">
     <form method="GET" action="{{ url('/supplies') }}">

@@ -102,6 +102,40 @@ class CitizenController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | STATUS / MODAL FILTERS
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $query->where('Citizen_Sex', $request->filter_sex);
+        }
+
+        if ($request->filled('filter_housing')) {
+            $housing = $request->filter_housing;
+            $housingValues = is_array($housing) ? $housing : [$housing];
+            $query->whereIn('Citizen_HousingStatus', $housingValues);
+        }
+
+        if ($request->filled('filter_health')) {
+            $health = $request->filter_health;
+            $healthValues = is_array($health) ? $health : [$health];
+
+            if (in_array('pregnant', $healthValues)) {
+                $query->where('Citizen_Pregnant', 1);
+            }
+            if (in_array('in_pills', $healthValues)) {
+                $query->where('Citizen_InPills', 1);
+            }
+        }
+
+        if (!$request->boolean('filter_deceased')) {
+            $query->where(function ($q) {
+                $q->whereNull('Citizen_IsDeceased')
+                  ->orWhere('Citizen_IsDeceased', 0);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | SEARCH
         |--------------------------------------------------------------------------
         */
@@ -202,6 +236,11 @@ class CitizenController extends Controller
             'subgroup' => $request->subgroup,
             'age' => $request->age,
             'age_group' => $request->age_group,
+            'sex' => $request->sex,
+            'housing_status' => $request->housing_status,
+            'pregnant' => $request->pregnant,
+            'in_pills' => $request->in_pills,
+            'include_deceased' => $request->include_deceased,
         ]);
 
         /*
@@ -240,6 +279,7 @@ class CitizenController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'Citizen_Sex' => 'required|string|max:255',
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
@@ -259,6 +299,7 @@ class CitizenController extends Controller
                     'Citizen_Purok' => $validated['Citizen_Purok'],
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
+                    'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
                 ]);
 
                 $password = $request->filled('password') 
@@ -424,6 +465,13 @@ class CitizenController extends Controller
             'Citizen_ContactNo' => 'nullable|string|max:50',
             'Citizen_Purok' => 'required|string|max:255',
             'family_id' => 'nullable|exists:families,id',
+            'Citizen_Height' => 'nullable|numeric|min:0',
+            'Citizen_Weight' => 'nullable|numeric|min:0',
+            'Citizen_Sex' => 'nullable|string|in:Male,Female',
+            'Citizen_HousingStatus' => 'nullable|string|max:255',
+            'Citizen_Pregnant' => 'nullable|boolean',
+            'Citizen_InPills' => 'nullable|boolean',
+            'Citizen_IsDeceased' => 'nullable|boolean',
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
