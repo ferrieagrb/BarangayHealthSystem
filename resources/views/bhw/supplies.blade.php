@@ -9,24 +9,16 @@
 <!-- HEADER -->
 <div class="page-top">
     <div class="page-title">
-        <h1>Health Supplies Inventory & Requests</h1>
-        <p>Monitor stock levels, manage packs, and review citizen supply requests.</p>
+        <h1>Health Supplies Inventory</h1>
+        <p>Monitor stock levels and manage health supply inventory.</p>
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
-        <button type="button" class="btn-primary" id="openReservationModal" style="background: #10b981; margin-left: 10px;">
-            + Direct Citizen Reservation
-        </button>
-
-        <button type="button" class="btn-primary" id="openBatchReleaseModal" style="background: #2563eb; margin-left: 10px;">
-        📦 Batch Release Supplies
-    </button>
     @endif
 </div>
-
 
 <!-- SUMMARY -->
 <div class="summary">
@@ -63,11 +55,10 @@
     </form>
 </div>
 
-
 <!-- TABLE -->
-<div class="table-container">
+<div class="table-container supplies-main-table-wrapper">
 
-    <table>
+    <table class="supplies-main-table">
 
         <thead>
             <tr>
@@ -104,7 +95,6 @@
                     $lastUpdated = $itemsOfKind->max('updated_at');
                 @endphp
 
-
                 <!-- =====================================================
                      MASTER ROW / DROPDOWN TRIGGER
                      ===================================================== -->
@@ -124,16 +114,13 @@
                         </small>
                     </td>
 
-
                     <td>
                         {{ $category }}
                     </td>
 
-
                     <td>
                         {{ $totalQty }}
                     </td>
-
 
                     <td>
 
@@ -158,7 +145,6 @@
                         @endif
 
                     </td>
-
 
                     <td>
 
@@ -186,13 +172,11 @@
 
                     </td>
 
-
                     <td>
                         {{ \Carbon\Carbon::parse($lastUpdated)->format('M d, Y - h:i A') }}
                     </td>
 
                 </tr>
-
 
                 <!-- =====================================================
                      EXPANDABLE CHILD ROW
@@ -211,7 +195,7 @@
                         <div class="pack-details-wrapper">
 
                             <!-- Inventory Packs Table -->
-                            <div>
+                            <div class="pack-table-wrapper">
                                 <table class="table pack-table">
 
                                     <thead>
@@ -224,10 +208,6 @@
 
                                             <th>
                                                 Serial #
-                                            </th>
-
-                                            <th>
-                                                Unit
                                             </th>
 
                                             <th>
@@ -254,7 +234,6 @@
 
                                     </thead>
 
-
                                     <tbody>
 
                                         @foreach ($itemsOfKind as $supply)
@@ -271,23 +250,15 @@
                                                         {{ $supply->item_number ?? 'N/A' }}
                                                     </td>
 
-
                                                     <td>
                                                         {{ $supply->serial_number ?? 'N/A' }}
                                                     </td>
-
-
-                                                    <td>
-                                                        {{ $supply->unit ?? 'N/A' }}
-                                                    </td>
-
 
                                                     <td>
                                                         <strong>
                                                             {{ $supply->quantity }}
                                                         </strong>
                                                     </td>
-
 
                                                     <td>
 
@@ -303,11 +274,9 @@
 
                                                     </td>
 
-
                                                     <td>
                                                         {{ $supply->supplier ?? 'N/A' }}
                                                     </td>
-
 
                                                     <td>
 
@@ -329,7 +298,6 @@
                                                         @endif
 
                                                     </td>
-
 
                                                     <td>
 
@@ -402,63 +370,6 @@
 
                             </div>
 
-                            <!-- Citizens with Direct Reservations Sub-Table -->
-                            @php
-                                $itemIds = $itemsOfKind->pluck('id');
-                                $reservationsForThisItem = collect();
-                                if(isset($bhwReservations)) {
-                                    foreach($itemIds as $id) {
-                                        if(isset($bhwReservations[$id])) {
-                                            $reservationsForThisItem = $reservationsForThisItem->merge($bhwReservations[$id]);
-                                        }
-                                    }
-                                }
-                            @endphp
-
-                            <div style="padding: 10px 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
-                                <h4 style="font-size: 13px; color: #1f2937; margin-bottom: 8px;">👤 Citizens with Direct Reservations</h4>
-                                <table class="table" style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; border: 1px solid #e5e7eb; border-radius: 4px;">
-                                    <thead>
-                                        <tr style="background: #f3f4f6; text-align: left;">
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Citizen Name</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Reserved Qty</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Priority</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">BHW Notes</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Date Reserved</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($reservationsForThisItem as $res)
-                                            <tr style="border-bottom: 1px solid #f9f9f9;">
-                                                <td style="padding: 8px; font-weight: 500;">
-                                                    {{ $res->citizen->Citizen_FName ?? 'N/A' }} {{ $res->citizen->Citizen_LName ?? '' }}
-                                                </td>
-                                                <td style="padding: 8px; text-align: center;">
-                                                    <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
-                                                        {{ $res->quantity }}
-                                                    </span>
-                                                </td>
-                                                <td style="padding: 8px; text-align: center; text-transform: capitalize;">
-                                                    {{ $res->priority }}
-                                                </td>
-                                                <td style="padding: 8px; color: #555;">
-                                                    {{ $res->bhw_remarks }}
-                                                </td>
-                                                <td style="padding: 8px; text-align: center; color: #6b7280; font-size: 12px;">
-                                                    {{ $res->created_at->format('M d, Y h:i A') }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" style="padding: 10px; text-align: center; color: #6b7280;">
-                                                    No active BHW citizen reservations for this item.
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
                         </div>
 
                     </td>
@@ -472,7 +383,6 @@
     </table>
 
 </div>
-
 
 <!-- ================================================================
      MULTI-DEPOSIT MODAL
@@ -495,7 +405,6 @@
             class="deposit-item-name"
         ></p>
 
-
         <!-- DEPOSIT FORM -->
 
         <form
@@ -511,7 +420,6 @@
                 name="name"
                 id="depositNameInput"
             >
-
 
             <!-- DEPOSIT TABLE -->
 
@@ -539,10 +447,6 @@
                             </th>
 
                             <th>
-                                Unit
-                            </th>
-
-                            <th>
                                 Expiry Date
                             </th>
 
@@ -558,7 +462,6 @@
 
                     </thead>
 
-
                     <tbody>
 
                         <tr>
@@ -572,7 +475,6 @@
                                 >
                             </td>
 
-
                             <td>
                                 <input
                                     type="text"
@@ -580,7 +482,6 @@
                                     placeholder="Serial #"
                                 >
                             </td>
-
 
                             <td>
                                 <input
@@ -592,16 +493,6 @@
                                 >
                             </td>
 
-
-                            <td>
-                                <input
-                                    type="text"
-                                    name="packs[0][unit]"
-                                    placeholder="e.g. box"
-                                >
-                            </td>
-
-
                             <td>
                                 <input
                                     type="date"
@@ -610,7 +501,6 @@
                                 >
                             </td>
 
-
                             <td>
                                 <input
                                     type="text"
@@ -618,7 +508,6 @@
                                     placeholder="Supplier"
                                 >
                             </td>
-
 
                             <td>
 
@@ -641,18 +530,15 @@
 
             </div>
 
-
             <!-- ADD ROW -->
 
             <button
                 type="button"
                 id="addRowBtn"
-                class="btn-secondary"
-                style="margin-bottom: 15px;"
+                class="supplies-add-row-btn"
             >
                 + Add Another Pack Row
             </button>
-
 
             <!-- ACTION BUTTONS -->
 
@@ -680,7 +566,6 @@
 
 </div>
 
-
 <!-- ================================================================
      DEPOSIT CONFIRMATION MODAL
      ================================================================ -->
@@ -696,7 +581,6 @@
             Confirm Deposit
         </h2>
 
-
         <p>
             Are you sure you want to submit
             <strong id="confirmDepositCount">
@@ -708,7 +592,6 @@
             </strong>?
         </p>
 
-
         <div class="deposit-confirm-buttons">
 
             <button
@@ -718,7 +601,6 @@
             >
                 Cancel
             </button>
-
 
             <button
                 type="button"
@@ -733,7 +615,6 @@
     </div>
 
 </div>
-
 
 <!-- ================================================================
      SPECIFIC PACK WITHDRAW MODAL
@@ -751,12 +632,10 @@
             Withdraw Pack Quantity
         </h3>
 
-
         <p
             id="withdrawPackInfo"
             class="withdraw-pack-info"
         ></p>
-
 
         <form
             method="POST"
@@ -770,7 +649,6 @@
                 name="supply_id"
                 id="withdrawSupplyId"
             >
-
 
             <!-- QUANTITY -->
 
@@ -796,7 +674,6 @@
 
             </div>
 
-
             <!-- NOTES -->
 
             <div
@@ -818,7 +695,6 @@
                 >
 
             </div>
-
 
             <!-- ACTIONS -->
 
@@ -846,9 +722,7 @@
 
 </div>
 
-
 @endsection
-
 
 @section('scripts')
 
@@ -876,7 +750,6 @@
         }
 
     }
-
 
     /* ============================================================
        PAGE JAVASCRIPT
@@ -908,7 +781,6 @@
         const addRowBtn =
             document.getElementById("addRowBtn");
 
-
         /* ========================================================
            DEPOSIT CONFIRMATION MODAL
            ======================================================== */
@@ -928,7 +800,6 @@
         const confirmDepositSubmission =
             document.getElementById("confirmDepositSubmission");
 
-
         /* ========================================================
            WITHDRAW MODAL ELEMENTS
            ======================================================== */
@@ -945,13 +816,11 @@
         const withdrawQtyInput =
             document.getElementById("withdrawQtyInput");
 
-
         /* ========================================================
            ROW INDEX
            ======================================================== */
 
         let rowIndex = 1;
-
 
         /* ========================================================
            FIX:
@@ -964,7 +833,6 @@
         document.body.appendChild(depositModal);
         document.body.appendChild(depositConfirmModal);
         document.body.appendChild(withdrawModal);
-
 
         /* ========================================================
            ADD DYNAMIC DEPOSIT ROW
@@ -1006,14 +874,6 @@
 
                 <td>
                     <input
-                        type="text"
-                        name="packs[${rowIndex}][unit]"
-                        placeholder="e.g. box"
-                    >
-                </td>
-
-                <td>
-                    <input
                         type="date"
                         name="packs[${rowIndex}][expiration_date]"
                         required
@@ -1048,7 +908,6 @@
 
         });
 
-
         /* ========================================================
            REMOVE DEPOSIT ROW
            ======================================================== */
@@ -1066,7 +925,6 @@
             }
 
         });
-
 
         /* ========================================================
            ENABLE / DISABLE REMOVE BUTTONS
@@ -1100,7 +958,6 @@
 
         }
 
-
         /* ========================================================
            CLOSE ALL MODALS
            ======================================================== */
@@ -1114,7 +971,6 @@
             depositConfirmModal.classList.remove("active");
 
         }
-
 
         /* ========================================================
            OPEN DEPOSIT MODAL
@@ -1144,7 +1000,6 @@
 
             });
 
-
         /* ========================================================
            DEPOSIT FORM SUBMISSION
            
@@ -1157,18 +1012,14 @@
 
             event.preventDefault();
 
-
             const itemName =
                 depositNameInput.value;
-
 
             const rows =
                 depositRowsTable.querySelectorAll("tr");
 
-
             const depositCount =
                 rows.length;
-
 
             /* Display number of deposits */
 
@@ -1177,19 +1028,16 @@
                     ? "1 deposit"
                     : depositCount + " deposits";
 
-
             /* Display item name */
 
             confirmDepositItem.textContent =
                 itemName;
-
 
             /* Show confirmation */
 
             depositConfirmModal.classList.add("active");
 
         });
-
 
         /* ========================================================
            CANCEL DEPOSIT CONFIRMATION
@@ -1206,7 +1054,6 @@
             }
         );
 
-
         /* ========================================================
            CONFIRM DEPOSIT
            ======================================================== */
@@ -1222,7 +1069,6 @@
                 depositModal.style.display =
                     "none";
 
-
                 /*
                  * Native form.submit() bypasses the submit
                  * event, so the confirmation will NOT appear
@@ -1233,7 +1079,6 @@
 
             }
         );
-
 
         /* ========================================================
            OPEN SPECIFIC PACK WITHDRAW MODAL
@@ -1249,7 +1094,6 @@
 
                         e.stopPropagation();
 
-
                         const supplyId =
                             this.dataset.id;
 
@@ -1259,22 +1103,17 @@
                         const itemCode =
                             this.dataset.code;
 
-
                         withdrawSupplyId.value =
                             supplyId;
-
 
                         withdrawPackInfo.innerText =
                             `Pack Code: ${itemCode} | Available Stock: ${maxQty}`;
 
-
                         withdrawQtyInput.max =
                             maxQty;
 
-
                         withdrawQtyInput.value =
                             1;
-
 
                         withdrawModal.style.display =
                             "flex";
@@ -1283,7 +1122,6 @@
                 );
 
             });
-
 
         /* ========================================================
            CLOSE BUTTONS
@@ -1301,7 +1139,6 @@
                 );
 
             });
-
 
         /* ========================================================
            CLICK OUTSIDE MODAL
@@ -1333,7 +1170,6 @@
             }
         );
 
-
         /* ========================================================
            ESC KEY
            ======================================================== */
@@ -1353,190 +1189,6 @@
 
     });
 
-</script>
-
-<!-- ================================================================
-     DIRECT BHW RESERVATION MODAL
-     ================================================================ -->
-<div id="reservationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
-    <div style="background: white; padding: 25px; border-radius: 8px; width: 450px; max-width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Direct Citizen Supply Reservation</h3>
-
-        <form action="{{ route('bhw.supply.reserve') }}" method="POST">
-            @csrf
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Citizen:</label>
-                <select name="citizen_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="">-- Choose Citizen --</option>
-                    @foreach(\App\Models\citizens::all() as $citizen)
-                        <option value="{{ $citizen->id }}">{{ $citizen->Citizen_FName ?? '' }} {{ $citizen->Citizen_LName ?? '' }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Supply Item:</label>
-                <select name="supply_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="">-- Choose Supply --</option>
-                    @foreach($supplies->where('quantity', '>', 0) as $sup)
-                        <option value="{{ $sup->id }}">{{ $sup->name }} (Available: {{$sup->quantity }})</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Quantity to Reserve:</label>
-                <input type="number" name="quantity" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Priority Level:</label>
-                <select name="priority" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">BHW Remarks / Notes:</label>
-                <textarea name="bhw_remarks" placeholder="Optional notes regarding this reservation..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="closeReservationModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
-                <button type="submit" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Reservation</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const resModal = document.getElementById("reservationModal");
-        const openBtn = document.getElementById("openReservationModal");
-        const closeBtn = document.getElementById("closeReservationModalBtn");
-
-        if(openBtn) {
-            openBtn.addEventListener("click", () => { resModal.style.display = "flex"; });
-        }
-        if(closeBtn) {
-            closeBtn.addEventListener("click", () => { resModal.style.display = "none"; });
-        }
-        window.addEventListener("click", (e) => {
-            if(e.target === resModal) { resModal.style.display = "none"; }
-        });
-    });
-</script>
-
-<!-- Batch Release Modal Overlay -->
-<div id="batchReleaseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1050;">
-    <div style="background: white; padding: 25px; border-radius: 8px; width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Batch Release Supplies to Reserved Citizens</h3>
-
-        <form action="{{ route('bhw.supplies.batch.release') }}" method="POST">
-            @csrf
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Approved Reservations to Release:</label>
-                
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 4px; padding: 10px;">
-                    @php
-                        // Fetch all currently approved requests across items
-                        $approvedReservations = \App\Models\SupplyRequest::with(['citizen', 'supply'])
-                            ->where('status', 'approved')
-                            ->get();
-                    @endphp
-
-                    @forelse($approvedReservations as $res)
-                        <label style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; cursor: pointer;">
-                            <input type="checkbox" name="supply_request_ids[]" value="{{ $res->id }}" data-supply="{{ $res->supply->name ?? 'Item' }}" data-qty="{{ $res->quantity }}" data-citizen="{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}" class="release-checkbox">
-                            <div>
-                                <strong>{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}</strong> — 
-                                <span style="color: #0369a1;">{{ $res->quantity }}x {{ $res->supply->name ?? 'N/A' }}</span>
-                                <br><small style="color: #6b7280;">Priority: {{ ucfirst($res->priority) }} | Reserved on: {{ $res->created_at->format('M d, Y') }}</small>
-                            </div>
-                        </label>
-                    @empty
-                        <p style="text-align: center; color: #6b7280; font-size: 13px; margin: 10px 0;">No approved citizen reservations available for release.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- Dynamic Preview Box when items are checked -->
-            <div id="releasePreviewBox" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; color: #166534;">
-                <strong>Selected Summary:</strong> <span id="releasePreviewText"></span>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label for="batch_title" style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Batch Release Title / Event Name:</label>
-                <input 
-                    type="text" 
-                    name="batch_title" 
-                    id="batch_title" 
-                    class="form-control" 
-                    placeholder="e.g., Q3 Barangay Health Supply Distribution" 
-                    required
-                    style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;"
-                >
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Scheduled Release Date (Reflected on Calendar):</label>
-                <input type="date" name="release_date" value="{{ date('Y-m-d') }}" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Release Notes / Remarks:</label>
-                <textarea name="notes" placeholder="Optional notes for distribution event..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="closeBatchReleaseModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
-                <button type="submit" style="padding: 8px 14px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Batch Release & Log Schedule</button>
-            </div>
-        </form>
-    </div>
-</div>  
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const modal = document.getElementById("batchReleaseModal");
-        const openBtn = document.getElementById("openBatchReleaseModal");
-        const closeBtn = document.getElementById("closeBatchReleaseModalBtn");
-        const checkboxes = document.querySelectorAll(".release-checkbox");
-        const previewBox = document.getElementById("releasePreviewBox");
-        const previewText = document.getElementById("releasePreviewText");
-
-        if(openBtn) {
-            openBtn.addEventListener("click", () => { modal.style.display = "flex"; });
-        }
-        if(closeBtn) {
-            closeBtn.addEventListener("click", () => { modal.style.display = "none"; });
-        }
-        window.addEventListener("click", (e) => {
-            if(e.target === modal) { modal.style.display = "none"; }
-        });
-
-        // Update preview dynamically when checkboxes are toggled
-        checkboxes.forEach(chk => {
-            chk.addEventListener("change", function() {
-                let selected = [];
-                checkboxes.forEach(c => {
-                    if(c.checked) {
-                        selected.push(`${c.dataset.qty}x ${c.dataset.supply} (${c.dataset.citizen})`);
-                    }
-                });
-
-                if(selected.length > 0) {
-                    previewBox.style.display = "block";
-                    previewText.innerText = selected.join(", ");
-                } else {
-                    previewBox.style.display = "none";
-                }
-            });
-        });
-    });
 </script>
 
 @endsection
