@@ -327,10 +327,6 @@ class CitizenController extends Controller
                 ->withInput();
         }
 
-            if (Auth::user()->role === 'bhw' && (int) $subgroup->user_id !== (int) Auth::id()) {
-                abort(403, 'You can only assign citizens to your own Purok subgroups.');
-            }
-
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
         $photoPath = $request->hasFile('photo')
