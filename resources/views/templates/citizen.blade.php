@@ -15,6 +15,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
         @yield('CSSown')<style>
+html { scroll-behavior: smooth; scroll-padding-top: 165px; }
+.c-header-section-nav a { font-size: 14px; min-height: 44px; }
+.c-header-section-nav { gap: 7px; }
+@media (max-width: 600px) { html { scroll-padding-top: 150px; } .c-header-section-nav a { padding: 0 12px; font-size: 13px; } }
 /* Citizen-only layout: full-width content and an off-canvas menu */ html, body {
     width:100%;
     min-width:0;
@@ -431,9 +435,7 @@ body {
         font-size: 13px;
     }
 
-    .top-bar .citizen-menu-button span {
-        display: inline;
-    }
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
 
     .top-bar .btn-logout {
         min-height: 40px;
@@ -473,9 +475,7 @@ body {
         font-size: 20px;
     }
 
-    .top-bar .citizen-menu-button span {
-        display: inline;
-    }
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
 
     .c-settings-link {
         font-size: 11px;
@@ -572,9 +572,7 @@ body,
         font-size: 19px;
     }
 
-    .top-bar .citizen-menu-button span {
-        display: inline;
-    }
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
 
     .c-settings-link {
         padding: 6px 2px;
@@ -817,7 +815,7 @@ body,
     <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
         <ul style="list-style: none; padding: 0; margin: 0;">
             <li>
-                <a href="/settings">
+                <a href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">
                     <i class="bx bx-cog">
                     </i>
                     <span class="nav-item">Settings</span>
@@ -847,11 +845,7 @@ body,
         @endif
 
         <div class="c-header-actions">
-            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-label="Open navigation menu" aria-controls="citizenSidebar" aria-expanded="false">
-                <i class="bx bx-menu" aria-hidden="true"></i>
-                <span>Menu</span>
-            </button>
-            <a class="c-settings-link" href="{{ route('settings') }}">Settings</a>
+            <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="btn-logout">Logout</button>

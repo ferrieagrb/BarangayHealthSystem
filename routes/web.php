@@ -171,6 +171,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
     //  STATIC ROUTE PLACED SAFELY AT THE TOP OF THE PREFIX GROUP
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
+    Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
 
     Route::post('/supplies/request', [CitizenSupplyController::class, 'storeRequest'])->name('supplies.request');
@@ -418,4 +419,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/password', [UserPreferenceController::class, 'updatePassword'])->name('user.password.update');
+});
+
+// Standard signed email-verification flow for authenticated accounts.
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route(auth()->user()->isCitizen() ? 'citizen.settings' : 'settings')
+            ->with('success', 'Your email address has been verified.');
+    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        if ($request->user()->hasVerifiedEmail()) {
+            return back()->with('success', 'Your email address is already verified.');
+        }
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('success', 'A verification link has been sent to your email address.');
+    })->middleware('throttle:6,1')->name('verification.send');
 });
