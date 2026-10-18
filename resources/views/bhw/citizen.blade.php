@@ -401,7 +401,7 @@
         @endphp
 
         @if(count($activeFilters) > 0)
-            <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
+            <p id="active-citizen-filters" style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
                 (Showing {{ implode(', ', $activeFilters) }})
             </p>
         @endif
@@ -1280,6 +1280,11 @@ document.addEventListener('DOMContentLoaded', function () {
             requestController = new AbortController();
             const params = new URLSearchParams(new FormData(searchForm));
             params.delete('page');
+            if (!searchInput.value.trim()) {
+                params.delete('search');
+                const activeFilters = document.getElementById('active-citizen-filters');
+                if (activeFilters) activeFilters.remove();
+            }
             results.setAttribute('aria-busy', 'true');
 
             try {
