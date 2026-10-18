@@ -321,6 +321,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const defaultCenter = { lat: 14.0668, lng: 120.8531 };
     let map;
     let marker;
+    let MapConstructor;
+    let MarkerConstructor;
     let activeForm;
 
     function getForm(id) {
@@ -333,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
         map.setZoom(hasSavedLocation ? 17 : 15);
 
         if (!marker) {
-            marker = new google.maps.Marker({ map, position, draggable: true });
+            marker = new MarkerConstructor({ map, position, draggable: true });
             marker.addListener('dragend', function (event) {
                 updateCoordinates(event.latLng.lat(), event.latLng.lng());
             });
@@ -375,13 +377,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function initializeMap() {
-        if (!mapElement || typeof google === 'undefined' || !google.maps) {
+    async function initializeMap() {
+        if (!mapElement || typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
             window.setTimeout(initializeMap, 250);
             return;
         }
 
-        map = new google.maps.Map(mapElement, {
+        const mapsLibrary = await google.maps.importLibrary('maps');
+        const markerLibrary = await google.maps.importLibrary('marker');
+        MapConstructor = mapsLibrary.Map;
+        MarkerConstructor = markerLibrary.Marker;
+
+        map = new MapConstructor(mapElement, {
             center: defaultCenter,
             zoom: 15,
             mapTypeId: 'roadmap',
