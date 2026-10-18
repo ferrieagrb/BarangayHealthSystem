@@ -1,66 +1,156 @@
 /* ================================================================
-   SUPPLIES ACCORDION / DROPDOWN
+   SUPPLIES INVENTORY TABLE + ACCORDION
+   Scoped styles prevent conflicts with global layout/table CSS.
    ================================================================ */
 
-.item-toggle-row {
-    cursor: pointer;
-    background-color: #fafafa;
+.supplies-main-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+}
+
+.supplies-main-table {
+    width: 100%;
+    min-width: 1000px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.supplies-main-table th,
+.supplies-main-table td {
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+.supplies-main-table thead th {
+    padding: 16px 18px;
+    text-align: left;
+    white-space: normal;
+    background: #f1f5f9;
+    border-bottom: 1px solid #dbe3ee;
     font-weight: 600;
 }
 
-.item-toggle-row:hover {
-    background-color: #f1f1f1;
+.supplies-main-table tbody > tr.item-toggle-row > td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #dbe3ee;
+    background: #fff;
 }
 
-
-/* Smooth Accordion Animation */
-
-.pack-details-row {
-    background-color: #ffffff;
+.supplies-main-table tbody > tr.item-toggle-row:hover > td {
+    background: #f8fafc;
 }
 
-.pack-details-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-in-out;
+/* Keep all six parent columns aligned. */
+.supplies-main-table thead th:nth-child(1) { width: 24%; }
+.supplies-main-table thead th:nth-child(2) { width: 11%; }
+.supplies-main-table thead th:nth-child(3) { width: 12%; }
+.supplies-main-table thead th:nth-child(4) { width: 12%; }
+.supplies-main-table thead th:nth-child(5) { width: 18%; }
+.supplies-main-table thead th:nth-child(6) { width: 23%; }
+
+.item-toggle-row {
+    cursor: pointer;
+    font-weight: 500;
 }
 
-.pack-details-wrapper > div {
-    overflow: hidden;
+.item-toggle-row > td:nth-child(5) {
+    white-space: nowrap;
 }
-
-.pack-details-row.expanded .pack-details-wrapper {
-    grid-template-rows: 1fr;
-}
-
-
-/* Pack Table */
-
-.pack-table {
-    width: 95%;
-    margin: 10px auto;
-    border: 1px solid #e0e0e0;
-}
-
-.pack-table th,
-.pack-table td {
-    font-size: 0.9rem;
-    padding: 6px 10px !important;
-}
-
-
-/* Arrow */
 
 .arrow-icon {
     display: inline-block;
-    transition: transform 0.3s ease;
     margin-right: 8px;
+    transition: transform 0.2s ease;
 }
 
 .item-toggle-row.expanded .arrow-icon {
     transform: rotate(90deg);
 }
 
+/* Use display table-row to prevent the collapsed detail row from
+   overlapping the next item row in browsers with nested tables. */
+.supplies-main-table tbody > tr.pack-details-row {
+    display: none;
+}
+
+.supplies-main-table tbody > tr.pack-details-row.expanded {
+    display: table-row;
+}
+
+.supplies-main-table tbody > tr.pack-details-row > td {
+    padding: 0 !important;
+    border-bottom: 1px solid #dbe3ee;
+    background: #fff;
+}
+
+.pack-details-wrapper {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
+.pack-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 20px 18px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+.pack-table {
+    width: 100%;
+    min-width: 780px;
+    margin: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 1px solid #dbe3ee;
+    background: #fff;
+}
+
+.pack-table th,
+.pack-table td {
+    padding: 12px 14px !important;
+    border: 1px solid #dbe3ee;
+    text-align: left;
+    vertical-align: middle;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+}
+
+.pack-table thead th {
+    background: #f8fafc !important;
+    color: #526783;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pack-table tbody td {
+    background: #fff;
+}
+
+/* Pack table columns: Item Code, Serial, Qty, Expiry, Supplier, Status, Action */
+.pack-table thead th:nth-child(1) { width: 16%; }
+.pack-table thead th:nth-child(2) { width: 14%; }
+.pack-table thead th:nth-child(3) { width: 9%; }
+.pack-table thead th:nth-child(4) { width: 18%; }
+.pack-table thead th:nth-child(5) { width: 17%; }
+.pack-table thead th:nth-child(6) { width: 12%; }
+.pack-table thead th:nth-child(7) { width: 14%; }
+
+.pack-table td:last-child,
+.pack-table th:last-child {
+    white-space: nowrap;
+}
+
+.pack-table .btn-secondary {
+    white-space: nowrap;
+}
 
 /* ================================================================
    MULTI-DEPOSIT TABLE
@@ -94,89 +184,50 @@
     min-width: 0;
 }
 
-
 /* ================================================================
    SUPPLIES MODAL
    ================================================================ */
 
-/*
- * IMPORTANT:
- * These use unique class names instead of .modal and
- * .modal-content to prevent conflicts with the rest of
- * the Barangay Health System CSS.
- */
-
+/* Unique class names avoid conflicts with shared system modal styles. */
 .supplies-modal-overlay {
     display: none;
-
     position: fixed !important;
-
     top: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
-
     width: 100vw !important;
     height: 100vh !important;
-
     background: rgba(0, 0, 0, 0.5);
-
     align-items: center;
     justify-content: center;
-
     padding: 20px;
-
     box-sizing: border-box;
-
     z-index: 99999 !important;
-
     overflow-y: auto;
 }
 
-
-/*
- * Main Deposit / Withdraw Content
- */
-
 .supplies-modal-content {
     background: #ffffff;
-
     padding: 20px;
-
     border-radius: 8px;
-
     box-sizing: border-box;
-
     position: relative;
-
     margin: 0 auto;
-
     transform: none !important;
-
     flex-shrink: 0;
-
-    box-shadow:
-        0 15px 40px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
 }
-
-
-/* Deposit Modal */
 
 .deposit-modal-content {
     width: 800px;
     max-width: calc(100vw - 40px);
 }
 
-
-/* Withdraw Modal */
-
 .supplies-withdraw-content {
     width: 400px;
     max-width: calc(100vw - 40px);
 }
-
-
-/* Deposit Title */
 
 .deposit-modal-content h3,
 .supplies-withdraw-content h3 {
@@ -184,24 +235,17 @@
     margin-bottom: 10px;
 }
 
-
-/* Deposit Item Name */
-
 .deposit-item-name {
     font-weight: bold;
     color: #555;
     margin-bottom: 15px;
 }
 
-
-/* Withdraw Information */
-
 .withdraw-pack-info {
     font-size: 0.9rem;
     color: #555;
     margin-bottom: 15px;
 }
-
 
 /* ================================================================
    DEPOSIT TABLE RESPONSIVENESS
@@ -214,9 +258,39 @@
 }
 
 .deposit-table-wrapper .multi-deposit-table {
-    min-width: 720px;
+    min-width: 650px;
 }
 
+/* Add another deposit row */
+.supplies-add-row-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0 20px;
+    margin: 0 0 15px 27px;
+    border: 0;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.supplies-add-row-btn:hover {
+    background: #cbd5e1;
+}
+
+.supplies-add-row-btn:active {
+    transform: translateY(1px);
+}
+
+.supplies-add-row-btn:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.3);
+    outline-offset: 2px;
+}
 
 /* ================================================================
    MODAL ACTIONS
@@ -229,198 +303,128 @@
     align-items: center;
 }
 
-
 /* ================================================================
    DEPOSIT CONFIRMATION MODAL
    ================================================================ */
 
 .deposit-confirm-overlay {
     display: none;
-
     position: fixed;
-
     top: 0;
     left: 0;
-
     width: 100vw;
     height: 100vh;
-
     background: rgba(0, 0, 0, 0.55);
-
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-
     align-items: center;
     justify-content: center;
-
     padding: 20px;
-
     box-sizing: border-box;
-
     z-index: 100000;
-
     overflow-y: auto;
 }
-
 
 .deposit-confirm-overlay.active {
     display: flex;
 }
 
-
 .deposit-confirm-modal {
     width: 515px;
     max-width: 90%;
-
     background: #ffffff;
-
     border-radius: 16px;
-
     padding: 40px 45px;
-
     text-align: center;
-
     box-sizing: border-box;
-
-    box-shadow:
-        0 15px 40px rgba(0, 0, 0, 0.25);
-
-    animation:
-        depositConfirmModalIn 0.2s ease-out;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    animation: depositConfirmModalIn 0.2s ease-out;
 }
-
 
 .deposit-confirm-modal h2 {
     margin: 0 0 20px;
-
     font-size: 25px;
-
     font-weight: 700;
-
     color: #172033;
 }
-
 
 .deposit-confirm-modal p {
     margin: 0 auto;
-
     max-width: 440px;
-
     font-size: 17px;
-
     line-height: 1.5;
-
     font-weight: 500;
-
     color: #526174;
 }
 
-
 .deposit-confirm-modal p strong {
     color: #172033;
-
     font-weight: 700;
 }
 
-
-/* Confirmation Buttons */
-
 .deposit-confirm-buttons {
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     gap: 15px;
-
     margin-top: 28px;
 }
-
 
 .deposit-confirm-cancel,
 .deposit-confirm-save {
     border: none;
-
     border-radius: 8px;
-
     padding: 14px 25px;
-
     font-size: 16px;
-
     font-weight: 700;
-
     cursor: pointer;
-
     transition: 0.2s ease;
 }
 
-
-/* Cancel */
-
 .deposit-confirm-cancel {
     background: #e5e7eb;
-
     color: #374151;
 }
-
 
 .deposit-confirm-cancel:hover {
     background: #d7dbe1;
 }
 
-
-/* Confirm */
-
 .deposit-confirm-save {
     background: #2563eb;
-
     color: white;
 }
-
 
 .deposit-confirm-save:hover {
     background: #1d4ed8;
 }
 
-
-/* Confirmation Animation */
-
 @keyframes depositConfirmModalIn {
-
     from {
         opacity: 0;
         transform: scale(0.96) translateY(8px);
     }
-
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
-
 }
-
 
 /* ================================================================
    MOBILE RESPONSIVENESS
    ================================================================ */
 
 @media (max-width: 900px) {
-
     .deposit-modal-content {
         width: 95vw;
         max-width: 95vw;
     }
-
 }
 
-
 @media (max-width: 600px) {
-
     .supplies-modal-overlay {
         padding: 10px;
     }
-
 
     .deposit-modal-content,
     .supplies-withdraw-content {
@@ -428,34 +432,65 @@
         max-width: 100%;
     }
 
-
     .deposit-confirm-modal {
         width: 100%;
         max-width: 100%;
-
         padding: 30px 25px;
     }
-
 
     .deposit-confirm-buttons {
         flex-direction: column;
     }
-
 
     .deposit-confirm-cancel,
     .deposit-confirm-save {
         width: 100%;
     }
 
-
     .modal-actions {
         flex-direction: column-reverse;
         align-items: stretch;
     }
 
-
     .modal-actions button {
         width: 100%;
     }
 
+    .supplies-add-row-btn {
+        margin-left: 0;
+        width: auto;
+        max-width: 100%;
+    }
+}
+
+
+
+/* ================================================================
+   SUPPLIES TABLE RESPONSIVENESS
+   ================================================================ */
+
+@media (max-width: 900px) {
+    .supplies-main-table {
+        min-width: 1000px;
+    }
+
+    .pack-table-wrapper {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .supplies-main-table {
+        min-width: 1000px;
+    }
+
+    .pack-table {
+        min-width: 780px;
+    }
+
+    .supplies-add-row-btn {
+        margin-left: 0;
+        width: auto;
+        max-width: 100%;
+    }
 }
