@@ -6,9 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Announcement;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Traits\LogsActivity;
 
 class AnnouncementController extends Controller
 {
+    use LogsActivity;
     // SHOW PAGE
     public function index()
     {
@@ -28,10 +32,21 @@ class AnnouncementController extends Controller
 
     public function publicIndex()
     {
-        // Fetch all announcements ordered by latest
-        $announcements = Announcement::latest()->get();
+        $announcements = Announcement::with('images')
+            ->whereHas('images')
+            ->latest()
+            ->get();
 
         return view('citizenannouncements', compact('announcements'));
+    }
+
+    public function publicShow(Announcement $announcement)
+    {
+        abort_unless($announcement->images()->exists(), 404);
+
+        $announcement->load('images');
+
+        return view('citizenannouncement_show', compact('announcement'));
     }
 
     // STORE DATA
@@ -41,14 +56,28 @@ class AnnouncementController extends Controller
             'title' => 'required',
             'description' => 'required',
             'category' => 'required',
+            'images' => 'required|array|min:1',
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'post_to_facebook' => 'nullable|boolean',
         ]);
 
-        $announcement = Announcement::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'category' => $request->category,
-        ]);
+        $announcement = DB::transaction(function () use ($request) {
+            $announcement = Announcement::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'category' => $request->category,
+                'user_id' => Auth::id(),
+            ]);
+
+            foreach ($request->file('images', []) as $sortOrder => $image) {
+                $announcement->images()->create([
+                    'path' => $image->store('announcements', 'public'),
+                    'sort_order' => $sortOrder,
+                ]);
+            }
+
+            return $announcement;
+        });
 
         // Cross-post to Facebook Page if checked
         if ($request->boolean('post_to_facebook')) {
@@ -69,6 +98,7 @@ class AnnouncementController extends Controller
 
         if (!$pageId || !$accessToken) {
             Log::warning('Facebook Page credentials not configured in .env');
+            $this->logAuditEvent('facebook.post_skipped', 'Facebook posting skipped because page credentials are not configured.');
             return;
         }
 
@@ -83,9 +113,13 @@ class AnnouncementController extends Controller
 
             if ($response->failed()) {
                 Log::error('Facebook Post Error: ' . $response->body());
+                $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting failed: ' . substr($response->body(), 0, 500), 'integration');
+            } else {
+                $this->logAdminActivity('facebook.posted', 'Announcement posted successfully to Facebook.', 'integration');
             }
         } catch (\Exception $e) {
             Log::error('Facebook API Exception: ' . $e->getMessage());
+            $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting threw an exception: ' . $e->getMessage(), 'integration');
         }
     }
 }

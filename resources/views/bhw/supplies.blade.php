@@ -2,6 +2,210 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/supplies.css') }}">
+<style>
+    .batch-release-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, .52);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .batch-release-modal.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .batch-release-dialog {
+        width: min(900px, 100%);
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 24px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+        transform: translateY(16px) scale(.98);
+        transition: transform .25s ease;
+    }
+
+    .batch-release-modal.is-open .batch-release-dialog {
+        transform: translateY(0) scale(1);
+    }
+
+    .batch-release-header,
+    .batch-release-actions,
+    .batch-release-row-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .batch-release-row-grid label {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .batch-picker-trigger {
+        width: 100%;
+        min-height: 42px;
+        overflow: hidden;
+        margin-top: 6px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #fff;
+        color: #334155;
+        cursor: pointer;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .batch-picker-trigger:hover,
+    .batch-picker-trigger:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+        outline: none;
+    }
+
+    .batch-release-close,
+    .batch-release-remove {
+        border: 0;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 22px;
+    }
+
+    .batch-release-field,
+    .batch-release-row select,
+    .batch-release-row input,
+    .batch-release-details {
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #fff;
+        color: #1e293b;
+    }
+
+    .batch-release-field:focus,
+    .batch-release-row select:focus,
+    .batch-release-row input:focus,
+    .batch-release-details:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+        outline: none;
+    }
+
+    .batch-release-row {
+        margin-top: 14px;
+        padding: 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .batch-release-row-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr 120px;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .batch-release-add {
+        margin-top: 14px;
+        border: 1px dashed #93c5fd;
+        border-radius: 9px;
+        padding: 10px 14px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        cursor: pointer;
+    }
+
+    .batch-picker-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, .52);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .batch-picker-modal.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .batch-picker-dialog {
+        width: min(560px, 100%);
+        max-height: 88vh;
+        overflow-y: auto;
+        padding: 22px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+        transform: translateY(14px) scale(.98);
+        transition: transform .25s ease;
+    }
+
+    .batch-picker-modal.is-open .batch-picker-dialog {
+        transform: translateY(0) scale(1);
+    }
+
+    .batch-picker-search {
+        width: 100%;
+        margin: 14px 0 10px;
+        padding: 11px 13px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+    }
+
+    .batch-picker-option {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        padding: 12px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        background: #f8fafc;
+        color: #1e293b;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .batch-picker-option:hover {
+        border-color: #93c5fd;
+        background: #eff6ff;
+    }
+
+    .batch-picker-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+        .batch-release-row-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 @endsection
 
 @section('content')
@@ -9,21 +213,17 @@
 <!-- HEADER -->
 <div class="page-top">
     <div class="page-title">
-        <h1>Health Supplies Inventory & Requests</h1>
-        <p>Monitor stock levels, manage packs, and review citizen supply requests.</p>
+        <h1>Health Supplies Inventory</h1>
+        <p>Monitor stock levels and manage supply packs.</p>
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
-        <button type="button" class="btn-primary" id="openReservationModal" style="background: #10b981; margin-left: 10px;">
-            + Direct Citizen Reservation
+        <button type="button" id="openBatchReleaseModal" class="btn-primary" style="margin-left: 10px;">
+            Schedule Batch Release
         </button>
-
-        <button type="button" class="btn-primary" id="openBatchReleaseModal" style="background: #2563eb; margin-left: 10px;">
-        📦 Batch Release Supplies
-    </button>
     @endif
 </div>
 
@@ -63,6 +263,45 @@
     </form>
 </div>
 
+
+<!-- BATCH RELEASES -->
+<div class="table-container" style="margin-bottom: 24px;">
+    <div class="page-title" style="margin-bottom: 16px;">
+        <h2>Batch Releases</h2>
+        <p>Review scheduled distributions and confirm citizen claims.</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Batch</th>
+                <th>Claim Date</th>
+                <th>Assignments</th>
+                <th>Progress</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($batchReleases as $eventId => $releaseGroup)
+                @php
+                    $firstRelease = $releaseGroup->first();
+                    $claimedCount = $releaseGroup->where('status', 'claimed')->count();
+                @endphp
+                <tr>
+                    <td><strong>{{ $firstRelease->batch_title }}</strong></td>
+                    <td>{{ $firstRelease->claim_date->format('M d, Y') }}</td>
+                    <td>{{ $releaseGroup->count() }}</td>
+                    <td>{{ $claimedCount }} / {{ $releaseGroup->count() }} claimed</td>
+                    <td><a href="{{ route('supplies.batch.release.show', $eventId) }}" class="btn-secondary">View Batch</a></td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #64748b;">No batch releases scheduled.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
 <!-- TABLE -->
 <div class="table-container">
@@ -400,63 +639,6 @@
 
                                 </table>
 
-                            </div>
-
-                            <!-- Citizens with Direct Reservations Sub-Table -->
-                            @php
-                                $itemIds = $itemsOfKind->pluck('id');
-                                $reservationsForThisItem = collect();
-                                if(isset($bhwReservations)) {
-                                    foreach($itemIds as $id) {
-                                        if(isset($bhwReservations[$id])) {
-                                            $reservationsForThisItem = $reservationsForThisItem->merge($bhwReservations[$id]);
-                                        }
-                                    }
-                                }
-                            @endphp
-
-                            <div style="padding: 10px 15px; background: #f8fafc; border-top: 1px solid #e5e7eb;">
-                                <h4 style="font-size: 13px; color: #1f2937; margin-bottom: 8px;">👤 Citizens with Direct Reservations</h4>
-                                <table class="table" style="width: 100%; border-collapse: collapse; font-size: 13px; background: white; border: 1px solid #e5e7eb; border-radius: 4px;">
-                                    <thead>
-                                        <tr style="background: #f3f4f6; text-align: left;">
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">Citizen Name</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Reserved Qty</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Priority</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd;">BHW Notes</th>
-                                            <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Date Reserved</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($reservationsForThisItem as $res)
-                                            <tr style="border-bottom: 1px solid #f9f9f9;">
-                                                <td style="padding: 8px; font-weight: 500;">
-                                                    {{ $res->citizen->Citizen_FName ?? 'N/A' }} {{ $res->citizen->Citizen_LName ?? '' }}
-                                                </td>
-                                                <td style="padding: 8px; text-align: center;">
-                                                    <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
-                                                        {{ $res->quantity }}
-                                                    </span>
-                                                </td>
-                                                <td style="padding: 8px; text-align: center; text-transform: capitalize;">
-                                                    {{ $res->priority }}
-                                                </td>
-                                                <td style="padding: 8px; color: #555;">
-                                                    {{ $res->bhw_remarks }}
-                                                </td>
-                                                <td style="padding: 8px; text-align: center; color: #6b7280; font-size: 12px;">
-                                                    {{ $res->created_at->format('M d, Y h:i A') }}
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" style="padding: 10px; text-align: center; color: #6b7280;">
-                                                    No active BHW citizen reservations for this item.
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
                             </div>
 
                         </div>
@@ -851,6 +1033,26 @@
 
 
 @section('scripts')
+
+@php
+    $batchReleaseCitizens = $citizens->map(function ($citizen) {
+        return [
+            'id' => $citizen->id,
+            'name' => trim(($citizen->Citizen_FName ?? '') . ' ' . ($citizen->Citizen_LName ?? '')),
+        ];
+    })->values();
+
+    $batchReleaseSupplies = $supplies->filter(function ($supply) {
+        return $supply->quantity > 0;
+    })->map(function ($supply) {
+        return [
+            'id' => $supply->id,
+            'name' => $supply->name,
+            'code' => $supply->item_number ?: ($supply->serial_number ?: 'Batch #' . $supply->id),
+            'quantity' => $supply->quantity,
+        ];
+    })->values();
+@endphp
 
 <script>
 
@@ -1355,188 +1557,251 @@
 
 </script>
 
-<!-- ================================================================
-     DIRECT BHW RESERVATION MODAL
-     ================================================================ -->
-<div id="reservationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
-    <div style="background: white; padding: 25px; border-radius: 8px; width: 450px; max-width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Direct Citizen Supply Reservation</h3>
+<div id="batchReleaseModal" class="batch-release-modal" role="dialog" aria-modal="true" aria-labelledby="batchReleaseTitle" aria-hidden="true">
+    <div class="batch-release-dialog">
+        <div class="batch-release-header">
+            <div>
+                <h2 id="batchReleaseTitle">Schedule Batch Release</h2>
+                <p>Assign specific supply batches to citizens and add the claiming schedule.</p>
+            </div>
+            <button type="button" id="closeBatchReleaseModal" class="batch-release-close" aria-label="Close batch release modal">&times;</button>
+        </div>
 
-        <form action="{{ route('bhw.supply.reserve') }}" method="POST">
+        <form method="POST" action="{{ route('supplies.batch.release') }}" id="batchReleaseForm">
             @csrf
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Citizen:</label>
-                <select name="citizen_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="">-- Choose Citizen --</option>
-                    @foreach(\App\Models\citizens::all() as $citizen)
-                        <option value="{{ $citizen->id }}">{{ $citizen->Citizen_FName ?? '' }} {{ $citizen->Citizen_LName ?? '' }}</option>
-                    @endforeach
-                </select>
+            <label for="batch_release_title">Batch Release Title</label>
+            <input type="text" name="batch_title" id="batch_release_title" class="batch-release-field" placeholder="e.g. October Medicine Distribution" required>
+
+            <label for="batch_release_date">Claiming / Release Date</label>
+            <input type="date" name="claim_date" id="batch_release_date" class="batch-release-field" value="{{ now()->format('Y-m-d') }}" required>
+
+            <label for="batch_release_details">Details</label>
+            <textarea name="details" id="batch_release_details" class="batch-release-details" rows="3" placeholder="Add distribution instructions or location details..."></textarea>
+
+            <div class="batch-release-row-header" style="margin-top: 20px;">
+                <h3>Citizen Assignments</h3>
+                <span style="color: #64748b; font-size: 13px;">Each row uses one specific supply batch.</span>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Supply Item:</label>
-                <select name="supply_id" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="">-- Choose Supply --</option>
-                    @foreach($supplies->where('quantity', '>', 0) as $sup)
-                        <option value="{{ $sup->id }}">{{ $sup->name }} (Available: {{$sup->quantity }})</option>
-                    @endforeach
-                </select>
-            </div>
+            <div id="batchReleaseAssignments"></div>
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Quantity to Reserve:</label>
-                <input type="number" name="quantity" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-            </div>
+            <button type="button" id="addBatchReleaseAssignment" class="batch-release-add">+ Add Citizen Assignment</button>
 
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Priority Level:</label>
-                <select name="priority" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">BHW Remarks / Notes:</label>
-                <textarea name="bhw_remarks" placeholder="Optional notes regarding this reservation..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="closeReservationModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
-                <button type="submit" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Reservation</button>
+            <div class="batch-release-actions" style="margin-top: 22px; justify-content: flex-end;">
+                <button type="button" id="cancelBatchRelease" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Release &amp; Schedule Batch</button>
             </div>
         </form>
     </div>
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const resModal = document.getElementById("reservationModal");
-        const openBtn = document.getElementById("openReservationModal");
-        const closeBtn = document.getElementById("closeReservationModalBtn");
-
-        if(openBtn) {
-            openBtn.addEventListener("click", () => { resModal.style.display = "flex"; });
-        }
-        if(closeBtn) {
-            closeBtn.addEventListener("click", () => { resModal.style.display = "none"; });
-        }
-        window.addEventListener("click", (e) => {
-            if(e.target === resModal) { resModal.style.display = "none"; }
-        });
-    });
-</script>
-
-<!-- Batch Release Modal Overlay -->
-<div id="batchReleaseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1050;">
-    <div style="background: white; padding: 25px; border-radius: 8px; width: 600px; max-width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h3 style="margin-top: 0; color: #1f2937; margin-bottom: 15px;">Batch Release Supplies to Reserved Citizens</h3>
-
-        <form action="{{ route('bhw.supplies.batch.release') }}" method="POST">
-            @csrf
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Select Approved Reservations to Release:</label>
-                
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 4px; padding: 10px;">
-                    @php
-                        // Fetch all currently approved requests across items
-                        $approvedReservations = \App\Models\SupplyRequest::with(['citizen', 'supply'])
-                            ->where('status', 'approved')
-                            ->get();
-                    @endphp
-
-                    @forelse($approvedReservations as $res)
-                        <label style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; cursor: pointer;">
-                            <input type="checkbox" name="supply_request_ids[]" value="{{ $res->id }}" data-supply="{{ $res->supply->name ?? 'Item' }}" data-qty="{{ $res->quantity }}" data-citizen="{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}" class="release-checkbox">
-                            <div>
-                                <strong>{{ $res->citizen->Citizen_FName ?? '' }} {{ $res->citizen->Citizen_LName ?? '' }}</strong> — 
-                                <span style="color: #0369a1;">{{ $res->quantity }}x {{ $res->supply->name ?? 'N/A' }}</span>
-                                <br><small style="color: #6b7280;">Priority: {{ ucfirst($res->priority) }} | Reserved on: {{ $res->created_at->format('M d, Y') }}</small>
-                            </div>
-                        </label>
-                    @empty
-                        <p style="text-align: center; color: #6b7280; font-size: 13px; margin: 10px 0;">No approved citizen reservations available for release.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            <!-- Dynamic Preview Box when items are checked -->
-            <div id="releasePreviewBox" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px; color: #166534;">
-                <strong>Selected Summary:</strong> <span id="releasePreviewText"></span>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label for="batch_title" style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Batch Release Title / Event Name:</label>
-                <input 
-                    type="text" 
-                    name="batch_title" 
-                    id="batch_title" 
-                    class="form-control" 
-                    placeholder="e.g., Q3 Barangay Health Supply Distribution" 
-                    required
-                    style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;"
-                >
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Scheduled Release Date (Reflected on Calendar):</label>
-                <input type="date" name="release_date" value="{{ date('Y-m-d') }}" required style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;">
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #374151;">Release Notes / Remarks:</label>
-                <textarea name="notes" placeholder="Optional notes for distribution event..." rows="2" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="closeBatchReleaseModalBtn" style="padding: 8px 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancel</button>
-                <button type="submit" style="padding: 8px 14px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Confirm Batch Release & Log Schedule</button>
-            </div>
-        </form>
+<div id="batchPickerModal" class="batch-picker-modal" role="dialog" aria-modal="true" aria-labelledby="batchPickerTitle" aria-hidden="true">
+    <div class="batch-picker-dialog">
+        <div class="batch-release-header">
+            <h2 id="batchPickerTitle">Select Citizen</h2>
+            <button type="button" id="closeBatchPicker" class="batch-release-close" aria-label="Close picker">&times;</button>
+        </div>
+        <input type="search" id="batchPickerSearch" class="batch-picker-search" placeholder="Search...">
+        <div id="batchPickerOptions"></div>
+        <div class="batch-picker-footer">
+            <button type="button" id="batchPickerPrevious" class="btn-secondary">Previous</button>
+            <span id="batchPickerPage">Page 1</span>
+            <button type="button" id="batchPickerNext" class="btn-secondary">Next</button>
+        </div>
     </div>
-</div>  
+</div>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const modal = document.getElementById("batchReleaseModal");
-        const openBtn = document.getElementById("openBatchReleaseModal");
-        const closeBtn = document.getElementById("closeBatchReleaseModalBtn");
-        const checkboxes = document.querySelectorAll(".release-checkbox");
-        const previewBox = document.getElementById("releasePreviewBox");
-        const previewText = document.getElementById("releasePreviewText");
+document.addEventListener('DOMContentLoaded', function () {
+    const batchReleaseModal = document.getElementById('batchReleaseModal');
+    const openBatchReleaseModal = document.getElementById('openBatchReleaseModal');
+    const closeBatchReleaseModal = document.getElementById('closeBatchReleaseModal');
+    const cancelBatchRelease = document.getElementById('cancelBatchRelease');
+    const batchReleaseForm = document.getElementById('batchReleaseForm');
+    const addAssignmentButton = document.getElementById('addBatchReleaseAssignment');
+    const assignmentsContainer = document.getElementById('batchReleaseAssignments');
+    const batchPickerModal = document.getElementById('batchPickerModal');
+    const batchPickerTitle = document.getElementById('batchPickerTitle');
+    const batchPickerSearch = document.getElementById('batchPickerSearch');
+    const batchPickerOptions = document.getElementById('batchPickerOptions');
+    const batchPickerPage = document.getElementById('batchPickerPage');
+    const batchPickerPrevious = document.getElementById('batchPickerPrevious');
+    const batchPickerNext = document.getElementById('batchPickerNext');
+    const citizens = @json($batchReleaseCitizens);
+    const supplies = @json($batchReleaseSupplies);
+    let assignmentIndex = 0;
+    let activePickerType = 'citizen';
+    let activeAssignmentRow = null;
+    let pickerPage = 1;
 
-        if(openBtn) {
-            openBtn.addEventListener("click", () => { modal.style.display = "flex"; });
-        }
-        if(closeBtn) {
-            closeBtn.addEventListener("click", () => { modal.style.display = "none"; });
-        }
-        window.addEventListener("click", (e) => {
-            if(e.target === modal) { modal.style.display = "none"; }
+    function pickerItems() {
+        const items = activePickerType === 'citizen' ? citizens : supplies;
+        const search = batchPickerSearch.value.trim().toLowerCase();
+
+        return items.filter(function (item) {
+            const label = activePickerType === 'citizen'
+                ? item.name
+                : `${item.name} ${item.code}`;
+
+            return label.toLowerCase().includes(search);
         });
+    }
 
-        // Update preview dynamically when checkboxes are toggled
-        checkboxes.forEach(chk => {
-            chk.addEventListener("change", function() {
-                let selected = [];
-                checkboxes.forEach(c => {
-                    if(c.checked) {
-                        selected.push(`${c.dataset.qty}x ${c.dataset.supply} (${c.dataset.citizen})`);
-                    }
-                });
+    function renderPicker() {
+        const items = pickerItems();
+        const pageSize = 10;
+        const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+        pickerPage = Math.min(pickerPage, totalPages);
+        const pageItems = items.slice((pickerPage - 1) * pageSize, pickerPage * pageSize);
 
-                if(selected.length > 0) {
-                    previewBox.style.display = "block";
-                    previewText.innerText = selected.join(", ");
-                } else {
-                    previewBox.style.display = "none";
-                }
+        batchPickerOptions.innerHTML = '';
+
+        if (!pageItems.length) {
+            batchPickerOptions.innerHTML = '<p>No matching records found.</p>';
+        }
+
+        pageItems.forEach(function (item) {
+            const option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'batch-picker-option';
+            option.textContent = activePickerType === 'citizen'
+                ? item.name || 'Unnamed citizen'
+                : `${item.name} | ${item.code} | Available: ${item.quantity}`;
+            option.addEventListener('click', function () {
+                const valueInput = activeAssignmentRow.querySelector(
+                    activePickerType === 'citizen' ? '.assignment-citizen-id' : '.assignment-supply-id'
+                );
+                const displayButton = activeAssignmentRow.querySelector(
+                    activePickerType === 'citizen' ? '.select-citizen-button' : '.select-supply-button'
+                );
+
+                valueInput.value = item.id;
+                displayButton.textContent = activePickerType === 'citizen' ? item.name : `${item.name} | ${item.code}`;
+                closePicker();
             });
+            batchPickerOptions.appendChild(option);
         });
+
+        batchPickerPage.textContent = `Page ${pickerPage} of ${totalPages}`;
+        batchPickerPrevious.disabled = pickerPage === 1;
+        batchPickerNext.disabled = pickerPage === totalPages;
+    }
+
+    function openPicker(type, row) {
+        activePickerType = type;
+        activeAssignmentRow = row;
+        pickerPage = 1;
+        batchPickerSearch.value = '';
+        batchPickerTitle.textContent = type === 'citizen' ? 'Select Citizen' : 'Select Supply Batch';
+        batchPickerSearch.placeholder = type === 'citizen' ? 'Search citizen...' : 'Search supply or batch code...';
+        batchPickerModal.classList.add('is-open');
+        batchPickerModal.setAttribute('aria-hidden', 'false');
+        renderPicker();
+    }
+
+    function closePicker() {
+        batchPickerModal.classList.remove('is-open');
+        batchPickerModal.setAttribute('aria-hidden', 'true');
+        activeAssignmentRow = null;
+    }
+
+    function addOption(select, value, label) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+    }
+
+    function addAssignmentRow() {
+        const row = document.createElement('div');
+        row.className = 'batch-release-row';
+        row.innerHTML = `
+            <div class="batch-release-row-header">
+                <strong>Assignment ${assignmentIndex + 1}</strong>
+                <button type="button" class="batch-release-remove" aria-label="Remove assignment">&times;</button>
+            </div>
+            <div class="batch-release-row-grid">
+                <label>Citizen
+                    <input type="hidden" name="assignments[${assignmentIndex}][citizen_id]" class="assignment-citizen-id" required>
+                    <button type="button" class="batch-picker-trigger select-citizen-button">Select citizen</button>
+                </label>
+                <label>Specific Supply Batch
+                    <input type="hidden" name="assignments[${assignmentIndex}][supply_id]" class="assignment-supply-id" required>
+                    <button type="button" class="batch-picker-trigger select-supply-button">Select supply batch</button>
+                </label>
+                <label>Quantity
+                    <input type="number" name="assignments[${assignmentIndex}][quantity]" min="1" value="1" required>
+                </label>
+            </div>`;
+
+        row.querySelector('.select-citizen-button').addEventListener('click', function () {
+            openPicker('citizen', row);
+        });
+
+        row.querySelector('.select-supply-button').addEventListener('click', function () {
+            openPicker('supply', row);
+        });
+
+        row.querySelector('.batch-release-remove').addEventListener('click', function () {
+            row.remove();
+        });
+
+        assignmentsContainer.appendChild(row);
+        assignmentIndex++;
+    }
+
+    function openModal() {
+        if (!assignmentsContainer.children.length) {
+            addAssignmentRow();
+        }
+        batchReleaseModal.classList.add('is-open');
+        batchReleaseModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        closePicker();
+        batchReleaseModal.classList.remove('is-open');
+        batchReleaseModal.setAttribute('aria-hidden', 'true');
+        batchReleaseForm.reset();
+        assignmentsContainer.replaceChildren();
+        assignmentIndex = 0;
+    }
+
+    openBatchReleaseModal?.addEventListener('click', openModal);
+    closeBatchReleaseModal.addEventListener('click', closeModal);
+    cancelBatchRelease.addEventListener('click', closeModal);
+    addAssignmentButton.addEventListener('click', addAssignmentRow);
+    batchReleaseModal.addEventListener('click', function (event) {
+        if (event.target === batchReleaseModal) {
+            closeModal();
+        }
     });
+    batchPickerSearch.addEventListener('input', function () {
+        pickerPage = 1;
+        renderPicker();
+    });
+    batchPickerPrevious.addEventListener('click', function () {
+        pickerPage--;
+        renderPicker();
+    });
+    batchPickerNext.addEventListener('click', function () {
+        pickerPage++;
+        renderPicker();
+    });
+    document.getElementById('closeBatchPicker').addEventListener('click', closePicker);
+    batchPickerModal.addEventListener('click', function (event) {
+        if (event.target === batchPickerModal) {
+            closePicker();
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeModal();
+            closePicker();
+        }
+    });
+});
 </script>
 
 @endsection

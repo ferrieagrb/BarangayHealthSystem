@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\AnnouncementImage;
 
 class Announcement extends Model
 {
@@ -10,5 +11,16 @@ class Announcement extends Model
         'title',
         'description',
         'category'
+        ,'user_id'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(AnnouncementImage::class)->orderBy('sort_order');
+    }
 }

@@ -21,6 +21,7 @@ use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\AdminPermissionController;
+use App\Http\Controllers\BhwHomeController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -38,7 +39,6 @@ use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
-use App\Http\Controllers\BhwSupplyRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +48,11 @@ use App\Http\Controllers\BhwSupplyRequestController;
 
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
-    $recentAnnouncements = Announcement::latest()->take(5)->get();
+    $recentAnnouncements = Announcement::with('images')
+        ->whereHas('images')
+        ->latest()
+        ->take(5)
+        ->get();
 
     return view('citizenhome', compact('recentEvents', 'recentAnnouncements'));
 })->name('landing');
@@ -62,6 +66,7 @@ Route::get('/publicevents', function () {
 })->name('publicevents');
 
 Route::get('/publicannouncements', [AnnouncementController::class, 'publicIndex'])->name('public.announcements');
+Route::get('/publicannouncements/{announcement}', [AnnouncementController::class, 'publicShow'])->name('public.announcements.show');
 
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
@@ -152,7 +157,6 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
 
 
-    Route::post('/supplies/request', [CitizenSupplyController::class, 'storeRequest'])->name('supplies.request');
 });
 
 
@@ -165,47 +169,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
 Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
-    Route::get('/home', function () {
-        $totalCitizens = citizens::count();
-
-        $popularDisease = HealthRecord::select('diagnosis', DB::raw('COUNT(*) as total'))
-            ->groupBy('diagnosis')
-            ->orderByDesc('total')
-            ->first();
-
-        $popularDisease = $popularDisease ? $popularDisease->diagnosis : 'N/A';
-
-        $upcomingEvents = Event::whereDate('start', '>=', now())
-            ->orderBy('start', 'asc')
-            ->take(5)
-            ->get();
-
-        $upcomingEventsCount = Event::whereDate('start', '>=', now())->count();
-
-        $lowStockSupplies = Supply::whereColumn('quantity', '<=', 'min_stock')
-            ->orderBy('quantity', 'asc')
-            ->take(5)
-            ->get();
-
-        $totalInventory = Supply::count();
-
-        $recentReferrals = Referral::latest()
-            ->take(5)
-            ->get();
-
-        $recentReferralsCount = Referral::count();
-
-        return view('bhw.home', compact(
-            'totalCitizens',
-            'popularDisease',
-            'upcomingEvents',
-            'upcomingEventsCount',
-            'lowStockSupplies',
-            'totalInventory',
-            'recentReferrals',
-            'recentReferralsCount'
-        ));
-    })->name('home');
+    Route::get('/home', [BhwHomeController::class, 'index'])->name('home');
 
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
     Route::get('/addcitizen', function () {$puroks = \App\Models\Purok::all();return view('bhw.addcitizen', compact('puroks'));})->name('citizen.add');
@@ -226,6 +190,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Health Records
     Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
+    Route::post('/health-record/maintenance', [HealthRecordController::class, 'storeMaintenance'])->name('health.maintenance.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
@@ -234,6 +199,9 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
+    Route::post('/supplies/batch-release', [SupplyController::class, 'batchRelease'])->name('supplies.batch.release');
+    Route::get('/supplies/batch-release/{eventId}', [SupplyController::class, 'showBatchRelease'])->name('supplies.batch.release.show');
+    Route::post('/supplies/batch-release/{id}/claim', [SupplyController::class, 'claimRelease'])->name('supplies.batch.release.claim');
     Route::delete('/supplies/batch/{id}', [SupplyController::class, 'destroy'])->name('supplies.destroy');
     Route::post('/supplies/item/withdraw', [SupplyController::class, 'withdrawItem'])->name('supplies.item.withdraw');
     Route::post('/supplies/batch/withdraw', [SupplyController::class, 'withdrawBatch'])->name('supplies.batch.withdraw');
@@ -260,11 +228,6 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
-    Route::post('/supply-reservations', [BhwSupplyRequestController::class, 'storeReservation'])->name('bhw.supply.reserve');
-
-    Route::post('/bhw/supplies/batch-release', [BhwSupplyRequestController::class, 'storeBatchRelease'])
-    ->name('bhw.supplies.batch.release');
-
     Route::get('/citizen-export', [CitizenController::class,'export'])->name('citizen.export');
 });
 
@@ -276,8 +239,6 @@ Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->gr
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
     Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');
 
-    Route::get('/supply-requests', [BhwSupplyRequestController::class, 'index'])->name('supply.requests');
-    Route::put('/supply-requests/{id}', [BhwSupplyRequestController::class, 'updateStatus'])->name('supply.requests.update');
 });
 
 
