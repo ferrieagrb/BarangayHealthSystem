@@ -48,12 +48,16 @@ class AdminSettings extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:puroks,name,' . $id,
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $purok = Purok::findOrFail($id);
         
         $purok->update([
             'name' => $request->name,
+            'latitude' => $request->filled('latitude') ? $request->latitude : null,
+            'longitude' => $request->filled('longitude') ? $request->longitude : null,
         ]);
 
         return back()->with('success', 'Purok updated successfully!');
