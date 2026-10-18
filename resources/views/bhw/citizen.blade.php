@@ -186,8 +186,6 @@
 
             </div>
 
-            <button type="submit" class="btn-primary citizen-search-submit">Search</button>
-
             {{-- PUROK --}}
 
             <div class="filter-box">
@@ -410,7 +408,9 @@
 
     </div>
 
-    {{-- CITIZEN TABLE --}}
+    <div id="citizen-results">
+
+        {{-- CITIZEN TABLE --}}
 
     <table>
 
@@ -1267,14 +1267,37 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.querySelector('.citizen-filter-form');
     const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
+    const results = document.getElementById('citizen-results');
     let searchTimer;
+    let requestController;
 
-    if (!searchForm || !searchInput) return;
+    if (!searchForm || !searchInput || !results) return;
 
     searchInput.addEventListener('input', function () {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(function () {
-            searchForm.submit();
+        searchTimer = setTimeout(async function () {
+            if (requestController) requestController.abort();
+            requestController = new AbortController();
+            const params = new URLSearchParams(new FormData(searchForm));
+            params.delete('page');
+            results.setAttribute('aria-busy', 'true');
+
+            try {
+                const response = await fetch(`${searchForm.action}?${params.toString()}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+                    signal: requestController.signal
+                });
+                if (!response.ok) throw new Error('Search request failed');
+                const html = await response.text();
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const updatedResults = parsed.getElementById('citizen-results');
+                if (updatedResults) results.replaceWith(updatedResults);
+            } catch (error) {
+                if (error.name !== 'AbortError') console.error(error);
+            } finally {
+                const currentResults = document.getElementById('citizen-results');
+                if (currentResults) currentResults.removeAttribute('aria-busy');
+            }
         }, 350);
     });
 });
