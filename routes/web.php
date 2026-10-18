@@ -195,11 +195,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
     Route::get('/addcitizen', function () {
-        $puroks = \App\Models\Purok::whereHas('subgroups', function ($query) {
-            $query->where('user_id', auth()->id());
-        })->with(['subgroups' => function ($query) {
-            $query->where('user_id', auth()->id());
-        }])->get();
+        $puroks = \App\Models\Purok::with('subgroups')->get();
 
         return view('bhw.addcitizen', compact('puroks'));
     })->name('citizen.add');
