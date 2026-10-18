@@ -43,7 +43,7 @@ class TrackPageViews
 
             DB::table('page_views')->insert([
                 'ip_address' => $request->ip(),
-                'url' => $request->fullUrl(),
+                'url' => mb_substr($request->fullUrl(), 0, 65535),
                 'user_id' => auth()->id(),
                 'load_time' => $loadTime,
                 'browser' => $browser,

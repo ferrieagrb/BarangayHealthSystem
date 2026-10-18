@@ -268,7 +268,7 @@ class CitizenController extends Controller
         | PAGINATION
         |--------------------------------------------------------------------------
         */
-        $citizens = $query->paginate(10)->appends([
+        $citizens = $query->with(['subgroup', 'family.subgroup'])->paginate(10)->appends([
             'search' => $request->search,
             'purok' => $request->purok,
             'subgroup' => $request->subgroup,
@@ -291,13 +291,27 @@ class CitizenController extends Controller
         $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
         $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
 
+        $ordinalCitizens = $this->restrictToAssignedCitizens(
+            citizens::with(['subgroup', 'family.subgroup'])->orderBy('id')
+        )->get();
+        $subgroupOrdinals = [];
+        $citizenDisplayIds = [];
+        foreach ($ordinalCitizens as $ordinalCitizen) {
+            $subgroup = $ordinalCitizen->subgroup ?: optional($ordinalCitizen->family)->subgroup;
+            $subgroupKey = $subgroup ? (string) $subgroup->id : 'unassigned';
+            $subgroupOrdinals[$subgroupKey] = ($subgroupOrdinals[$subgroupKey] ?? 0) + 1;
+            $subgroupName = strtoupper($subgroup?->name ?? 'UNASSIGNED');
+            $citizenDisplayIds[$ordinalCitizen->id] = str_pad((string) $subgroupOrdinals[$subgroupKey], 3, '0', STR_PAD_LEFT) . '-' . $subgroupName;
+        }
+
         return view('bhw.citizen', compact(
             'citizens',
             'totalCitizens',
             'kids',
             'adults',
             'seniors',
-            'puroks'
+            'puroks',
+            'citizenDisplayIds'
         ));
     }
 
