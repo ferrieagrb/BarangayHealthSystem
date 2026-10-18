@@ -144,29 +144,14 @@
                 </small>
             </div>
 
-            <div class="form-group">
-                <label for="citizenPurok">Purok</label>
-                <select name="Citizen_Purok" id="citizenPurok" required>
-                    <option value="" disabled {{ old('Citizen_Purok') ? '' : 'selected' }}>-- Select Purok --</option>
-                    @foreach($puroks as $purok)
-                    <option value="{{ $purok->name }}" {{ old('Citizen_Purok') == $purok->name ? 'selected' : '' }}>{{ $purok->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="citizenSubgroup">Purok Subgroup</label>
-                <select name="subgroup_id" id="citizenSubgroup" required disabled>
-                    <option value="">-- Select Purok first --</option>
-                    @foreach($puroks as $purok)
-                        @foreach($purok->subgroups as $subgroup)
-                            <option value="{{ $subgroup->id }}" data-purok="{{ $purok->name }}" {{ (string) old('subgroup_id') === (string) $subgroup->id ? 'selected' : '' }}>
-                                {{ $subgroup->name }}
-                            </option>
-                        @endforeach
-                    @endforeach
-                </select>
-                <small>Select the subgroup this citizen belongs to.</small>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="citizenFamilyDisplay">Family</label>
+                <input type="hidden" name="family_id" id="citizenFamilyId" value="{{ old('family_id') }}" required>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="citizenFamilyDisplay" class="form-control" value="" placeholder="Select a family" readonly required>
+                    <button type="button" class="btn-secondary" id="openFamilyPicker">Select Family</button>
+                </div>
+                <small>The citizen's Purok and subgroup will come from the selected family.</small>
             </div>
 
             <div class="form-group">
@@ -305,32 +290,6 @@
 
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const purokSelect = document.getElementById('citizenPurok');
-    const subgroupSelect = document.getElementById('citizenSubgroup');
-    const subgroupOptions = Array.from(subgroupSelect.options).slice(1);
-    const oldSubgroup = @json(old('subgroup_id'));
-
-    function updateSubgroups() {
-        const purok = purokSelect.value;
-        subgroupSelect.innerHTML = '<option value="">-- Select Subgroup --</option>';
-        subgroupSelect.disabled = !purok;
-
-        subgroupOptions
-            .filter(option => option.dataset.purok === purok)
-            .forEach(option => subgroupSelect.appendChild(option.cloneNode(true)));
-
-        if (oldSubgroup) {
-            subgroupSelect.value = oldSubgroup;
-        }
-    }
-
-    purokSelect.addEventListener('change', updateSubgroups);
-    updateSubgroups();
-});
-</script>
-
 <!-- Custom centered confirmation modal window with separated backdrop and box layers -->
 <div id="confirmation-modal" style="display: none;">
     <div class="custom-modal-box">
@@ -343,8 +302,107 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
+<style>
+    .family-picker-modal { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.55); }
+    .family-picker-modal.open { display:flex; }
+    .family-picker-box { width:min(760px,100%); max-height:90vh; overflow:auto; padding:24px; border-radius:12px; background:#fff; box-shadow:0 20px 50px rgba(15,23,42,.25); }
+    .family-picker-header { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:16px; }
+    .family-picker-list { display:grid; gap:8px; max-height:360px; overflow:auto; }
+    .family-option { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:12px; border:1px solid #dbe3ef; border-radius:8px; background:#fff; text-align:left; cursor:pointer; }
+    .family-option:hover { border-color:#2563eb; background:#eff6ff; }
+    .family-picker-close { border:0; background:transparent; font-size:24px; cursor:pointer; }
+    .family-create-form { display:grid; gap:12px; margin-top:20px; padding-top:20px; border-top:1px solid #e5e7eb; }
+</style>
+
+<div class="family-picker-modal" id="familyPickerModal" aria-hidden="true">
+    <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="familyPickerTitle">
+        <div class="family-picker-header">
+            <h2 id="familyPickerTitle" style="margin:0;">Select Family</h2>
+            <button type="button" class="family-picker-close" id="closeFamilyPicker" aria-label="Close">&times;</button>
+        </div>
+        <input type="search" id="familySearch" class="form-control" placeholder="Search family name...">
+        <div class="family-picker-list" id="familyPickerList">
+            @foreach($families as $family)
+                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}">
+                    <span><strong>{{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
+                    <span>Select</span>
+                </button>
+            @endforeach
+        </div>
+        <button type="button" class="btn-primary" id="openNewFamilyModal" style="margin-top:16px;">+ Add New Family</button>
+    </div>
+</div>
+
+<div class="family-picker-modal" id="newFamilyModal" aria-hidden="true">
+    <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="newFamilyTitle">
+        <div class="family-picker-header">
+            <h2 id="newFamilyTitle" style="margin:0;">Register New Family</h2>
+            <button type="button" class="family-picker-close close-new-family" aria-label="Close">&times;</button>
+        </div>
+        <form id="quickFamilyForm" class="family-create-form">
+            @csrf
+            <input type="text" name="family_name" class="form-control" placeholder="Family name" required>
+            <select name="subgroup_id" class="form-control" required>
+                <option value="">-- Select Purok Subgroup --</option>
+                @foreach($puroks as $purok)
+                    @foreach($purok->subgroups as $subgroup)
+                        <option value="{{ $subgroup->id }}">{{ $purok->name }} / {{ $subgroup->name }}</option>
+                    @endforeach
+                @endforeach
+            </select>
+            <div id="quickFamilyError" style="color:#b91c1c;"></div>
+            <button type="submit" class="btn-primary">Create and Select Family</button>
+        </form>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const familyPickerModal = document.getElementById('familyPickerModal');
+    const newFamilyModal = document.getElementById('newFamilyModal');
+    const familyIdInput = document.getElementById('citizenFamilyId');
+    const familyDisplay = document.getElementById('citizenFamilyDisplay');
+
+    function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
+    function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+
+    document.getElementById('openFamilyPicker').addEventListener('click', () => openModal(familyPickerModal));
+    document.getElementById('closeFamilyPicker').addEventListener('click', () => closeModal(familyPickerModal));
+    document.getElementById('openNewFamilyModal').addEventListener('click', () => { closeModal(familyPickerModal); openModal(newFamilyModal); });
+    document.querySelectorAll('.close-new-family').forEach(button => button.addEventListener('click', () => closeModal(newFamilyModal)));
+
+    document.querySelectorAll('.family-option').forEach(option => option.addEventListener('click', () => {
+        familyIdInput.value = option.dataset.familyId;
+        familyDisplay.value = option.dataset.familyLabel;
+        closeModal(familyPickerModal);
+    }));
+
+    document.getElementById('familySearch').addEventListener('input', function () {
+        const term = this.value.toLowerCase();
+        document.querySelectorAll('.family-option').forEach(option => {
+            option.hidden = !option.textContent.toLowerCase().includes(term);
+        });
+    });
+
+    document.getElementById('quickFamilyForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const error = document.getElementById('quickFamilyError');
+        error.textContent = '';
+        const response = await fetch('{{ route('bhw.families.quick.store') }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Accept': 'application/json' },
+            body: new FormData(this)
+        });
+        if (!response.ok) {
+            error.textContent = 'Unable to create family. Check the selected subgroup and try again.';
+            return;
+        }
+        const family = await response.json();
+        familyIdInput.value = family.id;
+        familyDisplay.value = `${family.family_name} - ${family.purok.name} / ${family.subgroup.name}`;
+        closeModal(newFamilyModal);
+    });
+
     const ageInput = document.getElementById('age');
     const birthdateInput = document.getElementById('birthdate');
     const citizenForm = document.getElementById('citizen-form');
@@ -378,14 +436,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const firstName = document.querySelector('input[name="Citizen_FName"]').value;
             const lastName = document.querySelector('input[name="Citizen_LName"]').value;
-            const purok = document.querySelector('select[name="Citizen_Purok"]').value;
+            const family = familyDisplay.value;
 
-            if(!firstName || !lastName || !purok) {
+            if(!firstName || !lastName || !family) {
                 citizenForm.reportValidity();
                 return;
             }
 
-            modalMessage.innerText = `Are you sure you want to save the record for ${firstName} ${lastName} under ${purok}?`;
+            modalMessage.innerText = `Are you sure you want to save the record for ${firstName} ${lastName} under ${family}?`;
             modal.style.display = 'flex';
         }
     });

@@ -128,6 +128,12 @@
                    value="{{ old('Citizen_Purok', $citizen->Citizen_Purok) }}"
                    disabled>
 
+                 <label for="Citizen_Subgroup">Purok Subgroup</label>
+                 <input type="text"
+                     id="Citizen_Subgroup"
+                     value="{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}"
+                     readonly>
+
             <hr class="citizen-section-divider">
 
             {{-- PHYSICAL INFORMATION --}}

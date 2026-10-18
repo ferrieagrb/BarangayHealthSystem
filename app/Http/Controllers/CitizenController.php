@@ -312,19 +312,16 @@ class CitizenController extends Controller
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
-            'Citizen_Purok' => 'required|string|max:255',
-            'subgroup_id' => 'required|exists:purok_subgroups,id',
+            'family_id' => 'required|exists:families,id',
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'Citizen_Sex' => 'required|string|max:255',
         ]);
 
-        $subgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
-        if (!$subgroup->purok || $subgroup->purok->name !== $validated['Citizen_Purok']) {
-            return back()
-                ->withErrors(['subgroup_id' => 'The selected subgroup must belong to the selected Purok.'])
-                ->withInput();
+        $family = Family::with(['purok', 'subgroup'])->findOrFail($validated['family_id']);
+        if (!$family->purok || !$family->subgroup) {
+            return back()->withErrors(['family_id' => 'The selected family is missing its Purok or subgroup.'])->withInput();
         }
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
@@ -334,15 +331,16 @@ class CitizenController extends Controller
             : null;
 
         try {
-            $citizen = DB::transaction(function () use ($validated, $photoPath, $request) {
+            $citizen = DB::transaction(function () use ($validated, $photoPath, $request, $family) {
                 $citizen = citizens::create([
                     'Citizen_FName' => $validated['Citizen_FName'],
                     'Citizen_LName' => $validated['Citizen_LName'],
                     'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
                     'Citizen_Age' => $validated['Citizen_Age'],
                     'Citizen_ContactNo' => $validated['Citizen_ContactNo'] ?? null,
-                    'Citizen_Purok' => $validated['Citizen_Purok'],
-                    'subgroup_id' => $validated['subgroup_id'],
+                    'Citizen_Purok' => $family->purok->name,
+                    'subgroup_id' => $family->subgroup->id,
+                    'family_id' => $family->id,
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
                     'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
@@ -447,6 +445,8 @@ class CitizenController extends Controller
         $citizen = citizens::with([
             'healthRecords' => fn($q) => $q->latest(),
             'maintenanceRecords' => fn($q) => $q->latest(),
+            'subgroup',
+            'family.subgroup',
         ])->findOrFail($id);
 
         $this->authorizeCitizenEdit($citizen);

@@ -78,6 +78,24 @@ class FamilyController extends Controller
         return back()->with('success', 'Family created successfully.');
     }
 
+    public function storeQuick(Request $request)
+    {
+        $validated = $request->validate([
+            'family_name' => 'required|string|max:255',
+            'subgroup_id' => 'required|exists:purok_subgroups,id',
+        ]);
+
+        $subgroup = PurokSubgroup::findOrFail($validated['subgroup_id']);
+        $this->authorizeSubgroup($subgroup);
+        $family = Family::create([
+            'family_name' => $validated['family_name'],
+            'subgroup_id' => $subgroup->id,
+            'purok_id' => $subgroup->purok_id,
+        ]);
+
+        return response()->json($family->load(['purok', 'subgroup']));
+    }
+
     public function show(Family $family)
     {
         $this->authorizeFamily($family);
