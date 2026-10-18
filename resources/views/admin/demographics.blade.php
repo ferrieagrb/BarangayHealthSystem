@@ -233,6 +233,7 @@
                     <option value="{{ $purok->id }}" data-lat="{{ $purok->latitude ?? '' }}" data-lng="{{ $purok->longitude ?? '' }}">{{ $purok->name }}</option>
                 @endforeach
             </select>
+            <button type="button" id="savePurokLocation" class="btn btn-primary" disabled>Save Location</button>
         </div>
         <div id="purokLocationMap" class="purok-location-map"></div>
     </div>
@@ -358,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
         activeForm = option.value ? getForm(option.value) : null;
         if (!activeForm) {
             statusElement.textContent = 'Select a Purok, then click the map to add or move its pin.';
+            document.getElementById('savePurokLocation').disabled = true;
             if (marker) marker.setMap(null);
             map.setCenter(defaultCenter);
             map.setZoom(15);
@@ -375,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setPin(defaultCenter.lat, defaultCenter.lng, false);
             statusElement.textContent = `${activeForm.dataset.purokName} has no location pinned yet. Click the map to add one.`;
         }
+        document.getElementById('savePurokLocation').disabled = false;
     }
 
     async function initializeMap() {
@@ -403,6 +406,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         locationSelect.addEventListener('change', loadSelectedPurok);
+        document.getElementById('savePurokLocation').addEventListener('click', function () {
+            if (!activeForm) return;
+            const latitude = activeForm.querySelector('.purok-latitude').value;
+            const longitude = activeForm.querySelector('.purok-longitude').value;
+            if (!latitude || !longitude) {
+                statusElement.textContent = 'Click the map to place a pin before saving.';
+                return;
+            }
+            statusElement.textContent = `Saving ${activeForm.dataset.purokName} at ${latitude}, ${longitude}...`;
+            activeForm.requestSubmit();
+        });
         document.querySelectorAll('.pick-purok-location').forEach(function (button) {
             button.addEventListener('click', function () {
                 locationSelect.value = button.dataset.purokId;
