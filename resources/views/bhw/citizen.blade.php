@@ -176,7 +176,7 @@
 
             <div class="search-box">
 
-                <input type="text"
+                <input type="search"
 
                 name="search"
 
@@ -185,6 +185,8 @@
                 placeholder="Search citizen name or ID">
 
             </div>
+
+            <button type="submit" class="btn-primary citizen-search-submit">Search</button>
 
             {{-- PUROK --}}
 
@@ -1257,6 +1259,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Navigate directly to the fully constructed URL query string
         window.location.href = targetUrl.toString();
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchForm = document.querySelector('.citizen-filter-form');
+    const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
+    let searchTimer;
+
+    if (!searchForm || !searchInput) return;
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+            searchForm.submit();
+        }, 350);
     });
 });
 </script>
