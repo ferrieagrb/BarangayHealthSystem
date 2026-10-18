@@ -456,7 +456,7 @@
 
                 ID:
 
-                C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}
+                {{ $citizenDisplayIds[$citizen->id] ?? 'Unassigned' }}
 
                 </span>
 
