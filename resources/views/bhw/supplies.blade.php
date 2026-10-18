@@ -214,23 +214,16 @@
 <div class="page-top">
     <div class="page-title">
         <h1>Health Supplies Inventory</h1>
-<<<<<<< HEAD
-        <p>Monitor stock levels and manage supply packs.</p>
-=======
         <p>Monitor stock levels and manage health supply inventory.</p>
->>>>>>> main
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
-<<<<<<< HEAD
         <button type="button" id="openBatchReleaseModal" class="btn-primary" style="margin-left: 10px;">
             Schedule Batch Release
         </button>
-=======
->>>>>>> main
     @endif
 </div>
 
@@ -269,7 +262,6 @@
     </form>
 </div>
 
-<<<<<<< HEAD
 
 <!-- BATCH RELEASES -->
 <div class="table-container" style="margin-bottom: 24px;">
@@ -310,8 +302,6 @@
     </table>
 </div>
 
-=======
->>>>>>> main
 <!-- TABLE -->
 <div class="table-container supplies-main-table-wrapper">
 
@@ -1468,7 +1458,6 @@
 
 </script>
 
-<<<<<<< HEAD
 <div id="batchReleaseModal" class="batch-release-modal" role="dialog" aria-modal="true" aria-labelledby="batchReleaseTitle" aria-hidden="true">
     <div class="batch-release-dialog">
         <div class="batch-release-header">
@@ -1716,6 +1705,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-=======
->>>>>>> main
 @endsection

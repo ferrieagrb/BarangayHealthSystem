@@ -117,7 +117,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        $announcements = Announcement::latest()->take(5)->get();
+        $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
         if ($user->citizen_id) {
             $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
@@ -169,7 +169,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        $announcements = Announcement::latest()->get();
+        $announcements = Announcement::with('images')->latest()->get();
 
         return view('citizen.announcements', compact('announcements'));
     })->name('announcements');

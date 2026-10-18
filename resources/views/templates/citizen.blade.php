@@ -43,14 +43,6 @@ body {
     background:#f3f6fb;
 }
 
-<<<<<<< HEAD
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
-    <script src="{{ asset('js/ui-motion.js') }}" defer></script>
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
-    @yield('CSSown')
-=======
 /* Dashboard header styled like the requested reference */
 .top-bar {
     position: sticky;
@@ -702,7 +694,6 @@ body,
 }
 
 </style>
->>>>>>> main
 </head>
 <body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
     @yield('scripts')
@@ -854,6 +845,10 @@ body,
         @endif
 
         <div class="c-header-actions">
+            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
+                <i class="bx bx-menu" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

@@ -81,11 +81,15 @@
             background: rgba(15, 23, 42, .92);
             overscroll-behavior: contain;
             overflow: hidden;
+            isolation: isolate;
         }
 
         .lightbox-stage {
-            width: min(90vw, 1200px);
-            height: 82vh;
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
             display: grid;
             place-items: center;
             overflow: hidden;
@@ -101,6 +105,8 @@
             transition: transform .15s ease;
             user-select: none;
             cursor: grab;
+            position: relative;
+            z-index: 1;
         }
 
         .lightbox-image.is-dragging {
@@ -114,7 +120,8 @@
             right: 20px;
             display: flex;
             gap: 8px;
-            z-index: 2;
+            z-index: 999999 !important;
+            pointer-events: auto !important;
         }
 
         .lightbox button {
@@ -125,13 +132,21 @@
             background: rgba(15,23,42,.7);
             color: #fff;
             cursor: pointer;
+            position: relative;
+            z-index: 1000000 !important;
+            pointer-events: auto !important;
         }
 
         .lightbox-nav {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 2;
+            z-index: 999999 !important;
+            pointer-events: auto !important;
+        }
+
+        .lightbox-nav[hidden] {
+            display: none !important;
         }
 
         .lightbox-prev { left: 20px; }
@@ -141,7 +156,7 @@
             .announcement-detail { margin-top: 28px; }
             .announcement-detail-gallery { grid-template-columns: 1fr; }
             .lightbox { padding: 12px; }
-                .lightbox-stage { width: 100%; height: 78vh; }
+                .lightbox-stage { width: 100vw; height: 100vh; }
             .lightbox-prev { left: 8px; }
             .lightbox-next { right: 8px; }
         }
@@ -254,6 +269,8 @@
                 document.body.style.top = `-${lockedScrollY}px`;
                 document.body.style.width = '100%';
                 document.body.style.overflow = 'hidden';
+                document.getElementById('lightboxPrev').hidden = imageSources.length < 2;
+                document.getElementById('lightboxNext').hidden = imageSources.length < 2;
             });
         });
 
@@ -286,6 +303,7 @@
         });
         lightboxImage.addEventListener('pointerup', () => lightboxImage.classList.remove('is-dragging'));
         lightboxImage.addEventListener('pointercancel', () => lightboxImage.classList.remove('is-dragging'));
+        lightboxImage.addEventListener('dblclick', () => setZoom(zoom > 1 ? 1 : 2));
         lightbox.addEventListener('click', (event) => {
             if (event.target === lightbox) closeLightbox();
         });
