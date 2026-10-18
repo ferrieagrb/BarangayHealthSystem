@@ -11,14 +11,49 @@ use Illuminate\Support\Facades\Auth;
 
 class FamilyController extends Controller
 {
+    private function authorizeSubgroup(PurokSubgroup $subgroup): void
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'bhw') {
+            return;
+        }
+
+        if ((int) $subgroup->user_id !== (int) $user->id) {
+            abort(403, 'You can only manage families assigned to your subgroup.');
+        }
+    }
+
+    private function authorizeFamily(Family $family): void
+    {
+        $subgroup = $family->loadMissing('subgroup')->subgroup;
+
+        if (!$subgroup) {
+            abort(403, 'This family is not assigned to a subgroup.');
+        }
+
+        $this->authorizeSubgroup($subgroup);
+    }
+
     public function index()
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') {
             abort(403);
         }
 
-        $families = Family::with(['purok', 'subgroup', 'members'])->latest()->get();
-        $puroks = Purok::with('subgroups')->get();
+        $user = Auth::user();
+        $familiesQuery = Family::with(['purok', 'subgroup', 'members']);
+        $puroksQuery = Purok::with('subgroups');
+
+        if ($user->role === 'bhw') {
+            $familiesQuery->whereHas('subgroup', fn ($query) => $query->where('user_id', $user->id));
+            $puroksQuery
+                ->whereHas('subgroups', fn ($query) => $query->where('user_id', $user->id))
+                ->with(['subgroups' => fn ($query) => $query->where('user_id', $user->id)]);
+        }
+
+        $families = $familiesQuery->latest()->get();
+        $puroks = $puroksQuery->get();
         $availableCitizens = citizens::whereNull('family_id')->get();
 
         return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens'));
@@ -32,6 +67,7 @@ class FamilyController extends Controller
         ]);
 
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
+        $this->authorizeSubgroup($subgroup);
 
         Family::create([
             'family_name' => $request->family_name,
@@ -44,6 +80,7 @@ class FamilyController extends Controller
 
     public function show(Family $family)
     {
+        $this->authorizeFamily($family);
         $family->load('members', 'purok', 'subgroup');
         $availableCitizens = citizens::whereNull('family_id')->get();
         $puroks = Purok::with('subgroups')->get();
@@ -55,6 +92,8 @@ class FamilyController extends Controller
     {
         $request->validate(['citizen_id' => 'required|exists:citizens,id']);
 
+        $this->authorizeFamily($family);
+
         citizens::where('id', $request->citizen_id)->update([
             'family_id' => $family->id
         ]);
@@ -64,19 +103,27 @@ class FamilyController extends Controller
 
     public function removeMember($citizenId)
     {
-        citizens::where('id', $citizenId)->update(['family_id' => null]);
+        $citizen = citizens::with('family.subgroup')->findOrFail($citizenId);
+
+        if ($citizen->family) {
+            $this->authorizeFamily($citizen->family);
+        }
+
+        $citizen->update(['family_id' => null]);
 
         return back()->with('success', 'Citizen removed from family.');
     }
 
     public function update(Request $request, Family $family)
     {
+        $this->authorizeFamily($family);
         $request->validate([
             'family_name' => 'required|string|max:255',
             'subgroup_id' => 'required|exists:purok_subgroups,id',
         ]);
 
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
+        $this->authorizeSubgroup($subgroup);
 
         $family->update([
             'family_name' => $request->family_name,

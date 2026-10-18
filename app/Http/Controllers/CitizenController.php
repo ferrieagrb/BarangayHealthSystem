@@ -42,6 +42,8 @@ class CitizenController extends Controller
     {
         $user = auth()->user();
 
+        $citizen->loadMissing('family');
+
         // Non-BHWs (e.g., Admins) have full access
         if ($user && $user->role !== 'bhw') {
             return true;
@@ -68,6 +70,30 @@ class CitizenController extends Controller
         }
 
         abort(403, 'Unauthorized action. You can only edit citizens assigned to your purok subgroup.');
+    }
+
+    private function restrictToAssignedCitizens($query)
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'bhw') {
+            return $query;
+        }
+
+        $canViewAll = UserPermission::where('user_id', $user->id)
+            ->where('feature', 'view_all_citizens')
+            ->where('access', '!=', 'none')
+            ->exists();
+
+        if ($canViewAll) {
+            return $query;
+        }
+
+        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+
+        return $query->whereHas('family', function ($familyQuery) use ($assignedSubgroupIDs) {
+            $familyQuery->whereIn('subgroup_id', $assignedSubgroupIDs);
+        });
     }
 
     /*
@@ -105,7 +131,7 @@ class CitizenController extends Controller
                 }
             });
 
-        $query = citizens::query(); // Unrestricted viewing for all BHWs[cite: 3]
+        $query = $this->restrictToAssignedCitizens(citizens::query());
 
         /*
         |--------------------------------------------------------------------------
@@ -255,10 +281,10 @@ class CitizenController extends Controller
         | DASHBOARD COUNTS (Unrestricted full barangay totals)
         |--------------------------------------------------------------------------
         */
-        $totalCitizens = citizens::count();
-        $kids = citizens::where('Citizen_Age', '<=', 17)->count();
-        $adults = citizens::whereBetween('Citizen_Age', [18, 59])->count();
-        $seniors = citizens::where('Citizen_Age', '>=', 60)->count();
+        $totalCitizens = (clone $query)->count();
+        $kids = (clone $query)->where('Citizen_Age', '<=', 17)->count();
+        $adults = (clone $query)->whereBetween('Citizen_Age', [18, 59])->count();
+        $seniors = (clone $query)->where('Citizen_Age', '>=', 60)->count();
 
         return view('bhw.citizen', compact(
             'citizens',
@@ -410,6 +436,8 @@ class CitizenController extends Controller
             'maintenanceRecords' => fn($q) => $q->latest(),
         ])->findOrFail($id);
 
+        $this->authorizeCitizenEdit($citizen);
+
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
             ->distinct()
@@ -437,6 +465,7 @@ class CitizenController extends Controller
     public function citizendetails($id)
     {
         $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
         $families = Family::with(['purok', 'subgroup'])->get();
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen details page');
