@@ -145,13 +145,28 @@
             </div>
 
             <div class="form-group">
-                <label>Purok</label>
-                <select name="Citizen_Purok" required>
-                    <option value="" disabled selected>-- Select Purok --</option>
-                    @foreach(\App\Models\Purok::all() as $purok)
-                    <option value="{{$purok->name}}" {{ old('Citizen_Purok') == $purok->name ? 'selected' : '' }}>{{$purok->name}}</option>
+                <label for="citizenPurok">Purok</label>
+                <select name="Citizen_Purok" id="citizenPurok" required>
+                    <option value="" disabled {{ old('Citizen_Purok') ? '' : 'selected' }}>-- Select Purok --</option>
+                    @foreach($puroks as $purok)
+                    <option value="{{ $purok->name }}" {{ old('Citizen_Purok') == $purok->name ? 'selected' : '' }}>{{ $purok->name }}</option>
                     @endforeach
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label for="citizenSubgroup">Purok Subgroup</label>
+                <select name="subgroup_id" id="citizenSubgroup" required disabled>
+                    <option value="">-- Select Purok first --</option>
+                    @foreach($puroks as $purok)
+                        @foreach($purok->subgroups as $subgroup)
+                            <option value="{{ $subgroup->id }}" data-purok="{{ $purok->name }}" {{ (string) old('subgroup_id') === (string) $subgroup->id ? 'selected' : '' }}>
+                                {{ $subgroup->name }}
+                            </option>
+                        @endforeach
+                    @endforeach
+                </select>
+                <small>Select the subgroup this citizen belongs to.</small>
             </div>
 
             <div class="form-group">
@@ -289,6 +304,32 @@
 
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const purokSelect = document.getElementById('citizenPurok');
+    const subgroupSelect = document.getElementById('citizenSubgroup');
+    const subgroupOptions = Array.from(subgroupSelect.options).slice(1);
+    const oldSubgroup = @json(old('subgroup_id'));
+
+    function updateSubgroups() {
+        const purok = purokSelect.value;
+        subgroupSelect.innerHTML = '<option value="">-- Select Subgroup --</option>';
+        subgroupSelect.disabled = !purok;
+
+        subgroupOptions
+            .filter(option => option.dataset.purok === purok)
+            .forEach(option => subgroupSelect.appendChild(option.cloneNode(true)));
+
+        if (oldSubgroup) {
+            subgroupSelect.value = oldSubgroup;
+        }
+    }
+
+    purokSelect.addEventListener('change', updateSubgroups);
+    updateSubgroups();
+});
+</script>
 
 <!-- Custom centered confirmation modal window with separated backdrop and box layers -->
 <div id="confirmation-modal" style="display: none;">

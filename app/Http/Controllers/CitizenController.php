@@ -62,7 +62,8 @@ class CitizenController extends Controller
             // Check if citizen belongs to one of the BHW's assigned purok subgroups
             $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
             
-            $belongsToAssignedSubgroup = $citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id);
+                $belongsToAssignedSubgroup = $assignedSubgroupIDs->contains($citizen->subgroup_id)
+                    || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
 
             if ($belongsToAssignedSubgroup) {
                 return true;
@@ -91,8 +92,11 @@ class CitizenController extends Controller
 
         $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
 
-        return $query->whereHas('family', function ($familyQuery) use ($assignedSubgroupIDs) {
-            $familyQuery->whereIn('subgroup_id', $assignedSubgroupIDs);
+        return $query->where(function ($citizenQuery) use ($assignedSubgroupIDs) {
+            $citizenQuery->whereIn('subgroup_id', $assignedSubgroupIDs)
+                ->orWhereHas('family', function ($familyQuery) use ($assignedSubgroupIDs) {
+                    $familyQuery->whereIn('subgroup_id', $assignedSubgroupIDs);
+                });
         });
     }
 
@@ -309,11 +313,23 @@ class CitizenController extends Controller
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
             'Citizen_Purok' => 'required|string|max:255',
+            'subgroup_id' => 'required|exists:purok_subgroups,id',
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'Citizen_Sex' => 'required|string|max:255',
         ]);
+
+        $subgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
+        if (!$subgroup->purok || $subgroup->purok->name !== $validated['Citizen_Purok']) {
+            return back()
+                ->withErrors(['subgroup_id' => 'The selected subgroup must belong to the selected Purok.'])
+                ->withInput();
+        }
+
+            if (Auth::user()->role === 'bhw' && (int) $subgroup->user_id !== (int) Auth::id()) {
+                abort(403, 'You can only assign citizens to your own Purok subgroups.');
+            }
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
@@ -330,6 +346,7 @@ class CitizenController extends Controller
                     'Citizen_Age' => $validated['Citizen_Age'],
                     'Citizen_ContactNo' => $validated['Citizen_ContactNo'] ?? null,
                     'Citizen_Purok' => $validated['Citizen_Purok'],
+                    'subgroup_id' => $validated['subgroup_id'],
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
                     'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
