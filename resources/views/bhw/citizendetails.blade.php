@@ -267,14 +267,14 @@
             <label>Resident Status</label>
             <input type="text"
                    id="displayDeceasedStatus"
-                   value="{{ (int) $citizen->Citizen_IsDeceased === 1 ? 'Deceased' : 'Living' }}"
+                   value="{{ $citizen->Citizen_IsDeceased ? 'Deceased' : 'Living' }}"
                    disabled>
 
             {{-- Hidden input ensuring value is properly submitted to controller --}}
             <input type="hidden"
                    id="Citizen_IsDeceased"
                    name="Citizen_IsDeceased"
-                   value="{{ old('Citizen_IsDeceased', $citizen->Citizen_IsDeceased ?? 0) }}">
+                   value="{{ old('Citizen_IsDeceased', $citizen->Citizen_IsDeceased ? 1 : 0) }}">
 
             <hr class="citizen-section-divider">
 
