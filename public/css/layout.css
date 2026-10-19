@@ -51,7 +51,8 @@
     overflow-y: auto;
     overflow-x: hidden;
 
-    transition: width 0.4s ease;
+    transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: width;
 }
 
 
@@ -87,7 +88,7 @@
 
     cursor: pointer;
 
-    transition: 0.3s ease;
+    transition: transform 0.32s ease, color 0.2s ease;
 }
 
 
@@ -157,7 +158,9 @@
 
 .sidebar ul li a span {
     white-space: nowrap;
-    transition: 0.3s ease;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.18s ease, transform 0.24s ease;
 }
 
 
@@ -205,9 +208,7 @@
 
 .sidebar.collapsed ul li a span {
     opacity: 0;
-
-    width: 0;
-
+    transform: translateX(-8px);
     position: absolute;
     overflow: hidden;
 }
@@ -287,8 +288,9 @@
     overflow-x: hidden;
 
     transition:
-        margin-left 0.4s ease,
-        width 0.4s ease;
+        margin-left 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: margin-left, width;
 }
 
 
