@@ -50,15 +50,6 @@ class CitizenController extends Controller
         }
 
         if ($user && $user->role === 'bhw') {
-            $canViewAll = UserPermission::where('user_id', $user->id)
-                ->where('feature', 'view_all_citizens')
-                ->where('access', '!=', 'none')
-                ->exists();
-
-            if ($canViewAll) {
-                return true;
-            }
-
             // Check if citizen belongs to one of the BHW's assigned purok subgroups
             $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
             
