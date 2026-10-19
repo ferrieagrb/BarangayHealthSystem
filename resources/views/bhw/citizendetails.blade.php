@@ -52,7 +52,7 @@
 
     <div class="right">
         <a href="{{ route('citizenlist') }}" class="btn-secondary">← Back</a>
-        @if((int) $citizen->Citizen_IsDeceased !== 1)
+        @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
             <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()">Edit</button>
         @else
             <span class="text-danger" style="font-weight: bold; font-size: 13px; background: #fee2e2; padding: 8px 12px; border-radius: 6px; color: #991b1b;">Record Locked (Deceased)</span>

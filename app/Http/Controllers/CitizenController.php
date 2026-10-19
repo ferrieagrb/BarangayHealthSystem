@@ -40,28 +40,26 @@ class CitizenController extends Controller
      */
     private function authorizeCitizenEdit(citizens $citizen)
     {
-        $user = auth()->user();
-
-        $citizen->loadMissing('family');
-
-        // Non-BHWs (e.g., Admins) have full access
-        if ($user && $user->role !== 'bhw') {
+        if ($this->canEditCitizen($citizen)) {
             return true;
         }
 
-        if ($user && $user->role === 'bhw') {
-            // Check if citizen belongs to one of the BHW's assigned purok subgroups
-            $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-            
-                $belongsToAssignedSubgroup = $assignedSubgroupIDs->contains($citizen->subgroup_id)
-                    || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
+        abort(403, 'Unauthorized action. You can only edit citizens assigned to your purok subgroup.');
+    }
 
-            if ($belongsToAssignedSubgroup) {
-                return true;
-            }
+    private function canEditCitizen(citizens $citizen): bool
+    {
+        $user = auth()->user();
+        $citizen->loadMissing('family');
+
+        if (!$user || $user->role !== 'bhw') {
+            return true;
         }
 
-        abort(403, 'Unauthorized action. You can only edit citizens assigned to your purok subgroup.');
+        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+
+        return $assignedSubgroupIDs->contains($citizen->subgroup_id)
+            || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
     }
 
     private function restrictToAssignedCitizens($query)
@@ -126,7 +124,7 @@ class CitizenController extends Controller
                 }
             });
 
-        $query = $this->restrictToAssignedCitizens(citizens::query());
+        $query = citizens::query();
         $summaryQuery = clone $query;
 
         /*
@@ -285,9 +283,7 @@ class CitizenController extends Controller
         $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
         $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
 
-        $ordinalCitizens = $this->restrictToAssignedCitizens(
-            citizens::with(['subgroup', 'family.subgroup'])->orderBy('id')
-        )->get();
+        $ordinalCitizens = citizens::with(['subgroup', 'family.subgroup'])->orderBy('id')->get();
         $subgroupOrdinals = [];
         $citizenDisplayIds = [];
         foreach ($ordinalCitizens as $ordinalCitizen) {
@@ -497,13 +493,13 @@ class CitizenController extends Controller
     public function citizendetails($id)
     {
         $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
-        $this->authorizeCitizenEdit($citizen);
+        $canEdit = $this->canEditCitizen($citizen);
         $families = Family::with(['purok', 'subgroup'])->get();
         $puroks = Purok::with('subgroups')->get();
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen details page');
 
-        return view('bhw.citizendetails', compact('citizen', 'families', 'puroks'));
+        return view('bhw.citizendetails', compact('citizen', 'families', 'puroks', 'canEdit'));
     }
 
     /*
