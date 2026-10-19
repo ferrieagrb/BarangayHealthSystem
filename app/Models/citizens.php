@@ -63,6 +63,9 @@ class citizens extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'Citizen_Pregnant' => 'boolean',
+            'Citizen_InPills' => 'boolean',
+            'Citizen_IsDeceased' => 'boolean',
         ];
     }
 
