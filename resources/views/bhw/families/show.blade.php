@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <style>
-    .family-container { max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: Arial, sans-serif; color: #333; }
+    .family-container { width: 100%; max-width: none; margin: 0; padding: 24px; font-family: Arial, sans-serif; color: #333; box-sizing: border-box; }
     .card { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
     .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
     .form-control { flex: 1; min-width: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
@@ -89,6 +89,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Family ID</th>
                     <th>Family Name</th>
                     <th>Purok & Subgroup</th>
                     <th>Members Count</th>
@@ -98,6 +99,7 @@
             <tbody>
                 @forelse($families as $fam)
                     <tr>
+                        <td><strong>F-{{ str_pad($fam->id, 4, '0', STR_PAD_LEFT) }}</strong></td>
                         <td><strong>{{ $fam->family_name }}</strong></td>
                         <td>
                             {{ $fam->purok->name ?? 'N/A' }} 
@@ -116,7 +118,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" style="text-align: center; color: #7f8c8d; font-style: italic;">No families registered yet.</td>
+                        <td colspan="5" style="text-align: center; color: #7f8c8d; font-style: italic;">No families registered yet.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -280,7 +282,7 @@
         const family = JSON.parse(button.getAttribute('data-family'));
         const modal = document.getElementById('familyModal');
         
-        document.getElementById('modalTitle').textContent = `Manage: ${family.family_name}`;
+        document.getElementById('modalTitle').textContent = `F-${String(family.id).padStart(4, '0')} · ${family.family_name}`;
         document.getElementById('modalFamilyName').value = family.family_name;
         
         // Set existing subgroup values for edit modal

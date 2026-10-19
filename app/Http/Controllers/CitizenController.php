@@ -217,8 +217,11 @@ class CitizenController extends Controller
         if ($request->filled('subgroup') && $request->subgroup !== 'all') {
             $subgroupId = $request->subgroup;
 
-            $query->whereHas('family', function ($q) use ($subgroupId) {
-                $q->where('subgroup_id', $subgroupId);
+            $query->where(function ($q) use ($subgroupId) {
+                $q->where('subgroup_id', $subgroupId)
+                    ->orWhereHas('family', function ($familyQuery) use ($subgroupId) {
+                        $familyQuery->where('subgroup_id', $subgroupId);
+                    });
             });
         }
 
@@ -327,16 +330,26 @@ class CitizenController extends Controller
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
-            'family_id' => 'required|exists:families,id',
+            'family_id' => 'nullable|exists:families,id',
+            'Citizen_Purok' => 'nullable|string|max:255|required_without:family_id',
+            'subgroup_id' => 'nullable|exists:purok_subgroups,id|required_without:family_id',
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'Citizen_Sex' => 'required|string|max:255',
         ]);
 
-        $family = Family::with(['purok', 'subgroup'])->findOrFail($validated['family_id']);
-        if (!$family->purok || !$family->subgroup) {
-            return back()->withErrors(['family_id' => 'The selected family is missing its Purok or subgroup.'])->withInput();
+        $family = null;
+        if (!empty($validated['family_id'])) {
+            $family = Family::with(['purok', 'subgroup'])->findOrFail($validated['family_id']);
+            if (!$family->purok || !$family->subgroup) {
+                return back()->withErrors(['family_id' => 'The selected family is missing its Purok or subgroup.'])->withInput();
+            }
+        } else {
+            $manualSubgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
+            if (!$manualSubgroup->purok || $manualSubgroup->purok->name !== $validated['Citizen_Purok']) {
+                return back()->withErrors(['subgroup_id' => 'The selected subgroup must belong to the selected Purok.'])->withInput();
+            }
         }
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
@@ -353,9 +366,9 @@ class CitizenController extends Controller
                     'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
                     'Citizen_Age' => $validated['Citizen_Age'],
                     'Citizen_ContactNo' => $validated['Citizen_ContactNo'] ?? null,
-                    'Citizen_Purok' => $family->purok->name,
-                    'subgroup_id' => $family->subgroup->id,
-                    'family_id' => $family->id,
+                    'Citizen_Purok' => $family?->purok->name ?? $validated['Citizen_Purok'],
+                    'subgroup_id' => $family?->subgroup->id ?? $validated['subgroup_id'],
+                    'family_id' => $family?->id,
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
                     'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
@@ -495,10 +508,11 @@ class CitizenController extends Controller
         $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
         $this->authorizeCitizenEdit($citizen);
         $families = Family::with(['purok', 'subgroup'])->get();
+        $puroks = Purok::with('subgroups')->get();
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen details page');
 
-        return view('bhw.citizendetails', compact('citizen', 'families'));
+        return view('bhw.citizendetails', compact('citizen', 'families', 'puroks'));
     }
 
     /*
@@ -536,8 +550,9 @@ class CitizenController extends Controller
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
-            'Citizen_Purok' => 'required|string|max:255',
+            'Citizen_Purok' => 'nullable|string|max:255|required_without:family_id',
             'family_id' => 'nullable|exists:families,id',
+            'subgroup_id' => 'nullable|exists:purok_subgroups,id|required_without:family_id',
             'Citizen_Height' => 'nullable|numeric|min:0',
             'Citizen_Weight' => 'nullable|numeric|min:0',
             'Citizen_Sex' => 'nullable|string|in:Male,Female',
@@ -548,6 +563,18 @@ class CitizenController extends Controller
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+
+        $family = Family::with(['purok', 'subgroup'])->find($validated['family_id'] ?? $citizen->family_id);
+        if ($family) {
+            $validated['family_id'] = $family->id;
+            $validated['Citizen_Purok'] = $family->purok->name;
+            $validated['subgroup_id'] = $family->subgroup->id;
+        } else {
+            $manualSubgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
+            if (!$manualSubgroup->purok || $manualSubgroup->purok->name !== $validated['Citizen_Purok']) {
+                return back()->withErrors(['subgroup_id' => 'The selected subgroup must belong to the selected Purok.'])->withInput();
+            }
+        }
 
         $citizen->update($validated);
 

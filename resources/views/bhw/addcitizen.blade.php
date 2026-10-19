@@ -148,10 +148,23 @@
                 <label for="citizenFamilyDisplay">Family</label>
                 <input type="hidden" name="family_id" id="citizenFamilyId" value="{{ old('family_id') }}" required>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input type="text" id="citizenFamilyDisplay" class="form-control" value="" placeholder="Select a family" readonly required>
+                    <input type="text" id="citizenFamilyDisplay" class="form-control" value="" placeholder="Select a family or use manual assignment" readonly>
                     <button type="button" class="btn-secondary" id="openFamilyPicker">Select Family</button>
                 </div>
-                <small>The citizen's Purok and subgroup will come from the selected family.</small>
+                <small id="assignmentStatus">The citizen's Purok and subgroup will come from the selected family.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="citizenPurokDisplay">Purok</label>
+                <input type="hidden" name="Citizen_Purok" id="citizenPurok">
+                <input type="text" id="citizenPurokDisplay" class="form-control" placeholder="Selected from family or manual assignment" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="citizenSubgroupDisplay">Purok Subgroup</label>
+                <input type="hidden" name="subgroup_id" id="citizenSubgroup">
+                <input type="text" id="citizenSubgroupDisplay" class="form-control" placeholder="Selected from family or manual assignment" readonly>
+                <button type="button" class="btn-secondary" id="openManualAssignment">Assign without family</button>
             </div>
 
             <div class="form-group">
@@ -324,13 +337,34 @@
         <input type="search" id="familySearch" class="form-control" placeholder="Search family name...">
         <div class="family-picker-list" id="familyPickerList">
             @foreach($families as $family)
-                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}">
+                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}">
                     <span><strong>{{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
                     <span>Select</span>
                 </button>
             @endforeach
         </div>
         <button type="button" class="btn-primary" id="openNewFamilyModal" style="margin-top:16px;">+ Add New Family</button>
+    </div>
+</div>
+
+<div class="family-picker-modal" id="manualAssignmentModal" aria-hidden="true">
+    <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="manualAssignmentTitle">
+        <div class="family-picker-header">
+            <h2 id="manualAssignmentTitle" style="margin:0;">Choose Purok and Subgroup</h2>
+            <button type="button" class="family-picker-close" id="closeManualAssignment" aria-label="Close">&times;</button>
+        </div>
+        <div id="manualAssignmentList" class="family-picker-list">
+            @foreach($puroks as $purok)
+                <strong style="margin-top:8px; color:#173b82;">{{ $purok->name }}</strong>
+                @forelse($purok->subgroups as $subgroup)
+                    <button type="button" class="family-option manual-assignment-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}">
+                        <span>{{ $purok->name }} / {{ $subgroup->name }}</span><span>Select</span>
+                    </button>
+                @empty
+                    <small style="color:#64748b;">No subgroups configured for this Purok.</small>
+                @endforelse
+            @endforeach
+        </div>
     </div>
 </div>
 
@@ -363,11 +397,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const newFamilyModal = document.getElementById('newFamilyModal');
     const familyIdInput = document.getElementById('citizenFamilyId');
     const familyDisplay = document.getElementById('citizenFamilyDisplay');
+    const purokInput = document.getElementById('citizenPurok');
+    const subgroupInput = document.getElementById('citizenSubgroup');
+    const purokDisplay = document.getElementById('citizenPurokDisplay');
+    const subgroupDisplay = document.getElementById('citizenSubgroupDisplay');
+    const manualAssignmentButton = document.getElementById('openManualAssignment');
+    const manualAssignmentModal = document.getElementById('manualAssignmentModal');
+    const assignmentStatus = document.getElementById('assignmentStatus');
+
+    function useManualAssignment() {
+        familyIdInput.value = '';
+        manualAssignmentButton.disabled = false;
+        familyIdInput.removeAttribute('required');
+        familyDisplay.value = '';
+        familyDisplay.removeAttribute('required');
+        familyIdInput.value = '';
+        purokInput.value = '';
+        subgroupInput.value = '';
+        purokDisplay.value = '';
+        subgroupDisplay.value = '';
+        assignmentStatus.textContent = 'Select the citizen\'s Purok and subgroup manually.';
+    }
+
+    function useFamilyAssignment() {
+        familyIdInput.required = true;
+        manualAssignmentButton.disabled = true;
+        assignmentStatus.textContent = 'The citizen\'s Purok and subgroup will come from the selected family.';
+    }
 
     function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
     function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
 
     document.getElementById('openFamilyPicker').addEventListener('click', () => openModal(familyPickerModal));
+    document.getElementById('openManualAssignment').addEventListener('click', () => { useManualAssignment(); openModal(manualAssignmentModal); });
+    document.getElementById('closeManualAssignment').addEventListener('click', () => closeModal(manualAssignmentModal));
     document.getElementById('closeFamilyPicker').addEventListener('click', () => closeModal(familyPickerModal));
     document.getElementById('openNewFamilyModal').addEventListener('click', () => { closeModal(familyPickerModal); openModal(newFamilyModal); });
     document.querySelectorAll('.close-new-family').forEach(button => button.addEventListener('click', () => closeModal(newFamilyModal)));
@@ -375,6 +438,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.family-option').forEach(option => option.addEventListener('click', () => {
         familyIdInput.value = option.dataset.familyId;
         familyDisplay.value = option.dataset.familyLabel;
+        purokInput.value = option.dataset.purok;
+        subgroupInput.value = option.dataset.subgroup;
+        purokDisplay.value = option.dataset.purok;
+        subgroupDisplay.value = option.dataset.subgroupName;
+        useFamilyAssignment();
         closeModal(familyPickerModal);
     }));
 
@@ -401,8 +469,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const family = await response.json();
         familyIdInput.value = family.id;
         familyDisplay.value = `${family.family_name} - ${family.purok.name} / ${family.subgroup.name}`;
+        purokInput.value = family.purok.name;
+        subgroupInput.value = family.subgroup.id;
+        purokDisplay.value = family.purok.name;
+        subgroupDisplay.value = family.subgroup.name;
+        useFamilyAssignment();
         closeModal(newFamilyModal);
     });
+
+    document.querySelectorAll('.manual-assignment-option').forEach(option => option.addEventListener('click', function () {
+        purokInput.value = option.dataset.purok;
+        subgroupInput.value = option.dataset.subgroupId;
+        purokDisplay.value = option.dataset.purok;
+        subgroupDisplay.value = option.dataset.subgroupName;
+        closeModal(manualAssignmentModal);
+    }));
+
+    if (familyIdInput.value) useFamilyAssignment();
+    else useManualAssignment();
 
     const ageInput = document.getElementById('age');
     const birthdateInput = document.getElementById('birthdate');
@@ -438,8 +522,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const firstName = document.querySelector('input[name="Citizen_FName"]').value;
             const lastName = document.querySelector('input[name="Citizen_LName"]').value;
             const family = familyDisplay.value;
+            const manualAssignment = purokInput.value && subgroupInput.value;
 
-            if(!firstName || !lastName || !family) {
+            if(!firstName || !lastName || (!family && !manualAssignment)) {
                 citizenForm.reportValidity();
                 return;
             }
