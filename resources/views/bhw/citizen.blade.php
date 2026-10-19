@@ -428,6 +428,8 @@
 
                 <th>Purok</th>
 
+                <th>Subgroup</th>
+
                 <th>Action</th>
 
             </tr>
@@ -494,6 +496,14 @@
 
                 </td>
 
+                {{-- SUBGROUP --}}
+
+                <td>
+
+                {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Unassigned' }}
+
+                </td>
+
                 {{-- ACTIONS --}}
 
                 <td>
@@ -504,7 +514,11 @@
 
                 // Use fully qualified model namespace in Blade
 
-                $isAssigned =$user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)->where('id', optional($citizen->family)->subgroup_id)->exists();
+                $isAssigned = $user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)
+                    ->where(function ($query) use ($citizen) {
+                        $query->where('id', $citizen->subgroup_id)
+                            ->orWhere('id', optional($citizen->family)->subgroup_id);
+                    })->exists();
 
                 @endphp
 
@@ -572,7 +586,7 @@
 
                 <tr>
 
-                <td colspan="6"
+                <td colspan="7"
 
                 class="empty-text"
 

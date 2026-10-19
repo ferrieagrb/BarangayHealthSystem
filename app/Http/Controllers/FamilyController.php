@@ -112,8 +112,11 @@ class FamilyController extends Controller
 
         $this->authorizeFamily($family);
 
+        $family->load(['purok', 'subgroup']);
         citizens::where('id', $request->citizen_id)->update([
-            'family_id' => $family->id
+            'family_id' => $family->id,
+            'Citizen_Purok' => $family->purok->name,
+            'subgroup_id' => $family->subgroup->id,
         ]);
 
         return back()->with('success', 'Citizen added to family.');
@@ -147,6 +150,11 @@ class FamilyController extends Controller
             'family_name' => $request->family_name,
             'subgroup_id' => $request->subgroup_id,
             'purok_id' => $subgroup->purok_id,
+        ]);
+
+        $family->members()->update([
+            'Citizen_Purok' => $subgroup->purok->name,
+            'subgroup_id' => $subgroup->id,
         ]);
 
         return back()->with('success', 'Family updated successfully.');

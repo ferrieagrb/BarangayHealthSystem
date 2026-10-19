@@ -126,13 +126,47 @@
                    id="Citizen_Purok"
                    name="Citizen_Purok"
                    value="{{ old('Citizen_Purok', $citizen->Citizen_Purok) }}"
-                   disabled>
+                     disabled
+                     readonly>
 
                  <label for="Citizen_Subgroup">Purok Subgroup</label>
                  <input type="text"
                      id="Citizen_Subgroup"
                      value="{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}"
                      readonly>
+                 <button type="button" class="btn-secondary" id="openEditManualPicker" style="display:none;">Assign without family</button>
+
+            <hr class="citizen-section-divider">
+
+            {{-- FAMILY INFORMATION --}}
+            <h3 class="citizen-section-title">Family Information</h3>
+
+            <label for="displayFamilyId">Family ID</label>
+            <input type="text"
+                   id="displayFamilyId"
+                   value="{{ $citizen->family->id ?? 'None' }}"
+                   disabled>
+
+            <label for="displayFamilyName">Family Name</label>
+            <input type="text"
+                   id="displayFamilyName"
+                   value="{{ $citizen->family->family_name ?? 'No Family Assigned' }}"
+                   disabled>
+
+            <label for="displaySubgroupName">Subgroup / Purok Section</label>
+            <input type="text"
+                   id="displaySubgroupName"
+                   value="{{ $citizen->family->subgroup->name ?? 'None' }}"
+                   disabled>
+
+            <div id="familyEditContainer" style="display: none;">
+                <input type="hidden" name="family_id" id="familySelect" value="{{ old('family_id', $citizen->family_id) }}">
+                <input type="hidden" name="subgroup_id" id="editSubgroupId" value="{{ $citizen->subgroup_id ?? $citizen->family?->subgroup_id }}">
+                <label>Assignment</label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button type="button" class="btn btn-secondary" id="openEditFamilyPicker">Select Family</button>
+                </div>
+            </div>
 
             <hr class="citizen-section-divider">
 
@@ -244,54 +278,6 @@
 
             <hr class="citizen-section-divider">
 
-            {{-- FAMILY INFORMATION --}}
-            <h3 class="citizen-section-title">Family Information</h3>
-
-            <label for="displayFamilyId">Family ID</label>
-            <input type="text"
-                   id="displayFamilyId"
-                   value="{{ $citizen->family->id ?? 'None' }}"
-                   disabled>
-
-            <label for="displayFamilyName">Family Name</label>
-            <input type="text"
-                   id="displayFamilyName"
-                   value="{{ $citizen->family->family_name ?? 'No Family Assigned' }}"
-                   disabled>
-
-            <label for="displaySubgroupName">Subgroup / Purok Section</label>
-            <input type="text"
-                   id="displaySubgroupName"
-                   value="{{ $citizen->family->subgroup->name ?? 'None' }}"
-                   disabled>
-
-            <div id="familyEditContainer" style="display: none;">
-                <label for="familySelect">Assign / Update Family (Grouped by Purok)</label>
-
-                <select name="family_id"
-                        id="familySelect"
-                        class="form-control">
-                    <option value="">-- No Family (Unassigned) --</option>
-
-                    @foreach($families->groupBy(fn($fam) => $fam->purok->name ?? 'No Purok') as $purokName => $purokFamilies)
-                        <optgroup label="Purok: {{ $purokName }}">
-                            @foreach($purokFamilies as $family)
-                                <option value="{{ $family->id }}"
-                                        data-name="{{ $family->family_name }}"
-                                        data-id="{{ $family->id }}"
-                                        data-subgroup="{{ $family->subgroup->name ?? 'None' }}"
-                                    {{ old('family_id', $citizen->family_id) == $family->id ? 'selected' : '' }}>
-                                    {{ $family->family_name }}
-                                    @if($family->subgroup)
-                                        (Subgroup: {{ $family->subgroup->name }})
-                                    @endif
-                                </option>
-                            @endforeach
-                        </optgroup>
-                    @endforeach
-                </select>
-            </div>
-
             <hr class="citizen-section-divider">
 
             {{-- DECEASED STATUS MARKER SECTION (BEFORE SAVE) --}}
@@ -325,6 +311,49 @@
             </div>
 
         </form>
+    </div>
+</div>
+
+<style>
+    .edit-assignment-modal { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.55); }
+    .edit-assignment-modal.open { display:flex; }
+    .edit-assignment-box { width:min(700px,100%); max-height:90vh; overflow:auto; padding:24px; border-radius:12px; background:#fff; box-shadow:0 20px 50px rgba(15,23,42,.25); }
+    .edit-assignment-list { display:grid; gap:8px; max-height:55vh; overflow:auto; }
+    .edit-assignment-option { display:flex; justify-content:space-between; gap:12px; padding:12px; border:1px solid #dbe3ef; border-radius:7px; background:#fff; cursor:pointer; text-align:left; }
+    .edit-assignment-option:hover { border-color:#2563eb; background:#eff6ff; }
+</style>
+
+<div class="edit-assignment-modal" id="editFamilyPicker" aria-hidden="true">
+    <div class="edit-assignment-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Select Family</h2>
+            <button type="button" class="family-picker-close" data-close-edit-modal>&times;</button>
+        </div>
+        <input type="search" id="editFamilySearch" class="form-control" placeholder="Search family..." style="margin:16px 0;">
+        <div class="edit-assignment-list">
+            @foreach($families as $family)
+                <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}">
+                    <span><strong>F-{{ str_pad($family->id, 4, '0', STR_PAD_LEFT) }} · {{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
+                </button>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<div class="edit-assignment-modal" id="editManualPicker" aria-hidden="true">
+    <div class="edit-assignment-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Select Purok / Subgroup</h2>
+            <button type="button" class="family-picker-close" data-close-edit-modal>&times;</button>
+        </div>
+        <div class="edit-assignment-list" style="margin-top:16px;">
+            @foreach($puroks as $purok)
+                <strong style="color:#173b82;">{{ $purok->name }}</strong>
+                @foreach($purok->subgroups as $subgroup)
+                    <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}"><span>{{ $purok->name }} / {{ $subgroup->name }}</span><span>Select</span></button>
+                @endforeach
+            @endforeach
+        </div>
     </div>
 </div>
 
@@ -374,6 +403,8 @@ function enableEdit() {
 
     document.getElementById('displayFamilyName').style.display = 'none';
     document.getElementById('familyEditContainer').style.display = 'block';
+    document.getElementById('openEditManualPicker').style.display = 'inline-block';
+    document.getElementById('openEditManualPicker').disabled = Boolean(originalFamilyId);
 
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('cancelBtn').style.display = 'inline-block';
@@ -401,6 +432,7 @@ function disableEdit() {
 
     document.getElementById('displayFamilyName').style.display = 'block';
     document.getElementById('familyEditContainer').style.display = 'none';
+    document.getElementById('openEditManualPicker').style.display = 'none';
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
@@ -434,23 +466,48 @@ document.getElementById('confirmDeceasedSaveBtn').addEventListener('click', func
     document.getElementById('citizenForm').submit();
 });
 
-document.getElementById('familySelect').addEventListener('change', function () {
-    const selectedOption = this.options[this.selectedIndex];
+function toggleEditAssignmentModal(id, open) {
+    const modal = document.getElementById(id);
+    modal.classList.toggle('open', open);
+    modal.setAttribute('aria-hidden', String(!open));
+}
 
-    if (this.value) {
-        document.getElementById('displayFamilyId').value =
-            selectedOption.dataset.id || 'None';
+document.getElementById('openEditFamilyPicker').addEventListener('click', () => toggleEditAssignmentModal('editFamilyPicker', true));
+document.getElementById('openEditManualPicker').addEventListener('click', () => toggleEditAssignmentModal('editManualPicker', true));
+document.querySelectorAll('[data-close-edit-modal]').forEach(button => button.addEventListener('click', () => {
+    toggleEditAssignmentModal('editFamilyPicker', false);
+    toggleEditAssignmentModal('editManualPicker', false);
+}));
 
-        document.getElementById('displayFamilyName').value =
-            selectedOption.dataset.name || 'No Family Assigned';
+document.querySelectorAll('.edit-family-option').forEach(option => option.addEventListener('click', function () {
+    document.getElementById('familySelect').value = option.dataset.familyId;
+    document.getElementById('editSubgroupId').value = option.dataset.subgroupId;
+    document.getElementById('Citizen_Purok').value = option.dataset.purok;
+    document.getElementById('Citizen_Subgroup').value = option.dataset.subgroupName;
+    document.getElementById('displayFamilyId').value = `F-${String(option.dataset.familyId).padStart(4, '0')}`;
+    document.getElementById('displayFamilyName').value = option.dataset.familyName;
+    document.getElementById('displaySubgroupName').value = option.dataset.subgroupName;
+    document.getElementById('openEditManualPicker').disabled = true;
+    toggleEditAssignmentModal('editFamilyPicker', false);
+}));
 
-        document.getElementById('displaySubgroupName').value =
-            selectedOption.dataset.subgroup || 'None';
-    } else {
-        document.getElementById('displayFamilyId').value = 'None';
-        document.getElementById('displayFamilyName').value = 'No Family Assigned';
-        document.getElementById('displaySubgroupName').value = 'None';
-    }
+document.querySelectorAll('.edit-manual-option').forEach(option => option.addEventListener('click', function () {
+    document.getElementById('familySelect').value = '';
+    document.getElementById('editSubgroupId').value = option.dataset.subgroupId;
+    document.getElementById('Citizen_Purok').value = option.dataset.purok;
+    document.getElementById('Citizen_Subgroup').value = option.dataset.subgroupName;
+    document.getElementById('displayFamilyId').value = 'None';
+    document.getElementById('displayFamilyName').value = 'No Family Assigned';
+    document.getElementById('displaySubgroupName').value = option.dataset.subgroupName;
+    document.getElementById('openEditManualPicker').disabled = false;
+    toggleEditAssignmentModal('editManualPicker', false);
+}));
+
+document.getElementById('editFamilySearch').addEventListener('input', function () {
+    const search = this.value.toLowerCase();
+    document.querySelectorAll('.edit-family-option').forEach(option => {
+        option.hidden = !option.textContent.toLowerCase().includes(search);
+    });
 });
 </script>
 
