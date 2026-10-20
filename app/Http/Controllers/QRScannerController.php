@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\citizens;
+use App\Models\HealthRecord;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -45,6 +48,14 @@ class QRScannerController extends Controller
                 'age' => $citizen->Citizen_Age,
                 'contact_number' => $citizen->Citizen_ContactNo,
                 'purok' => $citizen->Citizen_Purok,
+                'sex' => $citizen->Citizen_Sex,
+                'height' => $citizen->Citizen_Height,
+                'weight' => $citizen->Citizen_Weight,
+                'family_id' => $citizen->family_id,
+                'housing_status' => $citizen->Citizen_HousingStatus,
+                'pregnant' => $citizen->Citizen_Pregnant ? 'Yes' : 'No',
+                'in_pills' => $citizen->Citizen_InPills ? 'Yes' : 'No',
+                'is_deceased' => $citizen->Citizen_IsDeceased ? 'Deceased' : 'Active',
                 'photo_url' => $citizen->photo_path
                     ? asset('storage/' . ltrim($citizen->photo_path, '/'))
                     : null,
