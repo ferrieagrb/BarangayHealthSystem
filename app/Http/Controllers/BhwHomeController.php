@@ -8,8 +8,6 @@ use App\Models\Event;
 use App\Models\Supply;
 use App\Models\Referral;
 use App\Models\Announcement;
-use App\Models\MaintenanceRecord;
-use App\Models\SupplyRelease;
 use App\Models\Purok;
 use Illuminate\Support\Facades\DB;
 
@@ -39,25 +37,18 @@ class BhwHomeController extends Controller
             ->take(5)
             ->get();
 
-        // Low stock supplies (next 5)
+        // Inventory watch list for the dashboard panel
         $lowStockSupplies = Supply::whereColumn('quantity', '<=', 'min_stock')
             ->orderBy('quantity', 'asc')
             ->take(5)
             ->get();
         $totalInventory = Supply::count();
         $totalInventoryUnits = Supply::sum('quantity');
-        $lowStockCount = Supply::whereColumn('quantity', '<=', 'min_stock')
-            ->where('quantity', '>', 0)
-            ->count();
 
         // Recent referrals (latest 5)
         $recentReferrals = Referral::latest()->take(5)->get();
         $recentReferralsCount = Referral::count();
         $pendingReferrals = Referral::whereIn('status', ['pending', 'approved'])->count();
-        $activeMaintenance = MaintenanceRecord::where(function ($query) {
-            $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
-        })->count();
-        $scheduledReleases = SupplyRelease::where('status', 'scheduled')->count();
 
         $citizensByPurok = citizens::select('Citizen_Purok')->get()
             ->groupBy(function ($citizen) {
@@ -90,10 +81,7 @@ class BhwHomeController extends Controller
             'recentReferrals',
             'recentReferralsCount'
             , 'totalInventoryUnits'
-            , 'lowStockCount'
             , 'pendingReferrals'
-            , 'activeMaintenance'
-            , 'scheduledReleases'
             , 'purokHeatmapData'
         ));
     }
