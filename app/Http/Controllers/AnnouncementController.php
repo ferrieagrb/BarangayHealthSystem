@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\LogsActivity;
 
 class AnnouncementController extends Controller
@@ -116,14 +117,22 @@ class AnnouncementController extends Controller
             ];
 
             if ($image) {
-                $payload['url'] = asset('storage/' . ltrim($image->path, '/'));
                 $payload['caption'] = $message;
                 $payload['published'] = true;
+
+                $imageContents = Storage::disk('public')->get($image->path);
+
+                $response = Http::timeout(30)
+                    ->attach(
+                        'source',
+                        $imageContents,
+                        basename($image->path)
+                    )
+                    ->post($endpoint, $payload);
             } else {
                 $payload['message'] = $message;
+                $response = Http::timeout(20)->post($endpoint, $payload);
             }
-
-            $response = Http::timeout(20)->post($endpoint, $payload);
 
             if ($response->failed()) {
                 Log::error('Facebook Post Error: ' . $response->body());
