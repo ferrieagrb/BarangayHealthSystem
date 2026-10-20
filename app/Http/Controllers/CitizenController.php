@@ -18,7 +18,6 @@ use App\Models\citizens;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\VaccinationRecord;
-use App\Models\Vaccination;
 use App\Models\MaintenanceRecord;
 use App\Models\MedicationRecord;
 use App\Models\Supply;
@@ -824,7 +823,13 @@ class CitizenController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        Vaccination::create($validated);
+        VaccinationRecord::create([
+            'citizen_id' => $validated['citizen_id'],
+            'vaccine_name' => $validated['vaccine_name'],
+            'dose_number' => $validated['notes'] ?: 'Recorded dose',
+            'date_administered' => $validated['date_administered'],
+            'administered_by' => Auth::user()->name,
+        ]);
         $this->logActivity('create', 'vaccination', $validated['citizen_id'], 'Added vaccination: ' . $validated['vaccine_name']);
 
         return back()->with('success', 'Vaccination added successfully.');
@@ -836,6 +841,10 @@ class CitizenController extends Controller
         if (!$user || $user->role !== 'bhw') abort(403);
         $citizenId = $id ?? $request->input('citizen_id');
         validator(['citizen_id' => $citizenId], ['citizen_id' => 'required|exists:citizens,id'])->validate();
+        $citizen = citizens::findOrFail($citizenId);
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to update this citizen vaccination record.');
+        }
         $validated = $request->validate([
             'vaccine_name' => 'required|string|max:255',
             'dose_number' => 'required|string|max:100',
