@@ -322,7 +322,6 @@ class CitizenController extends Controller
             'adults',
             'seniors',
             'puroks',
-            'availableMedicines'
             'citizenDisplayIds'
         ));
     }
