@@ -102,12 +102,6 @@
                 </a>
             </li>
 
-            <li>
-                <a href="#">
-                    <i class="bx bx-shield"></i>
-                    <span class="nav-item">Security</span>
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
