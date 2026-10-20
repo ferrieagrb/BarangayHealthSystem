@@ -17,7 +17,6 @@ use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
-use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\AdminPermissionController;
@@ -329,8 +328,8 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::patch('/referrals/{referral}/status', [ReferralController::class, 'updateStatus'])->name('referrals.status');
     Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');
 
-    Route::get('/citizen/{id}/records', [HealthRecordController::class, 'show'])->name('citizen.show');
-    Route::post('/vaccination/store', [HealthRecordController::class, 'storeVaccination'])->name('vaccination.store');
+    Route::get('/citizen/{id}/records', [CitizenController::class, 'show'])->name('citizen.show');
+    Route::post('/vaccination/store', [CitizenController::class, 'storeVaccinationRecord'])->name('vaccination.store');
 });
 
 /*
