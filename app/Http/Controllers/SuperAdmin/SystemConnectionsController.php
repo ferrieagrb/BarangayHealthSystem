@@ -160,14 +160,19 @@ class SystemConnectionsController extends Controller
         }
 
         try {
-            $response = Http::timeout(5)->get("https://graph.facebook.com/v20.0/{$pageId}", [
+            $response = Http::timeout(5)->get("https://graph.facebook.com/{$pageId}", [
                 'fields' => 'id,name',
                 'access_token' => $token,
             ]);
 
             return $response->successful()
                 ? $this->result('Facebook API', 'Connected', 'healthy', 'Facebook Graph API responded for the configured page.')
-                : $this->result('Facebook API', 'Failed', 'failed', 'Facebook rejected the configured page or access token.');
+                : $this->result(
+                    'Facebook API',
+                    'Failed',
+                    'failed',
+                    'Facebook rejected the request' . ($response->json('error.code') ? ' (code ' . $response->json('error.code') . ')' : '') . '. Use a valid Page ID and Page access token.'
+                );
         } catch (Throwable $exception) {
             report($exception);
             return $this->result('Facebook API', 'Failed', 'failed', 'Facebook Graph API could not be reached.');
