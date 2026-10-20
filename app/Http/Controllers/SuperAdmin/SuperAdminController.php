@@ -145,7 +145,9 @@ public function systemSettings()
         }
 
         $destination = SystemSetting::value('backup_destination', 'hostinger');
-        $backupPath = 'backups/' . $downloadFilename;
+        $backupPath = $destination === 'hostinger'
+            ? $downloadFilename
+            : 'backups/' . $downloadFilename;
 
         try {
             $disk = $destination === 'hostinger' ? 'sftp' : 'local';

@@ -821,6 +821,12 @@ body,
                     <span class="nav-item">Settings</span>
                 </a>
             </li>
+                <li>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form citizen-sidebar-logout">
+                        @csrf
+                        <button type="submit"><i class="bx bx-log-out" aria-hidden="true"></i><span>Logout</span></button>
+                    </form>
+                </li>
         </ul>
     </div>
 </div>
@@ -850,15 +856,14 @@ body,
                 <span>Menu</span>
             </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn-logout">Logout</button>
-            </form>
+            <span class="citizen-top-user" style="font-weight:500; color:#334155;">{{ auth()->user()->name }}</span>
         </div>
     </div>
     @yield('content')
 </div>
 </div>
+
+@include('templates.partials.logout-modal')
 @auth
     <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
         <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
