@@ -46,7 +46,7 @@
 
 <div class="page-top">
     <div class="page-title">
-        <h1>Citizen Details</h1>
+        <h1>Citizen Details Test</h1>
         <p>View and update citizen information</p>
     </div>
 
