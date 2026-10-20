@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Models\SystemSetting;
 use App\Traits\LogsActivity;
 
 class UserController extends Controller
@@ -69,15 +70,17 @@ class UserController extends Controller
             // Increment permanent database counter
             $user->increment('failed_login_attempts');
 
-            // Check if permanent lockout threshold (10 attempts) has been reached
-            if ($user->failed_login_attempts >= 10) {
+            $maxFailedAttempts = max(3, (int) SystemSetting::value('max_failed_login_attempts', 10));
+
+            // Check if permanent lockout threshold has been reached
+            if ($user->failed_login_attempts >= $maxFailedAttempts) {
                 $user->update(['is_locked' => true]);
                 $this->logAuditEvent('account.locked', "Account {$user->email} was locked after repeated failed logins.", $user->id);
                 
-                return back()->with('error', 'Your account has been locked after 10 failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.');
+                return back()->with('error', "Your account has been locked after {$maxFailedAttempts} failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.");
             }
 
-            $attemptsLeft = 10 - $user->failed_login_attempts;
+            $attemptsLeft = $maxFailedAttempts - $user->failed_login_attempts;
             $this->logAuditEvent('login.failed', "Failed password login for {$user->email}; {$attemptsLeft} attempts remaining.", $user->id);
             return back()->with('error', "Incorrect username or password. You have {$attemptsLeft} attempt(s) left before your account is locked.");
         }

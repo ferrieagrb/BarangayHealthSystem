@@ -316,7 +316,7 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::get('/permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
     Route::put('/permissions/{user}', [AdminPermissionController::class, 'update'])->name('permissions.update');
 
-    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
 });
 
 /*
@@ -367,8 +367,10 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
     Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
 
     Route::get('/system-settings', [SuperAdminController::class, 'systemSettings'])->name('system.settings');
+    Route::put('/system-settings', [SuperAdminController::class, 'updateSystemSettings'])->name('system.settings.update');
+    Route::get('/system-settings/backup', [SuperAdminController::class, 'downloadBackup'])->name('system.settings.backup');
 
-    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
 });
 
 

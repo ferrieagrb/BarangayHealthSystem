@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('BACKUP_SFTP_HOST'),
+            'username' => env('BACKUP_SFTP_USERNAME'),
+            'password' => env('BACKUP_SFTP_PASSWORD'),
+            'privateKey' => env('BACKUP_SFTP_PRIVATE_KEY'),
+            'passphrase' => env('BACKUP_SFTP_PASSPHRASE'),
+            'port' => (int) env('BACKUP_SFTP_PORT', 22),
+            'root' => env('BACKUP_SFTP_ROOT', '/backups'),
+            'timeout' => (int) env('BACKUP_SFTP_TIMEOUT', 30),
+            'hostFingerprint' => env('BACKUP_SFTP_HOST_FINGERPRINT'),
+            'throw' => true,
+        ],
+
     ],
 
     /*

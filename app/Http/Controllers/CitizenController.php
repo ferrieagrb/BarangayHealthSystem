@@ -752,7 +752,7 @@ class CitizenController extends Controller
             ->where('id', $user->citizen_id)
             ->firstOrFail();
 
-        $qrImage = $this->makeCitizenQrImage($citizen);
+        $   Image = $this->makeCitizenQrImage($citizen);
 
         return view('citizen.ecard', [
             'citizen' => $citizen,

@@ -91,9 +91,9 @@
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
-                    <a href="/settings">
+                    <a href="{{ route('superadmin.system.settings') }}">
                         <i class="bx bx-cog"></i>
-                        <span class="nav-item">Settings</span>
+                        <span class="nav-item">System Settings</span>
                     </a>
                 </li>
             </ul>

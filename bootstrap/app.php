@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\TrackPageViews;
+use App\Http\Middleware\SystemMaintenance;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Automatically track page views and response loading times on web routes
         $middleware->web(append: [
             TrackPageViews::class,
+            SystemMaintenance::class,
         ]);
 
         // Existing middleware aliases
