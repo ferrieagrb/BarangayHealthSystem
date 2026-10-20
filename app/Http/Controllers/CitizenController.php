@@ -600,15 +600,11 @@ class CitizenController extends Controller
             'subgroup',
         ])->findOrFail($id);
 
-        $this->authorizeCitizenEdit($citizen);
-        $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
         $canEdit = $this->canEditCitizen($citizen);
-        $families = Family::with(['purok', 'subgroup'])->get();
-        $puroks = Purok::with('subgroups')->get();
-
         $families = Family::with(['purok', 'subgroup'])
             ->orderBy('family_name')
             ->get();
+        $puroks = Purok::with('subgroups')->get();
 
         // The citizen details Blade view uses this list in the medicine selector.
         $availableMedicines = Supply::where('quantity', '>', 0)
@@ -627,9 +623,10 @@ class CitizenController extends Controller
         return view('bhw.citizendetails', compact(
             'citizen',
             'families',
-            'availableMedicines'
+            'puroks',
+            'availableMedicines',
+            'canEdit'
         ));
-        return view('bhw.citizendetails', compact('citizen', 'families', 'puroks', 'canEdit'));
     }
 
     /*
