@@ -11,43 +11,25 @@
 <div class="page-top">
 
     <div class="page-title">
-<<<<<<< HEAD
-
         <h1>Citizen Details</h1>
-
-=======
-        <h1>Citizen Details Test</h1>
->>>>>>> main
         <p>View and update citizen information</p>
 
     </div>
 
     <div class="right">
-
         <a href="{{ route('citizenlist') }}" class="btn-secondary">← Back</a>
-
         @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-
             <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()">Edit</button>
-
         @elseif(!$canEdit && !(bool) $citizen->Citizen_IsDeceased)
-
             <span class="text-muted" style="font-weight: bold; font-size: 13px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #475569;">Read Only (Unassigned)</span>
-
         @else
-
             <span class="text-danger" style="font-weight: bold; font-size: 13px; background: #fee2e2; padding: 8px 12px; border-radius: 6px; color: #991b1b;">Record Locked (Deceased)</span>
-
         @endif
-
     </div>
-
 </div>
 
 <div class="info-card">
-
     <div class="card">
-
         <form id="vaccinationForm" method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}">
             @csrf
         </form>
@@ -328,12 +310,7 @@
 
             <hr class="citizen-section-divider">
 
-<<<<<<< HEAD
-            <!-- IMMUNIZATION / VACCINATION — VISUAL PREVIEW ONLY -->
-
-=======
             <!-- IMMUNIZATION / VACCINATION -->
->>>>>>> main
 <section class="immunization-section" aria-labelledby="immunizationTitle">
 
     <div class="immunization-heading">
@@ -341,73 +318,27 @@
         <div>
 
             <h3 id="immunizationTitle">Immunization / Vaccination</h3>
-<<<<<<< HEAD
-
-            <p>Select the vaccines received by this resident.</p>
-
-        </div>
-
-        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 of 10 selected</span>
-
-=======
             <p>Select a vaccine, record the dose and save it to this citizen's history.</p>
         </div>
-        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 selected</span>
->>>>>>> main
+        <span class="immunization-count" id="immunizationCount" aria-live="polite">Record one vaccination at a time</span>
     </div>
 
-    @php
-
-        $vaccines = [
-
-            'BCG' => 'BCG',
-
-            'HepB' => 'Hepatitis B (HepB)',
-
-            'Penta' => 'Pentavalent (Penta)',
-
-            'OPV' => 'Oral Polio Vaccine (OPV)',
-
-            'IPV' => 'Inactivated Polio Vaccine (IPV)',
-
-            'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
-
-            'MMR' => 'Measles, Mumps, Rubella (MMR)',
-
-            'MR' => 'Measles-Rubella (MR)',
-
-            'Td' => 'Tetanus-Diphtheria (Td)',
-
-            'HPV' => 'Human Papillomavirus (HPV)',
-
-        ];
-
-    @endphp
-<<<<<<< HEAD
-
-    <div class="immunization-grid" id="immunizationGrid">
-
-        @foreach($vaccines as $vaccineKey => $vaccineLabel)
-
-            <label class="vaccine-option" for="vaccine\_{{ $vaccineKey }}">
-
-                <input type="checkbox" id="vaccine\_{{ $vaccineKey }}" class="vaccine-checkbox">
-
-                <span class="vaccine-checkmark" aria-hidden="true"></span>
-
-                <span class="vaccine-label">{{ $vaccineLabel }}</span>
-
-            </label>
-
-        @endforeach
-
-    </div>
-
-    <p class="immunization-preview-note"><span aria-hidden="true">ⓘ</span><span>Design preview only. Vaccine selections are not saved to the database yet.</span></p>
-
-=======
     @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
     <div class="immunization-form">
+        @php
+            $vaccines = [
+                'BCG' => 'BCG',
+                'HepB' => 'Hepatitis B (HepB)',
+                'Penta' => 'Pentavalent (Penta)',
+                'OPV' => 'Oral Polio Vaccine (OPV)',
+                'IPV' => 'Inactivated Polio Vaccine (IPV)',
+                'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
+                'MMR' => 'Measles, Mumps, Rubella (MMR)',
+                'MR' => 'Measles-Rubella (MR)',
+                'Td' => 'Tetanus-Diphtheria (Td)',
+                'HPV' => 'Human Papillomavirus (HPV)',
+            ];
+        @endphp
         <div class="immunization-grid" id="immunizationGrid">
             @foreach($vaccines as $vaccineKey => $vaccineLabel)
                 <label class="vaccine-option" for="vaccine_{{ $vaccineKey }}">
@@ -448,7 +379,6 @@
             <p>No immunization records yet.</p>
         @endforelse
     </div>
->>>>>>> main
 </section>
 
 {{-- HEALTH & FAMILY PLANNING --}}
