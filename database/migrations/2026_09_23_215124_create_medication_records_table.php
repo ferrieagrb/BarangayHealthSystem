@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('medication_records', function (Blueprint $table) {
+        if (!Schema::hasTable('medication_records')) {
+            Schema::create('medication_records', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('citizen_id')->constrained('citizens')->onDelete('cascade');
                 $table->string('medicine_name');
@@ -19,7 +20,8 @@ return new class extends Migration
                 $table->integer('quantity_dispensed');
                 $table->date('date_dispensed');
                 $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\citizens;
 use App\Models\HealthRecord;
 use App\Models\Event;
 use App\Models\Supply;
 use App\Models\Referral;
 use App\Models\Announcement;
+use App\Models\MaintenanceRecord;
+use App\Models\SupplyRelease;
+use App\Models\Purok;
 use Illuminate\Support\Facades\DB;
 
 class BhwHomeController extends Controller
@@ -43,10 +45,39 @@ class BhwHomeController extends Controller
             ->take(5)
             ->get();
         $totalInventory = Supply::count();
+        $totalInventoryUnits = Supply::sum('quantity');
+        $lowStockCount = Supply::whereColumn('quantity', '<=', 'min_stock')
+            ->where('quantity', '>', 0)
+            ->count();
 
         // Recent referrals (latest 5)
         $recentReferrals = Referral::latest()->take(5)->get();
         $recentReferralsCount = Referral::count();
+        $pendingReferrals = Referral::whereIn('status', ['pending', 'approved'])->count();
+        $activeMaintenance = MaintenanceRecord::where(function ($query) {
+            $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
+        })->count();
+        $scheduledReleases = SupplyRelease::where('status', 'scheduled')->count();
+
+        $citizensByPurok = citizens::select('Citizen_Purok')->get()
+            ->groupBy(function ($citizen) {
+                return preg_replace('/[^0-9]/', '', (string) $citizen->Citizen_Purok);
+            })
+            ->map->count();
+        $purokHeatmapData = Purok::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get()
+            ->map(function ($purok) use ($citizensByPurok) {
+            $purokKey = preg_replace('/[^0-9]/', '', (string) $purok->name);
+            $count = (int) $citizensByPurok->get($purokKey, 0);
+            return [
+                'lat' => (float) $purok->latitude,
+                'lng' => (float) $purok->longitude,
+                'weight' => max(.25, min(1, $count / 10)),
+                'label' => $purok->name,
+                'count' => $count,
+            ];
+        })->values();
 
         return view('bhw.home', compact(
             'totalCitizens',
@@ -58,6 +89,12 @@ class BhwHomeController extends Controller
             'totalInventory',
             'recentReferrals',
             'recentReferralsCount'
+            , 'totalInventoryUnits'
+            , 'lowStockCount'
+            , 'pendingReferrals'
+            , 'activeMaintenance'
+            , 'scheduledReleases'
+            , 'purokHeatmapData'
         ));
     }
 }

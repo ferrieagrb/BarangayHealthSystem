@@ -15,10 +15,11 @@
 
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
+    <script src="{{ asset('js/ui-motion.js') }}" defer></script>
 
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
     <style>
         /* CSS para sa pantay at maayos na alignment ng sidebar icons at text */
@@ -126,6 +127,13 @@
                 <a href="/healthrecord">
                     <i class="bx bx-first-aid"></i>
                     <span class="nav-item">Health Records</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('bhw.reports') }}">
+                    <i class="bx bx-file"></i>
+                    <span class="nav-item">Reports</span>
                 </a>
             </li>
 

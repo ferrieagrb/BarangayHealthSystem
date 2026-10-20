@@ -2,123 +2,141 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initBhwHomeMap" async defer></script>
+<style>
+    .bhw-home { padding-bottom: 28px; }
+    .home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .home-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(15, 23, 42, .05); }
+    .home-card-wide { grid-column: 1 / -1; }
+    .home-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .home-card h2 { color: #0f172a; font-size: 18px; }
+    .home-card-header p { margin-top: 4px; color: #64748b; font-size: 13px; }
+    .home-card-header a { color: #2563eb; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .home-list { display: grid; gap: 9px; }
+    .home-list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid #eef2f7; border-radius: 9px; }
+    .home-list-item strong { display: block; color: #1e293b; font-size: 13px; }
+    .home-list-item small { display: block; margin-top: 3px; color: #64748b; }
+    .home-list-item time { color: #2563eb; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .home-status { padding: 4px 8px; border-radius: 999px; color: #92400e; background: #fef3c7; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .home-status.good { color: #166534; background: #dcfce7; }
+    .home-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .home-table th, .home-table td { padding: 10px 8px; border-bottom: 1px solid #eef2f7; text-align: left; }
+    .home-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
+    .home-empty { padding: 18px; color: #64748b; text-align: center; }
+    .home-map { height: 380px; overflow: hidden; border-radius: 10px; }
+    .heatmap-legend { display: flex; justify-content: space-between; margin-top: 8px; color: #64748b; font-size: 12px; }
+    @media (max-width: 800px) { .home-grid { grid-template-columns: 1fr; } .home-card-wide { grid-column: auto; } }
+</style>
 @endsection
 
 @section('content')
-
-<div class="page-top">
-    <div class="page-title-group">
-        <h1>BHW Dashboard</h1>
-        <p>Overview of citizen records, health trends, events, inventory, and referrals.</p>
-    </div>
-</div>
-
-{{-- SUMMARY CARDS --}}
-<div class="summary-cards">
-    <div class="summary-card">
-        <span>Total Citizens</span>
-        <strong>{{ $totalCitizens ?? 0 }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span>Most Common Disease</span>
-        <strong>{{ $popularDisease ?? 'N/A' }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span>Upcoming Events</span>
-        <strong>{{ $upcomingEventsCount ?? 0 }}</strong>
-    </div>
-
-    <div class="summary-card">
-        <span>Inventory Items</span>
-        <strong>{{ $totalInventory ?? 0 }}</strong>
-    </div>
-</div>
-
-{{-- DASHBOARD GRID --}}
-<div class="dashboard-grid">
-
-    {{-- UPCOMING EVENTS --}}
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h2>Upcoming Events</h2>
-            <p>Scheduled barangay health activities</p>
+<div class="bhw-home">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>BHW Dashboard</h1>
+            <p>Daily operational view for residents, health services, inventory, and follow-up work.</p>
         </div>
+    </div>
 
-        @forelse($upcomingEvents as $event)
-            <div class="list-item">
-                <div>
-                    <strong>{{ $event->title }}</strong>
-                    <span>{{ \Carbon\Carbon::parse($event->start)->format('F d, Y') }}</span>
-                </div>
+    <div class="summary-cards">
+        <div class="summary-card"><span>Total Citizens</span><strong>{{ $totalCitizens }}</strong><small>Registered residents</small></div>
+        <div class="summary-card"><span>Inventory Units</span><strong>{{ $totalInventoryUnits }}</strong><small>{{ $totalInventory }} supply records</small></div>
+        <div class="summary-card"><span>Low Stock</span><strong>{{ $lowStockCount }}</strong><small>Items needing review</small></div>
+        <div class="summary-card"><span>Active Maintenance</span><strong>{{ $activeMaintenance }}</strong><small>Current medicine plans</small></div>
+        <div class="summary-card"><span>Pending Referrals</span><strong>{{ $pendingReferrals }}</strong><small>Awaiting follow-up</small></div>
+        <div class="summary-card"><span>Scheduled Releases</span><strong>{{ $scheduledReleases }}</strong><small>Upcoming citizen claims</small></div>
+    </div>
+
+    <section class="home-card home-card-wide" style="margin-bottom: 18px;">
+        <div class="home-card-header"><div><h2>Citizen Distribution Heatmap</h2><p>Resident concentration by Purok based on current citizen records.</p></div><a href="{{ route('healthrecord') }}">Open health records</a></div>
+        <div id="bhwCitizenHeatmap" class="home-map"></div>
+        <div class="heatmap-legend"><span>Lower concentration</span><span>Higher concentration</span></div>
+    </section>
+
+    <div class="home-grid">
+        <section class="home-card">
+            <div class="home-card-header"><div><h2>Upcoming Events</h2><p>{{ $upcomingEventsCount }} scheduled activities</p></div><a href="{{ url('/calendar') }}">Open calendar</a></div>
+            <div class="home-list">
+                @forelse($upcomingEvents as $event)
+                    <div class="home-list-item"><div><strong>{{ $event->title }}</strong><small>{{ $event->description ?? 'Barangay health activity' }}</small></div><time>{{ \Carbon\Carbon::parse($event->start)->format('M d, Y') }}</time></div>
+                @empty <div class="home-empty">No upcoming events.</div> @endforelse
             </div>
-        @empty
-            <p class="empty-text">No upcoming events.</p>
-        @endforelse
-    </div>
+        </section>
 
-    {{-- INVENTORY --}}
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h2>Low Stock Inventory</h2>
-            <p>Medicine and supply monitoring</p>
-        </div>
-
-        @forelse($lowStockSupplies as $supply)
-            <div class="list-item">
-                <div>
-                    <strong>{{ $supply->name }}</strong>
-                    <span>Remaining Stock: {{ $supply->quantity }}</span>
-                </div>
-                <span class="status-badge status-monitoring">Low Stock</span>
+        <section class="home-card">
+            <div class="home-card-header"><div><h2>Inventory Watch</h2><p>Supply items below their minimum level</p></div><a href="{{ route('supplies.index') }}">Manage stock</a></div>
+            <div class="home-list">
+                @forelse($lowStockSupplies as $supply)
+                    <div class="home-list-item"><div><strong>{{ $supply->name }}</strong><small>Remaining: {{ $supply->quantity }} / Minimum: {{ $supply->min_stock }}</small></div><span class="home-status">Review</span></div>
+                @empty <div class="home-empty">Inventory levels are currently stable.</div> @endforelse
             </div>
-        @empty
-            <p class="empty-text">No low stock items.</p>
-        @endforelse
-    </div>
+        </section>
 
-    {{-- RECENT REFERRALS --}}
-    <div class="dashboard-card full-card">
-        <div class="card-header">
-            <h2>Recent Referrals</h2>
-            <p>Latest patient referral records</p>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Patient</th>
-                    <th>Request For</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
+        <section class="home-card home-card-wide">
+            <div class="home-card-header"><div><h2>Referral Follow-up</h2><p>Recent patients requiring coordination</p></div><a href="{{ route('referrals.index') }}">View referrals</a></div>
+            <table class="home-table"><thead><tr><th>Date</th><th>Patient</th><th>Request</th><th>Status</th></tr></thead><tbody>
                 @forelse($recentReferrals as $referral)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($referral->date_of_referral)->format('M d, Y') }}</td>
-                        <td>{{ $referral->name }}</td>
-                        <td>{{ $referral->requests_for }}</td>
-                        <td>
-                            @if($referral->status == 'approved')
-                                <span class="status-badge status-active">Approved</span>
-                            @elseif($referral->status == 'released')
-                                <span class="status-badge status-monitoring">Released</span>
-                            @elseif($referral->status == 'returned')
-                                <span class="status-badge status-returned">Returned</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4">No recent referrals.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                    <tr><td>{{ \Carbon\Carbon::parse($referral->date_of_referral)->format('M d, Y') }}</td><td>{{ $referral->name }}</td><td>{{ $referral->requests_for }}</td><td><span class="home-status {{ in_array($referral->status, ['released', 'returned']) ? 'good' : '' }}">{{ ucfirst($referral->status ?? 'pending') }}</span></td></tr>
+                @empty <tr><td colspan="4" class="home-empty">No referrals recorded.</td></tr> @endforelse
+            </tbody></table>
+        </section>
+
+        <section class="home-card">
+            <div class="home-card-header"><div><h2>Announcements</h2><p>Latest community notices</p></div><a href="{{ route('announcements') }}">View all</a></div>
+            <div class="home-list">
+                @forelse($recentAnnouncements as $announcement)
+                    <div class="home-list-item"><div><strong>{{ $announcement->title }}</strong><small>{{ $announcement->category ?? 'General notice' }}</small></div><time>{{ $announcement->created_at->format('M d') }}</time></div>
+                @empty <div class="home-empty">No recent announcements.</div> @endforelse
+            </div>
+        </section>
+
+        <section class="home-card">
+            <div class="home-card-header"><div><h2>Health Snapshot</h2><p>Current signal from recorded diagnoses</p></div><a href="{{ route('healthrecord') }}">Explore records</a></div>
+            <div class="home-list-item"><div><strong>Most common diagnosis</strong><small>Based on recorded health records</small></div><span class="home-status good">{{ $popularDisease }}</span></div>
+        </section>
     </div>
-
 </div>
+@endsection
 
+@section('scripts')
+<script>
+function initBhwHomeMap() {
+    const mapElement = document.getElementById('bhwCitizenHeatmap');
+    if (!mapElement || typeof google === 'undefined') return;
+
+    const map = new google.maps.Map(mapElement, {
+        zoom: 15,
+        center: { lat: 14.0668, lng: 120.8531 },
+        mapTypeId: 'roadmap',
+        disableDefaultUI: true,
+        zoomControl: true
+    });
+
+    const points = @json($purokHeatmapData);
+    const infoWindow = new google.maps.InfoWindow();
+
+    points.forEach(function (point) {
+        const count = point.count || 0;
+        const fillColor = count >= 10 ? '#b30000' : (count >= 3 ? '#ff4d4d' : '#ffcc00');
+        const strokeColor = count >= 10 ? '#800000' : (count >= 3 ? '#cc0000' : '#ff9900');
+        const radius = count >= 10 ? 150 : (count >= 3 ? 110 : 75);
+        const circle = new google.maps.Circle({
+            strokeColor,
+            strokeOpacity: .9,
+            strokeWeight: 2,
+            fillColor,
+            fillOpacity: .5,
+            map,
+            center: { lat: point.lat, lng: point.lng },
+            radius: Math.max(radius, point.weight * 140)
+        });
+
+        circle.addListener('click', function () {
+            infoWindow.setContent(`<div style="color:#000;padding:5px;"><strong>${point.label}</strong><br>Registered Citizens: ${count}</div>`);
+            infoWindow.setPosition(circle.getCenter());
+            infoWindow.open(map);
+        });
+    });
+}
+</script>
 @endsection

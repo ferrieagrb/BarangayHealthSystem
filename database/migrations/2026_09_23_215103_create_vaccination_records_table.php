@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('vaccination_records')) {
             Schema::create('vaccination_records', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('citizen_id')->constrained('citizens')->onDelete('cascade');
@@ -19,8 +20,8 @@ return new class extends Migration
                 $table->date('date_administered');
                 $table->string('administered_by');
                 $table->timestamps();
-        });
-
+            });
+        }
     }
 
     /**

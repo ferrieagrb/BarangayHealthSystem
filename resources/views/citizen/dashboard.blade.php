@@ -1457,7 +1457,7 @@
             @if(isset($announcements) && $announcements->count())
                 <div class="c-ann-grid">
                     @foreach($announcements as $announcement)
-                        <article class="c-ann-card">
+                        <button type="button" class="c-ann-card announcement-modal-trigger" data-announcement-id="{{ $announcement->id }}" aria-label="Open announcement: {{ $announcement->title }}">
                             <div class="c-ann-cover">
                                 <span class="c-ann-label">📢 Health Advisory</span>
                                 <h3>{{ $announcement->title }}</h3>
@@ -1478,7 +1478,7 @@
                                     <span>Barangay Amuyong</span>
                                 </div>
                             </div>
-                        </article>
+                        </button>
                     @endforeach
                 </div>
             @else
@@ -1487,6 +1487,7 @@
                 </div>
             @endif
         </section>
+        @include('citizen.partials.announcement_modal', ['announcements' => $announcements])
         
 
 {{-- 2. CITIZEN CARD --}}
@@ -1497,7 +1498,6 @@
             <p class="c-muted">Your registered identity details</p>
         </div>
     </div>
-
     @if($citizen)
         {{-- ACTUAL ID CARD --}}
         <div class="c-panel c-id-card">

@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="{{ asset('fav.png') }}" type="image/x-icon">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
         @yield('CSSown')<style>
 html { scroll-behavior: smooth; scroll-padding-top: 165px; }
 .c-header-section-nav a { font-size: 14px; min-height: 44px; }
@@ -845,6 +845,10 @@ body,
         @endif
 
         <div class="c-header-actions">
+            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
+                <i class="bx bx-menu" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

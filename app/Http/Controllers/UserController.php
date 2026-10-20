@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Models\SystemSetting;
+use App\Traits\LogsActivity;
 
 class UserController extends Controller
 {
+    use LogsActivity;
     public function login(Request $request)
     {
         // Trim inputs
@@ -19,6 +22,7 @@ class UserController extends Controller
         
         // Check if both fields are empty
         if (empty($username) && empty($password)) {
+            $this->logAuditEvent('login.validation_failed', 'Login submitted without credentials.');
             return back()->with('error', 'Please enter your username and password.');
         }
 
@@ -39,6 +43,7 @@ class UserController extends Controller
         // 1. Check Laravel's temporary Rate Limiter first
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+            $this->logAuditEvent('login.rate_limited', "Login rate limited for identifier {$username}.");
             return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.");
         }
 
@@ -47,11 +52,13 @@ class UserController extends Controller
 
         if (!$user) {
             RateLimiter::hit($throttleKey, 60); // Count failed attempt against the rate limiter
+            $this->logAuditEvent('login.failed', "Login failed for unknown identifier {$username}.");
             return back()->with('error', 'Incorrect username or password.');
         }
 
         // 3. Check if the database account is permanently locked by an admin
         if ($user->is_locked) {
+            $this->logAuditEvent('login.blocked', "Login blocked for locked account {$user->email}.", $user->id);
             return back()->with('error', 'Your account has been locked due to excessive failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.');
         }
 
@@ -63,14 +70,18 @@ class UserController extends Controller
             // Increment permanent database counter
             $user->increment('failed_login_attempts');
 
-            // Check if permanent lockout threshold (10 attempts) has been reached
-            if ($user->failed_login_attempts >= 10) {
+            $maxFailedAttempts = max(3, (int) SystemSetting::value('max_failed_login_attempts', 10));
+
+            // Check if permanent lockout threshold has been reached
+            if ($user->failed_login_attempts >= $maxFailedAttempts) {
                 $user->update(['is_locked' => true]);
+                $this->logAuditEvent('account.locked', "Account {$user->email} was locked after repeated failed logins.", $user->id);
                 
-                return back()->with('error', 'Your account has been locked after 10 failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.');
+                return back()->with('error', "Your account has been locked after {$maxFailedAttempts} failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.");
             }
 
-            $attemptsLeft = 10 - $user->failed_login_attempts;
+            $attemptsLeft = $maxFailedAttempts - $user->failed_login_attempts;
+            $this->logAuditEvent('login.failed', "Failed password login for {$user->email}; {$attemptsLeft} attempts remaining.", $user->id);
             return back()->with('error', "Incorrect username or password. You have {$attemptsLeft} attempt(s) left before your account is locked.");
         }
 
@@ -84,6 +95,7 @@ class UserController extends Controller
         // Login user
         Auth::login($user);
         $request->session()->regenerate();
+        $this->logAuditEvent('login.success', "Successful login for {$user->email}.", $user->id);
 
         // First-login password reset check
         if ($user->must_change_password) {
@@ -102,6 +114,8 @@ class UserController extends Controller
 
     public function logout()
     {
+        $userId = Auth::id();
+        $this->logAuditEvent('logout', 'User logged out.', $userId);
         auth()->logout();
         return redirect('/login');
     }

@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 use Illuminate\Http\Request;
+use App\Traits\LogsActivity;
 
 class AdminUserManagementController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
 {
     $query = User::query();
@@ -51,7 +53,10 @@ class AdminUserManagementController extends Controller
 
     public function destroy($id)
     {
-        User::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+        $name = $user->name;
+        $user->delete();
+        $this->logAdminActivity('user.deleted', "Deleted user {$name}.", 'governance', $user);
 
         return back()->with('success', 'User deleted successfully.');
     }
@@ -73,13 +78,15 @@ public function store(Request $request)
     // Define the uniform default temporary password for all new users
     $defaultPassword = 'TemporaryPassword123!';
 
-    User::create([
+    $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($defaultPassword),
         'role' => $request->role,
         'must_change_password' => true,
     ]);
+
+    $this->logAdminActivity('user.created', "Created user {$user->name} with role {$user->role}.", 'governance', $user, null, ['role' => $user->role]);
 
     return redirect()->route(auth()->user()->isSuperAdmin() ? 'superadmin.users' : 'admin.users')->with('success', 'User created successfully. Default temporary password is: ' . $defaultPassword);
 }
@@ -92,6 +99,8 @@ public function unlockAccount($id)
         'failed_login_attempts' => 0,
         'is_locked' => false,
     ]);
+
+    $this->logAdminActivity('account.unlocked', "Unlocked account for {$user->name}.", 'security', $user);
 
     return back()->with('success', "User {$user->name}'s account has been unlocked successfully.");
 }

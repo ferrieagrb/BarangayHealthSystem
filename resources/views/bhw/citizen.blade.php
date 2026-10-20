@@ -176,7 +176,7 @@
 
             <div class="search-box">
 
-                <input type="text"
+                <input type="search"
 
                 name="search"
 
@@ -341,6 +341,19 @@
                 <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="pregnant"><span>Pregnant</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="in_pills"><span>In-Pills</span></label>
             </section>
+            <section class="citizen-status-section">
+                <h3>Immunization Vaccines</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="bcg"><span>BCG</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hepb"><span>Hepatitis B (HepB)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="penta"><span>Pentavalent (Penta)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="opv"><span>Oral Polio Vaccine (OPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="ipv"><span>Inactivated Polio Vaccine (IPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="pcv"><span>Pneumococcal Conjugate Vaccine (PCV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mmr"><span>Measles, Mumps, Rubella (MMR)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mr"><span>Measles-Rubella (MR)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
+            </section>
 
             <section class="citizen-status-section">
                 <h3>Vital Status</h3>
@@ -401,14 +414,16 @@
         @endphp
 
         @if(count($activeFilters) > 0)
-            <p style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
+            <p id="active-citizen-filters" style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
                 (Showing {{ implode(', ', $activeFilters) }})
             </p>
         @endif
 
     </div>
 
-    {{-- CITIZEN TABLE --}}
+    <div id="citizen-results">
+
+        {{-- CITIZEN TABLE --}}
 
     <table>
 
@@ -425,6 +440,8 @@
                 <th>Contact</th>
 
                 <th>Purok</th>
+
+                <th>Subgroup</th>
 
                 <th>Action</th>
 
@@ -454,7 +471,7 @@
 
                 ID:
 
-                C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}
+                {{ $citizenDisplayIds[$citizen->id] ?? 'Unassigned' }}
 
                 </span>
 
@@ -492,6 +509,14 @@
 
                 </td>
 
+                {{-- SUBGROUP --}}
+
+                <td>
+
+                {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Unassigned' }}
+
+                </td>
+
                 {{-- ACTIONS --}}
 
                 <td>
@@ -502,7 +527,11 @@
 
                 // Use fully qualified model namespace in Blade
 
-                $isAssigned =$user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)->where('id', optional($citizen->family)->subgroup_id)->exists();
+                $isAssigned = $user->role !== 'bhw' || \App\Models\PurokSubgroup::where('user_id', $user->id)
+                    ->where(function ($query) use ($citizen) {
+                        $query->where('id', $citizen->subgroup_id)
+                            ->orWhere('id', optional($citizen->family)->subgroup_id);
+                    })->exists();
 
                 @endphp
 
@@ -570,7 +599,7 @@
 
                 <tr>
 
-                <td colspan="6"
+                <td colspan="7"
 
                 class="empty-text"
 
@@ -1257,6 +1286,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Navigate directly to the fully constructed URL query string
         window.location.href = targetUrl.toString();
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchForm = document.querySelector('.citizen-filter-form');
+    const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
+    const results = document.getElementById('citizen-results');
+    let searchTimer;
+    let requestController;
+
+    if (!searchForm || !searchInput || !results) return;
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(async function () {
+            if (requestController) requestController.abort();
+            requestController = new AbortController();
+            const params = new URLSearchParams(new FormData(searchForm));
+            params.delete('page');
+            if (!searchInput.value.trim()) {
+                params.delete('search');
+                const activeFilters = document.getElementById('active-citizen-filters');
+                if (activeFilters) activeFilters.remove();
+            }
+            results.setAttribute('aria-busy', 'true');
+
+            try {
+                const response = await fetch(`${searchForm.action}?${params.toString()}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+                    signal: requestController.signal
+                });
+                if (!response.ok) throw new Error('Search request failed');
+                const html = await response.text();
+                const parsed = new DOMParser().parseFromString(html, 'text/html');
+                const updatedResults = parsed.getElementById('citizen-results');
+                if (updatedResults) results.replaceWith(updatedResults);
+            } catch (error) {
+                if (error.name !== 'AbortError') console.error(error);
+            } finally {
+                const currentResults = document.getElementById('citizen-results');
+                if (currentResults) currentResults.removeAttribute('aria-busy');
+            }
+        }, 350);
     });
 });
 </script>

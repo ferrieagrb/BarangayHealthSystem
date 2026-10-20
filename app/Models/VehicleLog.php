@@ -10,7 +10,13 @@ class VehicleLog extends Model
     'vehicle_name',
     'borrower',
     'borrowed_at',
+    'user_id',
 ];
 
     protected $table = 'vehicle_logs';
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

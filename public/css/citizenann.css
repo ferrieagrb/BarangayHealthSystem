@@ -23,11 +23,28 @@
     transition: var(--transition, all 0.25s ease);
     display: flex;
     flex-direction: column;
+    color: inherit;
+    text-decoration: none;
 }
 
 .announcement-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.08));
+}
+
+.announcement-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin: -8px -8px 20px;
+}
+
+.announcement-gallery img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 6px;
 }
 
 .announcement-header {

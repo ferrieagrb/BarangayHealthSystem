@@ -21,5 +21,11 @@ class Referral extends Model
         'referred_by',
         'status',
         'file_path',
+        'user_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

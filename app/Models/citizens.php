@@ -10,6 +10,7 @@ use App\Models\HealthRecord;
 use App\Models\Vaccination;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\MaintenanceRecord;
 use App\Models\PurokSubgroup;
 
 class citizens extends Authenticatable
@@ -29,6 +30,7 @@ class citizens extends Authenticatable
         'Citizen_ContactNo',
         'Citizen_Age',
         'Citizen_Purok',
+        'subgroup_id',
         'family_id',
         'qr_token',
         'photo_path',
@@ -61,6 +63,9 @@ class citizens extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'Citizen_Pregnant' => 'boolean',
+            'Citizen_InPills' => 'boolean',
+            'Citizen_IsDeceased' => 'boolean',
         ];
     }
 
@@ -79,9 +84,19 @@ class citizens extends Authenticatable
     return $this->hasMany(MedicationRecord::class, 'citizen_id', 'id');
 }
 
+    public function maintenanceRecords()
+{
+    return $this->hasMany(MaintenanceRecord::class, 'citizen_id');
+}
+
 public function family()
 {
     return $this->belongsTo(Family::class, 'family_id');
+}
+
+public function subgroup()
+{
+    return $this->belongsTo(PurokSubgroup::class, 'subgroup_id');
 }
 
 }

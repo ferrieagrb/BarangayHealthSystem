@@ -4,6 +4,12 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
 
+<script>
+    window.__healthRecordMapsReady = false;
+    window.initMap = function () {
+        window.__healthRecordMapsReady = true;
+    };
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
 @endsection
 
@@ -114,64 +120,31 @@
         <!-- LEFT PANEL -->
         <div class="left-panel">
 
-            <!-- SEARCH AND FILTERS -->
-            <div class="toolbar">
-
-                <form
-                    method="GET"
-                    action="{{ route('citizenlist') }}"
-                    class="d-flex gap-2"
-                >
-
+            <!-- SEARCH AND FILTERS: SEARCH, PUROK, STATUS FILTER ON ONE ROW -->
+            <div class="toolbar health-record-toolbar">
+                <form method="GET" action="{{ route('citizenlist') }}" class="health-record-filter-form">
                     <input
                         type="text"
                         name="search"
                         placeholder="Search citizen or diagnosis"
                         value="{{ request('search') }}"
-                        class="form-control"
+                        class="form-control health-record-search"
                     >
 
-
-                    <select
-                        name="purok"
-                        class="form-select"
-                    >
-
-                        <option
-                            value="all"
-                            {{ request('purok') == 'all' ? 'selected' : '' }}
-                        >
-                            All Puroks
-                        </option>
-
-                        <option
-                            value="1"
-                            {{ request('purok') == '1' ? 'selected' : '' }}
-                        >
-                            Purok 1
-                        </option>
-
-                        <option
-                            value="2"
-                            {{ request('purok') == '2' ? 'selected' : '' }}
-                        >
-                            Purok 2
-                        </option>
-
+                    <select name="purok" class="form-select health-record-purok">
+                        <option value="all" {{ request('purok', 'all') == 'all' ? 'selected' : '' }}>All Puroks</option>
+                        <option value="1" {{ request('purok') == '1' ? 'selected' : '' }}>Purok 1</option>
+                        <option value="2" {{ request('purok') == '2' ? 'selected' : '' }}>Purok 2</option>
                     </select>
 
-
-                    <button
-                        type="submit"
-                        class="btn-primary"
-                    >
-                        Search
+                    <button type="button" id="openCitizenStatusFilter" class="citizen-status-filter-btn" aria-haspopup="dialog" aria-controls="citizenStatusFilterModal">
+                        <span>Status Filters</span>
+                        <span class="status-filter-arrow" aria-hidden="true">⌄</span>
                     </button>
 
+                    <button type="submit" class="btn-primary health-record-search-submit">Search</button>
                 </form>
-
             </div>
-
 
             <!-- CITIZENS TABLE -->
             <div class="list-tab">
@@ -207,10 +180,33 @@
                                     $latest = $citizen->healthRecords
                                         ->sortByDesc('created_at')
                                         ->first();
+
+                                    $rawStatus = $latest
+                                        ? strtolower(trim((string) ($latest->status ?? '')))
+                                        : 'no-record';
+
+                                    if (!$latest) {
+                                        $filterStatus = 'no-record';
+                                    } elseif (in_array($rawStatus, ['treated', 'completed', 'resolved', 'done'])) {
+                                        $filterStatus = 'treated';
+                                    } elseif (in_array($rawStatus, ['pending', 'ongoing', 'in progress'])) {
+                                        $filterStatus = 'pending';
+                                    } elseif ($rawStatus === '') {
+                                        $filterStatus = 'other';
+                                    } else {
+                                        $filterStatus = 'other';
+                                    }
                                 @endphp
 
 
-                                <tr>
+                                <tr
+                                    data-health-status="{{ $filterStatus }}"
+                                    data-citizen-sex="{{ strtolower(trim((string) ($citizen->Citizen_Sex ?? ''))) }}"
+                                    data-citizen-housing="{{ strtolower(str_replace([' ', '-'], '_', trim((string) ($citizen->Citizen_HousingStatus ?? '')))) }}"
+                                    data-citizen-pregnant="{{ (int) ($citizen->Citizen_Pregnant ?? 0) }}"
+                                    data-citizen-in-pills="{{ (int) ($citizen->Citizen_InPills ?? 0) }}"
+                                    data-citizen-deceased="{{ (int) ($citizen->Citizen_IsDeceased ?? 0) }}"
+                                >
 
                                     <!-- CITIZEN -->
                                     <td>
@@ -408,6 +404,126 @@
 
 
 
+<!-- CITIZEN MANAGEMENT-STYLE STATUS FILTER MODAL -->
+<div id="citizenStatusFilterModal" class="citizen-status-overlay" aria-hidden="true">
+    <div class="citizen-status-modal" role="dialog" aria-modal="true" aria-labelledby="citizenStatusFilterTitle">
+        <div class="citizen-status-header">
+            <h2 id="citizenStatusFilterTitle">Filter Citizen Records</h2>
+            <button type="button" id="closeCitizenStatusFilter" class="citizen-status-close" aria-label="Close filter">&times;</button>
+        </div>
+        <div class="citizen-status-body">
+            <section class="citizen-status-section">
+                <h3>Sex</h3>
+                <div class="citizen-status-radio-group">
+                    <label><input type="radio" name="health_filter_sex" value="all" checked><span>All</span></label>
+                    <label><input type="radio" name="health_filter_sex" value="male"><span>Male</span></label>
+                    <label><input type="radio" name="health_filter_sex" value="female"><span>Female</span></label>
+                </div>
+            </section>
+            <section class="citizen-status-section">
+                <h3>Housing Status</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_housing" value="permanent_resident"><span>Permanent Resident</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_housing" value="renter"><span>Renter</span></label>
+            </section>
+            <section class="citizen-status-section">
+                <h3>Health &amp; Family Planning</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_health" value="pregnant"><span>Pregnant</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_health" value="in_pills"><span>In-Pills</span></label>
+            </section>
+            <section class="citizen-status-section">
+                <h3>Immunization Vaccines</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="bcg"><span>BCG</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hepb"><span>Hepatitis B (HepB)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="penta"><span>Pentavalent (Penta)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="opv"><span>Oral Polio Vaccine (OPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="ipv"><span>Inactivated Polio Vaccine (IPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="pcv"><span>Pneumococcal Conjugate Vaccine (PCV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mmr"><span>Measles, Mumps, Rubella (MMR)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mr"><span>Measles-Rubella (MR)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
+            </section>
+            <section class="citizen-status-section">
+                <h3>Vital Status</h3>
+                <label class="citizen-status-option"><input type="checkbox" id="healthFilterIncludeDeceased" value="1"><span>Include Deceased Residents</span></label>
+            </section>
+        </div>
+        <div class="citizen-status-footer">
+            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear">Clear All</button>
+            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply">Apply Filters</button>
+        </div>
+    </div>
+</div>
+
+<!-- CITIZEN MANAGEMENT-STYLE FILTER SCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('citizenStatusFilterModal');
+    const openButton = document.getElementById('openCitizenStatusFilter');
+    const closeButton = document.getElementById('closeCitizenStatusFilter');
+    const clearButton = document.getElementById('clearCitizenStatusFilters');
+    const applyButton = document.getElementById('applyCitizenStatusFilters');
+    const rows = Array.from(document.querySelectorAll('.list-tab tbody tr[data-citizen-sex]'));
+    if (!modal || !openButton || !closeButton || !clearButton || !applyButton) return;
+
+    const sexInputs = Array.from(modal.querySelectorAll('input[name="health_filter_sex"]'));
+    const housingInputs = Array.from(modal.querySelectorAll('input[name="health_filter_housing"]'));
+    const healthInputs = Array.from(modal.querySelectorAll('input[name="health_filter_health"]'));
+    const vaccineInputs = Array.from(modal.querySelectorAll('input[name="health_filter_vaccine"]'));
+    const deceasedInput = document.getElementById('healthFilterIncludeDeceased');
+
+    function openModal() {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('citizen-status-modal-open');
+        openButton.classList.add('active');
+    }
+    function closeModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('citizen-status-modal-open');
+        openButton.classList.remove('active');
+    }
+    function applyFilters() {
+        const sex = (sexInputs.find(input => input.checked) || { value: 'all' }).value;
+        const housing = housingInputs.filter(input => input.checked).map(input => input.value);
+        const health = healthInputs.filter(input => input.checked).map(input => input.value);
+        const includeDeceased = deceasedInput.checked;
+
+        rows.forEach(row => {
+            const rowSex = (row.dataset.citizenSex || '').toLowerCase();
+            const rowHousing = (row.dataset.citizenHousing || '').toLowerCase().replace(/[ -]/g, '_');
+            const pregnant = row.dataset.citizenPregnant === '1';
+            const inPills = row.dataset.citizenInPills === '1';
+            const deceased = row.dataset.citizenDeceased === '1';
+            const sexMatch = sex === 'all' || rowSex === sex;
+            const housingMatch = housing.length === 0 || housing.includes(rowHousing);
+            const healthMatch = health.length === 0 || health.some(value =>
+                (value === 'pregnant' && pregnant) || (value === 'in_pills' && inPills)
+            );
+            const vitalMatch = includeDeceased || !deceased;
+            row.hidden = !(sexMatch && housingMatch && healthMatch && vitalMatch);
+        });
+    }
+
+    openButton.addEventListener('click', openModal);
+    closeButton.addEventListener('click', closeModal);
+    modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+    clearButton.addEventListener('click', function () {
+        sexInputs.forEach(input => { input.checked = input.value === 'all'; });
+        housingInputs.forEach(input => { input.checked = false; });
+        healthInputs.forEach(input => { input.checked = false; });
+        vaccineInputs.forEach(input => { input.checked = false; });
+        deceasedInput.checked = false;
+    });
+    applyButton.addEventListener('click', function () { applyFilters(); closeModal(); });
+    applyFilters();
+});
+</script>
+
 <!-- GOOGLE MAPS SCRIPT -->
 <script>
 
@@ -456,7 +572,7 @@
 
             let strokeColor = "#ff9900";
 
-            let baseRadius = 45;
+            let baseRadius = 75;
 
 
             if (actualCount >= 10) {
@@ -465,7 +581,7 @@
 
                 strokeColor = "#800000";
 
-                baseRadius = 90;
+                baseRadius = 150;
 
             }
 
@@ -475,7 +591,7 @@
 
                 strokeColor = "#cc0000";
 
-                baseRadius = 65;
+                baseRadius = 110;
 
             }
 
@@ -506,7 +622,7 @@
 
                     baseRadius,
 
-                    weight * 10
+                    weight * 20
 
                 )
 
@@ -538,6 +654,11 @@
 
         });
 
+    }
+
+    window.initMap = initMap;
+    if (window.__healthRecordMapsReady) {
+        initMap();
     }
 
 </script>

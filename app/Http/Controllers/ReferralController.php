@@ -48,6 +48,7 @@ class ReferralController extends Controller
         ]);
 
         $validated['status'] = 'approved';
+        $validated['user_id'] = Auth::id();
 
         $referral = Referral::create($validated);
 

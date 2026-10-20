@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserPermission;
 use Illuminate\Http\Request;
+use App\Traits\LogsActivity;
 
 class AdminPermissionController extends Controller
 {
+    use LogsActivity;
     // Define the system features/tabs you want to manage
     public static array $availableFeatures = [
         'supplies' => 'Supplies & Inventory',
         'patients' => 'Patient Records',
         'reports'  => 'Reports & Analytics',
+        'reports_demographics' => 'Reports: Demographics',
+        'reports_health' => 'Reports: Health & Immunization',
+        'reports_operations' => 'Reports: Operations',
         'family'   => 'Family Profiles',
         'audit_logs' => 'Audit Logs',
     ];
@@ -33,6 +38,7 @@ class AdminPermissionController extends Controller
     public function update(Request $request, User $user)
     {
         $inputPermissions = $request->input('permissions', []);
+        $oldPermissions = $user->permissions->pluck('access', 'feature')->toArray();
 
         foreach (self::$availableFeatures as $featureKey => $featureLabel) {
             $accessLevel = $inputPermissions[$featureKey] ?? 'none'; 
@@ -51,6 +57,15 @@ class AdminPermissionController extends Controller
                 ['access' => $accessLevel]
             );
         }
+
+        $this->logAdminActivity(
+            'permissions.updated',
+            "Updated permissions for {$user->name}.",
+            'governance',
+            $user,
+            $oldPermissions,
+            $user->fresh()->permissions->pluck('access', 'feature')->toArray()
+        );
 
         return redirect()->back()->with('success', "Permissions updated successfully for {$user->name}.");
     }

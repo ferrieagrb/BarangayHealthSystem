@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -44,7 +46,18 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->reportable(function (Throwable $e) {
-            //
+            try {
+                DB::table('audit_logs')->insert([
+                    'user_id' => Auth::id(),
+                    'action' => 'exception.reported',
+                    'description' => get_class($e) . ': ' . substr($e->getMessage(), 0, 1000),
+                    'ip_address' => request()->ip(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (Throwable $loggingException) {
+                // Never let audit logging hide the original exception.
+            }
         });
     }
 }

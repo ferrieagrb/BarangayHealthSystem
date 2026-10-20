@@ -75,6 +75,11 @@
                 <button type="button" id="stop-scanner" class="qr-btn qr-btn-secondary" disabled>Stop Camera</button>
             </div>
 
+            <div class="qr-manual">
+                <label for="qr-image">Scan a saved QR image</label>
+                <input id="qr-image" type="file" accept="image/*">
+            </div>
+
             <div id="qr-status" class="qr-status" role="status" aria-live="polite">Camera is stopped. Select Start Camera to begin.</div>
 
             <div class="qr-manual">
@@ -118,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusBox = document.getElementById('qr-status');
     const manualInput = document.getElementById('manual-token');
     const manualButton = document.getElementById('manual-lookup');
+    const imageInput = document.getElementById('qr-image');
     const emptyState = document.getElementById('qr-empty');
     const results = document.getElementById('qr-results');
 
@@ -329,6 +335,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (!window.isSecureContext) {
+            setStatus('Live camera scanning requires HTTPS. Open the HTTPS version of this website or use localhost.', 'error');
+            return;
+        }
+
+        if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+            setStatus('This browser does not provide camera access. Use HTTPS, update the browser, or scan a saved QR image below.', 'error');
+            return;
+        }
+
         startButton.disabled = true;
         scanHandled = false;
         setStatus('Requesting camera access...');
@@ -354,11 +370,36 @@ document.addEventListener('DOMContentLoaded', () => {
             cameraRunning = false;
             startButton.disabled = false;
             stopButton.disabled = true;
-            setStatus('Unable to start camera. Allow camera permission and use HTTPS or localhost.', 'error');
+            const errorName = error?.name || '';
+            const message = errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError'
+                ? 'Camera permission was denied. Allow camera access for this website in the browser address-bar settings, then try again.'
+                : errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError'
+                    ? 'No camera was found on this device. Use the saved QR image option below.'
+                    : errorName === 'NotReadableError' || errorName === 'TrackStartError'
+                        ? 'The camera is busy or unavailable. Close other camera apps and try again.'
+                        : 'Unable to start the camera. Confirm this page uses HTTPS and that the browser allows camera access.';
+            setStatus(message, 'error');
         }
     });
 
     stopButton.addEventListener('click', () => stopCamera());
+    imageInput.addEventListener('change', async event => {
+        const file = event.target.files?.[0];
+        if (!file || typeof Html5Qrcode === 'undefined') return;
+
+        try {
+            if (cameraRunning) await stopCamera(false);
+            scanner = new Html5Qrcode('qr-reader');
+            setStatus('Reading the selected QR image...');
+            const decodedText = await scanner.scanFile(file, true);
+            await scanner.clear();
+            await lookupCitizen(decodedText);
+        } catch (error) {
+            setStatus('The selected image does not contain a readable Health ID QR code.', 'error');
+        } finally {
+            imageInput.value = '';
+        }
+    });
     manualButton.addEventListener('click', () => lookupCitizen(manualInput.value));
     manualInput.addEventListener('keydown', event => {
         if (event.key === 'Enter') lookupCitizen(manualInput.value);

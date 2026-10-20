@@ -4,12 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Supply;
-use App\Models\Log;
 use App\Models\SupplyLog;
 use Illuminate\Support\Facades\Auth;
-use App\Models\citizens;
 use App\Models\Category;
-use App\Models\SupplyRequest;
 
 class SupplyController extends Controller
 {
@@ -51,19 +48,6 @@ class SupplyController extends Controller
             ->where('quantity', '>', 0)
             ->count();
 
-        $citizens = citizens::all();
-
-        $supplyRequests = SupplyRequest::with(['citizen', 'supply'])
-        ->where('status', 'pending') // 👈 Only show pending requests in the incoming table
-        ->orderByRaw("FIELD(priority, 'urgent', 'high', 'normal')")
-        ->latest()
-        ->get();
-
-        $bhwReservations = SupplyRequest::with(['citizen', 'supply'])
-    ->where('status', 'approved') // 👈 Grab all approved requests to show in the dropdown sub-table
-    ->get()
-    ->groupBy('supply_id');
-
         // Step 1 Integration: Dynamic view switching based on user role
         $user = Auth::user();
         $view = ($user && $user->role === 'admin') 
@@ -75,10 +59,7 @@ class SupplyController extends Controller
             'totalsupply',
             'wellStocked',
             'lowStock',
-            'citizens',
             'categories',
-            'supplyRequests',
-            'bhwReservations'
         ));
     }
 
