@@ -1,4 +1,3 @@
-
 /* ==========================================
    HEALTH RECORDS SPECIFIC LAYOUT
    ========================================== */
@@ -10,19 +9,14 @@
     width: 100%;
 }
 
-/* LEFT PANEL */
-
 .left-panel {
     flex: 1 1 0;
     min-width: 0;
 }
 
-/* RIGHT PANEL */
-
 .right-panel {
     flex: 0 0 calc(30% - 6px);
     min-width: 0;
-
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -105,23 +99,19 @@
     color: #92400e;
 }
 
-/* ==========================================
-   RESPONSIVE
-   ========================================== */
-
-@media (max-width: 992px) {
-
-    .health-wrapper {
-        flex-direction: column;
-    }
-
-    .left-panel,
-    .right-panel {
-        flex: 0 0 100%;
-        width: 100%;
-    }
-
+.status-no-record {
+    background: #e2e8f0;
+    color: #475569;
 }
+
+.status-other {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* ==========================================
+   PRIMARY BUTTON
+   ========================================== */
 
 .btn-primary {
     background: #0E42B1;
@@ -177,7 +167,9 @@
     line-height: 1.5;
 }
 
-/* RESPONSIVE */
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
 
 @media (max-width: 1200px) {
     .summary {
@@ -185,8 +177,380 @@
     }
 }
 
+@media (max-width: 992px) {
+    .health-wrapper {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+}
+
 @media (max-width: 640px) {
     .summary {
         grid-template-columns: 1fr !important;
     }
+
+    .health-status-filter {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .health-status-filter-title {
+        flex: 0 0 100%;
+    }
+
+    .health-status-reset {
+        margin-left: 0;
+    }
+
+    .list-tab,
+    .recent-tab {
+        padding: 14px;
+    }
+}
+
+
+/* ==========================================
+   HEALTH RECORD STATUS FILTER - CITIZEN MANAGEMENT STYLE
+   ========================================== */
+
+.health-status-filter-trigger-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 16px;
+}
+
+.health-status-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-width: 170px;
+    padding: 11px 15px;
+    border: 1px solid #d7dfeb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.health-status-filter-btn:hover,
+.health-status-filter-btn:focus-visible {
+    border-color: #1646bd;
+    box-shadow: 0 0 0 3px rgba(22, 70, 189, .12);
+    outline: none;
+}
+
+.health-status-filter-arrow {
+    color: #64748b;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.health-status-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .52);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    box-sizing: border-box;
+}
+
+.health-status-overlay.active { display: flex; }
+
+.health-status-modal {
+    width: 100%;
+    max-width: 480px;
+    max-height: min(85vh, 720px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .24);
+    animation: healthStatusModalIn .18s ease-out;
+}
+
+.health-status-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.health-status-header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.health-status-header p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.health-status-close {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.health-status-close:hover { background: #e2e8f0; }
+
+.health-status-body { padding: 20px 24px 24px; }
+
+.health-status-section h3 {
+    margin: 0 0 12px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.health-status-option {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 48px;
+    padding: 10px 12px;
+    margin: 0 0 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.health-status-option:hover {
+    border-color: #b8c8eb;
+    background: #f8faff;
+}
+
+.health-status-option input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: #1646bd;
+    cursor: pointer;
+}
+
+.health-status-option-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.health-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.health-status-dot.treated { background: #16a34a; }
+.health-status-dot.pending { background: #d97706; }
+.health-status-dot.no-record { background: #64748b; }
+.health-status-dot.other { background: #6366f1; }
+
+.health-status-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px 22px;
+    border-top: 1px solid #e8edf4;
+}
+
+.health-status-clear,
+.health-status-apply {
+    min-height: 42px;
+    padding: 10px 17px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+}
+
+.health-status-clear {
+    border: 1px solid #d7dfeb;
+    background: #fff;
+    color: #475569;
+}
+.health-status-clear:hover { background: #f8fafc; }
+
+.health-status-apply {
+    border: 1px solid #1646bd;
+    background: #1646bd;
+    color: #fff;
+}
+.health-status-apply:hover { background: #123a9c; }
+
+body.health-status-modal-open { overflow: hidden; }
+
+@keyframes healthStatusModalIn {
+    from { opacity: 0; transform: translateY(6px) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 600px) {
+    .health-status-overlay { align-items: flex-end; padding: 0; }
+    .health-status-modal {
+        max-width: none;
+        max-height: 88vh;
+        border-radius: 16px 16px 0 0;
+    }
+    .health-status-header { padding: 20px 18px 16px; }
+    .health-status-body { padding: 18px; }
+    .health-status-footer { padding: 14px 18px 20px; }
+    .health-status-clear, .health-status-apply { flex: 1; }
+}
+
+/* ==========================================
+   HEALTH RECORD TOOLBAR: SEARCH + PUROK + STATUS
+   ========================================== */
+.health-record-toolbar {
+    width: 100%;
+    margin: 0 0 16px;
+}
+
+.health-record-filter-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.health-record-search {
+    flex: 1 1 260px;
+    min-width: 180px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.health-record-purok {
+    flex: 0 0 170px;
+    width: 170px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.health-record-search-submit {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.health-record-filter-form .health-status-filter-btn {
+    flex: 0 0 auto;
+    min-width: 170px;
+    white-space: nowrap;
+}
+
+/* Radio options share the same card/pill spacing as Citizen Management. */
+.health-status-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.health-status-radio-group .health-status-option {
+    flex: 1 1 100px;
+    min-height: 42px;
+    margin-bottom: 0;
+}
+
+.health-status-section + .health-status-section {
+    margin-top: 18px;
+}
+
+@media (max-width: 700px) {
+    .health-record-filter-form {
+        align-items: stretch;
+    }
+
+    .health-record-search,
+    .health-record-purok,
+    .health-record-filter-form .health-status-filter-btn,
+    .health-record-search-submit {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+
+/* SEARCH TOOLBAR: keep Status Filters beside search and Purok */
+.toolbar form { display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%; }
+.toolbar form > input[type="text"] { flex:1 1 220px; min-width:160px; }
+.toolbar form > select { flex:0 0 145px; min-width:130px; }
+
+/* Citizen Management Status Filter button */
+.citizen-status-filter-btn { display:inline-flex; align-items:center; justify-content:space-between; gap:12px; min-height:42px; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#334155; font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer; transition:background .2s ease,border-color .2s ease; }
+.citizen-status-filter-btn:hover,.citizen-status-filter-btn.active { background:#f8fafc; border-color:#0e42b1; }
+.citizen-status-filter-btn .status-filter-arrow { display:inline-flex; align-items:center; justify-content:center; width:12px; height:12px; font-size:0; position:relative; flex-shrink:0; transition:transform .2s ease; }
+.citizen-status-filter-btn .status-filter-arrow::before { content:""; width:6px; height:6px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg); margin-top:-3px; }
+.citizen-status-filter-btn.active .status-filter-arrow { transform:rotate(180deg); }
+
+/* Citizen Management modal */
+.citizen-status-overlay { display:none; position:fixed; inset:0; z-index:100000; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.52); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); box-sizing:border-box; }
+.citizen-status-overlay.active { display:flex; }
+body.citizen-status-modal-open { overflow:hidden; }
+.citizen-status-modal { display:flex; flex-direction:column; width:100%; max-width:600px; max-height:min(86vh,760px); background:#fff; border-radius:16px; box-shadow:0 24px 70px rgba(15,23,42,.25); overflow:hidden; animation:citizenStatusModalIn .18s ease-out; }
+@keyframes citizenStatusModalIn { from { opacity:0; transform:translateY(8px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+.citizen-status-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 24px; border-bottom:1px solid #e2e8f0; }
+.citizen-status-header h2 { margin:0; color:#0f172a; font-size:19px; font-weight:700; }
+.citizen-status-close { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; flex:0 0 36px; border:0; border-radius:8px; background:#f1f5f9; color:#334155; font-size:25px; cursor:pointer; }
+.citizen-status-close:hover { background:#e2e8f0; }
+.citizen-status-body { padding:22px 24px; overflow-y:auto; }
+.citizen-status-section { margin:0 0 22px; padding:0 0 20px; border-bottom:1px solid #e2e8f0; }
+.citizen-status-section:last-child { margin-bottom:0; padding-bottom:0; border-bottom:0; }
+.citizen-status-section h3 { margin:0 0 13px; color:#334155; font-size:14px; font-weight:700; }
+.citizen-status-radio-group { display:flex; flex-wrap:wrap; gap:12px 22px; }
+.citizen-status-radio-group label,.citizen-status-option { display:flex; align-items:center; gap:9px; margin:0; color:#334155; font-size:13px; font-weight:500; line-height:1.5; cursor:pointer; }
+.citizen-status-option + .citizen-status-option { margin-top:11px; }
+.citizen-status-radio-group input,.citizen-status-option input { width:16px; height:16px; margin:0; accent-color:#1646bd; flex:0 0 16px; cursor:pointer; }
+.citizen-status-footer { display:flex; justify-content:flex-end; gap:10px; padding:17px 24px; border-top:1px solid #e2e8f0; background:#fff; }
+.citizen-status-footer button { min-height:40px; padding:10px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+.citizen-status-clear { border:1px solid #cbd5e1; background:#fff; color:#334155; }
+.citizen-status-clear:hover { background:#f8fafc; }
+.citizen-status-apply { border:1px solid #1646bd; background:#1646bd; color:#fff; }
+.citizen-status-apply:hover { background:#123b9e; }
+.list-tab tbody tr[hidden] { display:none !important; }
+@media (max-width:760px) {
+ .toolbar form { align-items:stretch; }
+ .toolbar form > input[type="text"],.toolbar form > select,.toolbar form > button { flex:1 1 100%; width:100%; }
+ .citizen-status-overlay { align-items:flex-end; padding:0; }
+ .citizen-status-modal { max-width:none; max-height:90dvh; border-radius:16px 16px 0 0; }
+ .citizen-status-header { padding:18px 20px; }
+ .citizen-status-body { padding:20px; }
+ .citizen-status-footer { padding:14px 20px max(14px,env(safe-area-inset-bottom)); }
+ .citizen-status-footer button { flex:1 1 0; }
 }

@@ -18,6 +18,8 @@ use App\Models\citizens;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\VaccinationRecord;
+use App\Models\Vaccination;
+use App\Models\MaintenanceRecord;
 use App\Models\MedicationRecord;
 use App\Models\Supply;
 use App\Models\Family;
@@ -61,9 +63,10 @@ class CitizenController extends Controller
 
             // Check if citizen belongs to one of the BHW's assigned purok subgroups
             $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-            
-                $belongsToAssignedSubgroup = $assignedSubgroupIDs->contains($citizen->subgroup_id)
-                    || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
+
+            $family = $citizen->getAttribute('family');
+            $belongsToAssignedSubgroup = $family
+                && $assignedSubgroupIDs->contains($family->getAttribute('subgroup_id'));
 
             if ($belongsToAssignedSubgroup) {
                 return true;
@@ -263,6 +266,15 @@ class CitizenController extends Controller
 
         $puroks = Purok::with('subgroups')->get();
 
+        $availableMedicines = Supply::where('quantity', '>', 0)
+            ->select('name')
+            ->distinct()
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'medicine_page');
+
+
+
+
         /*
         |--------------------------------------------------------------------------
         | PAGINATION
@@ -297,7 +309,8 @@ class CitizenController extends Controller
             'kids',
             'adults',
             'seniors',
-            'puroks'
+            'puroks',
+            'availableMedicines'
         ));
     }
 
@@ -387,38 +400,116 @@ class CitizenController extends Controller
     | HEALTH RECORD STORE
     |--------------------------------------------------------------------------
     */
+
+    public function healthRecordIndex(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') abort(403);
+
+        $search = $request->input('search');
+        $purok = $request->input('purok');
+        $query = $this->restrictToAssignedCitizens(citizens::with('healthRecords'));
+
+        if ($purok && $purok !== 'all') {
+            $query->where('Citizen_Purok', $purok);
+        }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('Citizen_FName', 'LIKE', "%{$search}%")
+                  ->orWhere('Citizen_LName', 'LIKE', "%{$search}%")
+                  ->orWhereHas('healthRecords', function ($subQuery) use ($search) {
+                      $subQuery->where('diagnosis', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        $citizens = $query->paginate(10)->appends($request->all());
+        $allCitizens = $this->restrictToAssignedCitizens(citizens::with('healthRecords'))->get();
+        $heatmapData = [];
+
+        foreach (Purok::whereNotNull('latitude')->whereNotNull('longitude')->get() as $purokRecord) {
+            $purokKey = preg_replace('/[^0-9]/', '', (string) $purokRecord->name);
+            $matchingCitizens = $allCitizens->filter(function ($citizen) use ($purokKey) {
+                $dbPurok = preg_replace('/[^0-9]/', '', (string) $citizen->Citizen_Purok);
+                return $dbPurok === (string) $purokKey;
+            });
+            $recordCount = $matchingCitizens->sum(fn ($citizen) => $citizen->healthRecords->count());
+
+            if ($recordCount > 0) {
+                $heatmapData[] = [
+                    'location' => ['lat' => (float) $purokRecord->latitude, 'lng' => (float) $purokRecord->longitude],
+                    'weight' => $recordCount * 3,
+                    'purok' => $purokRecord->name,
+                    'citizens_count' => $matchingCitizens->count(),
+                    'records_count' => $recordCount,
+                ];
+            }
+        }
+
+        return view('bhw.healthrecord', compact('citizens', 'heatmapData'));
+    }
+
     public function storeHealthRecord(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') abort(403);
+
+        $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
-            'diagnosis' => 'required|string',
-            'record_date' => 'required|date',
-            'comments' => 'nullable|string',
+            'diagnosis' => 'required|string|max:255',
+            'notes' => 'nullable|string',
         ]);
 
         $record = HealthRecord::create([
-            'citizen_id' => $request->citizen_id,
-            'diagnosis' => $request->diagnosis,
-            'record_date' => $request->record_date,
-            'comments' => $request->comments,
+            'citizen_id' => $validated['citizen_id'],
+            'diagnosis' => $validated['diagnosis'],
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         HealthRecordActivityLog::create([
             'user_id' => Auth::id(),
             'action' => 'create',
-            'citizen_id' => $request->citizen_id,
+            'citizen_id' => $validated['citizen_id'],
             'health_record_id' => $record->id,
-            'description' => 'Added health record: ' . $request->diagnosis,
+            'description' => 'Added health record: ' . $validated['diagnosis'],
         ]);
 
-        return redirect()->back()->with('success', 'Health record added!');
+        $this->logActivity('create', 'health_record', $validated['citizen_id'], 'Added health record: ' . $validated['diagnosis']);
+        return back()->with('success', 'Health record added successfully.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HEALTH RECORD PAGE
-    |--------------------------------------------------------------------------
-    */
+    public function storeMaintenance(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') abort(403);
+
+        $validated = $request->validate([
+            'citizen_id' => 'required|exists:citizens,id',
+            'medicine_source' => 'required|in:existing,custom',
+            'existing_medicine' => 'nullable|required_if:medicine_source,existing|string|max:255|exists:supplies,name',
+            'custom_medicine' => 'nullable|required_if:medicine_source,custom|string|max:255',
+            'dosage' => 'required|string|max:255',
+            'frequency' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        MaintenanceRecord::create([
+            'citizen_id' => $validated['citizen_id'],
+            'medicine_name' => $validated['medicine_source'] === 'custom' ? $validated['custom_medicine'] : $validated['existing_medicine'],
+            'dosage' => $validated['dosage'],
+            'frequency' => $validated['frequency'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'user_id' => Auth::id(),
+        ]);
+
+        $this->logActivity('create', 'maintenance', $validated['citizen_id'], 'Added maintenance medicine.');
+        return back()->with('success', 'Maintenance medicine added successfully.');
+    }
+
     public function healthIndex()
     {
         $citizens = citizens::paginate(10);
@@ -478,13 +569,40 @@ class CitizenController extends Controller
     */
     public function citizendetails($id)
     {
-        $citizen = citizens::with(['healthRecords', 'family.purok'])->findOrFail($id);
+        $citizen = citizens::with([
+            'healthRecords' => fn ($query) => $query->latest(),
+            'maintenanceRecords' => fn ($query) => $query->latest(),
+            'vaccinations',
+            'family.purok',
+            'family.subgroup',
+            'subgroup',
+        ])->findOrFail($id);
+
         $this->authorizeCitizenEdit($citizen);
-        $families = Family::with(['purok', 'subgroup'])->get();
 
-        $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen details page');
+        $families = Family::with(['purok', 'subgroup'])
+            ->orderBy('family_name')
+            ->get();
 
-        return view('bhw.citizendetails', compact('citizen', 'families'));
+        // The citizen details Blade view uses this list in the medicine selector.
+        $availableMedicines = Supply::where('quantity', '>', 0)
+            ->select('name')
+            ->distinct()
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'medicine_page');
+
+        $this->logActivity(
+            'view',
+            'citizen',
+            $citizen->id,
+            'Viewed citizen details page'
+        );
+
+        return view('bhw.citizendetails', compact(
+            'citizen',
+            'families',
+            'availableMedicines'
+        ));
     }
 
     /*
@@ -656,8 +774,31 @@ class CitizenController extends Controller
     | STORE VACCINATION RECORD
     |--------------------------------------------------------------------------
     */
-    public function storeVaccination(Request $request, $id)
+
+    public function storeVaccinationRecord(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') abort(403);
+
+        $validated = $request->validate([
+            'citizen_id' => 'required|exists:citizens,id',
+            'vaccine_name' => 'required|string|max:255',
+            'date_administered' => 'required|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        Vaccination::create($validated);
+        $this->logActivity('create', 'vaccination', $validated['citizen_id'], 'Added vaccination: ' . $validated['vaccine_name']);
+
+        return back()->with('success', 'Vaccination added successfully.');
+    }
+
+    public function storeVaccination(Request $request, $id = null)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') abort(403);
+        $citizenId = $id ?? $request->input('citizen_id');
+        validator(['citizen_id' => $citizenId], ['citizen_id' => 'required|exists:citizens,id'])->validate();
         $validated = $request->validate([
             'vaccine_name' => 'required|string|max:255',
             'dose_number' => 'required|string|max:100',
@@ -665,15 +806,15 @@ class CitizenController extends Controller
             'administered_by' => 'required|string|max:255',
         ]);
 
-        $validated['citizen_id'] = $id;
+        $validated['citizen_id'] = $citizenId;
 
         VaccinationRecord::create($validated);
 
         $this->logActivity(
             'create',
             'vaccination',
-            $id,
-            'Administered vaccine (' . $validated['vaccine_name'] . ' - ' . $validated['dose_number'] . ') to citizen ID ' . $id
+            $citizenId,
+            'Administered vaccine (' . $validated['vaccine_name'] . ' - ' . $validated['dose_number'] . ') to citizen ID ' . $citizenId
         );
 
         return back()->with('success', 'Vaccination record added successfully.');
@@ -693,7 +834,7 @@ class CitizenController extends Controller
             'date_dispensed' => 'required|date',
         ]);
 
-        $validated['citizen_id'] = $id;
+        $validated['citizen_id'] = $citizenId;
 
         MedicationRecord::create($validated);
 

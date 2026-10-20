@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 /* =========================================================
@@ -511,4 +510,402 @@
         padding: 9px 11px;
         font-size: 12px;
     }
+}
+
+/* =========================================================
+
+/* Medicine selection modal */
+.medicine-picker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .55);
+}
+
+.medicine-picker-modal.active,
+.medicine-picker-modal.show {
+    display: flex;
+}
+
+.medicine-picker-dialog {
+    width: min(100%, 620px);
+    max-height: min(85vh, 760px);
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .2);
+}
+
+.medicine-picker-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.medicine-picker-header h2,
+.medicine-picker-header h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.medicine-picker-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.medicine-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 13px;
+}
+
+.medicine-option:hover {
+    background: #f8fafc;
+}
+
+.medicine-picker-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+}
+
+/* =========================================================
+
+DIAGNOSIS CONFIRMATION MODAL
+   ========================================================= */
+
+.diagnosis-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgba(15, 23, 42, .58);
+}
+
+.diagnosis-confirm-overlay.active,
+.diagnosis-confirm-overlay.show {
+    display: flex;
+}
+
+.diagnosis-confirm-modal {
+    width: min(100%, 520px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 26px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .25);
+}
+
+.diagnosis-confirm-modal h2 {
+    margin: 0 0 12px;
+    color: #0f172a;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.diagnosis-confirm-modal > p {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.diagnosis-confirm-details {
+    display: grid;
+    gap: 10px;
+}
+
+.diagnosis-confirm-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.diagnosis-confirm-detail span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.diagnosis-confirm-detail strong {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.diagnosis-confirm-buttons {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.diagnosis-confirm-buttons button {
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.diagnosis-confirm-cancel {
+    border-color: #e2e8f0 !important;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.diagnosis-confirm-save {
+    background: #0e42b1;
+    color: #fff;
+}
+
+.diagnosis-confirm-save:hover {
+    background: #123a9d;
+}
+
+/* =========================================================
+   DECEASED STATUS / CONFIRMATION
+   ========================================================= */
+
+.deceased-section-box {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 18px 0 4px;
+    padding: 18px;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    background: #fef2f2;
+}
+
+.deceased-section-box h3,
+.deceased-section-box h4 {
+    margin: 0 0 8px;
+    color: #991b1b;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.deceased-section-box p {
+    margin: 0 0 14px;
+    color: #7f1d1d;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.deceased-section-box label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #991b1b;
+    font-size: 13px;
+}
+
+.deceased-section-box input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #b91c1c;
+}
+
+.deceased-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgba(15, 23, 42, .58);
+}
+
+.deceased-modal-overlay.active {
+    display: flex;
+}
+
+.deceased-modal-box {
+    width: min(100%, 430px);
+    padding: 28px;
+    border-radius: 14px;
+    background: #fff;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .25);
+}
+
+.deceased-modal-box h2 {
+    margin: 0 0 12px;
+    color: #991b1b;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.deceased-modal-box p {
+    margin: 0 0 20px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.deceased-modal-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.main .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 1px solid #b91c1c;
+    border-radius: 8px;
+    background: #b91c1c;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.main .btn-danger:hover {
+    background: #991b1b;
+}
+
+/* =========================================================
+   SHARED HEALTH FORMS — IMMUNIZATION, DIAGNOSIS, MAINTENANCE
+   ========================================================= */
+#citizenForm > .immunization-section,
+#citizenForm > .maintenance-section,
+#citizenForm > .health-record-section {
+    grid-column: 1 / -1; width: 100%; min-width: 0; margin: 22px 0 0; padding: 24px;
+    border: 1px solid #e2e8f0; border-radius: 12px; background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+}
+.immunization-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 18px; margin: 0 0 18px; }
+.immunization-heading > div { flex: 1 1 260px; min-width: 0; }
+.immunization-heading h3,
+.maintenance-section > h3,
+.health-record-section > h3,
+#citizenForm h3:has(+ #diagnosisForm) {
+    margin: 0 0 12px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;
+    color: #0f172a; font-size: 19px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere;
+}
+.immunization-heading p { margin: 0; color: #64748b; font-size: 13px; line-height: 1.6; }
+.immunization-count { flex: 0 0 auto; padding: 6px 10px; border: 1px solid #dbeafe; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.immunization-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; min-width: 0; }
+.vaccine-option { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 54px; margin: 0; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 9px; background: #fff; color: #334155; cursor: pointer; transition: border-color .2s ease, background-color .2s ease; }
+.vaccine-option:hover { border-color: #93c5fd; background: #f8fbff; }
+.vaccine-option:has(.vaccine-checkbox:checked) { border-color: #2563eb; background: #eff6ff; }
+.vaccine-checkbox { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.vaccine-checkmark { display: inline-flex; flex: 0 0 19px; align-items: center; justify-content: center; width: 19px; height: 19px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; }
+.vaccine-checkbox:checked + .vaccine-checkmark { border-color: #2563eb; background: #2563eb; }
+.vaccine-checkbox:checked + .vaccine-checkmark::after { content: ''; width: 5px; height: 9px; margin-top: -2px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.vaccine-checkbox:focus-visible + .vaccine-checkmark { outline: 3px solid rgba(37, 99, 235, .2); outline-offset: 2px; }
+.vaccine-label { flex: 1 1 auto; min-width: 0; color: #334155; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; word-break: normal; }
+.immunization-preview-note { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 0; padding: 11px 13px; border: 1px solid #dbeafe; border-radius: 8px; background: #f8fbff; color: #64748b; font-size: 12px; line-height: 1.6; }
+
+/* Existing maintenance records */
+.maintenance-record-card { width: 100%; min-width: 0; margin: 0 0 12px; padding: 16px 18px; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; border-radius: 9px; background: #f8fafc; }
+.maintenance-record-card p { margin: 5px 0; color: #475569; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.maintenance-record-card p:first-child { margin-top: 0; }
+.maintenance-record-card p:last-child { margin-bottom: 0; }
+.maintenance-record-card strong { color: #0f172a; font-weight: 600; }
+
+/* Uniform full-width fields for maintenance and diagnosis */
+.maintenance-form, #diagnosisForm { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; width: 100%; min-width: 0; margin: 20px 0 0; padding: 20px 0 0; border-top: 1px solid #e2e8f0; }
+#diagnosisForm { grid-column: 1 / -1; margin-top: 0; padding: 20px 24px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, .04); }
+.maintenance-form > input[type='hidden'] { display: none !important; }
+.maintenance-form > label, .maintenance-form > input:not([type='hidden']), .maintenance-form > select, .maintenance-form > textarea, .maintenance-form > div, .maintenance-form > button,
+#diagnosisForm > label, #diagnosisForm > input, #diagnosisForm > select, #diagnosisForm > textarea, #diagnosisForm > button { grid-column: 1 / -1; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.maintenance-form > label, #existingMedicineGroup > label, #customMedicineGroup > label, #diagnosisForm > label { display: block; margin: 8px 0 2px; color: #334155; font-size: 13px; font-weight: 500; line-height: 1.45; }
+.maintenance-form input:not([type='hidden']), .maintenance-form select, .maintenance-form textarea, .maintenance-source-select, .maintenance-custom-input,
+#diagnosisForm input, #diagnosisForm select, #diagnosisForm textarea { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #0f172a; font-family: inherit; font-size: 13px; font-weight: 400; line-height: 1.5; box-sizing: border-box; }
+.maintenance-form textarea, #diagnosisForm textarea { min-height: 96px; resize: vertical; }
+.maintenance-form input::placeholder, .maintenance-form textarea::placeholder, #diagnosisForm input::placeholder, #diagnosisForm textarea::placeholder { color: #94a3b8; opacity: 1; }
+.maintenance-form input:focus, .maintenance-form select:focus, .maintenance-form textarea:focus, #diagnosisForm input:focus, #diagnosisForm select:focus, #diagnosisForm textarea:focus { border-color: #93b4f5; outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, .1); }
+#existingMedicineGroup, #customMedicineGroup { width: 100%; min-width: 0; margin: 0; }
+#existingMedicineGroup > label, #customMedicineGroup > label { margin-bottom: 7px; }
+#customMedicineGroup[hidden], .maintenance-form [hidden] { display: none !important; }
+#customMedicineGroup small { display: block; margin-top: 7px; color: #64748b; font-size: 12px; line-height: 1.5; }
+.medicine-picker-trigger { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #334155; font: inherit; font-size: 13px; line-height: 1.5; text-align: left; cursor: pointer; }
+.medicine-picker-trigger > span:first-child, #selectedMedicineLabel { min-width: 0; overflow-wrap: anywhere; }
+.medicine-picker-trigger:hover { border-color: #93b4f5; background: #f8fbff; }
+.medicine-picker-trigger:focus-visible { outline: 3px solid rgba(37, 99, 235, .15); outline-offset: 2px; }
+.maintenance-form button[type='submit'], .maintenance-form button:not(.medicine-picker-trigger), #diagnosisForm button[type='submit'], #saveDiagnosisBtn { display: inline-flex; align-items: center; justify-content: center; justify-self: start; width: auto; max-width: 100%; min-height: 42px; margin: 8px 0 0; padding: 10px 18px; border: 1px solid #1649b8; border-radius: 8px; background: #1649b8; color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.maintenance-form button[type='submit']:hover, .maintenance-form button:not(.medicine-picker-trigger):hover, #diagnosisForm button[type='submit']:hover, #saveDiagnosisBtn:hover { background: #123a9d; }
+.health-alert { width: 100%; margin: 12px 0; padding: 12px 14px; border: 1px solid transparent; border-radius: 8px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.health-alert-success { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+.health-alert-error { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+.health-error-list { margin: 0; padding-left: 20px; }
+
+@media screen and (max-width: 760px) {
+    #citizenForm > .immunization-section, #citizenForm > .maintenance-section, #citizenForm > .health-record-section { padding: 18px; }
+    .immunization-grid { grid-template-columns: minmax(0, 1fr); }
+    .immunization-heading { align-items: flex-start; }
+    .immunization-count { white-space: normal; }
+    #diagnosisForm { padding: 18px; }
+}
+@media screen and (max-width: 600px) {
+    #citizenForm > .immunization-section, #citizenForm > .maintenance-section, #citizenForm > .health-record-section { margin-top: 16px; padding: 15px 13px; }
+    .immunization-grid { gap: 9px; }
+    .vaccine-option { min-height: 50px; padding: 11px; }
+    .maintenance-form button[type='submit'], .maintenance-form button:not(.medicine-picker-trigger), #diagnosisForm button[type='submit'], #saveDiagnosisBtn { width: 100%; justify-self: stretch; }
+    .diagnosis-confirm-modal, .deceased-modal-box { padding: 22px 18px; }
+    .diagnosis-confirm-buttons, .deceased-modal-buttons { flex-direction: column-reverse; align-items: stretch; }
+    .diagnosis-confirm-buttons button, .deceased-modal-buttons button { width: 100%; }
+    .medicine-picker-dialog { max-height: 90vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

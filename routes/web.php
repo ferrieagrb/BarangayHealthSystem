@@ -17,7 +17,6 @@ use App\Http\Controllers\AdminSettings;
 use App\Http\Controllers\VehicleLogController;
 use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\ReferralController;
-use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\AdminPermissionController;
@@ -215,10 +214,10 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
 
     // Health Records
-    Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
-    Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
-    Route::post('/health-record/maintenance', [HealthRecordController::class, 'storeMaintenance'])->name('health.maintenance.store');
-    Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
+    Route::get('/healthrecord', [CitizenController::class, 'healthRecordIndex'])->name('healthrecord');
+    Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
+    Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
+    Route::get('/health-record/{id}', [CitizenController::class, 'show'])->name('health.record.show');
 
     // Supplies
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies.index');
@@ -330,8 +329,8 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::patch('/referrals/{referral}/status', [ReferralController::class, 'updateStatus'])->name('referrals.status');
     Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');
 
-    Route::get('/citizen/{id}/records', [HealthRecordController::class, 'show'])->name('citizen.show');
-    Route::post('/vaccination/store', [HealthRecordController::class, 'storeVaccination'])->name('vaccination.store');
+    Route::get('/citizen/{id}/records', [CitizenController::class, 'show'])->name('citizen.show');
+    Route::post('/vaccination/store', [CitizenController::class, 'storeVaccinationRecord'])->name('vaccination.store');
 });
 
 /*
