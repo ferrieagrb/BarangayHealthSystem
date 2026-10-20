@@ -521,7 +521,7 @@
                             @forelse($citizen->vaccinations as $vax)
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
-                                        COVID-19 / Health Vax
+                                        {{ $vax->vaccine_name }}
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}

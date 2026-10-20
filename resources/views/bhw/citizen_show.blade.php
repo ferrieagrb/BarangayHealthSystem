@@ -185,14 +185,14 @@
 
 
 
-<!-- IMMUNIZATION / VACCINATION — VISUAL PREVIEW ONLY -->
+<!-- IMMUNIZATION / VACCINATION -->
 <section class="immunization-section" aria-labelledby="immunizationTitle">
     <div class="immunization-heading">
         <div>
             <h3 id="immunizationTitle">Immunization / Vaccination</h3>
-            <p>Select the vaccines received by this resident.</p>
+            <p>Select a vaccine, record the dose and save it to this citizen's history.</p>
         </div>
-        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 of 10 selected</span>
+        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 selected</span>
     </div>
     @php
         $vaccines = [
@@ -208,16 +208,43 @@
             'HPV' => 'Human Papillomavirus (HPV)',
         ];
     @endphp
-    <div class="immunization-grid" id="immunizationGrid">
-        @foreach($vaccines as $vaccineKey => $vaccineLabel)
-            <label class="vaccine-option" for="vaccine_{{ $vaccineKey }}">
-                <input type="checkbox" id="vaccine_{{ $vaccineKey }}" class="vaccine-checkbox">
-                <span class="vaccine-checkmark" aria-hidden="true"></span>
-                <span class="vaccine-label">{{ $vaccineLabel }}</span>
+    <form method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}" class="immunization-form">
+        @csrf
+        <div class="immunization-grid" id="immunizationGrid">
+            @foreach($vaccines as $vaccineKey => $vaccineLabel)
+                <label class="vaccine-option" for="vaccine_{{ $vaccineKey }}">
+                    <input type="radio" id="vaccine_{{ $vaccineKey }}" name="vaccine_name" value="{{ $vaccineLabel }}" class="vaccine-checkbox" required>
+                    <span class="vaccine-checkmark" aria-hidden="true"></span>
+                    <span class="vaccine-label">{{ $vaccineLabel }}</span>
+                </label>
+            @endforeach
+        </div>
+        <div class="immunization-fields">
+            <label>Dose
+                <input type="text" name="dose_number" placeholder="e.g. Dose 1 or Booster" required>
             </label>
-        @endforeach
+            <label>Date administered
+                <input type="date" name="date_administered" value="{{ now()->format('Y-m-d') }}" required>
+            </label>
+            <label>Administered by
+                <input type="text" name="administered_by" value="{{ auth()->user()->name }}" required>
+            </label>
+        </div>
+        <button type="submit" class="btn-primary">Save Vaccination</button>
+    </form>
+
+    <div class="immunization-history">
+        <h4>Immunization History</h4>
+        @forelse($citizen->vaccinations as $vaccination)
+            <div class="immunization-history-item">
+                <strong>{{ $vaccination->vaccine_name }}</strong>
+                <span>{{ $vaccination->dose_number }} · {{ $vaccination->date_administered }}</span>
+                <small>Administered by {{ $vaccination->administered_by }}</small>
+            </div>
+        @empty
+            <p>No immunization records yet.</p>
+        @endforelse
     </div>
-    <p class="immunization-preview-note"><span aria-hidden="true">ⓘ</span><span>Design preview only. Vaccine selections are not saved to the database yet.</span></p>
 </section>
 
 <!-- ================================================================
