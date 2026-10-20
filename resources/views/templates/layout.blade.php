@@ -130,12 +130,14 @@
                 </a>
             </li>
 
-            <li>
-                <a href="{{ route('bhw.reports') }}">
-                    <i class="bx bx-file"></i>
-                    <span class="nav-item">Reports</span>
-                </a>
-            </li>
+            @if(auth()->user()->hasReadAccess('reports'))
+                <li>
+                    <a href="{{ route('bhw.reports') }}">
+                        <i class="bx bx-file"></i>
+                        <span class="nav-item">Reports</span>
+                    </a>
+                </li>
+            @endif
 
             <li>
                 <a href="/supplies">
