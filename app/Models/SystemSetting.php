@@ -27,10 +27,8 @@ class SystemSetting extends Model
             return asset($path);
         }
 
-        $storagePath = '/storage/' . ltrim($path, '/');
-
         return app()->runningInConsole()
             ? Storage::disk('public')->url($path)
-            : request()->getSchemeAndHttpHost() . $storagePath;
+            : route('site.logo');
     }
 }

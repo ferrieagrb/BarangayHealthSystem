@@ -40,6 +40,7 @@ use App\Http\Controllers\SuperAdmin\SystemConnectionsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
+use App\Http\Controllers\PublicAssetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +78,7 @@ Route::get('/publicannouncements/{announcement}', [AnnouncementController::class
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
 Route::get('/login', fn () => view('login'))->name('login');
+Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
 
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 
