@@ -21,6 +21,7 @@ use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\BhwHomeController;
+use App\Http\Controllers\BhwReportController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -214,10 +215,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
 
     // Health Records
-    Route::get('/healthrecord', [CitizenController::class, 'healthRecordIndex'])->name('healthrecord');
-    Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
-    Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
-    Route::get('/health-record/{id}', [CitizenController::class, 'show'])->name('health.record.show');
+    Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
+    Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
+    Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
+    Route::post('/health-record/maintenance', [HealthRecordController::class, 'storeMaintenance'])->name('health.maintenance.store');
+    Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies.index');
@@ -225,9 +227,6 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
-    Route::post('/supplies/batch-release', [SupplyController::class, 'batchRelease'])->name('supplies.batch.release');
-    Route::get('/supplies/batch-release/{eventId}', [SupplyController::class, 'showBatchRelease'])->name('supplies.batch.release.show');
-    Route::post('/supplies/batch-release/{id}/claim', [SupplyController::class, 'claimRelease'])->name('supplies.batch.release.claim');
     Route::delete('/supplies/batch/{id}', [SupplyController::class, 'destroy'])->name('supplies.destroy');
     Route::post('/supplies/item/withdraw', [SupplyController::class, 'withdrawItem'])->name('supplies.item.withdraw');
     Route::post('/supplies/batch/withdraw', [SupplyController::class, 'withdrawBatch'])->name('supplies.batch.withdraw');
@@ -313,7 +312,7 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::get('/permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
     Route::put('/permissions/{user}', [AdminPermissionController::class, 'update'])->name('permissions.update');
 
-    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
 });
 
 /*
@@ -364,8 +363,10 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
     Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
 
     Route::get('/system-settings', [SuperAdminController::class, 'systemSettings'])->name('system.settings');
+    Route::put('/system-settings', [SuperAdminController::class, 'updateSystemSettings'])->name('system.settings.update');
+    Route::get('/system-settings/backup', [SuperAdminController::class, 'downloadBackup'])->name('system.settings.backup');
 
-    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('admin.users.unlock');
+    Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
 });
 
 

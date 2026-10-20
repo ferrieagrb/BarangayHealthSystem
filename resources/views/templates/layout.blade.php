@@ -131,6 +131,13 @@
             </li>
 
             <li>
+                <a href="{{ route('bhw.reports') }}">
+                    <i class="bx bx-file"></i>
+                    <span class="nav-item">Reports</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="/supplies">
                     <i class="bx bx-package"></i>
                     <span class="nav-item">Supplies</span>

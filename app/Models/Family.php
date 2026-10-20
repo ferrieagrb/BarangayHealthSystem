@@ -8,6 +8,19 @@ class Family extends Model
 {
     protected $fillable = ['family_name', 'purok_id', 'subgroup_id'];
 
+    protected static function booted(): void
+    {
+        static::updated(function (Family $family) {
+            if ($family->wasChanged(['purok_id', 'subgroup_id'])) {
+                $family->loadMissing(['purok', 'subgroup']);
+                $family->members()->update([
+                    'Citizen_Purok' => $family->purok->name,
+                    'subgroup_id' => $family->subgroup->id,
+                ]);
+            }
+        });
+    }
+
     public function purok()
     {
         return $this->belongsTo(Purok::class);

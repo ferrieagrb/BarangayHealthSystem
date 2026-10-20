@@ -221,9 +221,6 @@
         <a href="{{ route('supplies.create') }}" class="btn-primary">
             + Add New Item
         </a>
-        <button type="button" id="openBatchReleaseModal" class="btn-primary" style="margin-left: 10px;">
-            Schedule Batch Release
-        </button>
     @endif
 </div>
 
@@ -263,7 +260,8 @@
 </div>
 
 
-<!-- BATCH RELEASES -->
+{{-- Batch release scheduling has been removed. --}}
+@if(false)
 <div class="table-container" style="margin-bottom: 24px;">
     <div class="page-title" style="margin-bottom: 16px;">
         <h2>Batch Releases</h2>
@@ -301,6 +299,7 @@
         </tbody>
     </table>
 </div>
+@endif
 
 <!-- TABLE -->
 <div class="table-container supplies-main-table-wrapper">
@@ -973,26 +972,6 @@
 
 @section('scripts')
 
-@php
-    $batchReleaseCitizens = $citizens->map(function ($citizen) {
-        return [
-            'id' => $citizen->id,
-            'name' => trim(($citizen->Citizen_FName ?? '') . ' ' . ($citizen->Citizen_LName ?? '')),
-        ];
-    })->values();
-
-    $batchReleaseSupplies = $supplies->filter(function ($supply) {
-        return $supply->quantity > 0;
-    })->map(function ($supply) {
-        return [
-            'id' => $supply->id,
-            'name' => $supply->name,
-            'code' => $supply->item_number ?: ($supply->serial_number ?: 'Batch #' . $supply->id),
-            'quantity' => $supply->quantity,
-        ];
-    })->values();
-@endphp
-
 <script>
 
     /* ============================================================
@@ -1458,6 +1437,7 @@
 
 </script>
 
+@if(false)
 <div id="batchReleaseModal" class="batch-release-modal" role="dialog" aria-modal="true" aria-labelledby="batchReleaseTitle" aria-hidden="true">
     <div class="batch-release-dialog">
         <div class="batch-release-header">
@@ -1704,5 +1684,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endif
 
 @endsection

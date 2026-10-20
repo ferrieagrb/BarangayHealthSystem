@@ -15,6 +15,9 @@ class AdminPermissionController extends Controller
         'supplies' => 'Supplies & Inventory',
         'patients' => 'Patient Records',
         'reports'  => 'Reports & Analytics',
+        'reports_demographics' => 'Reports: Demographics',
+        'reports_health' => 'Reports: Health & Immunization',
+        'reports_operations' => 'Reports: Operations',
         'family'   => 'Family Profiles',
         'audit_logs' => 'Audit Logs',
     ];
