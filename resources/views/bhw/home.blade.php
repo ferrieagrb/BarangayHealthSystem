@@ -41,10 +41,8 @@
     <div class="summary-cards">
         <div class="summary-card"><span>Total Citizens</span><strong>{{ $totalCitizens }}</strong><small>Registered residents</small></div>
         <div class="summary-card"><span>Inventory Units</span><strong>{{ $totalInventoryUnits }}</strong><small>{{ $totalInventory }} supply records</small></div>
-        <div class="summary-card"><span>Low Stock</span><strong>{{ $lowStockCount }}</strong><small>Items needing review</small></div>
-        <div class="summary-card"><span>Active Maintenance</span><strong>{{ $activeMaintenance }}</strong><small>Current medicine plans</small></div>
         <div class="summary-card"><span>Pending Referrals</span><strong>{{ $pendingReferrals }}</strong><small>Awaiting follow-up</small></div>
-        <div class="summary-card"><span>Scheduled Releases</span><strong>{{ $scheduledReleases }}</strong><small>Upcoming citizen claims</small></div>
+        <div class="summary-card"><span>Trending Diagnosis</span><strong>{{ $popularDisease }}</strong><small>Most recorded diagnosis</small></div>
     </div>
 
     <section class="home-card home-card-wide" style="margin-bottom: 18px;">
@@ -81,18 +79,13 @@
             </tbody></table>
         </section>
 
-        <section class="home-card">
+        <section class="home-card home-card-wide">
             <div class="home-card-header"><div><h2>Announcements</h2><p>Latest community notices</p></div><a href="{{ route('announcements') }}">View all</a></div>
             <div class="home-list">
                 @forelse($recentAnnouncements as $announcement)
                     <div class="home-list-item"><div><strong>{{ $announcement->title }}</strong><small>{{ $announcement->category ?? 'General notice' }}</small></div><time>{{ $announcement->created_at->format('M d') }}</time></div>
                 @empty <div class="home-empty">No recent announcements.</div> @endforelse
             </div>
-        </section>
-
-        <section class="home-card">
-            <div class="home-card-header"><div><h2>Health Snapshot</h2><p>Current signal from recorded diagnoses</p></div><a href="{{ route('healthrecord') }}">Explore records</a></div>
-            <div class="home-list-item"><div><strong>Most common diagnosis</strong><small>Based on recorded health records</small></div><span class="home-status good">{{ $popularDisease }}</span></div>
         </section>
     </div>
 </div>

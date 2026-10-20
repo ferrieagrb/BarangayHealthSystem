@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\TrackPageViews;
 use App\Http\Middleware\SystemMaintenance;
+use App\Http\Middleware\SecurityHeaders;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             TrackPageViews::class,
             SystemMaintenance::class,
+            SecurityHeaders::class,
         ]);
 
         // Existing middleware aliases

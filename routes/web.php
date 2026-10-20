@@ -252,6 +252,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/qr-scanner/lookup/{token}', [QRScannerController::class, 'lookup'])
         ->whereUuid('token')
         ->name('qr.scanner.lookup');
+    Route::post('/qr-scanner/diagnosis', [QRScannerController::class, 'storeDiagnosis'])
+        ->name('qr.scanner.diagnosis.store');
 
     // Legacy authenticated route retained for existing QR links/bookmarks.
     Route::get('/citizen/qr/{token}', [CitizenController::class, 'showElectronicCardByToken'])
