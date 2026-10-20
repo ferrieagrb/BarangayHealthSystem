@@ -6,7 +6,12 @@
 
 @section('content')
 
-<h1>Create User</h1>
+<div class="page-top">
+    <div class="page-title-group">
+        <h1>Create User</h1>
+        <p>Create an administrator or BHW account.</p>
+    </div>
+</div>
 
 @if(session('success'))
     <p style="color:green">{{ session('success') }}</p>

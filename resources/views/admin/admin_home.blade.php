@@ -10,10 +10,12 @@
 <div class="admin-dashboard">
 
     {{-- PAGE HEADER --}}
-    <header class="admin-page-header">
-        <h1>Admin Dashboard</h1>
-        <p>Welcome back, {{ auth()->user()->name }}!</p>
-    </header>
+    <div class="page-top admin-page-header">
+        <div class="page-title-group">
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, {{ auth()->user()->name }}!</p>
+        </div>
+    </div>
 
     {{-- METRIC CARDS --}}
     <section class="admin-metrics">
