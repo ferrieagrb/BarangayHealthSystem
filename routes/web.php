@@ -228,9 +228,6 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/supplies/store', fn () => app(SupplyController::class)->store(request()))->name('supplies.store');
     Route::post('/supplies/deposit', fn () => app(SupplyController::class)->deposit(request()))->name('supplies.deposit');
     Route::post('/supplies/release', fn () => app(SupplyController::class)->release(request()))->name('supplies.release');
-    Route::post('/supplies/batch-release', [SupplyController::class, 'batchRelease'])->name('supplies.batch.release');
-    Route::get('/supplies/batch-release/{eventId}', [SupplyController::class, 'showBatchRelease'])->name('supplies.batch.release.show');
-    Route::post('/supplies/batch-release/{id}/claim', [SupplyController::class, 'claimRelease'])->name('supplies.batch.release.claim');
     Route::delete('/supplies/batch/{id}', [SupplyController::class, 'destroy'])->name('supplies.destroy');
     Route::post('/supplies/item/withdraw', [SupplyController::class, 'withdrawItem'])->name('supplies.item.withdraw');
     Route::post('/supplies/batch/withdraw', [SupplyController::class, 'withdrawBatch'])->name('supplies.batch.withdraw');

@@ -6,11 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Supply;
 use App\Models\SupplyLog;
 use Illuminate\Support\Facades\Auth;
-use App\Models\citizens;
 use App\Models\Category;
-use App\Models\SupplyRelease;
-use App\Http\Controllers\EventController;
-use Illuminate\Support\Facades\DB;
 
 class SupplyController extends Controller
 {
@@ -52,12 +48,6 @@ class SupplyController extends Controller
             ->where('quantity', '>', 0)
             ->count();
 
-        $citizens = citizens::all();
-        $batchReleases = SupplyRelease::with(['event', 'citizen', 'supply'])
-            ->latest('claim_date')
-            ->get()
-            ->groupBy('event_id');
-
         // Step 1 Integration: Dynamic view switching based on user role
         $user = Auth::user();
         $view = ($user && $user->role === 'admin') 
@@ -69,9 +59,7 @@ class SupplyController extends Controller
             'totalsupply',
             'wellStocked',
             'lowStock',
-            'citizens',
             'categories',
-            'batchReleases',
         ));
     }
 
@@ -149,110 +137,6 @@ class SupplyController extends Controller
         ]);
 
         return back();
-    }
-
-    public function batchRelease(Request $request)
-    {
-        if (!Auth::user()->hasWriteAccess('supplies')) {
-            abort(403, 'Unauthorized action. Your account has read-only access to supplies.');
-        }
-
-        $validated = $request->validate([
-            'batch_title' => 'required|string|max:255',
-            'details' => 'nullable|string|max:2000',
-            'claim_date' => 'required|date',
-            'assignments' => 'required|array|min:1',
-            'assignments.*.citizen_id' => 'required|exists:citizens,id',
-            'assignments.*.supply_id' => 'required|exists:supplies,id',
-            'assignments.*.quantity' => 'required|integer|min:1',
-        ]);
-
-        DB::transaction(function () use ($validated) {
-            $event = app(EventController::class)->createBatchReleaseEvent(
-                $validated['batch_title'],
-                $validated['claim_date'],
-                $validated['details'] ?? null
-            );
-
-            foreach ($validated['assignments'] as $assignment) {
-                $supply = Supply::findOrFail($assignment['supply_id']);
-
-                SupplyRelease::create([
-                    'event_id' => $event->id,
-                    'user_id' => Auth::id(),
-                    'citizen_id' => $assignment['citizen_id'],
-                    'supply_id' => $supply->id,
-                    'quantity' => $assignment['quantity'],
-                    'batch_title' => $validated['batch_title'],
-                    'details' => $validated['details'] ?? null,
-                    'claim_date' => $validated['claim_date'],
-                    'status' => 'scheduled',
-                ]);
-            }
-        });
-
-        return back()->with('success', 'Batch release scheduled. Stock will be deducted when each citizen claims it.');
-    }
-
-    public function showBatchRelease($eventId)
-    {
-        $batchReleases = SupplyRelease::with(['event', 'citizen', 'supply'])
-            ->where('event_id', $eventId)
-            ->orderBy('status')
-            ->orderBy('citizen_id')
-            ->get();
-
-        abort_if($batchReleases->isEmpty(), 404);
-
-        return view('bhw.batch_release_show', compact('batchReleases'));
-    }
-
-    public function claimRelease($id)
-    {
-        if (!Auth::user()->hasWriteAccess('supplies')) {
-            abort(403, 'Unauthorized action. Your account has read-only access to supplies.');
-        }
-
-        DB::transaction(function () use ($id) {
-            $release = SupplyRelease::lockForUpdate()->findOrFail($id);
-
-            if ($release->status === 'claimed') {
-                return;
-            }
-
-            if (now()->startOfDay()->lt($release->claim_date)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'claim' => "This release is scheduled for {$release->claim_date->format('M d, Y')}.",
-                ]);
-            }
-
-            $supply = Supply::lockForUpdate()->findOrFail($release->supply_id);
-
-            if ($release->quantity > $supply->quantity) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'claim' => "Insufficient stock for {$supply->name}. Available quantity: {$supply->quantity}.",
-                ]);
-            }
-
-            $supply->decrement('quantity', $release->quantity);
-
-            SupplyLog::create([
-                'action' => 'release',
-                'supply_id' => $supply->id,
-                'quantity' => $release->quantity,
-                'user_id' => Auth::id(),
-                'citizen_id' => $release->citizen_id,
-                'notes' => $release->batch_title . ($release->details ? ': ' . $release->details : ''),
-            ]);
-
-            $release->update([
-                'status' => 'claimed',
-                'claimed_at' => now(),
-                'claimed_by_user_id' => Auth::id(),
-            ]);
-        });
-
-        return back()->with('success', 'Supply release marked as claimed. Stock has been deducted.');
     }
 
     public function create()

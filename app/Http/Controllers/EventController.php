@@ -61,16 +61,6 @@ class EventController extends Controller
         return response()->json($event);
     }
 
-    public function createBatchReleaseEvent(string $title, string $start, ?string $description = null): Event
-    {
-        return Event::create([
-            'title' => $title,
-            'start' => $start,
-            'description' => $description,
-            'user_id' => Auth::id(),
-        ]);
-    }
-
     public function destroy($id)
 {
     $event = Event::findOrFail($id);
