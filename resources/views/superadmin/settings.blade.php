@@ -1,10 +1,12 @@
 @extends('templates.superadmin')
 
 @section('content')
-<div class="max-w-5xl mx-auto px-6 py-8">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">System Settings</h1>
-        <p class="mt-1 text-sm text-gray-500">Manage global access behavior, maintenance mode, and backups.</p>
+<div class="w-full">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>System Settings</h1>
+            <p>Manage global access behavior, maintenance mode, and backups.</p>
+        </div>
     </div>
 
     @if(session('success'))

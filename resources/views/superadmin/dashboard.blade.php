@@ -8,12 +8,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-<h1 class="text-2xl font-bold mb-6 text-gray-800">
-    SUPERADMIN HOME
-</h1>
+<div class="page-top">
+    <div class="page-title-group">
+        <h1>Superadmin Dashboard</h1>
+        <p>System-wide security, user, and performance overview.</p>
+    </div>
+</div>
 
 <!-- Parent Grid Wrapper for Side-by-Side Analytics Layout -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-7xl mx-auto mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mb-8">
 
     <!-- 1. User Growth Analytics Card -->
     <div class="w-full p-6 bg-white rounded-xl shadow-md">
@@ -38,7 +41,7 @@
 </div>
 
 <!-- Security & Access Control Monitor Section -->
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="w-full space-y-6">
     <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold text-gray-800">Security & Access Control Monitor</h2>
         <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Live Guard Active</span>

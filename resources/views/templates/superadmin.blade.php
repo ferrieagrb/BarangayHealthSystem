@@ -25,6 +25,28 @@
     }
 </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .main-content .page-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .main-content .page-title-group h1 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 30px;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+        .main-content .page-title-group p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
     @yield('CSSown')
 </head>
 
@@ -91,9 +113,9 @@
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
-                    <a href="{{ route('superadmin.system.settings') }}">
+                    <a href="{{ route('settings') }}">
                         <i class="bx bx-cog"></i>
-                        <span class="nav-item">System Settings</span>
+                        <span class="nav-item">Settings</span>
                     </a>
                 </li>
             </ul>
