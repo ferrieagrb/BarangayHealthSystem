@@ -303,7 +303,7 @@
 @endsection
 
 @section('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const mapElement = document.getElementById('purokLocationMap');

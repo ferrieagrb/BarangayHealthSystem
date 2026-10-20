@@ -36,8 +36,12 @@ return [
     ],
 
     'facebook' => [
-    'page_id' => env('FACEBOOK_PAGE_ID'),
-    'access_token' => env('FACEBOOK_PAGE_ACCESS_TOKEN'),
-],
+        'page_id' => env('FACEBOOK_PAGE_ID'),
+        'access_token' => env('FACEBOOK_PAGE_ACCESS_TOKEN'),
+    ],
+
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs'),
+    ],
 
 ];

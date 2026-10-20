@@ -10,7 +10,7 @@
         window.__healthRecordMapsReady = true;
     };
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initMap" async defer></script>
 @endsection
 
 @section('content')
