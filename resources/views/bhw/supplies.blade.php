@@ -972,26 +972,6 @@
 
 @section('scripts')
 
-@php
-    $batchReleaseCitizens = $citizens->map(function ($citizen) {
-        return [
-            'id' => $citizen->id,
-            'name' => trim(($citizen->Citizen_FName ?? '') . ' ' . ($citizen->Citizen_LName ?? '')),
-        ];
-    })->values();
-
-    $batchReleaseSupplies = $supplies->filter(function ($supply) {
-        return $supply->quantity > 0;
-    })->map(function ($supply) {
-        return [
-            'id' => $supply->id,
-            'name' => $supply->name,
-            'code' => $supply->item_number ?: ($supply->serial_number ?: 'Batch #' . $supply->id),
-            'quantity' => $supply->quantity,
-        ];
-    })->values();
-@endphp
-
 <script>
 
     /* ============================================================
