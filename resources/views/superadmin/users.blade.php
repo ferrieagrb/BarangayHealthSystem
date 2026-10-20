@@ -5,12 +5,9 @@
 @endsection
     
 @section('content')
-    <!-- SAMPLE COMMENT-->
-    <div class="admin-container" style="margin-left: 0; width: 100%;">
-        <!-- Main Content Area -->
-        <main class="main-content" style="margin-left: 0; width: 100%;">
-            <header class="content-header">
-                <div class="header-title">
+    <div class="w-full">
+            <div class="page-top">
+                <div class="page-title-group">
                     <h1>User Management</h1>
                     <p>Manage system users, update profiles, and control role permissions.</p>
                 </div>
@@ -18,7 +15,7 @@
                     <span>Super Admin</span>
                     <i class="fa-solid fa-circle-user"></i>
                 </div>
-            </header>
+            </div>
 
             @if (session('success'))
                 <div class="alert-success">
@@ -85,7 +82,6 @@
                     </table>
                 </div>
             </div>
-        </main>
     </div>
 
     <!-- Edit User Modal -->

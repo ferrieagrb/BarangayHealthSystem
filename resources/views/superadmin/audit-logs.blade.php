@@ -1,12 +1,11 @@
 @extends('templates.superadmin')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Page Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Superadmin Audit Trail</h1>
-            <p class="text-xs text-gray-500 mt-1">Dedicated governance, security, and administrative action logs for the barangay health system.</p>
+<div class="w-full">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>Superadmin Audit Trail</h1>
+            <p>Dedicated governance, security, and administrative action logs for the barangay health system.</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('superadmin.system.analytics.page') }}" class="px-3.5 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
@@ -19,7 +18,7 @@
     </div>
 
     <!-- Main Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
             <div>
                 <h3 class="text-lg font-medium text-gray-800">System Activity Logs</h3>

@@ -1,4 +1,4 @@
-@extends('templates.layout')
+@extends(auth()->user()->isSuperAdmin() ? 'templates.superadmin' : (auth()->user()->role === 'admin' ? 'templates.admin' : 'templates.layout'))
 
 @section('CSSown')
 <style>
