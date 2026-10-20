@@ -832,6 +832,7 @@ body,
         <a class="c-header-logo" href="{{ route('citizen.dashboard') }}" aria-label="Citizen dashboard">
             <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong logo">
         </a>
+        <span class="citizen-top-user" style="font-weight:500; color:#334155;">{{ auth()->user()->name }}</span>
 
         @if(request()->routeIs('citizen.dashboard'))
             <nav class="c-header-section-nav" id="citizenSectionNav" aria-label="Citizen page sections">
@@ -850,7 +851,7 @@ body,
                 <span>Menu</span>
             </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
-            <span class="citizen-top-user" style="font-weight:500; color:#334155;">{{ auth()->user()->name }}</span>
+            
             <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf
                 <button type="submit" class="btn-logout">Logout</button>
