@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class SystemSetting extends Model
 {
@@ -16,5 +17,14 @@ class SystemSetting extends Model
     public static function boolean(string $key, bool $default = false): bool
     {
         return filter_var(static::value($key, $default), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public static function logoUrl(): string
+    {
+        $path = static::value('site_logo', 'images/amuyong.png');
+
+        return str_starts_with($path, 'images/')
+            ? asset($path)
+            : Storage::disk('public')->url($path);
     }
 }
