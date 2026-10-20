@@ -821,12 +821,6 @@ body,
                     <span class="nav-item">Settings</span>
                 </a>
             </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form citizen-sidebar-logout">
-                        @csrf
-                        <button type="submit"><i class="bx bx-log-out" aria-hidden="true"></i><span>Logout</span></button>
-                    </form>
-                </li>
         </ul>
     </div>
 </div>
@@ -857,6 +851,10 @@ body,
             </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
             <span class="citizen-top-user" style="font-weight:500; color:#334155;">{{ auth()->user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                @csrf
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
         </div>
     </div>
     @yield('content')
