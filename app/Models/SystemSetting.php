@@ -23,8 +23,14 @@ class SystemSetting extends Model
     {
         $path = static::value('site_logo', 'images/amuyong.png');
 
-        return str_starts_with($path, 'images/')
-            ? asset($path)
-            : Storage::disk('public')->url($path);
+        if (str_starts_with($path, 'images/')) {
+            return asset($path);
+        }
+
+        $storagePath = '/storage/' . ltrim($path, '/');
+
+        return app()->runningInConsole()
+            ? Storage::disk('public')->url($path)
+            : request()->getSchemeAndHttpHost() . $storagePath;
     }
 }
