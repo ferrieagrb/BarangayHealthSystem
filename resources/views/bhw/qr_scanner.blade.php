@@ -6,11 +6,11 @@
     .qr-heading { margin-bottom: 22px; }
     .qr-heading h1 { margin: 0 0 6px; font-size: 28px; font-weight: 750; }
     .qr-heading p { margin: 0; color: #64748b; }
-    .qr-layout { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 22px; align-items: start; }
+    .qr-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
     .qr-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; box-shadow: 0 5px 18px rgba(15, 23, 42, .05); min-width: 0; }
     .qr-panel h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
     .qr-muted { color: #64748b; font-size: 14px; line-height: 1.5; }
-    #qr-reader { width: 100%; max-width: 460px; margin: 18px auto 12px; overflow: hidden; border-radius: 12px; }
+    #qr-reader { width: 100%; max-width: 460px; margin: 18px auto 12px; overflow: hidden; border-radius: 12px; background:#f8fafc; }
     #qr-reader video { border-radius: 10px; }
     .qr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
     .qr-btn { border: 0; border-radius: 9px; padding: 11px 16px; font-weight: 650; cursor: pointer; }
@@ -28,6 +28,17 @@
     .qr-profile { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; margin-bottom: 18px; }
     .qr-avatar { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; background: #e2e8f0; display: grid; place-items: center; color: #475569; font-size: 24px; flex: 0 0 auto; }
     .qr-profile h3 { margin: 0 0 4px; font-size: 20px; font-weight: 750; }
+    .qr-profile-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+    .qr-detail-group { border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin:16px 0; }
+    .qr-detail-group h4 { margin:0 0 14px; color:#173b82; font-size:14px; text-transform:uppercase; letter-spacing:.04em; }
+    .qr-action-link { display:inline-flex; align-items:center; text-decoration:none; border-radius:9px; padding:10px 13px; font-size:13px; font-weight:700; background:#155eef; color:#fff; }
+    .qr-action-link.secondary { background:#eef2f7; color:#263449; }
+    .qr-diagnosis-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .qr-diagnosis-form label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+    .qr-diagnosis-form input,.qr-diagnosis-form textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:9px; padding:10px 11px; font:inherit; }
+    .qr-diagnosis-form .full { grid-column:1/-1; }
+    .qr-diagnosis-form textarea { min-height:80px; resize:vertical; }
+    .qr-section { scroll-margin-top:24px; }
     .qr-verified { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 5px 9px; background: #dcfce7; color: #166534; }
     .qr-info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
     .qr-info-item { min-width: 0; }
@@ -41,7 +52,7 @@
     .qr-table th { color: #475569; background: #f8fafc; font-weight: 700; white-space: nowrap; }
     .qr-no-records { color: #64748b; padding: 12px 0; font-size: 14px; }
     @media (max-width: 850px) { .qr-layout { grid-template-columns: 1fr; } .qr-page { padding: 16px; } }
-    @media (max-width: 480px) { .qr-info-grid { grid-template-columns: 1fr; } .qr-panel { padding: 16px; } .qr-heading h1 { font-size: 23px; } }
+    @media (max-width: 600px) { .qr-info-grid { grid-template-columns: 1fr; } .qr-diagnosis-form { grid-template-columns:1fr; } .qr-diagnosis-form .full { grid-column:auto; } .qr-panel { padding: 16px; } .qr-heading h1 { font-size: 23px; } }
 </style>
 @endsection
 
@@ -75,6 +86,9 @@
             </div>
         </section>
 
+    </div>
+
+    <div class="qr-layout" style="margin-top:22px;">
         <section class="qr-panel" aria-labelledby="result-title">
             <h2 id="result-title">Citizen Health Information</h2>
             <p class="qr-muted">Personal and medical information is displayed only inside the authenticated BHW portal.</p>
@@ -90,6 +104,7 @@
                 <div id="vaccination-results"></div>
                 <div id="medication-results"></div>
                 <div id="health-record-results"></div>
+                <div id="diagnosis-entry" class="qr-section"></div>
             </div>
         </section>
     </div>
@@ -175,12 +190,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="qr-muted" style="margin-top: 5px;">Citizen ID: ${escapeHtml(citizen.id)}</div>
                 </div>
             </div>
-            <div class="qr-info-grid">
+                <div class="qr-profile-actions">
+                    <a class="qr-action-link" href="/citizendetails/${encodeURIComponent(citizen.id)}">Edit / Manage Citizen Details</a>
+                    <a class="qr-action-link secondary" href="/citizen/${encodeURIComponent(citizen.id)}/e-card" target="_blank" rel="noopener">Open Health Card</a>
+                </div>
+            </div>
+            <div class="qr-detail-group"><h4>Personal & Contact Details</h4><div class="qr-info-grid">
                 <div class="qr-info-item"><small>Date of birth</small><strong>${escapeHtml(citizen.birth_date)}</strong></div>
                 <div class="qr-info-item"><small>Age</small><strong>${escapeHtml(citizen.age)}</strong></div>
+                <div class="qr-info-item"><small>Sex</small><strong>${escapeHtml(citizen.sex)}</strong></div>
                 <div class="qr-info-item"><small>Contact number</small><strong>${escapeHtml(citizen.contact_number)}</strong></div>
                 <div class="qr-info-item"><small>Purok</small><strong>${escapeHtml(citizen.purok)}</strong></div>
-            </div>`;
+                <div class="qr-info-item"><small>Family ID</small><strong>${escapeHtml(citizen.family_id)}</strong></div>
+            </div></div>
+            <div class="qr-detail-group"><h4>Health & Household Profile</h4><div class="qr-info-grid">
+                <div class="qr-info-item"><small>Height</small><strong>${escapeHtml(citizen.height)}${citizen.height && citizen.height !== 'N/A' ? ' cm' : ''}</strong></div>
+                <div class="qr-info-item"><small>Weight</small><strong>${escapeHtml(citizen.weight)}${citizen.weight && citizen.weight !== 'N/A' ? ' kg' : ''}</strong></div>
+                <div class="qr-info-item"><small>Housing status</small><strong>${escapeHtml(citizen.housing_status)}</strong></div>
+                <div class="qr-info-item"><small>Pregnant</small><strong>${escapeHtml(citizen.pregnant)}</strong></div>
+                <div class="qr-info-item"><small>Taking pills</small><strong>${escapeHtml(citizen.in_pills)}</strong></div>
+                <div class="qr-info-item"><small>Citizen status</small><strong>${escapeHtml(citizen.is_deceased)}</strong></div>
+            </div></div>`;
 
         document.getElementById('vaccination-results').innerHTML = renderTable('Vaccination History', [
             {key: 'vaccine_name', label: 'Vaccine'},
@@ -202,8 +232,45 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'comments', label: 'Notes'}
         ], data.health_records);
 
+        document.getElementById('diagnosis-entry').innerHTML = `
+            <div class="qr-detail-group">
+                <h4>Add Diagnosis / Health Record</h4>
+                <form id="qr-diagnosis-form" class="qr-diagnosis-form">
+                    <input type="hidden" name="citizen_id" value="${escapeHtml(citizen.id)}">
+                    <div><label for="qr-diagnosis">Diagnosis *</label><input id="qr-diagnosis" name="diagnosis" required maxlength="255" placeholder="Enter diagnosis"></div>
+                    <div><label for="qr-record-date">Record date *</label><input id="qr-record-date" name="record_date" type="date" required value="${new Date().toISOString().slice(0,10)}"></div>
+                    <div class="full"><label for="qr-comments">Notes / Comments</label><textarea id="qr-comments" name="comments" placeholder="Symptoms, notes, or follow-up instructions"></textarea></div>
+                    <div class="full"><button class="qr-btn qr-btn-primary" type="submit" id="qr-save-diagnosis">Save Diagnosis</button></div>
+                </form>
+            </div>`;
+        document.getElementById('qr-diagnosis-form').addEventListener('submit', saveDiagnosis);
         emptyState.hidden = true;
         results.hidden = false;
+    }
+
+    async function saveDiagnosis(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const button = document.getElementById('qr-save-diagnosis');
+        button.disabled = true; button.textContent = 'Saving...';
+        try {
+            const response = await fetch(@json(route('qr.scanner.diagnosis.store')), {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': @json(csrf_token()) },
+                credentials: 'same-origin',
+                body: new FormData(form)
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {}).flat().join(' ') || 'Unable to save diagnosis.');
+            setStatus('Diagnosis saved successfully. Refreshing the citizen health record...', 'success');
+            // Reload the current citizen using the token retained after a successful scan.
+            if (window.currentCitizenQrToken) await lookupCitizen(window.currentCitizenQrToken);
+            else setStatus('Diagnosis saved successfully. Scan the citizen QR again to refresh the records.', 'success');
+        } catch (error) {
+            setStatus(error.message || 'Unable to save diagnosis.', 'error');
+        } finally {
+            button.disabled = false; button.textContent = 'Save Diagnosis';
+        }
     }
 
     async function lookupCitizen(rawValue) {
@@ -234,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'Unable to verify this QR code. Please try again.'));
             }
 
+            window.currentCitizenQrToken = token;
             renderCitizen(payload);
             setStatus('Citizen verified. Review the information below according to your authorized duties.', 'success');
             manualInput.value = '';

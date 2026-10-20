@@ -18,7 +18,17 @@
         </a>
     </div>
 
-    {{-- TWO-COLUMN LAYOUT --}}
+    {{-- PRINT ACTIONS: keep both buttons together above the card and health record --}}
+    <div class="ecard-actions-top print:hidden">
+        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')">
+            🖨️ Print Health Card Only
+        </button>
+        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')">
+            🖨️ Print Health Record Only
+        </button>
+    </div>
+
+    {{-- CARD AND HEALTH RECORD --}}
     <div class="grid grid-cols-1 items-start gap-6">
 
         
@@ -115,14 +125,14 @@
 
         </div>
 
-        {{-- QR VERIFICATION --}}
-        <div class="bheams-id-qr">
-            <div class="bheams-qr-frame">
-                <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
-            </div>
-            <strong>SCAN TO VERIFY</strong>
-            <small>Citizen Record Verification</small>
+    {{-- CENTERED QR VERIFICATION --}}
+    <div class="bheams-id-qr bheams-id-qr-centered">
+        <div class="bheams-qr-frame">
+            <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
         </div>
+        <strong>SCAN TO VERIFY</strong>
+        <small>Citizen Record Verification</small>
+    </div>
 
     </div>
 
@@ -140,7 +150,7 @@
         isolation: isolate;
         width: 100%;
         max-width: 1000px;
-        margin: 40px auto 32px;
+        margin: 0 auto 32px;
         overflow: hidden;
         border: 1px solid #cbd5e1;
         border-radius: 14px;
@@ -221,7 +231,7 @@
 
     .bheams-id-body {
         display: grid;
-        grid-template-columns: 145px minmax(0, 1fr) 130px;
+        grid-template-columns: 145px minmax(0, 1fr);
         align-items: center;
         gap: 24px;
         padding: 28px;
@@ -368,16 +378,11 @@
             height: 130px;
         }
 
-        .bheams-id-qr {
-            grid-column: 1 / -1;
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .bheams-id-qr-centered { padding: 0 18px 18px; }
 
         .bheams-qr-frame img {
-            width: 75px;
-            height: 75px;
+            width: 88px;
+            height: 88px;
         }
 
         .bheams-id-title {
@@ -398,31 +403,52 @@
         }
     }
 
-    @media print {
-        .bheams-id-card {
-            max-width: none;
-            margin: 0 auto 15px;
-            box-shadow: none;
-            break-inside: avoid;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .bheams-id-body {
-            grid-template-columns: 125px minmax(0, 1fr) 115px;
-            gap: 18px;
-        }
-
-        .bheams-photo {
-            width: 125px;
-            height: 155px;
-        }
-
-        .bheams-qr-frame img {
-            width: 90px;
-            height: 90px;
-        }
+    .bheams-id-qr-centered {
+        width: 100%; box-sizing: border-box; padding: 0 28px 22px;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; text-align: center;
     }
+    .bheams-id-qr-centered .bheams-qr-frame img { width: 100px; height: 100px; }
+
+/* Match Dashboard health card: photo | citizen details | QR on the right */
+.bheams-id-body {
+    display: grid;
+    grid-template-columns: 145px minmax(0, 1fr) 150px;
+    align-items: center;
+    gap: 24px;
+    padding: 28px;
+}
+.bheams-id-qr-centered {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.bheams-id-qr-centered .bheams-qr-frame img {
+    width: 100px;
+    height: 100px;
+}
+@media (max-width: 700px) {
+    .bheams-id-body {
+        grid-template-columns: 100px minmax(0, 1fr);
+        gap: 16px;
+        padding: 18px;
+    }
+    .bheams-id-qr-centered {
+        grid-column: 2;
+        justify-self: center;
+        padding: 8px 0 0;
+    }
+    .bheams-id-qr-centered .bheams-qr-frame img {
+        width: 88px;
+        height: 88px;
+    }
+}
+
 </style>
 
 
@@ -564,42 +590,75 @@
                     </table>
                 </div>
             </div>
-
-            {{-- PRINT BUTTON --}}
-            <div class="mt-6 text-right print:hidden">
-                <button
-                    type="button"
-                    onclick="window.print()"
-                    class="rounded bg-blue-800 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-900">
-                    🖨️ Print ID & Health Record
-                </button>
-            </div>
-
-        </section>
+</section>
 
     </div>
 </div>
 
 <style>
+.ecard-print-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 42px; padding: 10px 16px; border: 0; border-radius: 7px;
+    background: #1d4ed8; color: #fff; font-size: 13px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 3px 8px rgba(15,23,42,.12);
+}
+.ecard-print-button:hover { background: #1e40af; }
+.my-ecard-actions { max-width: 1000px; margin: -12px auto 28px; text-align: right; }
+.ecard-actions-top {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 1000px;
+    margin: 0 auto 18px;
+}
+.ecard-print-record { background: #166534; }
+.ecard-print-record:hover { background: #14532d; }
+@media (max-width: 600px) {
+    .ecard-actions-top { justify-content: stretch; }
+    .ecard-actions-top .ecard-print-button { flex: 1 1 220px; }
+}
 @media print {
-    @page {
-        size: landscape;
-        margin: 10mm;
-    }
-
+    @page { size: auto; margin: 10mm; }
     html, body, .dashboard, .main-content { background: #fff !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
     body * { visibility: hidden !important; }
-    .bheams-id-card, .bheams-id-card *, .print-health-record, .print-health-record * { visibility: visible !important; }
-    .top-bar, .sidebar, .sidebar-backdrop, .announcements-page, .print\:hidden { display: none !important; }
+    body.print-id-only .bheams-id-card, body.print-id-only .bheams-id-card * { visibility: visible !important; }
+    body.print-record-only .print-health-record, body.print-record-only .print-health-record * { visibility: visible !important; }
+    body.print-id-only .print-health-record, body.print-record-only .bheams-id-card { display: none !important; }
+    .top-bar, .sidebar, .sidebar-backdrop, .announcements-page, .print\:hidden, .my-ecard-actions { display: none !important; }
     .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
     .mx-auto.max-w-7xl { max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    .bheams-id-card { width: 100% !important; max-width: 100% !important; margin: 0 0 8mm !important; box-shadow: none !important; }
-    .print-health-record { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; break-inside: avoid; }
-    .print-health-record .mt-6 { display: none !important; }
-
-    .print\:hidden {
-        display: none !important;
+    .bheams-id-card, .print-health-record { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; break-inside: avoid; }
+    .bheams-id-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bheams-id-body {
+        display: grid !important;
+        grid-template-columns: 125px minmax(0, 1fr) 125px !important;
+        align-items: center !important;
+        gap: 18px !important;
+        padding: 24px !important;
     }
+    .bheams-photo { width: 125px; height: 155px; }
+    .bheams-id-details { min-width: 0; }
+    .bheams-id-qr-centered {
+        grid-column: auto !important;
+        align-self: center !important;
+        justify-self: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .bheams-id-qr-centered .bheams-qr-frame img { width: 100px; height: 100px; }
 }
 </style>
+<script>
+function printCitizenSection(section) {
+    document.body.classList.remove('print-id-only', 'print-record-only');
+    document.body.classList.add(section === 'id' ? 'print-id-only' : 'print-record-only');
+    window.print();
+}
+window.addEventListener('afterprint', function () {
+    document.body.classList.remove('print-id-only', 'print-record-only');
+});
+</script>
 @endsection

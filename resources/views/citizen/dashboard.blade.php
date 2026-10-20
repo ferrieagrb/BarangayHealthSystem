@@ -1433,7 +1433,12 @@
     }
 }
 
-</style>
+
+
+
+<style>
+
+
 @endsection
 @section('content')
     <div class="c-home">
@@ -1508,14 +1513,6 @@
                     <small>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</small>
                 </div>
 
-                {{-- QR CODE IN HEADER --}}
-                <div class="c-id-qr">
-                    <div class="c-id-qr-frame">
-                        <img src="{{ $qrImage }}"
-                             alt="Citizen Verification QR Code">
-                    </div>
-                    <span>SCAN TO VERIFY</span>
-                </div>
             </div>
 
             {{-- ID BODY --}}
@@ -1574,6 +1571,14 @@
                         </div>
                     </div>
                 </div>
+
+            {{-- CENTERED QR CODE, MATCHING THE MY HEALTH CARD PAGE --}}
+            <div class="c-id-qr c-id-qr-centered">
+                <div class="c-id-qr-frame">
+                    <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
+                </div>
+                <span>SCAN TO VERIFY</span>
+            </div>
             </div>
 
             {{-- FOOTER AT THE BOTTOM OF THE ID --}}
@@ -1587,7 +1592,7 @@
         <div class="c-id-actions-outside">
             <a class="c-btn"
                href="{{ route('citizen.ecard') }}">
-                Open / Print Full Health Card
+                Open Health Card & Print Options
             </a>
         </div>
 
@@ -1800,5 +1805,86 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
+<style>
+/* Dashboard health card matches My Health Card: photo left, details middle, QR right. */
+.c-home .c-id-body {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr) 150px;
+    align-items: center;
+    gap: 24px;
+}
+.c-home .c-id-body > .c-id-qr-centered {
+    grid-column: 3;
+    grid-row: 1;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    align-self: center;
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+}
+.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
+    padding: 6px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #fff;
+}
+.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
+    display: block;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+.c-home .c-id-body > .c-id-qr-centered > span {
+    color: #173b82;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+@media (max-width: 760px) {
+    .c-home .c-id-body {
+        grid-template-columns: 76px minmax(0, 1fr) 90px;
+        gap: 10px;
+        padding: 15px 12px;
+    }
+    .c-home .c-id-body > .c-id-qr-centered {
+        grid-column: 3;
+        grid-row: 1;
+        padding: 0;
+    }
+    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
+        width: 72px;
+        height: 72px;
+    }
+}
+@media (max-width: 420px) {
+    .c-home .c-id-body {
+        grid-template-columns: 58px minmax(0, 1fr) 66px;
+        gap: 7px;
+        padding: 12px 8px;
+    }
+    .c-home .c-id-body .c-photo {
+        width: 58px;
+        height: 76px;
+    }
+    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
+        width: 54px;
+        height: 54px;
+    }
+    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
+        padding: 3px;
+    }
+    .c-home .c-id-body > .c-id-qr-centered > span {
+        font-size: 6px;
+    }
+}
+</style>
 
 @endsection
