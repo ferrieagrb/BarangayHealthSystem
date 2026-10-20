@@ -7,16 +7,23 @@
         width: 100%;
         min-height: 100vh;
         margin: 0;
-        padding: 24px;
+        padding: 0;
         box-sizing: border-box;
         font-family: Arial, sans-serif;
         color: #333;
     }
 
-    .demographics-container h1 {
-        font-size: clamp(1.25rem, 2vw, 1.75rem);
-        margin-bottom: 20px;
-        color: #2c3e50;
+    .demographics-container .page-title-group h1 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 30px;
+        font-weight: 500;
+    }
+
+    .demographics-container .page-title-group p {
+        margin: 6px 0 0;
+        color: #64748b;
+        font-size: 14px;
     }
 
     .grid-row {
@@ -172,7 +179,12 @@
 
 @section('content')
 <div class="demographics-container">
-    <h1>Demographics, Puroks & Subgroups Management</h1>
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>Demographics, Puroks &amp; Subgroups Management</h1>
+            <p>Manage Puroks, subgroups, and their map locations.</p>
+        </div>
+    </div>
 
     @if(session('success'))
         <div class="alert-success">{{ session('success') }}</div>
