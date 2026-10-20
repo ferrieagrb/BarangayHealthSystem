@@ -123,13 +123,6 @@
                 </a>
             </li>
 
-            <li>
-                <a href="/healthrecord">
-                    <i class="bx bx-first-aid"></i>
-                    <span class="nav-item">Health Records</span>
-                </a>
-            </li>
-
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
                     <a href="{{ route('bhw.reports') }}">
