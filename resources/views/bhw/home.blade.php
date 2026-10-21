@@ -27,6 +27,7 @@
     .heatmap-legend { display: flex; justify-content: space-between; margin-top: 8px; color: #64748b; font-size: 12px; }
     @media (max-width: 800px) { .home-grid { grid-template-columns: 1fr; } .home-card-wide { grid-column: auto; } }
 </style>
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 @section('content')
