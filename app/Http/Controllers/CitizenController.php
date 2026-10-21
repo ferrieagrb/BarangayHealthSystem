@@ -479,6 +479,11 @@ class CitizenController extends Controller
             abort(403);
         }
 
+        $citizen = citizens::findOrFail($request->input('citizen_id'));
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to add a diagnosis to this citizen record.');
+        }
+
         $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
             'diagnosis' => 'required|string|max:255',
