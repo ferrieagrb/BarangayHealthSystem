@@ -11,13 +11,9 @@
 <div class="page-top">
 
     <div class="page-title">
-<<<<<<< HEAD
 
         <h1>Citizen Details</h1>
 
-=======
-        <h1>Citizen Details Test</h1>
->>>>>>> main
         <p>View and update citizen information</p>
 
     </div>
@@ -328,130 +324,89 @@
 
             <hr class="citizen-section-divider">
 
-<<<<<<< HEAD
-            <!-- IMMUNIZATION / VACCINATION — VISUAL PREVIEW ONLY -->
-
-=======
             <!-- IMMUNIZATION / VACCINATION -->
->>>>>>> main
-<section class="immunization-section" aria-labelledby="immunizationTitle">
+            <section class="immunization-section" aria-labelledby="immunizationTitle">
+                <div class="immunization-heading">
+                    <div>
+                        <h3 id="immunizationTitle">Immunization / Vaccination</h3>
+                        <p>Select a vaccine, record the dose/booster, date and save it to this citizen's history.</p>
+                    </div>
+                </div>
 
-    <div class="immunization-heading">
+                @php
+                    $vaccines = [
+                        'BCG' => 'BCG',
+                        'HepB' => 'Hepatitis B (HepB)',
+                        'Penta' => 'Pentavalent (Penta)',
+                        'OPV' => 'Oral Polio Vaccine (OPV)',
+                        'IPV' => 'Inactivated Polio Vaccine (IPV)',
+                        'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
+                        'MMR' => 'Measles, Mumps, Rubella (MMR)',
+                        'MR' => 'Measles-Rubella (MR)',
+                        'Td' => 'Tetanus-Diphtheria (Td)',
+                        'HPV' => 'Human Papillomavirus (HPV)',
+                    ];
+                @endphp
 
-        <div>
+                @if($canEdit && (int)$citizen->Citizen_IsDeceased !== 1)
+                    <div class="immunization-form-grid">
+                        <div class="immunization-field">
+                            <label for="vaccine_name">Vaccine Name</label>
+                            <select id="vaccine_name" name="vaccine_name" form="vaccinationForm" required>
+                                <option value="" disabled selected>-- Select Vaccine --</option>
+                                @foreach ($vaccines as $vaccineKey => $vaccineLabel)
+                                    <option value="{{ $vaccineLabel }}" {{ old('vaccine_name') === $vaccineLabel ? 'selected' : '' }}>
+                                        {{ $vaccineLabel }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-            <h3 id="immunizationTitle">Immunization / Vaccination</h3>
-<<<<<<< HEAD
+                        <div class="immunization-field">
+                            <label for="dose_number">Dose / Booster</label>
+                            <select id="dose_number" name="dose_number" form="vaccinationForm" required>
+                                <option value="" disabled selected>-- Select Dose/Booster --</option>
+                                <option value="Single Dose">Single Dose</option>
+                                <option value="Dose 1">Dose 1</option>
+                                <option value="Dose 2">Dose 2</option>
+                                <option value="Dose 3">Dose 3</option>
+                                <option value="Booster 1">Booster 1</option>
+                                <option value="Booster 2">Booster 2</option>
+                            </select>
+                        </div>
 
-            <p>Select the vaccines received by this resident.</p>
+                        <div class="immunization-field">
+                            <label for="date_administered">Date Administered</label>
+                            <input type="date" id="date_administered" name="date_administered" value="{{ old('date_administered', now()->format('Y-m-d')) }}" form="vaccinationForm" required>
+                        </div>
 
-        </div>
+                        <input type="hidden" id="administered_by" name="administered_by" value="{{ auth()->user()->name ?? 'BHW' }}" form="vaccinationForm">
 
-        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 of 10 selected</span>
+                        <div class="immunization-action-wrapper">
+                            <button type="submit" class="btn-primary" form="vaccinationForm">Add Vaccination</button>
+                        </div>
+                    </div>
+                @elseif((int) $citizen->Citizen_IsDeceased === 1)
+                    <p class="immunization-preview-note">This record is deceased and locked for updates.</p>
+                @else
+                    <p class="immunization-preview-note">Read-only: this citizen is not assigned to your subgroup.</p>
+                @endif
 
-=======
-            <p>Select a vaccine, record the dose and save it to this citizen's history.</p>
-        </div>
-        <span class="immunization-count" id="immunizationCount" aria-live="polite">0 selected</span>
->>>>>>> main
-    </div>
+                <div class="immunization-history">
+                    <h4>Immunization History</h4>
+                    @forelse ($citizen->vaccinations as $vaccination)
+                        <div class="immunization-history-item">
+                            <strong>{{ $vaccination->vaccine_name }}</strong>
+                            <span>{{ $vaccination->dose_number }} · {{ $vaccination->date_administered }}</span>
+                            <small>Administered by {{ $vaccination->administered_by }}</small>
+                        </div>
+                    @empty
+                        <p>No immunization records yet.</p>
+                    @endforelse
+                </div>
+            </section>
 
-    @php
-
-        $vaccines = [
-
-            'BCG' => 'BCG',
-
-            'HepB' => 'Hepatitis B (HepB)',
-
-            'Penta' => 'Pentavalent (Penta)',
-
-            'OPV' => 'Oral Polio Vaccine (OPV)',
-
-            'IPV' => 'Inactivated Polio Vaccine (IPV)',
-
-            'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
-
-            'MMR' => 'Measles, Mumps, Rubella (MMR)',
-
-            'MR' => 'Measles-Rubella (MR)',
-
-            'Td' => 'Tetanus-Diphtheria (Td)',
-
-            'HPV' => 'Human Papillomavirus (HPV)',
-
-        ];
-
-    @endphp
-<<<<<<< HEAD
-
-    <div class="immunization-grid" id="immunizationGrid">
-
-        @foreach($vaccines as $vaccineKey => $vaccineLabel)
-
-            <label class="vaccine-option" for="vaccine\_{{ $vaccineKey }}">
-
-                <input type="checkbox" id="vaccine\_{{ $vaccineKey }}" class="vaccine-checkbox">
-
-                <span class="vaccine-checkmark" aria-hidden="true"></span>
-
-                <span class="vaccine-label">{{ $vaccineLabel }}</span>
-
-            </label>
-
-        @endforeach
-
-    </div>
-
-    <p class="immunization-preview-note"><span aria-hidden="true">ⓘ</span><span>Design preview only. Vaccine selections are not saved to the database yet.</span></p>
-
-=======
-    @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-    <div class="immunization-form">
-        <div class="immunization-grid" id="immunizationGrid">
-            @foreach($vaccines as $vaccineKey => $vaccineLabel)
-                <label class="vaccine-option" for="vaccine_{{ $vaccineKey }}">
-                    <input type="radio" id="vaccine_{{ $vaccineKey }}" name="vaccine_name" value="{{ $vaccineLabel }}" class="vaccine-checkbox" form="vaccinationForm" required>
-                    <span class="vaccine-checkmark" aria-hidden="true"></span>
-                    <span class="vaccine-label">{{ $vaccineLabel }}</span>
-                </label>
-            @endforeach
-        </div>
-        <div class="immunization-fields">
-            <label>Dose
-                <input type="text" name="dose_number" placeholder="e.g. Dose 1 or Booster" form="vaccinationForm" required>
-            </label>
-            <label>Date administered
-                <input type="date" name="date_administered" value="{{ now()->format('Y-m-d') }}" form="vaccinationForm" required>
-            </label>
-            <label>Administered by
-                <input type="text" name="administered_by" value="{{ auth()->user()->name }}" form="vaccinationForm" required>
-            </label>
-        </div>
-        <button type="submit" class="btn-primary" form="vaccinationForm">Save Vaccination</button>
-    </div>
-    @elseif((int) $citizen->Citizen_IsDeceased === 1)
-        <p class="immunization-preview-note">This record is deceased and locked for updates.</p>
-    @else
-        <p class="immunization-preview-note">Read-only: this citizen is not assigned to your subgroup.</p>
-    @endif
-
-    <div class="immunization-history">
-        <h4>Immunization History</h4>
-        @forelse($citizen->vaccinations as $vaccination)
-            <div class="immunization-history-item">
-                <strong>{{ $vaccination->vaccine_name }}</strong>
-                <span>{{ $vaccination->dose_number }} · {{ $vaccination->date_administered }}</span>
-                <small>Administered by {{ $vaccination->administered_by }}</small>
-            </div>
-        @empty
-            <p>No immunization records yet.</p>
-        @endforelse
-    </div>
->>>>>>> main
-</section>
-
-{{-- HEALTH & FAMILY PLANNING --}}
+            {{-- HEALTH & FAMILY PLANNING --}}
 
             <h3 class="citizen-section-title">Health &amp; Family Planning</h3>
 
@@ -605,8 +560,7 @@
 
 <br>
 
-<div class="maintenance-section">
-
+<div class="maintenance-container-box">
     <h3>Maintenance Medicines</h3>
 
     @if(session('success'))
@@ -625,7 +579,7 @@
 
             <ul class="health-error-list">
 
-                @foreach($errors->all() as $error)
+                @foreach ($errors->all() as $error)
 
                     <li>{{ $error }}</li>
 
@@ -637,7 +591,7 @@
 
     @endif
 
-    @forelse($citizen->maintenanceRecords as $maintenance)
+    @forelse ($citizen->maintenanceRecords as $maintenance)
 
         <div class="maintenance-record-card">
 
@@ -761,7 +715,7 @@
 
             <div>
 
-                @forelse($availableMedicines as $medicine)
+                @forelse ($availableMedicines as $medicine)
 
                     <button type="button" class="medicine-option" data-medicine="{{ $medicine->name }}">
 
@@ -813,7 +767,7 @@
 
     action="{{ route('health.record.store') }}"
 
-\>
+>
 
     @csrf
 
@@ -913,7 +867,7 @@
 
     class="diagnosis-confirm-overlay"
 
-\>
+>
 
     <div class="diagnosis-confirm-modal">
 
@@ -1063,11 +1017,11 @@
 
         <div class="edit-assignment-list">
 
-            @foreach($families as $family)
+            @foreach ($families as $family)
 
                 <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}">
 
-                    <span><strong>F-{{ str_pad($family->id, 4, '0', STR_PAD_LEFT) }} · {{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
+                    <span><strong>F-{{ str_pad($family->id, 4, '0', STR_PAD_LEFT) }} · {{ $family->family_name }}</strong><br><small>{{$family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
 
                 </button>
 
@@ -1093,13 +1047,13 @@
 
         <div class="edit-assignment-list" style="margin-top:16px;">
 
-            @foreach($puroks as $purok)
+            @foreach ($puroks as $purok)
 
                 <strong style="color:#173b82;">{{ $purok->name }}</strong>
 
-                @foreach($purok->subgroups as $subgroup)
+                @foreach ($purok->subgroups as $subgroup)
 
-                    <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}"><span>{{ $purok->name }} / {{ $subgroup->name }}</span><span>Select</span></button>
+                    <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}"><span>{{ $purok->name }} / {{$subgroup->name }}</span><span>Select</span></button>
 
                 @endforeach
 
@@ -1125,7 +1079,7 @@
 
         <p style="color: #4b5563; margin-bottom: 20px; font-size: 14px;">
 
-            Are you sure you want to update <strong>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}</strong> as deceased? This will change their vital status record.
+            Are you sure you want to update <strong>{{ $citizen->Citizen_FName }} {{$citizen->Citizen_LName }}</strong> as deceased? This will change their vital status record.
 
         </p>
 
@@ -1467,30 +1421,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateMedicineSourceFields();
 
-    // Immunization UI preview only; this is not connected to a database.
-
-    const vaccineCheckboxes = document.querySelectorAll(".vaccine-checkbox");
-
-    const immunizationCount = document.getElementById("immunizationCount");
-
-    function updateImmunizationCount() {
-
-        if (!immunizationCount) return;
-
-        const selected = document.querySelectorAll(".vaccine-checkbox:checked").length;
-
-        immunizationCount.textContent = `${selected} of 10 selected`;
-
-    }
-
-    vaccineCheckboxes.forEach(function (checkbox) {
-
-        checkbox.addEventListener("change", updateImmunizationCount);
-
-    });
-
-    updateImmunizationCount();
-
     /* ============================================================
 
        DIAGNOSIS FORM ELEMENTS
@@ -1559,17 +1489,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
        FORM SUBMISSION
 
-       Instead of immediately saving, prevent the form from
-
-       submitting and show the confirmation modal.
-
        ============================================================ */
 
     diagnosisForm.addEventListener("submit", function (event) {
 
         event.preventDefault();
-
-        /* Get entered values */
 
         const diagnosis =
 
@@ -1583,18 +1507,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             commentsInput.value.trim();
 
-        /* ========================================================
-
-           EXTRA SAFETY CHECK
-
-           HTML required attributes already handle this, but this
-
-           prevents the confirmation from appearing if the fields
-
-           are somehow submitted empty.
-
-           ======================================================== */
-
         if (!diagnosis || !recordDate) {
 
             diagnosisForm.reportValidity();
@@ -1602,12 +1514,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
 
         }
-
-        /* ========================================================
-
-           DISPLAY DATA IN CONFIRMATION MODAL
-
-           ======================================================== */
 
         confirmDiagnosis.textContent =
 
@@ -1621,21 +1527,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             comments || "No notes";
 
-        /* ========================================================
-
-           SHOW CONFIRMATION MODAL
-
-           ======================================================== */
-
         diagnosisConfirmModal.classList.add("active");
 
     });
-
-    /* ============================================================
-
-       CANCEL CONFIRMATION
-
-       ============================================================ */
 
     cancelDiagnosisConfirmation.addEventListener(
 
@@ -1653,25 +1547,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     );
 
-    /* ============================================================
-
-       CONFIRM AND SAVE
-
-       ============================================================ */
-
     confirmDiagnosisSubmission.addEventListener(
 
         "click",
 
         function () {
-
-            /*
-
-             * Disable the button so the user cannot accidentally
-
-             * submit the form multiple times.
-
-             */
 
             confirmDiagnosisSubmission.disabled = true;
 
@@ -1679,45 +1559,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 "Saving...";
 
-            /*
-
-             * Close confirmation modal.
-
-             */
-
             diagnosisConfirmModal.classList.remove(
 
                 "active"
 
             );
 
-            /*
-
-             * Disable the original Save button as well.
-
-             */
-
             saveDiagnosisBtn.disabled = true;
-
-            /*
-
-             * Native form.submit() bypasses the submit event,
-
-             * so the confirmation modal will NOT appear again.
-
-             */
 
             diagnosisForm.submit();
 
         }
 
     );
-
-    /* ============================================================
-
-       CLICK OUTSIDE CONFIRMATION MODAL
-
-       ============================================================ */
 
     window.addEventListener(
 
@@ -1742,12 +1596,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     );
-
-    /* ============================================================
-
-       ESC KEY
-
-       ============================================================ */
 
     document.addEventListener(
 
@@ -1774,4 +1622,3 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 @endsection
-
