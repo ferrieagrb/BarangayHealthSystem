@@ -1,8 +1,13 @@
 @extends('templates.superadmin')
 
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">System Analytics & Infrastructure</h1>
+<div class="w-full space-y-6">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>System Analytics &amp; Infrastructure</h1>
+            <p>Monitor platform usage, active sessions, and infrastructure health.</p>
+        </div>
+    </div>
 
     <!-- Section 1: Core System Overview Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">

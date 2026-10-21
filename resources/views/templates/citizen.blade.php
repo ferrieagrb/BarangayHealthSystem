@@ -832,6 +832,7 @@ body,
         <a class="c-header-logo" href="{{ route('citizen.dashboard') }}" aria-label="Citizen dashboard">
             <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong logo">
         </a>
+        
 
         @if(request()->routeIs('citizen.dashboard'))
             <nav class="c-header-section-nav" id="citizenSectionNav" aria-label="Citizen page sections">
@@ -850,7 +851,8 @@ body,
                 <span>Menu</span>
             </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
-            <form method="POST" action="{{ route('logout') }}">
+            
+            <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf
                 <button type="submit" class="btn-logout">Logout</button>
             </form>
@@ -859,6 +861,8 @@ body,
     @yield('content')
 </div>
 </div>
+
+@include('templates.partials.logout-modal')
 @auth
     <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
         <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">

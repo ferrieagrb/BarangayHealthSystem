@@ -26,7 +26,7 @@
 
 {{-- PAGE HEADER --}}
 <div class="page-top inventory-page-header">
-    <div>
+    <div class="page-title-group">
         <h1>Manage Inventory</h1>
         <p>
             Monitor health center medical supplies, stock levels,

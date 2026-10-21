@@ -38,9 +38,11 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
 use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
+use App\Http\Controllers\SuperAdmin\SystemConnectionsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
+use App\Http\Controllers\PublicAssetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +80,7 @@ Route::get('/publicannouncements/{announcement}', [AnnouncementController::class
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
 Route::get('/login', fn () => view('login'))->name('login');
+Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
 
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 
@@ -370,6 +373,8 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
     Route::get('/system-analytics-page', function () {
         return view('superadmin.system-analytics');
     })->name('system.analytics.page');
+    Route::get('/system-connections', [SystemConnectionsController::class, 'page'])->name('system.connections.page');
+    Route::get('/system-connections/status', [SystemConnectionsController::class, 'status'])->name('system.connections.status');
 
     // JSON endpoint for the widgets
     Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);

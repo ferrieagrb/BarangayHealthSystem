@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <style>
-    .reports-page { padding: 24px; }
+    .reports-page { padding: 0; }
     .reports-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
     .report-card, .report-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 2px 8px rgba(15, 23, 42, .05); }
     .report-card { padding: 18px; }
@@ -28,7 +28,7 @@
     .status-good { color: #15803d; font-weight: 700; }
     .empty-report { padding: 22px; color: #64748b; text-align: center; }
     @media (max-width: 1000px) { .reports-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .report-layout { grid-template-columns: 1fr; } }
-    @media (max-width: 600px) { .reports-page { padding: 14px; } .reports-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .reports-grid { grid-template-columns: 1fr; } }
 </style>
 @endsection
 

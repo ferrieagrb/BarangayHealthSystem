@@ -25,6 +25,7 @@ class citizens extends Authenticatable
      */
     protected $fillable = [
         'Citizen_FName',
+        'Citizen_MName',
         'Citizen_LName',
         'Citizen_BirthDate',
         'Citizen_ContactNo',

@@ -33,7 +33,7 @@
     <header class="main-header">
         <div class="container nav-container">
             <a href="{{ url('/') }}" class="brand">
-                <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong Logo" class="brand-logo">
+                <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="brand-logo">
                 <div class="brand-text">
                     <span class="brand-title">BARANGAY AMUYONG</span>
                     <span class="brand-subtitle">Health Services Portal</span>
@@ -137,7 +137,7 @@
         <div class="container footer-grid">
             <div class="footer-col brand-col">
                 <div class="footer-brand">
-                    <img src="{{ asset('images/amuyong.png') }}" alt="Logo" class="footer-logo">
+                    <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Logo" class="footer-logo">
                     <span>BARANGAY AMUYONG</span>
                 </div>
                 <p class="footer-desc">Dedicated to delivering transparent and efficient public health services to our community.</p>

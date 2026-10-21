@@ -3,7 +3,12 @@
 namespace App\Imports;
 
 use App\Models\citizens;
+use App\Models\Purok;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -12,15 +17,18 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class CitizensImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 {
+    public int $createdAccounts = 0;
+
     public function model(array $row)
     {
         // Validate each spreadsheet row.
         $validator = Validator::make($row, [
-            'citizen_fname'     => 'required|string|max:255',
-            'citizen_lname'     => 'required|string|max:255',
-            'citizen_birthdate' => 'required',
-            'citizen_contactno' => 'required|string|max:50',
-            'citizen_purok'     => 'required|string|max:255',
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'required|string|max:255',
+            'middle_name'     => 'required|string|max:255',
+            'birthdate'       => 'required',
+            'sex'             => 'required|string|in:Male,Female',
+            'purok'           => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -31,7 +39,7 @@ class CitizensImport implements ToModel, WithHeadingRow, SkipsEmptyRows
         }
 
         // Convert Excel date values or readable date strings.
-        $birthDateValue = $row['citizen_birthdate'];
+        $birthDateValue = $row['birthdate'];
 
         if (is_numeric($birthDateValue)) {
             $birthDate = Carbon::instance(
@@ -46,14 +54,48 @@ class CitizensImport implements ToModel, WithHeadingRow, SkipsEmptyRows
             throw new \RuntimeException('Birth date cannot be in the future.');
         }
 
-        // Save the citizen using your existing database columns.
-        return new citizens([
-            'Citizen_FName'     => trim($row['citizen_fname']),
-            'Citizen_LName'     => trim($row['citizen_lname']),
-            'Citizen_BirthDate' => $birthDate,
-            'Citizen_ContactNo' => trim((string) $row['citizen_contactno']),
-            'Citizen_Purok'     => trim($row['citizen_purok']),
-            'Citizen_Age'       => Carbon::parse($birthDate)->age,
-        ]);
+        $purokName = trim($row['purok']);
+        $purok = Purok::with('subgroups')->where('name', $purokName)->first();
+
+        if (!$purok) {
+            throw new \RuntimeException("Purok '{$purokName}' does not exist.");
+        }
+
+        $subgroup = $purok->subgroups->first();
+
+        return DB::transaction(function () use ($row, $birthDate, $purokName, $subgroup) {
+            $firstName = trim($row['first_name']);
+            $middleName = trim($row['middle_name']);
+            $lastName = trim($row['last_name']);
+
+            $citizen = citizens::create([
+                'Citizen_FName' => $firstName,
+                'Citizen_MName' => $middleName,
+                'Citizen_LName' => $lastName,
+                'Citizen_BirthDate' => $birthDate,
+                'Citizen_Age' => Carbon::parse($birthDate)->age,
+                'Citizen_ContactNo' => '',
+                'Citizen_Sex' => trim($row['sex']),
+                'Citizen_Purok' => $purokName,
+                'subgroup_id' => $subgroup?->id,
+                'qr_token' => (string) Str::uuid(),
+            ]);
+
+            $emailSlug = Str::slug(trim($firstName . ' ' . $lastName)) ?: 'citizen';
+            $email = $emailSlug . '.' . $citizen->id . '@amuyong.local';
+
+            User::create([
+                'name' => trim($firstName . ' ' . $middleName . ' ' . $lastName),
+                'email' => $email,
+                'password' => Hash::make('Barangay123!'),
+                'role' => 'citizen',
+                'citizen_id' => $citizen->id,
+                'must_change_password' => true,
+            ]);
+
+            $this->createdAccounts++;
+
+            return $citizen;
+        });
     }
 }

@@ -13,26 +13,25 @@
 
     .permissions-page {
         width: 100%;
-        padding: 24px;
+        padding: 0;
         color: #1f2937;
     }
 
     .permissions-page .page-top {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
     }
 
-    .permissions-page .page-top h1 {
-        margin: 0 0 8px;
-        color: #173b7c;
-        font-size: 26px;
-        font-weight: 700;
-    }
-
-    .permissions-page .page-top p {
+    .permissions-page .page-title-group h1 {
         margin: 0;
+        color: #0f172a;
+        font-size: 30px;
+        font-weight: 500;
+    }
+
+    .permissions-page .page-title-group p {
+        margin: 6px 0 0;
         color: #64748b;
         font-size: 14px;
-        line-height: 1.6;
     }
 
     .permissions-page .alert-success,
@@ -725,10 +724,10 @@
 <div class="permissions-page">
 
     <div class="page-top">
-        <h1>BHW User Permissions Management</h1>
-        <p>
-            Manage access to each feature for Barangay Health Workers.
-        </p>
+        <div class="page-title-group">
+            <h1>BHW User Permissions Management</h1>
+            <p>Manage access to each feature for Barangay Health Workers.</p>
+        </div>
     </div>
 
     @if (session('success'))

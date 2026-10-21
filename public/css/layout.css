@@ -163,6 +163,49 @@
     transition: opacity 0.18s ease, transform 0.24s ease;
 }
 
+.sidebar ul li .logout-form {
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar ul li .logout-form button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    padding-left: 25px;
+    gap: 20px;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar ul li .logout-form button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar ul li .logout-form button i {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    font-size: 22px;
+    color: #ffffff;
+}
+
+.sidebar ul li .logout-form button span {
+    white-space: nowrap;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.18s ease, transform 0.24s ease;
+}
+
 
 /* ==========================================
    SIDEBAR HOVER EFFECT
@@ -211,6 +254,23 @@
     transform: translateX(-8px);
     position: absolute;
     overflow: hidden;
+}
+
+.sidebar.collapsed ul li .logout-form button {
+    justify-content: center;
+    padding-left: 0;
+    gap: 0;
+}
+
+.sidebar.collapsed ul li .logout-form button span {
+    opacity: 0;
+    transform: translateX(-8px);
+    position: absolute;
+    overflow: hidden;
+}
+
+.sidebar.collapsed ul li .logout-form button i {
+    width: 100%;
 }
 
 .sidebar.collapsed ul li a i {

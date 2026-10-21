@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/logs.css') }}">
 <style>
     .admin-logs-page { padding-bottom: 24px; }
+    .admin-logs-page .page-title-group h1 { font-weight: 500; }
     .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
     .tabs button { padding: 9px 13px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #334155; cursor: pointer; }
     .tabs button.active { border-color: #0e42b1; background: #0e42b1; color: #fff; }
@@ -26,7 +27,7 @@
 
 @section('content')
 <div class="admin-logs-page">
-    <div class="page-top"><div class="page-title"><h1>System Audit Logs</h1><p>Review administrative actions and activity across system features.</p></div></div>
+    <div class="page-top"><div class="page-title-group"><h1>System Audit Logs</h1><p>Review administrative actions and activity across system features.</p></div></div>
 
     <div class="tabs">
         <button class="tab active" data-tab="adminActivity">Admin Activity</button>

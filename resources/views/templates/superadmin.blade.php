@@ -25,6 +25,28 @@
     }
 </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .main-content .page-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .main-content .page-title-group h1 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 30px;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+        .main-content .page-title-group p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
     @yield('CSSown')
 </head>
 
@@ -67,6 +89,13 @@
             </li>
 
             <li>
+                <a href="{{ route('superadmin.system.connections.page') }}">
+                    <i class="bx bx-link-alt"></i>
+                    <span class="nav-item">Connections</span>
+                </a>
+            </li>
+
+            <li>
                 <a href="{{ route('superadmin.audit-logs') }}">
                     <i class="bx bx-folder"></i>
                     <span class="nav-item">System Logs</span>
@@ -80,21 +109,24 @@
                 </a>
             </li>
 
-            <li>
-                <a href="#">
-                    <i class="bx bx-shield"></i>
-                    <span class="nav-item">Security</span>
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
-                    <a href="{{ route('superadmin.system.settings') }}">
+                    <a href="{{ route('settings') }}">
                         <i class="bx bx-cog"></i>
-                        <span class="nav-item">System Settings</span>
+                        <span class="nav-item">Settings</span>
                     </a>
+                </li>
+                <li>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit">
+                            <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
+                            <span class="nav-item">Logout</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -104,19 +136,14 @@
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-    <div></div> <!-- empty left space -->
-
-    <form method="POST" action="{{ url('/logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">
-                Logout
-            </button>
-        </form>
+    <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
     </div>
         @yield('content')
     </div>
 
 </div>
+
+@include('templates.partials.logout-modal')
 
 @auth
 <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">

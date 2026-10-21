@@ -1,4 +1,4 @@
-@extends('templates.layout')
+@extends(auth()->user()->isSuperAdmin() ? 'templates.superadmin' : (auth()->user()->role === 'admin' ? 'templates.admin' : 'templates.layout'))
 
 @section('CSSown')
 <style>
@@ -240,9 +240,15 @@
                                 <i class='bx bx-check-circle'></i> Verified
                             </span>
                         @else
-                            <span style="background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #fecaca;">
-                                <i class='bx bx-error-circle'></i> Unverified
-                            </span>
+                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+                                <span style="background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #fecaca;">
+                                    <i class='bx bx-error-circle'></i> Unverified
+                                </span>
+                                <form method="POST" action="{{ route('verification.send') }}">
+                                    @csrf
+                                    <button type="submit" class="btn-save" style="padding: 7px 12px; font-size: 0.85rem;">Send Verification Email</button>
+                                </form>
+                            </div>
                         @endif
                     </div>
                 </div>

@@ -123,13 +123,6 @@
                 </a>
             </li>
 
-            <li>
-                <a href="/healthrecord">
-                    <i class="bx bx-first-aid"></i>
-                    <span class="nav-item">Health Records</span>
-                </a>
-            </li>
-
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
                     <a href="{{ route('bhw.reports') }}">
@@ -193,6 +186,15 @@
                         <span class="nav-item">Settings</span>
                     </a>
                 </li>
+                <li>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit">
+                            <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
+                            <span class="nav-item">Logout</span>
+                        </button>
+                    </form>
+                </li>
             </ul>
         </div>
 
@@ -201,19 +203,14 @@
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-            <div></div> <!-- empty left space -->
-
-            <form method="POST" action="{{ url('/logout') }}">
-                @csrf
-                <button type="submit" class="btn-logout">
-                    Logout
-                </button>
-            </form>
+            <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
         </div>
         @yield('content')
     </div>
 
 </div>
+
+@include('templates.partials.logout-modal')
 
 @auth
 

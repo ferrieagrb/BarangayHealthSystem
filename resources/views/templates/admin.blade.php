@@ -94,6 +94,15 @@
                         <span class="nav-item">Settings</span>
                     </a>
                 </li>
+                <li>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit">
+                            <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
+                            <span class="nav-item">Logout</span>
+                        </button>
+                    </form>
+                </li>
             </ul>
         </div>
 
@@ -102,19 +111,14 @@
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-            <div></div> <!-- empty left space -->
-
-            <form method="POST" action="{{ url('/logout') }}">
-                @csrf
-                <button type="submit" class="btn-logout">
-                    Logout
-                </button>
-            </form>
+            <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
         </div>
         @yield('content')
     </div>
 
 </div>
+
+@include('templates.partials.logout-modal')
 
 @auth
 <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">

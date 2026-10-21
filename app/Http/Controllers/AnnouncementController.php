@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\LogsActivity;
 
 class AnnouncementController extends Controller
@@ -81,7 +82,8 @@ class AnnouncementController extends Controller
 
         // Cross-post to Facebook Page if checked
         if ($request->boolean('post_to_facebook')) {
-            $this->publishToFacebookPage($announcement->title, $announcement->description, $announcement->category);
+            $announcement->load('images');
+            $this->publishToFacebookPage($announcement);
         }
 
         return redirect()->route('announcements')
@@ -91,7 +93,7 @@ class AnnouncementController extends Controller
     /**
      * Post message directly to Facebook Page Feed using Meta Graph API
      */
-    private function publishToFacebookPage(string $title, string $description, string $category)
+    private function publishToFacebookPage(Announcement $announcement)
     {
         $pageId = config('services.facebook.page_id');
         $accessToken = config('services.facebook.access_token');
@@ -102,20 +104,45 @@ class AnnouncementController extends Controller
             return;
         }
 
-        // Format post message text
-        $message = "📢 [{$category}] {$title}\n\n{$description}";
+        $message = "📢 [{$announcement->category}] {$announcement->title}\n\n{$announcement->description}";
 
         try {
-            $response = Http::post("https://graph.facebook.com/v26.0/{$pageId}/feed", [
-                'message' => $message,
+            $image = $announcement->images->first();
+            $endpoint = $image
+                ? "https://graph.facebook.com/{$pageId}/photos"
+                : "https://graph.facebook.com/{$pageId}/feed";
+
+            $payload = [
                 'access_token' => $accessToken,
-            ]);
+            ];
+
+            if ($image) {
+                $payload['caption'] = $message;
+                $payload['published'] = true;
+
+                $imageContents = Storage::disk('public')->get($image->path);
+
+                $response = Http::timeout(30)
+                    ->attach(
+                        'source',
+                        $imageContents,
+                        basename($image->path)
+                    )
+                    ->post($endpoint, $payload);
+            } else {
+                $payload['message'] = $message;
+                $response = Http::timeout(20)->post($endpoint, $payload);
+            }
 
             if ($response->failed()) {
                 Log::error('Facebook Post Error: ' . $response->body());
                 $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting failed: ' . substr($response->body(), 0, 500), 'integration');
             } else {
-                $this->logAdminActivity('facebook.posted', 'Announcement posted successfully to Facebook.', 'integration');
+                $this->logAdminActivity(
+                    'facebook.posted',
+                    $image ? 'Announcement photo posted successfully to Facebook.' : 'Announcement posted successfully to Facebook.',
+                    'integration'
+                );
             }
         } catch (\Exception $e) {
             Log::error('Facebook API Exception: ' . $e->getMessage());

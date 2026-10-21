@@ -292,9 +292,9 @@
 
             id="excelFileInput"
 
-            accept=".csv,.xlsx,.xls"
+            accept=".csv,.txt,.xlsx,.xls"
 
-            onchange="document.getElementById('importForm').submit()">
+            onchange="document.getElementById('importForm').requestSubmit();">
 
     </form>
 

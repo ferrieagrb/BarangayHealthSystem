@@ -334,6 +334,7 @@ class CitizenController extends Controller
     {
         $validated = $request->validate([
             'Citizen_FName' => 'required|string|max:255',
+            'Citizen_MName' => 'nullable|string|max:255',
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
@@ -369,6 +370,7 @@ class CitizenController extends Controller
             $citizen = DB::transaction(function () use ($validated, $photoPath, $request, $family) {
                 $citizen = citizens::create([
                     'Citizen_FName' => $validated['Citizen_FName'],
+                    'Citizen_MName' => $validated['Citizen_MName'] ?? null,
                     'Citizen_LName' => $validated['Citizen_LName'],
                     'Citizen_BirthDate' => $validated['Citizen_BirthDate'],
                     'Citizen_Age' => $validated['Citizen_Age'],
@@ -690,6 +692,7 @@ class CitizenController extends Controller
 
         $validated = $request->validate([
             'Citizen_FName' => 'required|string|max:255',
+            'Citizen_MName' => 'nullable|string|max:255',
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
@@ -770,12 +773,16 @@ class CitizenController extends Controller
 
         try {
             $file = $request->file('file');
-            Excel::import(new CitizensImport, $file);
+            $import = new CitizensImport();
+            Excel::import($import, $file);
 
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
             $this->logAdminActivity('citizens.imported', 'Imported citizen records from Excel.', 'data');
 
-            return redirect()->route('citizenlist')->with('success', 'Citizens imported successfully!');
+            return redirect()->route('citizenlist')->with(
+                'success',
+                "Citizens imported successfully. {$import->createdAccounts} citizen accounts were created with the default temporary password."
+            );
         } catch (\Exception $e) {
             $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());

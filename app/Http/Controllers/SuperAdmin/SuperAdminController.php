@@ -71,6 +71,7 @@ public function systemSettings()
             'backupDestination' => SystemSetting::value('backup_destination', 'hostinger'),
             'maxFailedLoginAttempts' => (int) SystemSetting::value('max_failed_login_attempts', 10),
             'maintenanceMode' => SystemSetting::boolean('maintenance_mode', false),
+            'logoUrl' => SystemSetting::logoUrl(),
         ]);
     }
 
@@ -80,6 +81,7 @@ public function systemSettings()
             'backup_frequency' => ['required', 'in:disabled,daily,weekly,monthly'],
             'backup_destination' => ['required', 'in:local,hostinger'],
             'max_failed_login_attempts' => ['required', 'integer', 'min:3', 'max:20'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $settings = [
@@ -93,6 +95,16 @@ public function systemSettings()
 
         foreach ($settings as $key => $value) {
             SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
+        }
+
+        if ($request->hasFile('logo')) {
+            $oldLogo = SystemSetting::value('site_logo');
+            $logoPath = $request->file('logo')->store('site-logo', 'public');
+            SystemSetting::updateOrCreate(['key' => 'site_logo'], ['value' => $logoPath]);
+
+            if ($oldLogo && str_starts_with($oldLogo, 'site-logo/')) {
+                Storage::disk('public')->delete($oldLogo);
+            }
         }
 
         return back()->with('success', 'System settings saved successfully.');
@@ -145,7 +157,9 @@ public function systemSettings()
         }
 
         $destination = SystemSetting::value('backup_destination', 'hostinger');
-        $backupPath = 'backups/' . $downloadFilename;
+        $backupPath = $destination === 'hostinger'
+            ? $downloadFilename
+            : 'backups/' . $downloadFilename;
 
         try {
             $disk = $destination === 'hostinger' ? 'sftp' : 'local';
