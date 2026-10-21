@@ -1621,8 +1621,20 @@
                             <strong>{{ $citizen->Citizen_LName }}, {{ $citizen->Citizen_FName }}</strong>
                         </div>
                         <div class="c-stat">
-                            <span>Date of birth / age</span>
-                            <strong>{{ $citizen->Citizen_BirthDate ?: 'N/A' }} / {{ $citizen->Citizen_Age ?? 'N/A' }}</strong>
+                            <span>Date of birth</span>
+                            <strong>{{ $citizen->Citizen_BirthDate ?: 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Age</span>
+                            <strong>{{ $citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age . ' years old' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Height</span>
+                            <strong>{{ $citizen->Citizen_Height !== null && $citizen->Citizen_Height !== '' ? $citizen->Citizen_Height . ' cm' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Weight</span>
+                            <strong>{{ $citizen->Citizen_Weight !== null && $citizen->Citizen_Weight !== '' ? $citizen->Citizen_Weight . ' kg' : 'N/A' }}</strong>
                         </div>
                         <div class="c-stat">
                             <span>Purok</span>
@@ -1647,8 +1659,8 @@
                                 </thead>
                                 <tbody>
                                     @forelse($citizen->vaccinations as $vax)<tr>
-                                        <td>COVID-19 / Health Vax</td>
-                                        <td>{{ $vax->vaccine_name }} — {{ $vax->dose_number }}</td>
+                                        <td>{{ $vax->vaccine_name }}</td>
+                                        <td>{{ $vax->dose_number }}</td>
                                         <td>{{ $vax->date_administered ?: 'N/A' }}</td>
                                         <td>{{ $vax->administered_by ?: 'N/A' }}</td>
                                     </tr>
@@ -1661,32 +1673,65 @@
                 </div>
             </div>
             <div class="c-record">
-                <h3>Dispensed Medicines</h3>
+                <h3>Diagnosis &amp; Health Records</h3>
+                <div class="c-tablewrap">
+                    <table class="c-table">
+                        <thead>
+                            <tr>
+                                <th>Diagnosis</th>
+                                <th>Date recorded</th>
+                                <th>Notes / Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($citizen->healthRecords as $record)
+                                <tr>
+                                    <td>{{ $record->diagnosis ?: 'N/A' }}</td>
+                                    <td>{{ $record->record_date ?: optional($record->created_at)->format('Y-m-d') ?: 'N/A' }}</td>
+                                    <td>{{ $record->comments ?: 'No notes' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td class="none" colspan="3">No diagnosis or health records found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="c-record">
+                <h3>Maintenance Medicines</h3>
                 <div class="c-tablewrap">
                     <table class="c-table">
                         <thead>
                             <tr>
                                 <th>Medicine</th>
-                                <th>Dosage</th>
                                 <th>Quantity</th>
-                                <th>Date dispensed</th>
+                                <th>Dosage</th>
+                                <th>Frequency</th>
+                                <th>Start Date</th>
+                                <th>End Date / Status</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($citizen->medications as $med)<tr>
-                                <td>{{ $med->medicine_name }}</td>
-                                <td>{{ $med->dosage ?: 'N/A' }}</td>
-                                <td>{{ $med->quantity_dispensed }}</td>
-                                <td>{{ $med->date_dispensed ?: 'N/A' }}</td>
-                            </tr>
-                        @empty<tr>
-                            <td class="none" colspan="4">No medication records found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+                            @forelse($citizen->maintenanceRecords as $maintenance)
+                                <tr>
+                                    <td>{{ $maintenance->medicine_name ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->quantity_dispensed ?? 'N/A' }}</td>
+                                    <td>{{ $maintenance->dosage ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->frequency ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->start_date ? \Carbon\Carbon::parse($maintenance->start_date)->format('M d, Y') : 'N/A' }}</td>
+                                    <td>{{ $maintenance->end_date ? \Carbon\Carbon::parse($maintenance->end_date)->format('M d, Y') : 'Ongoing' }}</td>
+                                    <td>{{ $maintenance->notes ?: '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td class="none" colspan="7">No maintenance medicines recorded.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
     <div class="c-actions" style="padding:20px 0 0">
         <a class="c-btn" href="{{ route('citizen.ecard') }}">View Printable Health Record</a>
     </div>

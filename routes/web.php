@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CitizenController;
+use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\CitizenSupplyController;
 use App\Http\Controllers\AnnouncementController;
@@ -31,6 +32,7 @@ use App\Models\Referral;
 use App\Models\Announcement;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\MaintenanceRecord;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
@@ -122,9 +124,18 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
         $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
+        $maintenanceRecords = collect();
+
         if ($user->citizen_id) {
-            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords', 'maintenanceRecords' => fn ($query) => $query->latest()])
                 ->where('id', $user->citizen_id)->first();
+
+            if ($citizen) {
+                // Query by the linked citizen ID directly, rather than relying only on eager loading.
+                $maintenanceRecords = MaintenanceRecord::where('citizen_id', $citizen->id)
+                    ->latest()
+                    ->get();
+            }
         }
 
         $qrImage = $citizen
@@ -135,6 +146,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         return view('citizen.dashboard', compact(
             'announcements',
             'citizen',
+            'maintenanceRecords',
             'qrImage'
         ));
     })->name('dashboard');
@@ -220,8 +232,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Health Records
     Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
-    Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
-    Route::post('/health-record/maintenance', [HealthRecordController::class, 'storeMaintenance'])->name('health.maintenance.store');
+    Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
+    Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies

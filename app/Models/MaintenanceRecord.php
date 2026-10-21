@@ -12,6 +12,7 @@ class MaintenanceRecord extends Model
     protected $fillable = [
         'citizen_id',
         'medicine_name',
+        'quantity_dispensed',
         'dosage',
         'frequency',
         'start_date',

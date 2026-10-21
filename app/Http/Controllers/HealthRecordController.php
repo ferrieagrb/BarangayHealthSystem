@@ -82,26 +82,35 @@ class HealthRecordController extends Controller
     | STORE HEALTH RECORD
     |--------------------------------------------------------------------------
     */
-    public function store(Request $request)
+    public function store(Request $request, $id = null)
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') {
             abort(403);
         }
 
-        $request->validate([
-            'citizen_id' => 'required|exists:citizens,id',
-            'diagnosis' => 'required|string|max:255',
-            'notes' => 'nullable|string',
+        $validated = $request->validate([
+            'citizen_id' => $id ? 'nullable|integer' : 'required|exists:citizens,id',
+            'diagnosis' => 'required|string|max:2000',
+            'record_date' => 'required|date',
+            'comments' => 'nullable|string|max:2000',
         ]);
+
+        $citizenId = $id ?: $request->input('citizen_id');
+        $citizen = \App\Models\citizens::findOrFail($citizenId);
+
+        // Prevent a profile URL from being used to post a record for another citizen.
+        if ($request->filled('citizen_id') && (int) $request->input('citizen_id') !== (int) $citizen->id) {
+            abort(422, 'Citizen ID mismatch.');
+        }
 
         HealthRecord::create([
-            'citizen_id' => $request->citizen_id,
-            'diagnosis' => $request->diagnosis,
-            'notes' => $request->notes,
+            'citizen_id' => $citizen->id,
+            'diagnosis' => trim($validated['diagnosis']),
+            'record_date' => $validated['record_date'],
+            'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
         ]);
 
-        return redirect()->back()
-            ->with('success', 'Health record added successfully.');
+        return redirect()->back()->with('success', 'Diagnosis added successfully.');
     }
 
     /*
@@ -139,27 +148,20 @@ class HealthRecordController extends Controller
 
         $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
-            'medicine_source' => 'required|in:existing,custom',
-            'existing_medicine' => 'nullable|required_if:medicine_source,existing|string|max:255|exists:supplies,name',
-            'custom_medicine' => 'nullable|required_if:medicine_source,custom|string|max:255',
-            'dosage' => 'required|string|max:255',
-            'frequency' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'notes' => 'nullable|string|max:2000',
+            'medicine_name' => 'required|string|max:255',
+            'quantity_dispensed' => 'required|integer|min:1|max:100000',
         ]);
 
         MaintenanceRecord::create([
             'citizen_id' => $validated['citizen_id'],
-            'medicine_name' => $validated['medicine_source'] === 'custom'
-                ? $validated['custom_medicine']
-                : $validated['existing_medicine'],
-            'dosage' => $validated['dosage'],
-            'frequency' => $validated['frequency'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-            'user_id' => Auth::id(),
+            'medicine_name' => trim($validated['medicine_name']),
+            'quantity_dispensed' => $validated['quantity_dispensed'],
+            // Keep legacy columns populated for compatibility with existing records/schema.
+            'dosage' => 'N/A',
+            'frequency' => 'As prescribed',
+            'start_date' => now()->toDateString(),
+            'end_date' => null,
+            'notes' => null,
         ]);
 
         return redirect()->back()->with('success', 'Maintenance medicine added successfully.');

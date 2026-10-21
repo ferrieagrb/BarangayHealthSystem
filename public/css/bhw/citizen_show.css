@@ -171,3 +171,12 @@ body:has(.immunization-section) #content {
         padding-bottom: 28px;
     }
 }
+
+/* Maintenance medicine form: consistent, aligned fields on desktop and mobile. */
+.maintenance-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 18px; margin-bottom:8px; }
+.maintenance-form-field { min-width:0; }
+.maintenance-form-field-full { grid-column:1 / -1; }
+.maintenance-form-field label { display:block; margin:12px 0 6px; color:#334155; font-size:12px; font-weight:600; }
+.maintenance-form .maintenance-field { width:100%; }
+.maintenance-record-card .maintenance-quantity { display:inline-flex; align-items:center; margin-left:6px; padding:3px 9px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:700; }
+@media (max-width:700px) { .maintenance-form-grid { grid-template-columns:minmax(0,1fr); } .maintenance-form-field-full { grid-column:auto; } .main { padding:18px 14px; } .info-card,.diagnosis-section,.maintenance-section,#diagnosisForm { padding:16px; } }
