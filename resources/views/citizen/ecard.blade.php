@@ -484,11 +484,37 @@
                 </div>
 
                 <div>
-                    <span class="block text-xs text-gray-500">Date of Birth / Age</span>
+                    <span class="block text-xs text-gray-500">Date of Birth</span>
                     <span class="font-semibold">
-                        {{ $citizen->Citizen_BirthDate ?: 'N/A' }}
-                        (Age: {{ $citizen->Citizen_Age ?? 'N/A' }})
+                        @if($citizen->Citizen_BirthDate)
+                            {{ \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('F d, Y') }}
+                        @else
+                            N/A
+                        @endif
                     </span>
+                </div>
+
+                <div>
+                    <span class="block text-xs text-gray-500">Age</span>
+                    <span class="font-semibold">
+                        @if($citizen->Citizen_BirthDate)
+                            {{ \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age }} years old
+                        @elseif(!is_null($citizen->Citizen_Age))
+                            {{ $citizen->Citizen_Age }} years old
+                        @else
+                            N/A
+                        @endif
+                    </span>
+                </div>
+
+                <div>
+                    <span class="block text-xs text-gray-500">Height</span>
+                    <span class="font-semibold">{{ $citizen->Citizen_Height !== null && $citizen->Citizen_Height !== '' ? $citizen->Citizen_Height . ' cm' : 'N/A' }}</span>
+                </div>
+
+                <div>
+                    <span class="block text-xs text-gray-500">Weight</span>
+                    <span class="font-semibold">{{ $citizen->Citizen_Weight !== null && $citizen->Citizen_Weight !== '' ? $citizen->Citizen_Weight . ' kg' : 'N/A' }}</span>
                 </div>
 
                 <div>
@@ -498,6 +524,41 @@
                     </span>
                 </div>
 
+            </div>
+
+            {{-- DIAGNOSIS / HEALTH RECORDS --}}
+            <div class="mb-6">
+                <h3 class="mb-2 border border-gray-300 bg-gray-100 p-2 text-sm font-bold uppercase text-gray-700">
+                    Diagnosis & Health Records
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-400 text-xs text-left">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-800">
+                                <th class="border border-gray-400 p-2">Date Recorded</th>
+                                <th class="border border-gray-400 p-2">Diagnosis</th>
+                                <th class="border border-gray-400 p-2">Comments / Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($citizen->healthRecords->sortByDesc('record_date') as $record)
+                                <tr>
+                                    <td class="border border-gray-400 p-2">
+                                        {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : 'N/A' }}
+                                    </td>
+                                    <td class="border border-gray-400 p-2 font-semibold">{{ $record->diagnosis ?: 'N/A' }}</td>
+                                    <td class="border border-gray-400 p-2">{{ $record->comments ?: '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="border border-gray-400 p-3 text-center italic text-gray-500">
+                                        No diagnosis or health records found.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {{-- IMMUNIZATION HISTORY --}}
@@ -546,43 +607,43 @@
                 </div>
             </div>
 
-            {{-- DISPENSED MEDICINES --}}
+            {{-- MAINTENANCE MEDICINES: match the same heading and table template as the other health-record sections --}}
             <div class="mb-6">
                 <h3 class="mb-2 border border-gray-300 bg-gray-100 p-2 text-sm font-bold uppercase text-gray-700">
-                    Dispensed Medicines
+                    Maintenance Medicines
                 </h3>
-
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse border border-gray-400 text-xs text-left">
                         <thead>
                             <tr class="bg-gray-200 text-gray-800">
                                 <th class="border border-gray-400 p-2">Medicine</th>
-                                <th class="border border-gray-400 p-2">Dosage</th>
                                 <th class="border border-gray-400 p-2">Quantity</th>
-                                <th class="border border-gray-400 p-2">Date Dispensed</th>
+                                <th class="border border-gray-400 p-2">Dosage</th>
+                                <th class="border border-gray-400 p-2">Frequency</th>
+                                <th class="border border-gray-400 p-2">Start Date</th>
+                                <th class="border border-gray-400 p-2">End Date / Status</th>
+                                <th class="border border-gray-400 p-2">Notes</th>
                             </tr>
                         </thead>
-
                         <tbody>
-                            @forelse($citizen->medications as $med)
+                            @forelse(($citizen->maintenanceRecords ?? collect()) as $maintenance)
                                 <tr>
-                                    <td class="border border-gray-400 p-2 font-semibold">
-                                        {{ $med->medicine_name }}
+                                    <td class="border border-gray-400 p-2 font-semibold">{{ $maintenance->medicine_name ?: 'N/A' }}</td>
+                                    <td class="border border-gray-400 p-2">{{ $maintenance->quantity_dispensed ?? 'N/A' }}</td>
+                                    <td class="border border-gray-400 p-2">{{ $maintenance->dosage ?: 'N/A' }}</td>
+                                    <td class="border border-gray-400 p-2">{{ $maintenance->frequency ?: 'N/A' }}</td>
+                                    <td class="border border-gray-400 p-2">
+                                        {{ $maintenance->start_date ? \Carbon\Carbon::parse($maintenance->start_date)->format('M d, Y') : 'N/A' }}
                                     </td>
                                     <td class="border border-gray-400 p-2">
-                                        {{ $med->dosage }}
+                                        {{ $maintenance->end_date ? \Carbon\Carbon::parse($maintenance->end_date)->format('M d, Y') : 'Ongoing' }}
                                     </td>
-                                    <td class="border border-gray-400 p-2">
-                                        {{ $med->quantity_dispensed }}
-                                    </td>
-                                    <td class="border border-gray-400 p-2">
-                                        {{ $med->date_dispensed }}
-                                    </td>
+                                    <td class="border border-gray-400 p-2">{{ $maintenance->notes ?: '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="border border-gray-400 p-3 text-center italic text-gray-500">
-                                        No medication records found.
+                                    <td colspan="7" class="border border-gray-400 p-3 text-center italic text-gray-500">
+                                        No maintenance medicines recorded.
                                     </td>
                                 </tr>
                             @endforelse
@@ -590,6 +651,7 @@
                     </table>
                 </div>
             </div>
+
 </section>
 
     </div>
@@ -650,6 +712,7 @@
     }
     .bheams-id-qr-centered .bheams-qr-frame img { width: 100px; height: 100px; }
 }
+
 </style>
 <script>
 function printCitizenSection(section) {
