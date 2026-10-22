@@ -68,7 +68,7 @@
 
 @foreach($announcements as $a)
 
-    <div class="announcement-card" data-announcement-title="{{ $a->title }}" data-announcement-category="{{ $a->category }}" data-announcement-date="{{ $a->created_at->format('M d, Y') }}" data-announcement-description="{{ $a->description }}" data-announcement-images='@json($a->images->map(fn ($image) => asset("storage/" . ltrim($image->path, "/")))->values())'>
+    <div class="announcement-card" data-announcement-title="{{ $a->title }}" data-announcement-category="{{ $a->category }}" data-announcement-date="{{ $a->created_at->format('M d, Y') }}" data-announcement-description="{{ $a->description }}" data-announcement-images='@json($a->images->map(fn ($image) => route("announcement.image", ["path" => $image->path]))->values())'>
 
         <div class="announcement-content">
 

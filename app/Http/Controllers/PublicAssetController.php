@@ -23,4 +23,17 @@ class PublicAssetController extends Controller
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);
     }
+
+    public function announcementImage(string $path)
+    {
+        abort_if(str_contains($path, '..') || !Storage::disk('public')->exists($path), 404);
+
+        $contents = Storage::disk('public')->get($path);
+        $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+
+        return response($contents, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
+    }
 }
