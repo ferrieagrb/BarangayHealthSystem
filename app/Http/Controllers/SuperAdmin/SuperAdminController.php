@@ -82,11 +82,12 @@ class SuperAdminController extends Controller
                     return 'Location unavailable';
                 }
 
-                return collect([
-                    $response->json('city'),
-                    $response->json('region'),
-                    $response->json('country'),
-                ])->filter()->join(', ') ?: 'Location unavailable';
+                return $response->json('city')
+                    ?: collect([
+                        $response->json('region'),
+                        $response->json('country'),
+                    ])->filter()->join(', ')
+                    ?: 'Location unavailable';
             } catch (\Throwable $exception) {
                 report($exception);
                 return 'Location unavailable';
