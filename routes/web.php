@@ -23,6 +23,7 @@ use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\BhwHomeController;
 use App\Http\Controllers\BhwReportController;
+use App\Http\Controllers\BhwAnalyticsController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -235,6 +236,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Health Records
     Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
+    Route::get('/analytics', [BhwAnalyticsController::class, 'index'])->name('bhw.analytics');
     Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
     Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
