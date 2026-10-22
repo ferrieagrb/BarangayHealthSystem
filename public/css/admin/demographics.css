@@ -1,0 +1,664 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* =========================================
+   DEMOGRAPHICS PAGE
+   Aligned with the Admin Dashboard
+========================================= */
+
+.demographics-container {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    color: #1f2937;
+    font-family: "Poppins", sans-serif;
+    box-sizing: border-box;
+}
+
+.demographics-container,
+.demographics-container * {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   PAGE HEADER
+========================================= */
+
+.demographics-container > h1 {
+    margin: 0 0 20px;
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.demographics-container > p {
+
+        margin: 0;
+
+        color: #64748b;
+
+        font-size: 14px;
+
+        line-height: 1.6;
+
+    }
+/* =========================================
+   SUCCESS MESSAGE
+========================================= */
+
+.demographics-container .alert-success {
+    width: 100%;
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================
+   MAIN GRID
+========================================= */
+
+.demographics-container .grid-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+}
+
+/* =========================================
+   CONTENT CARDS
+========================================= */
+
+.demographics-container .card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 18px;
+    margin: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.demographics-container .card h2 {
+    margin: 0 0 16px;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.demographics-container .card h3 {
+    margin: 0 0 10px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* =========================================
+   FORMS
+========================================= */
+
+.demographics-container form {
+    min-width: 0;
+}
+
+.demographics-container .form-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.demographics-container .form-control {
+    display: block;
+    flex: 1 1 160px;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    background-color: #ffffff;
+    color: #334155;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.demographics-container .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.demographics-container .form-control:focus {
+    border-color: #0e42b1;
+    box-shadow: 0 0 0 3px rgba(14, 66, 177, 0.08);
+    outline: none;
+}
+
+.demographics-container select.form-control {
+    cursor: pointer;
+}
+
+.demographics-container .form-row > .btn {
+    flex-shrink: 0;
+}
+
+/* =========================================
+   BUTTONS
+   MATCH ADMIN USER CSS
+========================================= */
+
+.demographics-container .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.demographics-container .btn:focus-visible {
+    outline: 2px solid #0e42b1;
+    outline-offset: 2px;
+}
+
+.demographics-container .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* BLUE BUTTON
+   Add Purok, Add Subgroup, Save Location,
+   Pick Location, Move Pin
+*/
+
+.demographics-container .btn-primary {
+    background: #0e42b1;
+    border-color: #0e42b1;
+    color: #ffffff;
+}
+
+.demographics-container .btn-primary:hover:not(:disabled) {
+    background: #0b348b;
+    border-color: #0b348b;
+}
+
+/* BLUE BUTTON
+   Save Purok and Save Subgroup
+*/
+
+.demographics-container .btn-success {
+    min-height: 34px;
+    padding: 7px 12px;
+    background: #0e42b1;
+    border-color: #0e42b1;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.demographics-container .btn-success:hover:not(:disabled) {
+    background: #0b348b;
+    border-color: #0b348b;
+}
+
+/* RED BUTTON
+   Delete Purok and Delete Subgroup
+*/
+
+.demographics-container .btn-danger {
+    min-height: 34px;
+    padding: 7px 12px;
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.demographics-container .btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* =========================================
+   PUROK LOCATION STATUS
+========================================= */
+
+.demographics-container .location-status {
+    margin: 0 0 12px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.demographics-container #purokLocationSelect {
+    flex: 1 1 180px;
+}
+
+.demographics-container #savePurokLocation {
+    flex-shrink: 0;
+}
+
+.demographics-container .purok-location-map {
+    width: 100%;
+    height: 320px;
+    min-height: 260px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f1f5f9;
+}
+
+/* =========================================
+   PUROK AND SUBGROUP LISTS
+========================================= */
+
+.demographics-container .card > ul {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.demographics-container .purok-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 14px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.demographics-container .purok-item:first-child {
+    padding-top: 0;
+}
+
+.demographics-container .purok-item:last-child {
+    border-bottom: none;
+}
+
+.demographics-container .purok-update-form {
+    display: flex;
+    flex: 1 1 250px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+}
+
+.demographics-container .purok-update-form .form-control {
+    flex: 1 1 120px;
+    min-width: 0;
+}
+
+.demographics-container .purok-update-form .btn {
+    flex-shrink: 0;
+}
+
+.demographics-container .purok-item > form:not(.purok-update-form) {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+}
+
+.demographics-container .empty-text {
+    padding: 18px 10px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+body.theme-dark .demographics-container > h1 {
+    color: #f3f4f6;
+}
+
+body.theme-dark .demographics-container .card {
+    border-color: #333333;
+    background: #1e1e1e;
+    color: #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+body.theme-dark .demographics-container .card h2,
+body.theme-dark .demographics-container .card h3 {
+    color: #e5e7eb;
+}
+
+body.theme-dark .demographics-container .form-control {
+    border-color: #444444;
+    background-color: #262626;
+    color: #f3f4f6;
+}
+
+body.theme-dark .demographics-container .form-control::placeholder {
+    color: #9ca3af;
+}
+
+body.theme-dark .demographics-container .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+body.theme-dark .demographics-container .location-status,
+body.theme-dark .demographics-container .empty-text {
+    color: #9ca3af;
+}
+
+body.theme-dark .demographics-container .purok-item {
+    border-color: #333333;
+}
+
+body.theme-dark .demographics-container .purok-location-map {
+    border-color: #444444;
+    background: #262626;
+}
+
+body.theme-dark .demographics-container .btn-primary,
+body.theme-dark .demographics-container .btn-success {
+    background: #0e42b1;
+    border-color: #0e42b1;
+    color: #ffffff;
+}
+
+body.theme-dark .demographics-container .btn-primary:hover:not(:disabled),
+body.theme-dark .demographics-container .btn-success:hover:not(:disabled) {
+    background: #0b348b;
+    border-color: #0b348b;
+}
+
+body.theme-dark .demographics-container .btn-danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+body.theme-dark .demographics-container .btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+body.theme-dark .demographics-container .alert-success {
+    border-color: #065f46;
+    background: #064e3b;
+    color: #a7f3d0;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 992px) {
+    .demographics-container .grid-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 15px;
+    }
+
+    .demographics-container .card {
+        padding: 18px;
+    }
+}
+
+/* =========================================
+   TABLET AND SMALL SCREENS
+========================================= */
+
+@media (max-width: 768px) {
+    .demographics-container > h1 {
+        margin-bottom: 18px;
+        font-size: clamp(22px, 5vw, 28px);
+    }
+
+    .demographics-container .card {
+        padding: 16px;
+    }
+
+    .demographics-container .card h2 {
+        font-size: 17px;
+    }
+
+    .demographics-container .purok-location-map {
+        height: 300px;
+    }
+
+    .demographics-container .purok-item {
+        align-items: stretch;
+    }
+
+    .demographics-container .purok-update-form {
+        flex-basis: 100%;
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+    .demographics-container > h1 {
+        margin-bottom: 16px;
+        font-size: 23px;
+        line-height: 1.45;
+    }
+
+    .demographics-container .grid-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .demographics-container .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .demographics-container .card h2 {
+        margin-bottom: 14px;
+        font-size: 16px;
+    }
+
+    .demographics-container .form-row {
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .demographics-container .form-row > .form-control,
+    .demographics-container .form-row > select {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .demographics-container .form-row > .btn {
+        width: 100%;
+    }
+
+    .demographics-container .form-control {
+        min-height: 42px;
+        font-size: 13px;
+    }
+
+    .demographics-container .purok-location-map {
+        height: 260px;
+        min-height: 220px;
+        border-radius: 10px;
+    }
+
+    .demographics-container .purok-item {
+        gap: 10px;
+        padding: 12px 0;
+    }
+
+    .demographics-container .purok-update-form {
+        flex: 1 1 100%;
+        gap: 8px;
+    }
+
+    .demographics-container .purok-update-form .form-control {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .demographics-container .purok-update-form .btn {
+        flex: 1 1 auto;
+    }
+
+    .demographics-container .purok-item > form:not(.purok-update-form) {
+        width: 100%;
+    }
+
+    .demographics-container .purok-item > form:not(.purok-update-form) .btn {
+        flex: 1;
+        width: 100%;
+    }
+
+    .demographics-container .alert-success {
+        padding: 12px;
+        font-size: 12px;
+    }
+}
+
+/* =========================================
+   EXTRA-SMALL PHONES
+========================================= */
+
+@media (max-width: 380px) {
+    .demographics-container > h1 {
+        font-size: 21px;
+    }
+
+    .demographics-container .card {
+        padding: 12px;
+    }
+
+    .demographics-container .card h2 {
+        font-size: 15px;
+    }
+
+    .demographics-container .purok-location-map {
+        height: 230px;
+        min-height: 200px;
+    }
+
+    .demographics-container .btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================
+   SHARED ADMIN PAGE ALIGNMENT OVERRIDES
+========================================= */
+.demographics-container { width:100%; min-width:0; padding:0; margin:0; }
+.demographics-container > h1 { margin:0 0 20px; font-size:30px; line-height:1.4; }
+.demographics-container .grid-row { width:100%; margin:0; }
+
+
+/* FINAL FIX: consistent left edge for demographics heading */
+.demographics-container > h1 {
+    margin-top: 0;
+    margin-left: 0;
+    padding-left: 0;
+    text-indent: 0;
+    transform: none;
+}
+.demographics-container > p {
+    margin-left: 0;
+    padding-left: 0;
+    text-indent: 0;
+    transform: none;
+}
+
+
+/* FINAL HEADER ALIGNMENT FIX
+   Keep the demographics description aligned with the page title
+   and the other admin views. */
+.demographics-container > h1,
+.demographics-container > p {
+    position: relative;
+    left: 0;
+    width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-indent: 0 !important;
+    text-align: left !important;
+    transform: none !important;
+    box-sizing: border-box;
+}
+
+.demographics-container > h1 {
+    margin-left: 0 !important;
+}
+
+.demographics-container > p {
+    display: block;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+/* =========================================
+   CONSISTENT ADMIN PAGE HEADER ALIGNMENT
+   Keep the title and description stacked like Admin Home.
+========================================= */
+.demographics-container > h1 {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.demographics-container > p {
+    display: block;
+    margin: 6px 0 20px;
+    padding: 0;
+    text-indent: 0;
+    line-height: 1.6;
+    text-align: left;
+}

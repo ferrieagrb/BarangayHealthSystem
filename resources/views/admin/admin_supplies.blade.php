@@ -94,7 +94,7 @@
 <div class="table-container inventory-container">
 
     <h3 class="inventory-section-title">
-        📋 Master Inventory Hierarchy
+        Master Inventory Hierarchy
     </h3>
 
     @php

@@ -36,7 +36,7 @@
     color: #0f172a;
     font-size: 30px;
     
-    line-height: 1.35;
+    
     overflow-wrap: anywhere;
 }
 
@@ -400,4 +400,53 @@ body.theme-dark .admin-logs-card .empty-logs {
     .admin-logs-card {
         padding: 10px;
     }
+}
+
+
+/* =========================================
+   SHARED ADMIN PAGE ALIGNMENT OVERRIDES
+   Alignment only; preserve existing design
+========================================= */
+.admin-dashboard { width:100%; min-width:0; padding:0; margin:0; }
+.admin-page-header { margin:0 0 20px; }
+.admin-page-header h1 { margin:0; font-size:30px; line-height:1.4; }
+.admin-page-header p { margin:6px 0 0; line-height:1.5; }
+
+
+/* FINAL FIX: keep dashboard title and subtitle on the same left edge */
+.admin-dashboard > .admin-page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+.admin-dashboard > .admin-page-header > h1,
+.admin-dashboard > .admin-page-header > p {
+    display: block;
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    text-indent: 0;
+    transform: none;
+}
+.admin-dashboard > .admin-page-header > h1 { margin-top: 0; margin-bottom: 0; }
+.admin-dashboard > .admin-page-header > p { margin-top: 0; margin-bottom: 0; }
+
+
+/* Shared reference header spacing for admin views. */
+.admin-page-header {
+    align-items: flex-start;
+    text-align: left;
+    gap: 6px;
+}
+.admin-page-header h1 {
+    margin: 0;
+    line-height: 1.4;
+}
+.admin-page-header p {
+    margin: 0;
+    line-height: 1.6;
 }
