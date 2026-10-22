@@ -1,42 +1,14 @@
 @extends('templates.admin')
 
 @section('CSSown')
-<style>
-    .reports-page { padding: 0; }
-    .reports-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
-    .report-card, .report-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 2px 8px rgba(15, 23, 42, .05); }
-    .report-card { padding: 18px; }
-    .report-card span { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-    .report-card strong { display: block; margin-top: 8px; color: #0f172a; font-size: 28px; }
-    .report-card small { color: #64748b; }
-    .report-counter { opacity: 0; transition: opacity .2s ease; }
-    .report-counter.counter-ready { opacity: 1; }
-    .report-layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-bottom: 18px; }
-    .report-panel { padding: 20px; }
-    .chart-panel { min-height: 360px; }
-    .chart-container { min-height: 280px; }
-    .report-panel h2 { margin: 0 0 4px; color: #0f172a; font-size: 18px; }
-    .report-panel > p { margin: 0 0 16px; color: #64748b; font-size: 13px; }
-    .bar-list { display: grid; gap: 12px; }
-    .bar-label { display: flex; justify-content: space-between; color: #334155; font-size: 13px; margin-bottom: 5px; }
-    .bar-track { height: 9px; overflow: hidden; border-radius: 99px; background: #e2e8f0; }
-    .bar-fill { height: 100%; border-radius: inherit; background: #2563eb; }
-    .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .report-table th, .report-table td { padding: 10px 8px; border-bottom: 1px solid #eef2f7; text-align: left; }
-    .report-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
-    .status-warning { color: #b45309; font-weight: 700; }
-    .status-good { color: #15803d; font-weight: 700; }
-    .empty-report { padding: 22px; color: #64748b; text-align: center; }
-    @media (max-width: 1000px) { .reports-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .report-layout { grid-template-columns: 1fr; } }
-    @media (max-width: 600px) { .reports-grid { grid-template-columns: 1fr; } }
-</style>
+<link rel="stylesheet" href="{{ asset('css/admin/admin_analytics.css') }}">
 @endsection
 
 @section('content')
 <div class="reports-page">
     <div class="page-top">
         <div class="page-title-group">
-            <h1>Reports &amp; Operations</h1>
+            <h1>Reports Operations</h1>
             <p>Operational overview of residents, health services, inventory, and scheduled distributions.</p>
         </div>
     </div>
