@@ -450,10 +450,6 @@
         font-size: 18px;
     }
 
-    .c-ann-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
 
     .c-ann-cover {
         min-height: 125px;
@@ -756,12 +752,10 @@
     font-size: 16px;
 }
 
-/* Announcement cards */
-.c-home .c-ann-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-}
+/* Announcement slider */
+.c-home .c-ann-slider { position: relative; overflow: hidden; padding: 4px 2px 12px; }
+.c-home .c-ann-track { display: flex; align-items: stretch; gap: 18px; transition: transform .45s ease; will-change: transform; }
+.c-home .c-ann-slide { flex: 0 0 100%; min-width: 0; }
 .c-home .c-ann-card {
     min-width: 0;
     overflow: hidden;
@@ -820,6 +814,13 @@
     font-size: 13px;
     font-weight: 650;
 }
+.c-home .c-ann-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.c-home .c-ann-control-buttons { display: flex; gap: 8px; }
+.c-home .c-ann-arrow { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border: 1px solid #c9d8ed; border-radius: 10px; background: #fff; color: #173b82; font-size: 22px; cursor: pointer; }
+.c-home .c-ann-arrow:hover { background: #edf4ff; }
+.c-home .c-ann-arrow:disabled { opacity: .4; cursor: not-allowed; }
+.c-home .c-ann-indicator { color: #53657c; font-size: 13px; font-weight: 700; }
+.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 800; vertical-align: middle; }
 .c-home .c-heading a {
     display: inline-flex;
     align-items: center;
@@ -967,7 +968,7 @@
 .c-home .c-green:focus-visible { background: #14532d; }
 
 @media (max-width: 760px) {
-    .c-home .c-ann-grid { grid-template-columns: 1fr; }
+    .c-home .c-ann-track { gap: 12px; }
     .c-home .c-section { scroll-margin-top: 125px; }
     .c-home .c-heading { align-items: flex-start; }
     .c-home .c-heading h2 { font-size: 22px; }
@@ -1055,10 +1056,6 @@
         line-height: 1.5;
     }
 
-    .c-home .c-ann-grid {
-        grid-template-columns: 1fr;
-        gap: 13px;
-    }
 
     .c-home .c-ann-cover {
         min-height: 0;
@@ -1436,8 +1433,7 @@
 
 
 
-<style>
-
+</style>
 
 @endsection
 @section('content')
@@ -1455,31 +1451,117 @@
                 </a>
             </div>
             @if(isset($announcements) && $announcements->count())
-                <div class="c-ann-grid">
-                    @foreach($announcements as $announcement)
-                        <article class="c-ann-card">
-                            <div class="c-ann-cover">
-                                <span class="c-ann-label">📢 Health Advisory</span>
-                                <h3>{{ $announcement->title }}</h3>
+                @php
+                    /*
+                     * Upcoming events are sorted by date, with the nearest event first.
+                     * Past events follow upcoming events, and announcements without
+                     * an event date appear last. Urgency is based on date proximity.
+                     */
+                    $today = \Carbon\Carbon::today();
+                    $sortedAnnouncements = collect($announcements)->sortBy(function ($announcement) use ($today) {
+                        $attributes = $announcement->getAttributes();
+
+                        $eventDateValue = $attributes['event_date']
+                            ?? $attributes['event_start_date']
+                            ?? $attributes['schedule_date']
+                            ?? $attributes['date_of_event']
+                            ?? $attributes['start_date']
+                            ?? $attributes['event_datetime']
+                            ?? $attributes['date']
+                            ?? null;
+
+                        try {
+                            $eventDate = $eventDateValue
+                                ? \Carbon\Carbon::parse($eventDateValue)->startOfDay()
+                                : null;
+                        } catch (\Throwable $e) {
+                            $eventDate = null;
+                        }
+
+                        if ($eventDate === null) {
+                            $group = 3;
+                            $dateKey = 0;
+                        } elseif ($eventDate->greaterThanOrEqualTo($today)) {
+                            $group = 0;
+                            $dateKey = $eventDate->timestamp;
+                        } else {
+                            $group = 1;
+                            $dateKey = $eventDate->timestamp;
+                        }
+
+                        return sprintf('%d-%012d-%012d', $group, $dateKey, -(optional($announcement->created_at)->timestamp ?? 0));
+                    })->values();
+                @endphp
+
+                <div class="c-ann-slider" id="citizenAnnouncementSlider" aria-label="Health announcements carousel">
+                    <div class="c-ann-track" id="citizenAnnouncementTrack">
+                        @foreach($sortedAnnouncements as $announcement)
+                            @php
+                                $announcementAttributes = $announcement->getAttributes();
+                                $eventDateValue = $announcementAttributes['event_date']
+                                    ?? $announcementAttributes['event_start_date']
+                                    ?? $announcementAttributes['schedule_date']
+                                    ?? $announcementAttributes['date_of_event']
+                                    ?? $announcementAttributes['start_date']
+                                    ?? $announcementAttributes['event_datetime']
+                                    ?? $announcementAttributes['date']
+                                    ?? null;
+
+                                try {
+                                    $parsedEventDate = $eventDateValue
+                                        ? \Carbon\Carbon::parse($eventDateValue)->startOfDay()
+                                        : null;
+                                    $displayEventDate = $parsedEventDate ? $parsedEventDate->format('M d, Y') : null;
+                                    $isUrgentAnnouncement = $parsedEventDate !== null
+                                        && $parsedEventDate->greaterThanOrEqualTo(\Carbon\Carbon::today())
+                                        && $parsedEventDate->lessThanOrEqualTo(\Carbon\Carbon::today()->addDays(7));
+                                } catch (\Throwable $e) {
+                                    $displayEventDate = null;
+                                    $isUrgentAnnouncement = false;
+                                }
+                            @endphp
+                            <div class="c-ann-slide">
+                                <article class="c-ann-card">
+                                    <div class="c-ann-cover">
+                                        <span class="c-ann-label">📢 Health Advisory</span>
+                                        @if($isUrgentAnnouncement)
+                                            <span class="c-ann-priority">URGENT</span>
+                                        @endif
+                                        <h3>{{ $announcement->title }}</h3>
+                                    </div>
+                                    <div class="c-ann-body">
+                                        <p>
+                                            {{ \Illuminate\Support\Str::limit(
+                                                $announcement->content
+                                                ?? $announcement->description
+                                                ?? 'Please contact the Barangay Health Center for more information.',
+                                                180
+                                            ) }}
+                                        </p>
+                                        <div class="c-ann-footer">
+                                            <span>
+                                                @if($displayEventDate)
+                                                    Event date: {{ $displayEventDate }}
+                                                @else
+                                                    Posted: {{ optional($announcement->created_at)->format('M d, Y') }}
+                                                @endif
+                                            </span>
+                                            <span>Barangay Amuyong</span>
+                                        </div>
+                                    </div>
+                                </article>
                             </div>
-                            <div class="c-ann-body">
-                                <p>
-                                    {{ \Illuminate\Support\Str::limit(
-                                    $announcement->content
-                                    ?? $announcement->description
-                                    ?? 'Please contact the Barangay Health Center for more information.',
-                                    180
-                                    ) }}
-                                </p>
-                                <div class="c-ann-footer">
-                                    <span>
-                                        {{ optional($announcement->created_at)->format('M d, Y') }}
-                                    </span>
-                                    <span>Barangay Amuyong</span>
-                                </div>
+                        @endforeach
+                    </div>
+                    @if($sortedAnnouncements->count() > 1)
+                        <div class="c-ann-controls">
+                            <span class="c-ann-indicator" id="citizenAnnouncementIndicator">Announcement 1 of {{ $sortedAnnouncements->count() }}</span>
+                            <div class="c-ann-control-buttons">
+                                <button type="button" class="c-ann-arrow" id="citizenAnnouncementPrev" aria-label="Previous announcement">‹</button>
+                                <button type="button" class="c-ann-arrow" id="citizenAnnouncementNext" aria-label="Next announcement">›</button>
                             </div>
-                        </article>
-                    @endforeach
+                        </div>
+                    @endif
                 </div>
             @else
                 <div class="c-panel c-empty">
@@ -1716,6 +1798,41 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Announcement slider: one announcement per slide.
+    const announcementTrack = document.getElementById('citizenAnnouncementTrack');
+    const announcementSlides = announcementTrack
+        ? Array.from(announcementTrack.querySelectorAll('.c-ann-slide'))
+        : [];
+    const announcementPrev = document.getElementById('citizenAnnouncementPrev');
+    const announcementNext = document.getElementById('citizenAnnouncementNext');
+    const announcementIndicator = document.getElementById('citizenAnnouncementIndicator');
+    let announcementIndex = 0;
+
+    function updateAnnouncementSlider() {
+        if (!announcementTrack || !announcementSlides.length) return;
+        const slideWidth = announcementSlides[0].getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(announcementTrack).gap) || 0;
+        announcementTrack.style.transform = `translateX(-${announcementIndex * (slideWidth + gap)}px)`;
+        if (announcementIndicator) {
+            announcementIndicator.textContent = `Announcement ${announcementIndex + 1} of ${announcementSlides.length}`;
+        }
+        if (announcementPrev) announcementPrev.disabled = announcementIndex === 0;
+        if (announcementNext) announcementNext.disabled = announcementIndex === announcementSlides.length - 1;
+    }
+
+    if (announcementSlides.length > 1) {
+        announcementPrev?.addEventListener('click', function () {
+            announcementIndex = Math.max(0, announcementIndex - 1);
+            updateAnnouncementSlider();
+        });
+        announcementNext?.addEventListener('click', function () {
+            announcementIndex = Math.min(announcementSlides.length - 1, announcementIndex + 1);
+            updateAnnouncementSlider();
+        });
+        window.addEventListener('resize', updateAnnouncementSlider);
+        updateAnnouncementSlider();
+    }
+
     const nav = document.getElementById('citizenSectionNav');
     if (!nav) return;
 
