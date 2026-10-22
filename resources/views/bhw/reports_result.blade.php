@@ -1,5 +1,9 @@
 @extends('templates.layout')
 
+@section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@endsection
+
 @section('content')
 <div class="page-top" style="display: flex; justify-content: space-between; align-items: center;">
     <div>

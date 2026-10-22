@@ -3,7 +3,28 @@
 @section('CSSown')
 
 <link rel="stylesheet" href="{{ asset('css/bhw/addcitizen.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 
+<style>
+    .photo-crop-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, .65);
+    }
+
+    .photo-crop-modal.open { display: flex; }
+    .photo-crop-dialog { width: min(720px, 100%); padding: 24px; border-radius: 14px; background: #fff; box-shadow: 0 24px 70px rgba(15, 23, 42, .3); }
+    .photo-crop-stage { height: min(58vh, 480px); margin-top: 16px; overflow: hidden; background: #0f172a; }
+    .photo-crop-stage img { display: block; max-width: 100%; }
+    .photo-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+</style>
+
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 
@@ -167,7 +188,7 @@
                 <button type="button" class="btn-secondary" id="openManualAssignment">Assign without family</button>
             </div>
 
-            <div class="form-group">
+            <div class="form-group photo-upload-group">
                 <label for="photo">Citizen Photo</label>
                 <input
                     type="file"
@@ -176,6 +197,11 @@
                     accept="image/jpeg,image/png,image/webp"
                 >
                 <small>Optional. JPG, PNG, or WEBP; maximum 2 MB.</small>
+            </div>
+
+            <div class="photo-preview-panel" aria-live="polite">
+                <span id="photoPreviewEmpty">Photo preview</span>
+                <img id="photoPreview" alt="Citizen photo preview" hidden>
             </div>
 
 
@@ -374,7 +400,7 @@
             <h2 id="newFamilyTitle" style="margin:0;">Register New Family</h2>
             <button type="button" class="family-picker-close close-new-family" aria-label="Close">&times;</button>
         </div>
-        <form id="quickFamilyForm" class="family-create-form">
+        <form id="quickFamilyForm" class="family-create-form" data-no-loader="true">
             @csrf
             <input type="text" name="family_name" class="form-control" placeholder="Family name" required>
             <select name="subgroup_id" class="form-control" required>
@@ -391,6 +417,21 @@
     </div>
 </div>
 
+<div id="photoCropModal" class="photo-crop-modal" role="dialog" aria-modal="true" aria-labelledby="photoCropTitle">
+    <div class="photo-crop-dialog">
+        <h2 id="photoCropTitle" style="margin:0; color:#172033;">Crop Citizen Photo</h2>
+        <p style="margin:6px 0 0; color:#64748b; font-size:13px;">Adjust the square 2×2 crop before saving the citizen.</p>
+        <div class="photo-crop-stage">
+            <img id="photoCropImage" alt="Photo crop preview">
+        </div>
+        <div class="photo-crop-actions">
+            <button type="button" id="cancelPhotoCrop" class="btn-secondary">Cancel</button>
+            <button type="button" id="confirmPhotoCrop" class="btn-primary">Use Cropped Photo</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const familyPickerModal = document.getElementById('familyPickerModal');
@@ -456,25 +497,39 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quickFamilyForm').addEventListener('submit', async function (event) {
         event.preventDefault();
         const error = document.getElementById('quickFamilyError');
+        const submitButton = this.querySelector('button[type="submit"]');
         error.textContent = '';
-        const response = await fetch('{{ route('bhw.families.quick.store') }}', {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Accept': 'application/json' },
-            body: new FormData(this)
-        });
-        if (!response.ok) {
-            error.textContent = 'Unable to create family. Check the selected subgroup and try again.';
-            return;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
+
+        try {
+            const response = await fetch('{{ route('bhw.families.quick.store') }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value, 'Accept': 'application/json' },
+                body: new FormData(this)
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || !payload.id || !payload.purok || !payload.subgroup) {
+                error.textContent = payload.message || 'Unable to create family. Check the selected subgroup and try again.';
+                return;
+            }
+
+            familyIdInput.value = payload.id;
+            familyDisplay.value = `${payload.family_name} - ${payload.purok.name} / ${payload.subgroup.name}`;
+            purokInput.value = payload.purok.name;
+            subgroupInput.value = payload.subgroup.id;
+            purokDisplay.value = payload.purok.name;
+            subgroupDisplay.value = payload.subgroup.name;
+            useFamilyAssignment();
+            closeModal(newFamilyModal);
+            this.reset();
+        } catch (requestError) {
+            error.textContent = 'Unable to connect while creating the family. Please try again.';
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Create and Select Family';
         }
-        const family = await response.json();
-        familyIdInput.value = family.id;
-        familyDisplay.value = `${family.family_name} - ${family.purok.name} / ${family.subgroup.name}`;
-        purokInput.value = family.purok.name;
-        subgroupInput.value = family.subgroup.id;
-        purokDisplay.value = family.purok.name;
-        subgroupDisplay.value = family.subgroup.name;
-        useFamilyAssignment();
-        closeModal(newFamilyModal);
     });
 
     document.querySelectorAll('.manual-assignment-option').forEach(option => option.addEventListener('click', function () {
@@ -491,6 +546,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const ageInput = document.getElementById('age');
     const birthdateInput = document.getElementById('birthdate');
     const citizenForm = document.getElementById('citizen-form');
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoPreviewEmpty = document.getElementById('photoPreviewEmpty');
+    const photoCropModal = document.getElementById('photoCropModal');
+    const photoCropImage = document.getElementById('photoCropImage');
+    const cancelPhotoCrop = document.getElementById('cancelPhotoCrop');
+    const confirmPhotoCrop = document.getElementById('confirmPhotoCrop');
+    let photoCropper = null;
+
+    photoInput.addEventListener('change', function () {
+        const file = this.files?.[0];
+        if (!file) {
+            photoPreview.hidden = true;
+            photoPreview.removeAttribute('src');
+            photoPreviewEmpty.hidden = false;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = event => {
+            photoCropImage.src = event.target.result;
+            photoCropModal.classList.add('open');
+            photoCropper?.destroy();
+            photoCropper = new Cropper(photoCropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: .9,
+                responsive: true,
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    cancelPhotoCrop.addEventListener('click', function () {
+        photoCropper?.destroy();
+        photoCropper = null;
+        photoCropModal.classList.remove('open');
+        photoInput.value = '';
+    });
+
+    confirmPhotoCrop.addEventListener('click', function () {
+        if (!photoCropper) return;
+
+        photoCropper.getCroppedCanvas({ width: 600, height: 600 }).toBlob(function (blob) {
+            const croppedFile = new File([blob], 'citizen-photo.jpg', { type: 'image/jpeg' });
+            const transfer = new DataTransfer();
+            transfer.items.add(croppedFile);
+            photoInput.files = transfer.files;
+            photoPreview.src = URL.createObjectURL(blob);
+            photoPreview.hidden = false;
+            photoPreviewEmpty.hidden = true;
+            photoCropper.destroy();
+            photoCropper = null;
+            photoCropModal.classList.remove('open');
+        }, 'image/jpeg', .9);
+    });
     
     const modal = document.getElementById('confirmation-modal');
     const modalMessage = document.getElementById('modal-message');

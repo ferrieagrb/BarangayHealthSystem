@@ -50,6 +50,46 @@ class BhwHomeController extends Controller
         $recentReferralsCount = Referral::count();
         $pendingReferrals = Referral::whereIn('status', ['pending', 'approved'])->count();
 
+        $latestPeriodStart = now()->subDays(13)->startOfDay();
+        $previousPeriodStart = now()->subDays(27)->startOfDay();
+        $previousPeriodEnd = now()->subDays(14)->endOfDay();
+        $rate = function (int|float $current, int|float $previous): array {
+            if ($previous == 0) {
+                return [
+                    'value' => $current > 0 ? '+100%' : 'No change',
+                    'state' => $current > 0 ? 'up' : 'flat',
+                    'icon' => $current > 0 ? '▲' : '•',
+                ];
+            }
+
+            $change = round((($current - $previous) / $previous) * 100, 1);
+
+            return [
+                'value' => $change > 0 ? '+' . abs($change) . '%' : ($change < 0 ? '-' . abs($change) . '%' : 'No change'),
+                'state' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'flat'),
+                'icon' => $change > 0 ? '▲' : ($change < 0 ? '▼' : '•'),
+            ];
+        };
+
+        $dashboardTrends = [
+            'citizens' => $rate(
+                citizens::whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                citizens::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+            ),
+            'inventory' => $rate(
+                Supply::whereBetween('created_at', [$latestPeriodStart, now()])->sum('quantity'),
+                Supply::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->sum('quantity')
+            ),
+            'referrals' => $rate(
+                Referral::whereIn('status', ['pending', 'approved'])->whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                Referral::whereIn('status', ['pending', 'approved'])->whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+            ),
+            'diagnoses' => $rate(
+                HealthRecord::whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                HealthRecord::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+            ),
+        ];
+
         $citizensByPurok = citizens::select('Citizen_Purok')->get()
             ->groupBy(function ($citizen) {
                 return preg_replace('/[^0-9]/', '', (string) $citizen->Citizen_Purok);
@@ -82,6 +122,7 @@ class BhwHomeController extends Controller
             'recentReferralsCount'
             , 'totalInventoryUnits'
             , 'pendingReferrals'
+            , 'dashboardTrends'
             , 'purokHeatmapData'
         ));
     }

@@ -1,0 +1,1225 @@
+/* BHW Family Registry — UI aligned with the supplied Family Registry reference. */
+.bhw-families-page,
+.bhw-families-page * {
+    box-sizing: border-box;
+}
+
+.bhw-families-page.family-container {
+    /* Use the same content start and available width as the other BHW pages. */
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 0 28px;
+    color: #334155;
+    font-family: inherit;
+}
+
+.bhw-families-page [hidden],
+dialog.family-modal [hidden] {
+    display: none !important;
+}
+
+/* Success notification: a compact floating toast, not a page-wide banner. */
+.bhw-families-page .family-container-alert {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    left: auto;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: min(420px, calc(100vw - 32px));
+    min-height: 0;
+    margin: 0;
+    padding: 13px 45px 13px 15px;
+    border: 1px solid #a7f3d0;
+    border-radius: 10px;
+    background: #ecfdf5;
+    color: #047857;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, .18);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left;
+    transform: translateY(0);
+    animation: family-toast-in .22s ease-out both;
+}
+
+.bhw-families-page .family-container-alert.is-hiding {
+    opacity: 0;
+    transform: translateY(-8px) scale(.98);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+@keyframes family-toast-in {
+    from { opacity: 0; transform: translateY(-8px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bhw-families-page .family-alert-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.bhw-families-page .family-alert-content svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    fill: #059669;
+}
+
+.bhw-families-page .family-alert-close {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #059669;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bhw-families-page .family-alert-close:hover {
+    background: rgba(5, 150, 105, .09);
+}
+
+/* Page heading */
+.bhw-families-page .family-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 0 0 30px;
+    padding: 0 0 19px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.bhw-families-page .family-page-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: clamp(1.5rem, 2vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.025em;
+}
+
+.bhw-families-page .family-page-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* Cards, buttons and form controls */
+.bhw-families-page .family-card,
+.bhw-families-page .card.family-card {
+    min-width: 0;
+    margin: 0 0 29px;
+    padding: 23px;
+    border: 1px solid #e2eaf2;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .045);
+}
+
+.bhw-families-page .section-card-title,
+.bhw-families-page .family-card > h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 17px;
+    color: #172b45;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.bhw-families-page .section-card-title svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: #0284c7;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.bhw-families-page .btn,
+dialog.family-modal .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 39px;
+    padding: 9px 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.bhw-families-page .btn svg,
+dialog.family-modal .btn svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+
+.bhw-families-page .btn-primary,
+dialog.family-modal .btn-primary {
+    border-color: #0369a1;
+    background: #0369a1;
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .08);
+}
+
+.bhw-families-page .btn-primary:hover,
+dialog.family-modal .btn-primary:hover {
+    border-color: #075985;
+    background: #075985;
+}
+
+.bhw-families-page .btn-secondary,
+dialog.family-modal .btn-secondary {
+    border-color: #cbd5e1;
+    background: #fff;
+    color: #475569;
+}
+
+.bhw-families-page .btn-secondary:hover,
+dialog.family-modal .btn-secondary:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.bhw-families-page .btn-success,
+dialog.family-modal .btn-success {
+    border-color: #059669;
+    background: #059669;
+    color: #fff;
+}
+
+.bhw-families-page .btn-success:hover,
+dialog.family-modal .btn-success:hover {
+    border-color: #047857;
+    background: #047857;
+}
+
+.bhw-families-page .btn-soft,
+dialog.family-modal .btn-soft {
+    min-height: 30px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+}
+
+.bhw-families-page .btn-soft:hover,
+dialog.family-modal .btn-soft:hover {
+    background: #e2e8f0;
+}
+
+.bhw-families-page .btn-link,
+dialog.family-modal .btn-link {
+    min-height: 32px;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    color: #0284c7;
+    font-size: 12px;
+}
+
+.bhw-families-page .btn-link:hover,
+dialog.family-modal .btn-link:hover {
+    color: #0369a1;
+    text-decoration: underline;
+}
+
+.bhw-families-page .form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) auto;
+    align-items: end;
+    gap: 15px;
+    margin: 0 0 16px;
+}
+
+.bhw-families-page .family-field,
+dialog.family-modal .family-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 5px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.bhw-families-page .form-control {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 37px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: 0;
+    background: #fbfcfe;
+    color: #334155;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.bhw-families-page .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.bhw-families-page .form-control:hover {
+    background: #fff;
+}
+
+.bhw-families-page .form-control:focus {
+    border-color: #0284c7;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, .12);
+}
+
+.bhw-families-page .form-control[readonly] {
+    background: #fff;
+    cursor: pointer;
+}
+
+.bhw-families-page .family-select-trigger,
+dialog.family-modal .family-select-trigger {
+    position: relative;
+    display: block;
+    min-width: 0;
+}
+
+.bhw-families-page .family-select-trigger .form-control,
+dialog.family-modal .family-select-trigger .form-control {
+    padding-right: 34px;
+}
+
+.bhw-families-page .family-select-trigger > svg,
+dialog.family-modal .family-select-trigger > svg {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    width: 15px;
+    height: 15px;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: #64748b;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.bhw-families-page .header-browse-button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 8px 13px;
+}
+
+.bhw-families-page .header-browse-button svg,
+.bhw-families-page .register-browse-button svg {
+    width: 15px;
+    height: 15px;
+    stroke: #64748b;
+}
+
+.bhw-families-page .register-browse-button {
+    align-self: end;
+    min-height: 37px;
+    padding-right: 14px;
+    padding-left: 14px;
+}
+
+.bhw-families-page .create-family-button {
+    min-height: 39px;
+    padding: 10px 15px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bhw-families-page .create-family-button svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Registered family listing */
+.bhw-families-page .family-registry-card {
+    padding-bottom: 7px !important;
+}
+
+.bhw-families-page .family-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin: -23px -23px 0;
+    padding: 22px 23px 20px;
+    border-bottom: 1px solid #e8eef5;
+}
+
+.bhw-families-page .family-list-heading h2 {
+    margin: 0;
+    color: #172b45;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.bhw-families-page .family-list-heading p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.bhw-families-page .family-list-heading .family-filter-notice {
+    width: fit-content;
+    margin-top: 6px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: #eff6ff;
+    color: #0369a1;
+    font-size: 11px;
+}
+
+.bhw-families-page .family-search {
+    width: min(100%, 270px);
+    flex: 0 0 270px;
+}
+
+.bhw-families-page .family-search .form-control {
+    min-height: 35px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    background: #fff;
+}
+
+.bhw-families-page .family-table-wrap {
+    width: calc(100% + 46px);
+    max-width: calc(100% + 46px);
+    margin: 0 -23px -4px;
+    overflow-x: auto;
+    border-radius: 0 0 12px 12px;
+}
+
+.bhw-families-page .family-table {
+    width: 100%;
+    min-width: 720px;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.bhw-families-page .family-table th {
+    padding: 13px 22px;
+    border-top: 0;
+    border-bottom: 1px solid #e8eef5;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .035em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.bhw-families-page .family-table td {
+    padding: 13px 22px;
+    border-bottom: 1px solid #edf2f7;
+    color: #475569;
+    font-size: 12.5px;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.bhw-families-page .family-table tbody tr {
+    background: #fff;
+    transition: background-color .12s ease;
+}
+
+.bhw-families-page .family-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.bhw-families-page .family-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.bhw-families-page .family-table td strong {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.bhw-families-page .family-table td:last-child {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.bhw-families-page .family-table tr[hidden] {
+    display: none !important;
+}
+
+.bhw-families-page .btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 29px;
+    padding: 6px 11px;
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    background: #10b981;
+    color: #fff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+.bhw-families-page .btn-sm svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.bhw-families-page .btn-sm:hover {
+    border-color: #059669;
+    background: #059669;
+}
+
+/* Dialogs and modal overlays */
+dialog.family-modal,
+dialog.family-modal * {
+    box-sizing: border-box;
+}
+
+dialog.family-modal {
+    width: min(720px, calc(100vw - 28px));
+    max-width: 720px;
+    max-height: calc(100dvh - 28px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    background: #fff;
+    color: #334155;
+    box-shadow: 0 22px 65px rgba(15, 23, 42, .23);
+}
+
+dialog.family-modal[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+dialog.family-modal::backdrop {
+    background: rgba(15, 23, 42, .42);
+    backdrop-filter: blur(3px);
+}
+
+dialog.family-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex: 0 0 auto;
+    padding: 17px 22px;
+    border-bottom: 1px solid #e6edf5;
+    background: #f8fafc;
+}
+
+dialog.family-modal .modal-header h3 {
+    margin: 0;
+    color: #26364b;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+dialog.family-modal .modal-close-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #94a3b8;
+    font: inherit;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+dialog.family-modal .modal-close-button:hover {
+    background: #e8eef5;
+    color: #475569;
+}
+
+dialog.family-modal .modal-body {
+    min-height: 0;
+    padding: 22px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+dialog.family-modal .modal-body h4 {
+    margin: 0 0 13px;
+    color: #94a3b8;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .055em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+dialog.family-modal .modal-body .form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    margin-bottom: 0;
+    gap: 12px;
+}
+
+dialog.family-modal .modal-body .form-control {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: 0;
+    color: #334155;
+    font: inherit;
+    line-height: 1.4;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+dialog.family-modal .modal-body .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+dialog.family-modal .modal-body .form-control:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, .12);
+}
+
+dialog.family-modal .modal-body .form-control {
+    min-height: 36px;
+    background: #fff;
+    font-size: 12.5px;
+}
+
+dialog.family-modal .modal-body .family-field {
+    gap: 5px;
+}
+
+dialog.family-modal .family-management-header {
+    padding: 16px 22px;
+}
+
+dialog.family-modal .family-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 12px;
+}
+
+dialog.family-modal .family-modal-title-wrap > div {
+    min-width: 0;
+}
+
+dialog.family-modal .family-modal-title-wrap p {
+    margin: 1px 0 0;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+dialog.family-modal .family-modal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    border-radius: 9px;
+    background: #eff8ff;
+    color: #0369a1;
+}
+
+dialog.family-modal .family-modal-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+dialog.family-modal .family-management-body {
+    padding: 21px 22px 22px;
+}
+
+dialog.family-modal .modal-body .family-edit-row {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr) 88px;
+    align-items: end;
+}
+
+dialog.family-modal .update-family-button {
+    width: auto;
+    min-width: 108px;
+    height: 36px;
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 12.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+dialog.family-modal .family-modal-divider {
+    height: 0;
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #edf2f7;
+}
+
+dialog.family-modal .family-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 11px;
+}
+
+dialog.family-modal .family-section-heading h4 {
+    margin: 0;
+}
+
+dialog.family-modal .modal-body .add-member-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+}
+
+dialog.family-modal .member-select-field {
+    min-width: 0;
+}
+
+dialog.family-modal .add-member-button {
+    min-height: 36px;
+    padding: 8px 13px;
+    font-weight: 600;
+}
+
+dialog.family-modal .read-only-note {
+    align-self: center;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+dialog.family-modal .family-count-badge {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 10.5px;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+dialog.family-modal .modal-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dfe7f1;
+    border-radius: 8px;
+}
+
+dialog.family-modal .modal-body table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+dialog.family-modal .modal-body th,
+dialog.family-modal .modal-body td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #e7edf4;
+    color: #475569;
+    font-size: 11.5px;
+    line-height: 1.45;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+dialog.family-modal .modal-body th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+dialog.family-modal .modal-body tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+dialog.family-modal .modal-body td:last-child {
+    text-align: right;
+}
+
+dialog.family-modal .empty-members-message {
+    height: 78px;
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    font-style: italic;
+    text-align: center !important;
+    white-space: normal !important;
+}
+
+dialog.family-modal .btn-danger {
+    min-height: 28px;
+    padding: 5px 9px;
+    border: 1px solid #fecdd3;
+    border-radius: 7px;
+    background: #fff1f2;
+    color: #be123c;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+dialog.family-modal .btn-danger:hover {
+    background: #ffe4e6;
+}
+
+dialog.family-modal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex: 0 0 auto;
+    min-height: 59px;
+    padding: 11px 22px;
+    border-top: 1px solid #e6edf5;
+    background: #f8fafc;
+}
+
+dialog.family-modal .modal-footer .btn {
+    min-height: 32px;
+    padding: 6px 13px;
+    font-size: 12px;
+}
+
+dialog.family-modal .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Browse Puroks / subgroup assignment chooser */
+dialog.subgroup-picker-modal {
+    width: min(480px, calc(100vw - 28px));
+    max-width: 480px;
+}
+
+dialog.subgroup-picker-modal .modal-header {
+    padding: 18px 22px;
+}
+
+dialog.subgroup-picker-modal .subgroup-picker-body {
+    padding: 20px 22px 18px;
+}
+
+dialog.subgroup-picker-modal .subgroup-picker-description {
+    margin: 0 0 12px;
+    color: #64748b;
+    font-size: 11.5px;
+    line-height: 1.55;
+}
+
+dialog.subgroup-picker-modal .subgroup-search-input {
+    margin: 0 0 11px;
+}
+
+dialog.subgroup-picker-modal .subgroup-picker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+dialog.subgroup-picker-modal .subgroup-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #dce6f1;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    font: inherit;
+    font-size: 12.5px;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+dialog.subgroup-picker-modal .subgroup-option:hover {
+    border-color: #93c5fd;
+    background: #f8fbff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+dialog.subgroup-picker-modal .subgroup-option:focus-visible {
+    outline: 3px solid rgba(2, 132, 199, .2);
+    outline-offset: 1px;
+}
+
+dialog.subgroup-picker-modal .subgroup-option-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+dialog.subgroup-picker-modal .subgroup-option-count {
+    flex: 0 0 auto;
+    padding: 4px 7px;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 10.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+dialog.subgroup-picker-modal .subgroup-empty-state {
+    margin: 0;
+    padding: 24px 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+}
+
+dialog.subgroup-picker-modal .subgroup-picker-footer {
+    justify-content: space-between;
+}
+
+dialog.subgroup-picker-modal:not(.is-browse-mode) .subgroup-picker-footer {
+    justify-content: flex-end;
+}
+
+dialog.subgroup-picker-modal .subgroup-pagination {
+    margin-top: 13px;
+}
+
+/* Secondary citizen selector and pagination */
+dialog#citizenPickerModal .modal-body > .form-control {
+    margin-bottom: 14px;
+}
+
+dialog.family-modal .pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+dialog.family-modal .pagination-controls span {
+    color: #64748b;
+    font-size: 11.5px;
+}
+
+dialog.family-modal button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .bhw-families-page.family-container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .bhw-families-page .register-form-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .bhw-families-page .register-form-row .register-browse-button {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    dialog.family-modal .family-edit-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    dialog.family-modal .update-family-button {
+        grid-column: 1 / -1;
+        min-height: 38px;
+    }
+}
+
+@media (max-width: 640px) {
+    .bhw-families-page.family-container {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .bhw-families-page .family-container-alert {
+        top: 12px;
+        right: 12px;
+        left: auto;
+        width: min(420px, calc(100vw - 24px));
+        max-width: 420px;
+        padding: 12px 42px 12px 13px;
+        font-size: 12px;
+    }
+
+    .bhw-families-page .family-alert-content {
+        justify-content: flex-start;
+    }
+
+    .bhw-families-page .family-page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 17px;
+    }
+
+    .bhw-families-page .family-page-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .bhw-families-page .header-browse-button {
+        width: 100%;
+    }
+
+    .bhw-families-page .family-card,
+    .bhw-families-page .card.family-card {
+        margin-bottom: 20px;
+        padding: 16px;
+        border-radius: 11px;
+    }
+
+    .bhw-families-page .register-form-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .bhw-families-page .register-form-row .register-browse-button {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    .bhw-families-page .create-family-button {
+        width: 100%;
+    }
+
+    .bhw-families-page .family-list-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 13px;
+        margin: -16px -16px 0;
+        padding: 17px 16px;
+    }
+
+    .bhw-families-page .family-search {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .bhw-families-page .family-table-wrap {
+        width: calc(100% + 32px);
+        max-width: calc(100% + 32px);
+        margin: 0 -16px -3px;
+    }
+
+    .bhw-families-page .family-table th,
+    .bhw-families-page .family-table td {
+        padding: 12px 14px;
+    }
+
+    dialog.family-modal {
+        width: calc(100vw - 20px);
+        max-height: calc(100dvh - 20px);
+        border-radius: 13px;
+    }
+
+    dialog.family-modal .modal-header,
+    dialog.family-modal .family-management-header,
+    dialog.subgroup-picker-modal .modal-header {
+        padding: 14px 16px;
+    }
+
+    dialog.family-modal .modal-body,
+    dialog.family-modal .family-management-body,
+    dialog.subgroup-picker-modal .subgroup-picker-body {
+        padding: 16px;
+        max-height: none;
+    }
+
+    dialog.family-modal .modal-body .family-edit-row,
+    dialog.family-modal .modal-body .add-member-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    dialog.family-modal .update-family-button,
+    dialog.family-modal .add-member-button {
+        grid-column: auto;
+        width: 100%;
+        min-width: 0;
+    }
+
+    dialog.family-modal .family-modal-divider {
+        margin: 17px 0;
+    }
+
+    dialog.family-modal .family-section-heading {
+        align-items: flex-start;
+    }
+
+    dialog.family-modal .modal-footer {
+        padding: 10px 16px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bhw-families-page .family-page-header h1 {
+        font-size: 1.32rem;
+    }
+
+    dialog.subgroup-picker-modal .subgroup-option {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+}
+
+/* Final alignment polish for the Manage / Edit family modal. */
+dialog.family-modal .modal-body .family-edit-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 112px;
+    align-items: end;
+    gap: 12px;
+}
+
+dialog.family-modal .update-family-button,
+dialog.family-modal .add-member-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 37px;
+    min-height: 37px;
+    max-height: 37px;
+    padding: 0 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+dialog.family-modal .update-family-button {
+    width: 112px;
+    min-width: 112px;
+}
+
+dialog.family-modal .modal-body .add-member-row {
+    grid-template-columns: minmax(0, 1fr) 112px;
+    align-items: end;
+    gap: 12px;
+}
+
+dialog.family-modal .add-member-button {
+    width: 112px;
+    min-width: 112px;
+}
+
+@media (max-width: 900px) {
+    dialog.family-modal .modal-body .family-edit-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: end;
+    }
+
+    dialog.family-modal .update-family-button {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+        max-height: none;
+    }
+}
+
+@media (max-width: 640px) {
+    dialog.family-modal .modal-body .family-edit-row,
+    dialog.family-modal .modal-body .add-member-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    dialog.family-modal .update-family-button,
+    dialog.family-modal .add-member-button {
+        grid-column: auto;
+        width: 100%;
+        min-width: 0;
+        max-height: none;
+    }
+}

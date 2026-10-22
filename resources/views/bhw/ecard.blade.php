@@ -1,5 +1,9 @@
 @extends('templates.layout') {{-- Change this to your main layout if it differs (e.g., bhw.layouts.app) --}}
 
+@section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@endsection
+
 @section('content')
 <script src="https://cdn.tailwindcss.com"></script>
 <div class="container mx-auto px-4 py-6">

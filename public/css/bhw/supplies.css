@@ -3,6 +3,48 @@
    Scoped styles prevent conflicts with global layout/table CSS.
    ================================================================ */
 
+.summary-card-trend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 7px;
+    margin-top: 8px;
+    white-space: nowrap;
+}
+
+.summary-card-trend span {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.summary-card-trend small {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.summary-card-trend.trend-down span {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.summary-card-trend.trend-flat span {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
 .supplies-main-table-wrapper {
     width: 100%;
     max-width: 100%;

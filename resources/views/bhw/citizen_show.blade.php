@@ -4,6 +4,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen_show.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 

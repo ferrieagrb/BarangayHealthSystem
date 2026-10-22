@@ -302,6 +302,60 @@ class CitizenController extends Controller
         $kids = (clone $summaryQuery)->where('Citizen_Age', '<=', 17)->count();
         $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
         $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
+        $latestPeriodStart = now()->subDays(13)->startOfDay();
+        $previousPeriodStart = now()->subDays(27)->startOfDay();
+        $previousPeriodEnd = now()->subDays(14)->endOfDay();
+
+        $rate = function (int $current, int $previous): array {
+            if ($previous === 0) {
+                return [
+                    'value' => $current > 0 ? '+100%' : 'No change',
+                    'state' => $current > 0 ? 'up' : 'flat',
+                    'icon' => $current > 0 ? '▲' : '•',
+                ];
+            }
+
+            $change = round((($current - $previous) / $previous) * 100, 1);
+
+            return [
+                'value' => $change > 0 ? '+' . abs($change) . '%' : ($change < 0 ? '-' . abs($change) . '%' : 'No change'),
+                'state' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'flat'),
+                'icon' => $change > 0 ? '▲' : ($change < 0 ? '▼' : '•'),
+            ];
+        };
+
+        $periodCount = function ($baseQuery, $start, $end, ?string $group = null): int {
+            $query = (clone $baseQuery)->whereBetween('created_at', [$start, $end]);
+
+            if ($group === 'kids') {
+                $query->where('Citizen_Age', '<=', 17);
+            } elseif ($group === 'adults') {
+                $query->whereBetween('Citizen_Age', [18, 59]);
+            } elseif ($group === 'seniors') {
+                $query->where('Citizen_Age', '>=', 60);
+            }
+
+            return $query->count();
+        };
+
+        $citizenTrends = [
+            'total' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now()),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd)
+            ),
+            'kids' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'kids'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'kids')
+            ),
+            'adults' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'adults'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'adults')
+            ),
+            'seniors' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'seniors'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'seniors')
+            ),
+        ];
 
         $ordinalCitizens = citizens::with(['subgroup', 'family.subgroup'])->orderBy('id')->get();
         $subgroupOrdinals = [];
@@ -320,6 +374,7 @@ class CitizenController extends Controller
             'kids',
             'adults',
             'seniors',
+            'citizenTrends',
             'puroks',
             'citizenDisplayIds'
         ));
