@@ -17,7 +17,7 @@ class AnnouncementController extends Controller
     // SHOW PAGE
     public function index()
     {
-        $announcements = Announcement::latest()->get();
+        $announcements = Announcement::with('images')->latest()->get();
 
         $totalPosts = Announcement::count();
         $thisMonth = Announcement::whereMonth('created_at', now()->month)->count();
@@ -138,6 +138,9 @@ class AnnouncementController extends Controller
                 Log::error('Facebook Post Error: ' . $response->body());
                 $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting failed: ' . substr($response->body(), 0, 500), 'integration');
             } else {
+                $announcement->update([
+                    'facebook_post_id' => $response->json('id'),
+                ]);
                 $this->logAdminActivity(
                     'facebook.posted',
                     $image ? 'Announcement photo posted successfully to Facebook.' : 'Announcement posted successfully to Facebook.',
@@ -148,5 +151,36 @@ class AnnouncementController extends Controller
             Log::error('Facebook API Exception: ' . $e->getMessage());
             $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting threw an exception: ' . $e->getMessage(), 'integration');
         }
+    }
+
+    public function destroy(Announcement $announcement)
+    {
+        $pageId = config('services.facebook.page_id');
+        $accessToken = config('services.facebook.access_token');
+
+        if ($announcement->facebook_post_id && $pageId && $accessToken) {
+            try {
+                $response = Http::timeout(15)->delete(
+                    'https://graph.facebook.com/' . $announcement->facebook_post_id,
+                    ['access_token' => $accessToken]
+                );
+
+                if ($response->failed()) {
+                    Log::warning('Facebook announcement deletion failed: ' . $response->body());
+                    $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed.', 'integration');
+                }
+            } catch (\Throwable $exception) {
+                report($exception);
+                $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception.', 'integration');
+            }
+        }
+
+        foreach ($announcement->images as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        $announcement->delete();
+
+        return redirect()->route('announcements')->with('success', 'Announcement deleted successfully.');
     }
 }

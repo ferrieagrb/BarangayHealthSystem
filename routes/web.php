@@ -249,6 +249,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Announcements
     Route::get('/announcements', fn () => app(AnnouncementController::class)->index())->name('announcements');
     Route::post('/announcements/store', fn () => app(AnnouncementController::class)->store(request()))->name('announcements.store');
+    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     Route::get('/announcements/create', fn () => view('bhw.announcement_create'))->name('announcements.create');
 
     // Logs

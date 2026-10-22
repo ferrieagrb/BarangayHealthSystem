@@ -12,6 +12,7 @@ class Announcement extends Model
         'description',
         'category'
         ,'user_id'
+        ,'facebook_post_id'
     ];
 
     public function user()
