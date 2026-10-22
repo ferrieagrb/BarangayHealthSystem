@@ -24,6 +24,7 @@
     .pagination-container .page-item.disabled .page-link { color: #94a3b8; background: #f8fafc; }
     .empty-log { padding: 22px; color: #64748b; text-align: center; }
 </style>
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 @section('content')

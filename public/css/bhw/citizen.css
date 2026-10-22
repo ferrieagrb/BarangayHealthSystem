@@ -155,9 +155,12 @@ button {
 .summary-cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+    justify-content: space-between;
+    grid-auto-rows: minmax(0, 1fr);
+    height: 100%;
     gap: 12px;
     width: 100%;
+    height: 100%;
     min-width: 0;
 }
 
@@ -166,12 +169,24 @@ button {
     flex-direction: column;
     justify-content: center;
     width: 100%;
-    min-height: 0;
+    min-height: 140px;
     padding: 16px 18px;
     border-radius: 11px;
     background: #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     overflow-wrap: anywhere;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.summary-card > span {
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.summary-card > strong {
+    font-size: 28px;
+    line-height: 1.15;
 }
 
 .summary-card-trend {
@@ -181,16 +196,21 @@ button {
     flex-wrap: nowrap;
     width: 100%;
     gap: 7px;
-    margin-top: 10px;
+    margin-top: auto;
+    min-height: 24px;
     font-size: 11px;
 }
 
 .summary-card-trend span {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    line-height: 1;
     padding: 4px 8px;
     border-radius: 999px;
     background: #ecfdf5;
     color: #047857;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -205,8 +225,12 @@ button {
 }
 
 .summary-card-trend small {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
     color: #64748b;
-    font-size: 11px;
+    font-size: 12px;
+    line-height: 1;
     white-space: nowrap;
 }
 
@@ -214,16 +238,28 @@ button {
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: 0;
+    height: 100%;
+    min-height: 100%;
     padding: 16px 18px;
     border-radius: 11px;
     background: #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
+.chart-card #demographicsApexChart {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 260px;
+}
+
 .chart-card canvas,
 .chart-card svg {
     max-width: 100%;
+}
+
+.chart-header h3 {
+    font-size: 20px;
+    line-height: 1.3;
 }
 
 /* =========================================================

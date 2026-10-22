@@ -10,10 +10,61 @@
     border-radius: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .calendar-wrapper {
-    min-height: 80vh;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
+.calendar-wrapper,
+#calendar,
+#calendar .fc,
+#calendar .fc-view-harness,
+#calendar .fc-scroller-harness,
+#calendar .fc-scroller {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+#calendar .fc table {
+    width: 100% !important;
+    table-layout: fixed;
+}
+
+#calendar .fc .fc-daygrid-day-frame {
+    min-height: 48px;
+}
+
+#calendar .fc .fc-daygrid-day-number {
+    padding: 4px;
+    font-size: 0.85rem;
+}
+
+#calendar .fc .fc-event-title,
+#calendar .fc .fc-event-time {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#calendar .fc .fc-toolbar {
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#calendar .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    line-height: 1.3;
+}
+
+#calendar .fc .fc-button {
+    white-space: nowrap;
 }
 
 /* =========================
@@ -301,6 +352,126 @@ MOBILE
 ========================= */
 
 @media (max-width: 600px) {
+    .calendar-wrapper {
+        width: 100%;
+        overflow: visible;
+    }
+
+    #calendar {
+        padding: 10px 8px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #calendar .fc .fc-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    /* Keep long month names (for example, September 2028) on one line.
+       Place the navigation controls on their own row on narrow screens. */
+    #calendar .fc .fc-toolbar-chunk:first-child {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
+    }
+
+    #calendar .fc .fc-toolbar-chunk:nth-child(2) {
+        display: none;
+    }
+
+    #calendar .fc .fc-toolbar-chunk:last-child {
+        flex: 0 0 auto;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    #calendar .fc .fc-toolbar-title {
+        display: block;
+        width: 100%;
+        font-size: clamp(1rem, 4.5vw, 1.2rem);
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: visible;
+        word-break: keep-all;
+    }
+
+    #calendar .fc .fc-button {
+        padding: 0.35em 0.5em;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 360px) {
+        #calendar .fc .fc-toolbar-title {
+            font-size: 0.98rem;
+        }
+
+        #calendar .fc .fc-button {
+            padding: 0.3em 0.42em;
+            font-size: 0.75rem;
+        }
+    }
+
+    #calendar .fc .fc-col-header-cell-cushion {
+        padding: 6px 1px;
+        font-size: 0.72rem;
+    }
+
+    #calendar .fc .fc-daygrid-day-frame {
+        min-height: 42px;
+    }
+
+    #calendar .fc .fc-daygrid-day-number {
+        padding: 3px;
+        font-size: 0.72rem;
+    }
+
+    #calendar .fc .fc-daygrid-day-events {
+        margin-top: 1px;
+    }
+
+    #calendar .fc .fc-daygrid-event {
+        margin: 1px 1px 0;
+        font-size: 0.65rem;
+        white-space: normal;
+    }
+
+    #calendar .fc .fc-event-title {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    #calendar .fc .fc-daygrid-more-link {
+        font-size: 0.65rem;
+    }
+
+    .modal {
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: 16px;
+    }
+
+    .modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .modal-actions button {
+        flex: 1 1 auto;
+    }
 
     .event-confirm-modal {
         width: 100%;
@@ -320,6 +491,7 @@ MOBILE
 
 }
 </style>
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 @section('content')
@@ -1266,6 +1438,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 initialView:
                     'dayGridMonth',
+                height: 'auto',
+                contentHeight: 'auto',
+                aspectRatio: 1.15,
+                expandRows: true,
+                handleWindowResize: true,
+                fixedWeekCount: false,
+                dayMaxEvents: true,
 
 
                 events:

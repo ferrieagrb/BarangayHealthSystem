@@ -4,6 +4,7 @@
 
     <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 @section('content')
@@ -1077,7 +1078,7 @@
 
             type: 'bar',
 
-            height: 160,
+              height: '100%',
 
             toolbar: {
 
@@ -1113,7 +1114,19 @@
 
         dataLabels: {
 
-            enabled: false
+            enabled: true,
+
+            formatter: function (value) {
+                return Math.floor(value);
+            },
+
+            style: {
+                fontSize: '15px',
+                fontWeight: 600,
+                colors: ['#0f172a']
+            },
+
+            offsetY: -4
 
         },
 
@@ -1145,6 +1158,13 @@
 
                 show: false
 
+            },
+
+            labels: {
+                style: {
+                    fontSize: '13px',
+                    colors: ['#334155', '#334155', '#334155']
+                }
             }
 
         },
@@ -1154,6 +1174,11 @@
             tickAmount: 3,
 
             labels: {
+
+                style: {
+                    fontSize: '12px',
+                    colors: ['#475569']
+                },
 
                 formatter: function (val) {
 

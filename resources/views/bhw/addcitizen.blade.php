@@ -24,6 +24,7 @@
     .photo-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 </style>
 
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 

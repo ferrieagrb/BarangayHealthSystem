@@ -1,0 +1,41 @@
+
+/* QR Checker page alignment override */
+.main-content .qr-checker-page,
+.main-content .qr-checker-container,
+.main-content .qr-page,
+.main-content .citizen-qr-checker {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+}
+.main-content .qr-checker-page h1,
+.main-content .qr-checker-container h1,
+.main-content .qr-page h1,
+.main-content .citizen-qr-checker h1 {
+    margin: 0 0 10px !important;
+}
+.main-content .qr-checker-page .page-header,
+.main-content .qr-checker-container .page-header,
+.main-content .qr-page .page-header,
+.main-content .citizen-qr-checker .page-header {
+    margin: 0 0 22px !important;
+}
+.main-content .qr-checker-page .qr-card,
+.main-content .qr-checker-container .qr-card,
+.main-content .qr-page .qr-card,
+.main-content .citizen-qr-checker .qr-card {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+@media (max-width: 760px) {
+    .main-content .qr-checker-page,
+    .main-content .qr-checker-container,
+    .main-content .qr-page,
+    .main-content .citizen-qr-checker {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+}
