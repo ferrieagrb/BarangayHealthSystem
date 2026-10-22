@@ -65,7 +65,7 @@
                         <thead class="border-b text-xs uppercase text-gray-400">
                             <tr>
                                 <th class="pb-2">User</th>
-                                <th class="pb-2">IP Address</th>
+                                <th class="pb-2">Login Location</th>
                                 <th class="pb-2">Last Active</th>
                             </tr>
                         </thead>
@@ -77,7 +77,7 @@
                                         <div class="font-medium text-gray-800">{{ $session->name }}</div>
                                         <div class="text-xs text-gray-400">{{ $session->email }}</div>
                                     </td>
-                                    <td class="py-3 font-mono text-xs text-gray-500">{{ $session->ip_address }}</td>
+                                    <td class="py-3 text-xs text-gray-500">{{ $session->location ?? 'Location unavailable' }}</td>
                                     <td class="py-3 text-xs text-gray-500">
                                         {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans() }}
                                     </td>
@@ -270,18 +270,18 @@
         // --- Real-Time Active Sessions Polling (Every 10 seconds) ---
         async function updateActiveSessions() {
             try {
-                const response = await fetch('/superadmin/active-sessions');
+                const response = await fetch('/superadmin/active-sessions-json');
                 const data = await response.json();
 
                 const badge = document.querySelector('#active-session-count-badge');
                 if (badge) {
-                    badge.textContent = `${data.activeUserCount} Online Now`;
+                    badge.textContent = `${data.count} Online Now`;
                 }
 
                 const tbody = document.querySelector('#active-sessions-table-body');
                 if (!tbody) return;
 
-                if (!data.activeSessions || data.activeSessions.length === 0) {
+                if (!data.sessions || data.sessions.length === 0) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="3" class="py-4 text-center text-gray-400 text-xs">No active sessions found.</td>
@@ -291,14 +291,14 @@
                 }
 
                 let rowsHtml = '';
-                data.activeSessions.forEach(session => {
+                data.sessions.forEach(session => {
                     rowsHtml += `
                         <tr class="hover:bg-gray-50">
                             <td class="py-3">
                                 <div class="font-medium text-gray-800">${session.name}</div>
                                 <div class="text-xs text-gray-400">${session.email}</div>
                             </td>
-                            <td class="py-3 font-mono text-xs text-gray-500">${session.ip_address ?? 'N/A'}</td>
+                            <td class="py-3 text-xs text-gray-500">${session.location ?? 'Location unavailable'}</td>
                             <td class="py-3 text-xs text-gray-500">${session.last_activity}</td>
                         </tr>
                     `;

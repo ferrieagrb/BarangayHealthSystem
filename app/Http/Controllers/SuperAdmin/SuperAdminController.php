@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use App\Models\SystemSetting;
 use Ifsnop\Mysqldump\Mysqldump;
 use Carbon\Carbon;
@@ -24,6 +25,10 @@ class SuperAdminController extends Controller
             ->orderBy('sessions.last_activity', 'desc')
             ->take(5)
             ->get();
+
+        $activeSessions->each(function ($session) {
+            $session->location = $this->resolveIpLocation($session->ip_address);
+        });
 
         $activeUserCount = DB::table('sessions')->whereNotNull('user_id')->distinct('user_id')->count();
 
@@ -52,6 +57,7 @@ class SuperAdminController extends Controller
         ->get()
         ->map(function ($session) {
             $session->time_ago = Carbon::createFromTimestamp($session->last_activity)->diffForHumans();
+            $session->location = $this->resolveIpLocation($session->ip_address);
             return $session;
         });
 
@@ -62,6 +68,31 @@ class SuperAdminController extends Controller
         'sessions' => $activeSessions
     ]);
 }
+
+    private function resolveIpLocation(?string $ip): string
+    {
+        if (!$ip || !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return 'Local or private network';
+        }
+
+        return Cache::remember('ip_location_' . $ip, now()->addDay(), function () use ($ip) {
+            try {
+                $response = Http::timeout(3)->get('https://ipwho.is/' . $ip);
+                if (!$response->successful() || !$response->json('success')) {
+                    return 'Location unavailable';
+                }
+
+                return collect([
+                    $response->json('city'),
+                    $response->json('region'),
+                    $response->json('country'),
+                ])->filter()->join(', ') ?: 'Location unavailable';
+            } catch (\Throwable $exception) {
+                report($exception);
+                return 'Location unavailable';
+            }
+        });
+    }
 public function systemSettings()
     {
         return view('superadmin.settings', [
