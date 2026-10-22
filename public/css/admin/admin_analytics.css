@@ -1,0 +1,560 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* =========================================
+   REPORTS PAGE
+   Matched to Admin Dashboard Spacing & Styles
+========================================= */
+
+.reports-page {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    color: #1f2937;
+    font-family: "Poppins", sans-serif;
+    box-sizing: border-box;
+}
+
+.reports-page *,
+.reports-page *::before,
+.reports-page *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   REPORT PAGE HEADER
+========================================= */
+
+.reports-page h1 {
+    margin: 0 0 12px 0;
+    font-size: 30px;
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.reports-page p {
+    margin: 0 0 20px 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* =========================================
+   REPORT SUMMARY GRID
+========================================= */
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin: 0 0 20px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* =========================================
+   REPORT CARDS & PANELS
+========================================= */
+
+.report-card,
+.report-panel {
+    min-width: 0;
+    max-width: 100%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.report-card {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.report-card > span {
+    display: block;
+    margin: 0 0 8px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.report-card strong {
+    display: block;
+    margin: 0;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.report-card small {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+/* =========================================
+   ANIMATED COUNTERS
+========================================= */
+
+.report-counter {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.report-counter.counter-ready {
+    opacity: 1;
+}
+
+/* =========================================
+   REPORT LAYOUT
+========================================= */
+
+.report-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 15px;
+    margin: 0 0 20px;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+}
+
+.report-panel {
+    min-width: 0;
+    max-width: 100%;
+    padding: 18px;
+    overflow: hidden;
+}
+
+.report-panel h2 {
+    margin: 0 0 6px;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.report-panel > p {
+    margin: 0 0 15px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================
+   CHART PANELS
+========================================= */
+
+.chart-panel {
+    min-height: 360px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 280px;
+}
+
+.chart-container canvas,
+.chart-panel .apexcharts-canvas {
+    max-width: 100%;
+}
+
+/* =========================================
+   BAR LIST
+========================================= */
+
+.bar-list {
+    display: grid;
+    gap: 15px;
+    min-width: 0;
+}
+
+.bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.bar-track {
+    height: 9px;
+    overflow: hidden;
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.bar-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: inherit;
+    transition: width 0.3s ease;
+}
+
+/* =========================================
+   REPORT TABLE WRAPPER
+   Prevent tables from exceeding panels
+========================================= */
+
+.report-table-wrapper {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================
+   REPORT TABLES
+========================================= */
+
+.report-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    background: #ffffff;
+    text-align: left;
+    font-size: 13px;
+    table-layout: auto;
+}
+
+.report-table th,
+.report-table td {
+    padding: 14px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.report-table thead tr {
+    background: #f8fafc;
+    color: #374151;
+}
+
+.report-table th {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.report-table td {
+    color: #4b5563;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.report-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.report-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+/* =========================================
+   STATUS COLORS
+========================================= */
+
+.status-warning {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.status-good {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* =========================================
+   EMPTY REPORT
+========================================= */
+
+.empty-report {
+    padding: 20px;
+    color: #64748b;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+body.theme-dark .reports-page .admin-page-header h1 {
+    color: #f3f4f6;
+}
+
+body.theme-dark .reports-page .admin-page-header p {
+    color: #9ca3af;
+}
+
+body.theme-dark .report-card,
+body.theme-dark .report-panel {
+    background: #1e1e1e;
+    border-color: #333333;
+    color: #e0e0e0;
+}
+
+body.theme-dark .report-card > span,
+body.theme-dark .report-card small,
+body.theme-dark .report-panel > p,
+body.theme-dark .bar-label,
+body.theme-dark .empty-report {
+    color: #9ca3af;
+}
+
+body.theme-dark .report-card strong,
+body.theme-dark .report-panel h2 {
+    color: #f3f4f6;
+}
+
+body.theme-dark .bar-track {
+    background: #333333;
+}
+
+body.theme-dark .bar-fill {
+    background: #3b82f6;
+}
+
+body.theme-dark .report-table {
+    background: #1e1e1e;
+}
+
+body.theme-dark .report-table thead tr {
+    background: #262626;
+    color: #e5e7eb;
+}
+
+body.theme-dark .report-table th,
+body.theme-dark .report-table td {
+    border-color: #333333;
+    color: #d1d5db;
+}
+
+body.theme-dark .report-table tbody tr:hover td {
+    background: #262626;
+}
+
+/* =========================================
+   RESPONSIVE: TABLET
+========================================= */
+
+@media (max-width: 992px) {
+    .reports-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .report-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 15px;
+    }
+}
+
+/* =========================================
+   RESPONSIVE: MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+    .reports-page .admin-page-header {
+        gap: 4px;
+        margin-bottom: 18px;
+    }
+
+    .reports-page .admin-page-header h1 {
+        font-size: clamp(22px, 5vw, 28px);
+    }
+
+    .reports-grid {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .report-layout {
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .report-card,
+    .report-panel {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .reports-page .admin-page-header {
+        gap: 4px;
+        margin-bottom: 16px;
+    }
+
+    .reports-page .admin-page-header h1 {
+        font-size: 23px;
+        line-height: 1.35;
+    }
+
+    .reports-page .admin-page-header p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .reports-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .report-card {
+        padding: 18px;
+    }
+
+    .report-card > span {
+        font-size: 12px;
+    }
+
+    .report-card strong {
+        font-size: 24px;
+    }
+
+    .report-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .report-panel {
+        padding: 14px;
+    }
+
+    .report-panel h2 {
+        font-size: 17px;
+    }
+
+    .chart-panel {
+        min-height: 320px;
+    }
+
+    .chart-container {
+        min-height: 260px;
+    }
+
+    .report-table {
+        font-size: 12px;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 10px 8px;
+    }
+}
+
+/* =========================================
+   RESPONSIVE: SMALL MOBILE
+========================================= */
+
+@media (max-width: 380px) {
+    .reports-page .admin-page-header h1 {
+        font-size: 21px;
+    }
+
+    .report-card {
+        padding: 14px;
+    }
+
+    .report-panel {
+        padding: 12px;
+    }
+
+    .report-panel h2 {
+        font-size: 16px;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 9px 7px;
+        font-size: 11px;
+    }
+}
+
+
+/* =========================================
+   SHARED ADMIN PAGE ALIGNMENT OVERRIDES
+========================================= */
+.reports-page { width:100%; min-width:0; padding:0; margin:0; }
+.reports-page > .page-top { width:100%; margin:0 0 20px; }
+.reports-page .page-title-group h1 { margin:0; font-size:30px; line-height:1.4; }
+.reports-page .page-title-group p { margin:6px 0 0; line-height:1.5; }
+
+
+/* FINAL FIX: consistent left edge for reports title and subtitle */
+.reports-page > .page-top,
+.reports-page > .reports-page-header,
+.reports-page > header {
+    width: 100%;
+    margin: 0 0 20px 0;
+    padding: 0;
+    text-align: left;
+}
+.reports-page > .page-top h1,
+.reports-page > .page-top p,
+.reports-page > .reports-page-header h1,
+.reports-page > .reports-page-header p,
+.reports-page > header h1,
+.reports-page > header p {
+    margin-left: 0;
+    padding-left: 0;
+    text-indent: 0;
+    transform: none;
+}
+.reports-page > .page-top h1,
+.reports-page > .reports-page-header h1,
+.reports-page > header h1 { margin-top: 0; margin-bottom: 0; }
+.reports-page > .page-top p,
+.reports-page > .reports-page-header p,
+.reports-page > header p { margin-top: 6px; margin-bottom: 0; }
+
+
+/* Consistent title/subtitle alignment with Admin Home. */
+.reports-page > .page-top {
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin: 0 0 20px;
+    padding: 0;
+}
+.reports-page .page-title-group {
+    min-width: 0;
+    text-align: left;
+}
+.reports-page .page-title-group h1 {
+    margin: 0;
+    line-height: 1.4;
+}
+.reports-page .page-title-group p {
+    margin: 6px 0 0;
+    line-height: 1.6;
+}

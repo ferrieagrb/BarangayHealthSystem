@@ -4,6 +4,32 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/logs.css') }}">
 <style>
     .admin-logs-page { padding-bottom: 24px; }
+    /* Keep audit-log heading and subtitle aligned with other admin pages. */
+    .admin-logs-page > .page-top {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 6px;
+        width: 100%;
+        margin: 0 0 20px 0;
+        padding: 0;
+        text-align: left;
+    }
+    .admin-logs-page > .page-top > .page-title {
+        margin: 0;
+        padding: 0;
+        text-align: left;
+    }
+    .admin-logs-page > .page-top h1,
+    .admin-logs-page > .page-top p {
+        margin-left: 0;
+        padding-left: 0;
+        text-indent: 0;
+        transform: none;
+    }
+    .admin-logs-page > .page-top h1 { margin-top: 0; margin-bottom: 0; }
+    .admin-logs-page > .page-top p { margin-top: 6px; margin-bottom: 0; }
     .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
     .tabs button { padding: 9px 13px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #334155; cursor: pointer; }
     .tabs button.active { border-color: #0e42b1; background: #0e42b1; color: #fff; }
