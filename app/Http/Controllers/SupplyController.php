@@ -238,9 +238,10 @@ class SupplyController extends Controller
             'notes' => $request->notes ?? 'Specific batch stock withdrawal',
         ]);
 
-        // If batch quantity drops to zero, clean up the row
+        // Keep zero-stock rows so their withdrawal logs remain available for reporting and forecasting.
         if ($supply->quantity <= 0) {
-            $supply->delete();
+            $supply->status = 'Out of Stock';
+            $supply->save();
         }
 
         return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
