@@ -138,9 +138,14 @@ class AnnouncementController extends Controller
                 Log::error('Facebook Post Error: ' . $response->body());
                 $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting failed: ' . substr($response->body(), 0, 500), 'integration');
             } else {
+                $facebookPostId = $response->json('post_id') ?: $response->json('id');
                 $announcement->update([
-                    'facebook_post_id' => $response->json('id'),
+                    'facebook_post_id' => $facebookPostId,
                 ]);
+
+                if (!$facebookPostId) {
+                    Log::warning('Facebook post succeeded without a deletable post ID: ' . $response->body());
+                }
                 $this->logAdminActivity(
                     'facebook.posted',
                     $image ? 'Announcement photo posted successfully to Facebook.' : 'Announcement posted successfully to Facebook.',
@@ -157,6 +162,7 @@ class AnnouncementController extends Controller
     {
         $pageId = config('services.facebook.page_id');
         $accessToken = config('services.facebook.access_token');
+        $facebookDeleteFailed = false;
 
         if ($announcement->facebook_post_id && $pageId && $accessToken) {
             try {
@@ -166,10 +172,12 @@ class AnnouncementController extends Controller
                 );
 
                 if ($response->failed()) {
+                    $facebookDeleteFailed = true;
                     Log::warning('Facebook announcement deletion failed: ' . $response->body());
                     $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed.', 'integration');
                 }
             } catch (\Throwable $exception) {
+                $facebookDeleteFailed = true;
                 report($exception);
                 $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception.', 'integration');
             }
@@ -181,6 +189,12 @@ class AnnouncementController extends Controller
 
         $announcement->delete();
 
-        return redirect()->route('announcements')->with('success', 'Announcement deleted successfully.');
+        $message = $facebookDeleteFailed
+            ? 'Announcement deleted locally, but Facebook deletion failed. Check the Facebook access token and permissions.'
+            : ($announcement->facebook_post_id
+                ? 'Announcement deleted from the system and Facebook.'
+                : 'Announcement deleted locally. It has no tracked Facebook post ID.');
+
+        return redirect()->route('announcements')->with($facebookDeleteFailed ? 'error' : 'success', $message);
     }
 }
