@@ -108,6 +108,8 @@
 
             <strong>{{ $totalCitizens }}</strong>
 
+            <div class="summary-card-trend trend-{{ $citizenTrends['total']['state'] }}"><span>{{ $citizenTrends['total']['icon'] }} {{ $citizenTrends['total']['value'] }}</span><small>vs previous 14 days</small></div>
+
         </div>
 
         {{-- KIDS --}}
@@ -117,6 +119,8 @@
             <span>Kids</span>
 
             <strong>{{ $kids }}</strong>
+
+            <div class="summary-card-trend trend-{{ $citizenTrends['kids']['state'] }}"><span>{{ $citizenTrends['kids']['icon'] }} {{ $citizenTrends['kids']['value'] }}</span><small>vs previous 14 days</small></div>
 
         </div>
 
@@ -128,6 +132,8 @@
 
             <strong>{{ $adults }}</strong>
 
+            <div class="summary-card-trend trend-{{ $citizenTrends['adults']['state'] }}"><span>{{ $citizenTrends['adults']['icon'] }} {{ $citizenTrends['adults']['value'] }}</span><small>vs previous 14 days</small></div>
+
         </div>
 
         {{-- SENIORS --}}
@@ -137,6 +143,8 @@
             <span>Seniors</span>
 
             <strong>{{ $seniors }}</strong>
+
+            <div class="summary-card-trend trend-{{ $citizenTrends['seniors']['state'] }}"><span>{{ $citizenTrends['seniors']['icon'] }} {{ $citizenTrends['seniors']['value'] }}</span><small>vs previous 14 days</small></div>
 
         </div>
 

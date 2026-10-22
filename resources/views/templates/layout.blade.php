@@ -66,6 +66,7 @@
         };
 
         document.addEventListener('submit', function(e) {
+            if (e.target.closest('[data-no-loader="true"]')) return;
             showLoader();
         });
 

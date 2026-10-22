@@ -174,6 +174,42 @@ button {
     overflow-wrap: anywhere;
 }
 
+.summary-card-trend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    width: 100%;
+    gap: 7px;
+    margin-top: 10px;
+    font-size: 11px;
+}
+
+.summary-card-trend span {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.summary-card-trend.trend-down span {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.summary-card-trend.trend-flat span {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.summary-card-trend small {
+    color: #64748b;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
 .chart-card {
     display: flex;
     flex-direction: column;

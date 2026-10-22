@@ -42,6 +42,31 @@
     flex-direction: column;
 }
 
+.photo-upload-group {
+    min-width: 0;
+}
+
+.photo-preview-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    padding: 14px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.photo-preview-panel img {
+    display: block;
+    width: 140px;
+    height: 140px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
 
 .form-group label {
     font-size: 13px;

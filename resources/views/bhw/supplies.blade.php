@@ -230,16 +230,19 @@
     <div class="summary-card">
         <span>Total Items</span>
         <strong>{{ $totalsupply }}</strong>
+        <div class="summary-card-trend trend-{{ $supplyTrends['total']['state'] }}"><span>{{ $supplyTrends['total']['icon'] }} {{ $supplyTrends['total']['value'] }}</span><small>vs previous 14 days</small></div>
     </div>
 
     <div class="summary-card">
         <span>Low Stock</span>
         <strong>{{ $lowStock }}</strong>
+        <div class="summary-card-trend trend-{{ $supplyTrends['low']['state'] }}"><span>{{ $supplyTrends['low']['icon'] }} {{ $supplyTrends['low']['value'] }}</span><small>vs previous 14 days</small></div>
     </div>
 
     <div class="summary-card">
         <span>Well Stocked</span>
         <strong>{{ $wellStocked }}</strong>
+        <div class="summary-card-trend trend-{{ $supplyTrends['well']['state'] }}"><span>{{ $supplyTrends['well']['icon'] }} {{ $supplyTrends['well']['value'] }}</span><small>vs previous 14 days</small></div>
     </div>
 
 </div>

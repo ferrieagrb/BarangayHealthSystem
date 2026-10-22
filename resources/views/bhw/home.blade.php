@@ -39,10 +39,10 @@
     </div>
 
     <div class="summary-cards">
-        <div class="summary-card"><span>Total Citizens</span><strong>{{ $totalCitizens }}</strong><small>Registered residents</small></div>
-        <div class="summary-card"><span>Inventory Units</span><strong>{{ $totalInventoryUnits }}</strong><small>{{ $totalInventory }} supply records</small></div>
-        <div class="summary-card"><span>Pending Referrals</span><strong>{{ $pendingReferrals }}</strong><small>Awaiting follow-up</small></div>
-        <div class="summary-card"><span>Trending Diagnosis</span><strong>{{ $popularDisease }}</strong><small>Most recorded diagnosis</small></div>
+        <div class="summary-card"><span>Total Citizens</span><strong>{{ $totalCitizens }}</strong><div class="dashboard-card-trend trend-{{ $dashboardTrends['citizens']['state'] }}"><b>{{ $dashboardTrends['citizens']['icon'] }} {{ $dashboardTrends['citizens']['value'] }}</b><small>vs previous 14 days</small></div><small>Registered residents</small></div>
+        <div class="summary-card"><span>Inventory Units</span><strong>{{ $totalInventoryUnits }}</strong><div class="dashboard-card-trend trend-{{ $dashboardTrends['inventory']['state'] }}"><b>{{ $dashboardTrends['inventory']['icon'] }} {{ $dashboardTrends['inventory']['value'] }}</b><small>vs previous 14 days</small></div><small>{{ $totalInventory }} supply records</small></div>
+        <div class="summary-card"><span>Pending Referrals</span><strong>{{ $pendingReferrals }}</strong><div class="dashboard-card-trend trend-{{ $dashboardTrends['referrals']['state'] }}"><b>{{ $dashboardTrends['referrals']['icon'] }} {{ $dashboardTrends['referrals']['value'] }}</b><small>vs previous 14 days</small></div><small>Awaiting follow-up</small></div>
+        <div class="summary-card"><span>Trending Diagnosis</span><strong>{{ $popularDisease }}</strong><div class="dashboard-card-trend trend-{{ $dashboardTrends['diagnoses']['state'] }}"><b>{{ $dashboardTrends['diagnoses']['icon'] }} {{ $dashboardTrends['diagnoses']['value'] }}</b><small>vs previous 14 days</small></div><small>Most recorded diagnosis</small></div>
     </div>
 
     <section class="home-card home-card-wide" style="margin-bottom: 18px;">

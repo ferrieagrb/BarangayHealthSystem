@@ -68,9 +68,40 @@ MODAL CONTENT
 
 .modal-content {
     background: white;
-    padding: 20px;
+    padding: 30px;
     border-radius: 12px;
-    width: 320px;
+    width: min(760px, calc(100vw - 32px));
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+}
+
+.modal-content h2 {
+    margin: 0 0 22px;
+    color: #172033;
+    font-size: 24px;
+}
+
+.add-event-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.add-event-field {
+    min-width: 0;
+}
+
+.add-event-field-full {
+    grid-column: 1 / -1;
+}
+
+.add-event-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 /* =========================
@@ -107,6 +138,13 @@ INPUTS
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+    margin-top: 22px;
+}
+
+@media (max-width: 640px) {
+    .modal-content { padding: 22px; }
+    .add-event-form-grid { grid-template-columns: 1fr; gap: 14px; }
+    .add-event-field-full { grid-column: auto; }
 }
 
 /* =========================================================
@@ -364,36 +402,31 @@ ADD MODAL
 
 <div id="addModal" class="modal">
 
-    <div class="modal-content">
+    <div class="modal-content add-event-modal-content">
 
         <h2>Add Event</h2>
 
-        <label>Title</label>
-        <input
-            type="text"
-            id="add_title"
-            required
-        >
+        <div class="add-event-form-grid">
+            <div class="add-event-field add-event-field-full">
+                <label for="add_title">Title</label>
+                <input type="text" id="add_title" required>
+            </div>
 
-        <label>Date</label>
-        <input
-            type="date"
-            id="add_date"
-            required
-        >
+            <div class="add-event-field">
+                <label for="add_date">Date</label>
+                <input type="date" id="add_date" required>
+            </div>
 
-        <label>Time</label>
-        <input
-            type="time"
-            id="add_time"
-            required
-        >
+            <div class="add-event-field">
+                <label for="add_time">Time</label>
+                <input type="time" id="add_time" required>
+            </div>
 
-        <label>Description</label>
-        <textarea
-            id="add_description"
-            required
-        ></textarea>
+            <div class="add-event-field add-event-field-full">
+                <label for="add_description">Description</label>
+                <textarea id="add_description" rows="5" required></textarea>
+            </div>
+        </div>
 
         <div class="modal-actions">
 
