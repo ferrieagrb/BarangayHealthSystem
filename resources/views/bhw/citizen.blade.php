@@ -85,11 +85,23 @@
 
     </div>
 
-    <a href="{{ route('citizen.add') }}" class="btn-primary">
+    <div class="page-header-actions" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
 
-        + Add Citizen
+        <a href="{{ route('citizen.add') }}" class="btn-primary">
 
-    </a>
+            + Add Citizen
+
+        </a>
+
+        <button type="button"
+                class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();">
+
+            Import List
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -307,18 +319,6 @@
 
     </form>
 
-    {{-- IMPORT BUTTON --}}
-
-    <button type="button"
-
-            class="btn-secondary"
-
-            onclick="document.getElementById('excelFileInput').click();">
-
-        Import Excel
-
-    </button>
-
 </div>
 
 {{-- CITIZEN STATUS FILTER MODAL --}}
@@ -395,6 +395,12 @@
 
         </p>
 
+
+
+    </div>
+
+    <div id="citizen-results">
+
         @php
             $activeFilters = [];
 
@@ -422,15 +428,15 @@
             }
         @endphp
 
-        @if(count($activeFilters) > 0)
-            <p id="active-citizen-filters" style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
-                (Showing {{ implode(', ', $activeFilters) }})
-            </p>
-        @endif
-
-    </div>
-
-    <div id="citizen-results">
+        <div id="citizen-results-summary"
+             class="citizen-results-highlight"
+             style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:6px; margin:0 0 12px; padding:8px 12px; border:1px solid #bbf7d0; border-radius:8px; background:#f0fdf4; color:#166534; font-size:13px; font-weight:500; line-height:1.5;">
+            <strong style="font-weight:700;">Showing {{ $citizens->total() }} results</strong>
+            @if(count($activeFilters) > 0)
+                <span aria-hidden="true" style="color:#86a98e; font-weight:700;">·</span>
+                <span id="active-citizen-filters">{{ implode(', ', $activeFilters) }}</span>
+            @endif
+        </div>
 
         {{-- CITIZEN TABLE --}}
 
@@ -564,7 +570,7 @@
 
                 class="btn-primary">
 
-                Manage E-Card
+                E-Card
 
                 </a>
 
@@ -1326,42 +1332,84 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.querySelector('.citizen-filter-form');
-    const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
-    const results = document.getElementById('citizen-results');
-    let searchTimer;
-    let requestController;
+    const searchInput = searchForm
+        ? searchForm.querySelector('input[name="search"]')
+        : null;
 
-    if (!searchForm || !searchInput || !results) return;
+    let searchTimer = null;
+    let requestController = null;
+
+    if (!searchForm || !searchInput) return;
 
     searchInput.addEventListener('input', function () {
         clearTimeout(searchTimer);
+
         searchTimer = setTimeout(async function () {
-            if (requestController) requestController.abort();
-            requestController = new AbortController();
-            const params = new URLSearchParams(new FormData(searchForm));
-            params.delete('page');
-            if (!searchInput.value.trim()) {
-                params.delete('search');
-                const activeFilters = document.getElementById('active-citizen-filters');
-                if (activeFilters) activeFilters.remove();
+            if (requestController) {
+                requestController.abort();
             }
+
+            requestController = new AbortController();
+
+            // Preserve existing modal/status filters in the URL.
+            // Update only search, Purok, and age from the toolbar.
+            const params = new URLSearchParams(window.location.search);
+
+            ['search', 'purok', 'age', 'page'].forEach(function (key) {
+                params.delete(key);
+            });
+
+            const formData = new FormData(searchForm);
+
+            ['search', 'purok', 'age'].forEach(function (key) {
+                const value = formData.get(key);
+
+                if (value !== null && String(value).trim() !== '') {
+                    params.set(key, String(value).trim());
+                }
+            });
+
+            const results = document.getElementById('citizen-results');
+            if (!results) return;
+
             results.setAttribute('aria-busy', 'true');
 
             try {
-                const response = await fetch(`${searchForm.action}?${params.toString()}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+                const queryString = params.toString();
+                const requestUrl = queryString
+                    ? searchForm.action + '?' + queryString
+                    : searchForm.action;
+
+                const response = await fetch(requestUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    },
                     signal: requestController.signal
                 });
-                if (!response.ok) throw new Error('Search request failed');
+
+                if (!response.ok) {
+                    throw new Error('Search request failed');
+                }
+
                 const html = await response.text();
                 const parsed = new DOMParser().parseFromString(html, 'text/html');
                 const updatedResults = parsed.getElementById('citizen-results');
-                if (updatedResults) results.replaceWith(updatedResults);
+
+                if (updatedResults) {
+                    results.replaceWith(updatedResults);
+                    window.history.replaceState({}, '', requestUrl);
+                }
             } catch (error) {
-                if (error.name !== 'AbortError') console.error(error);
+                if (error.name !== 'AbortError') {
+                    console.error(error);
+                }
             } finally {
                 const currentResults = document.getElementById('citizen-results');
-                if (currentResults) currentResults.removeAttribute('aria-busy');
+
+                if (currentResults) {
+                    currentResults.removeAttribute('aria-busy');
+                }
             }
         }, 350);
     });
