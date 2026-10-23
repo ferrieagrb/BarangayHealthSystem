@@ -107,6 +107,7 @@
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             if (link && link.href && 
+                link.dataset.noLoader !== 'true' &&
                 link.getAttribute('target') !== '_blank' && 
                 !link.href.startsWith('#') && 
                 !link.href.startsWith('javascript:') &&

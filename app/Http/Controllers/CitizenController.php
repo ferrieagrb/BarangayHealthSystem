@@ -29,6 +29,7 @@ use App\Imports\CitizensImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
@@ -165,6 +166,24 @@ class CitizenController extends Controller
             if (in_array('in_pills', $healthValues)) {
                 $query->where('Citizen_InPills', 1);
             }
+        }
+
+        $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
+        if ($vaccineFilters) {
+            $vaccineTerms = [
+                'bcg' => ['bcg'], 'hepb' => ['hepatitis b', 'hepb'], 'penta' => ['pentavalent', 'penta'],
+                'opv' => ['oral polio', 'opv'], 'ipv' => ['inactivated polio', 'ipv'], 'pcv' => ['pneumococcal', 'pcv'],
+                'mmr' => ['measles, mumps', 'mmr'], 'mr' => ['measles-rubella', 'mr'], 'td' => ['tetanus', 'td'], 'hpv' => ['human papillomavirus', 'hpv'],
+            ];
+            $query->whereHas('vaccinations', function ($vaccinationQuery) use ($vaccineFilters, $vaccineTerms) {
+                $vaccinationQuery->where(function ($builder) use ($vaccineFilters, $vaccineTerms) {
+                    foreach ($vaccineFilters as $filter) {
+                        foreach ($vaccineTerms[$filter] ?? [$filter] as $term) {
+                            $builder->orWhere('vaccine_name', 'like', "%{$term}%");
+                        }
+                    }
+                });
+            });
         }
 
         if (!$request->boolean('filter_deceased')) {
@@ -370,6 +389,8 @@ class CitizenController extends Controller
             $citizenDisplayIds[$ordinalCitizen->id] = str_pad((string) $subgroupOrdinals[$subgroupKey], 3, '0', STR_PAD_LEFT) . '-' . $subgroupName;
         }
 
+        $exportFieldDefinitions = $this->exportFieldDefinitions();
+
         return view('bhw.citizen', compact(
             'citizens',
             'totalCitizens',
@@ -378,7 +399,8 @@ class CitizenController extends Controller
             'seniors',
             'citizenTrends',
             'puroks',
-            'citizenDisplayIds'
+            'citizenDisplayIds',
+            'exportFieldDefinitions'
         ));
     }
 
@@ -890,14 +912,193 @@ class CitizenController extends Controller
     | EXPORT CITIZENS
     |--------------------------------------------------------------------------
     */
-    public function export()
+    private function exportCitizenQuery(Request $request)
     {
+        $query = citizens::query();
+
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $query->where('Citizen_Sex', $request->filter_sex);
+        }
+
+        if ($request->filled('filter_housing')) {
+            $query->whereIn('Citizen_HousingStatus', (array) $request->filter_housing);
+        }
+
+        if ($request->filled('filter_health')) {
+            $healthValues = (array) $request->filter_health;
+            $query->when(in_array('pregnant', $healthValues), fn ($builder) => $builder->where('Citizen_Pregnant', 1));
+            $query->when(in_array('in_pills', $healthValues), fn ($builder) => $builder->where('Citizen_InPills', 1));
+        }
+
+        if (!$request->boolean('filter_deceased')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('Citizen_IsDeceased')->orWhere('Citizen_IsDeceased', 0);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($builder) use ($search) {
+                $builder->where('Citizen_FName', 'like', "%{$search}%")
+                    ->orWhere('Citizen_LName', 'like', "%{$search}%")
+                    ->orWhere('id', $search)
+                    ->orWhereHas('healthRecords', fn ($healthQuery) => $healthQuery->where('diagnosis', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purokValue = $request->purok;
+            $purokRecord = Purok::find($purokValue);
+            $query->where(function ($builder) use ($purokRecord, $purokValue) {
+                $builder->where('Citizen_Purok', $purokRecord?->name ?: $purokValue)
+                    ->orWhere('Citizen_Purok', $purokValue);
+            });
+        }
+
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroupId = $request->subgroup;
+            $query->where(function ($builder) use ($subgroupId) {
+                $builder->where('subgroup_id', $subgroupId)
+                    ->orWhereHas('family', fn ($familyQuery) => $familyQuery->where('subgroup_id', $subgroupId));
+            });
+        }
+
+        if ($request->filled('age')) {
+            $age = trim($request->age);
+            if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $age, $matches)) {
+                $query->whereBetween('Citizen_Age', [min((int) $matches[1], (int) $matches[2]), max((int) $matches[1], (int) $matches[2])]);
+            } elseif (is_numeric($age)) {
+                $query->where('Citizen_Age', (int) $age);
+            }
+        }
+
+        if ($request->filled('age_group')) {
+            $query->when($request->age_group === 'kid', fn ($builder) => $builder->where('Citizen_Age', '<=', 17));
+            $query->when($request->age_group === 'adult', fn ($builder) => $builder->whereBetween('Citizen_Age', [18, 59]));
+            $query->when($request->age_group === 'senior', fn ($builder) => $builder->where('Citizen_Age', '>=', 60));
+        }
+
+        $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
+        if ($vaccineFilters) {
+            $vaccineTerms = [
+                'bcg' => ['bcg'], 'hepb' => ['hepatitis b', 'hepb'], 'penta' => ['pentavalent', 'penta'],
+                'opv' => ['oral polio', 'opv'], 'ipv' => ['inactivated polio', 'ipv'], 'pcv' => ['pneumococcal', 'pcv'],
+                'mmr' => ['measles, mumps', 'mmr'], 'mr' => ['measles-rubella', 'mr'], 'td' => ['tetanus', 'td'], 'hpv' => ['human papillomavirus', 'hpv'],
+            ];
+            $query->whereHas('vaccinations', function ($vaccinationQuery) use ($vaccineFilters, $vaccineTerms) {
+                $vaccinationQuery->where(function ($builder) use ($vaccineFilters, $vaccineTerms) {
+                    foreach ($vaccineFilters as $filter) {
+                        foreach ($vaccineTerms[$filter] ?? [$filter] as $term) {
+                            $builder->orWhere('vaccine_name', 'like', "%{$term}%");
+                        }
+                    }
+                });
+            });
+        }
+
+        return $query->orderBy('id');
+    }
+
+    private function exportFilterSummary(Request $request): array
+    {
+        $filters = [];
+
+        if ($request->filled('search')) {
+            $filters[] = 'Search: ' . trim($request->search);
+        }
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purok = Purok::find($request->purok);
+            $filters[] = 'Purok: ' . ($purok?->name ?: $request->purok);
+        }
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroup = PurokSubgroup::find($request->subgroup);
+            $filters[] = 'Subgroup: ' . ($subgroup?->name ?: $request->subgroup);
+        }
+        if ($request->filled('age')) {
+            $filters[] = 'Age: ' . trim($request->age);
+        }
+        if ($request->filled('age_group')) {
+            $filters[] = 'Age group: ' . ucfirst($request->age_group);
+        }
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $filters[] = 'Gender: ' . $request->filter_sex;
+        }
+        if ($request->filled('filter_housing')) {
+            $filters[] = 'Housing: ' . implode(', ', (array) $request->filter_housing);
+        }
+        if ($request->filled('filter_health')) {
+            $filters[] = 'Health: ' . implode(', ', (array) $request->filter_health);
+        }
+        if ($request->filled('health_filter_vaccine')) {
+            $filters[] = 'Vaccines: ' . implode(', ', (array) $request->health_filter_vaccine);
+        }
+
+        $filters[] = $request->boolean('filter_deceased')
+            ? 'Includes deceased citizens'
+            : 'Excludes deceased citizens';
+
+        return $filters;
+    }
+
+    private function exportFieldDefinitions(): array
+    {
+        return [
+            'id' => 'Citizen ID',
+            'Citizen_FName' => 'First Name',
+            'Citizen_MName' => 'Middle Name',
+            'Citizen_LName' => 'Last Name',
+            'Citizen_BirthDate' => 'Birth Date',
+            'Citizen_ContactNo' => 'Contact Number',
+            'Citizen_Purok' => 'Purok',
+            'family_id' => 'Family ID',
+            'subgroup_id' => 'Subgroup ID',
+            'Citizen_Age' => 'Age',
+            'Citizen_Sex' => 'Gender',
+            'Citizen_Height' => 'Height',
+            'Citizen_Weight' => 'Weight',
+            'Citizen_HousingStatus' => 'Housing Status',
+            'Citizen_Pregnant' => 'Pregnant',
+            'Citizen_InPills' => 'Taking Pills',
+            'Citizen_IsDeceased' => 'Deceased',
+        ];
+    }
+
+    private function selectedExportFields(Request $request): array
+    {
+        $availableFields = $this->exportFieldDefinitions();
+        $requestedFields = $request->has('fields')
+            ? $request->input('fields', [])
+            : array_keys($availableFields);
+        $selectedFields = array_values(array_intersect((array) $requestedFields, array_keys($availableFields)));
+
+        abort_if(!$selectedFields, 422, 'Select at least one citizen detail to export.');
+
+        return $selectedFields;
+    }
+
+    public function export(Request $request)
+    {
+        $selectedFields = $this->selectedExportFields($request);
         $this->logAdminActivity('citizens.exported', 'Exported citizen records to Excel.', 'data');
 
         return Excel::download(
-            new CitizensExport(),
+            new CitizensExport($this->exportCitizenQuery($request), $this->exportFilterSummary($request), $selectedFields, $this->exportFieldDefinitions()),
             'citizen_records_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
         );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $citizens = $this->exportCitizenQuery($request)->get();
+        $filterSummary = $this->exportFilterSummary($request);
+        $fieldDefinitions = $this->exportFieldDefinitions();
+        $selectedFields = $this->selectedExportFields($request);
+
+        $this->logAdminActivity('citizens.exported_pdf', 'Exported citizen records to PDF.', 'data');
+
+        return Pdf::loadView('exports.citizens-pdf', compact('citizens', 'filterSummary', 'fieldDefinitions', 'selectedFields'))
+            ->setPaper('a4', 'landscape')
+            ->download('citizen_records_' . now()->format('Y-m-d_H-i-s') . '.pdf');
     }
 
     /*

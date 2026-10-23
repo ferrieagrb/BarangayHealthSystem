@@ -295,6 +295,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
     Route::get('/citizen-export', [CitizenController::class,'export'])->name('citizen.export');
+    Route::get('/citizen-export/pdf', [CitizenController::class, 'exportPdf'])->name('citizen.export.pdf');
 });
 
 Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
