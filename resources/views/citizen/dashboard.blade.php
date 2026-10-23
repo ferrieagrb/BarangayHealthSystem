@@ -1672,6 +1672,35 @@
                     </table>
                 </div>
             </div>
+            @if($vaccinationSchedulingEnabled)
+                <div class="c-record">
+                    <h3>Upcoming Vaccination Schedules</h3>
+                    <div class="c-tablewrap">
+                        <table class="c-table">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Dose / Label</th>
+                                    <th>Scheduled date</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($citizen->vaccinationSchedules as $schedule)
+                                    <tr>
+                                        <td>{{ $schedule->vaccine_name }}</td>
+                                        <td>{{ $schedule->dose_number ?: 'N/A' }}</td>
+                                        <td>{{ $schedule->scheduled_date->format('M d, Y') }}</td>
+                                        <td>{{ $schedule->notes ?: 'No notes' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td class="none" colspan="4">No upcoming vaccination schedules.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
             <div class="c-record">
                 <h3>Diagnosis &amp; Health Records</h3>
                 <div class="c-tablewrap">

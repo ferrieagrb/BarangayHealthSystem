@@ -103,6 +103,7 @@ public function systemSettings()
             'backupDestination' => SystemSetting::value('backup_destination', 'hostinger'),
             'maxFailedLoginAttempts' => (int) SystemSetting::value('max_failed_login_attempts', 10),
             'maintenanceMode' => SystemSetting::boolean('maintenance_mode', false),
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
             'logoUrl' => SystemSetting::logoUrl(),
         ]);
     }
@@ -123,6 +124,7 @@ public function systemSettings()
             'backup_destination' => $validated['backup_destination'],
             'max_failed_login_attempts' => (string) $validated['max_failed_login_attempts'],
             'maintenance_mode' => $request->boolean('maintenance_mode') ? '1' : '0',
+            'vaccination_scheduling_enabled' => $request->boolean('vaccination_scheduling_enabled') ? '1' : '0',
         ];
 
         foreach ($settings as $key => $value) {

@@ -131,7 +131,13 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         $maintenanceRecords = collect();
 
         if ($user->citizen_id) {
-            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords', 'maintenanceRecords' => fn ($query) => $query->latest()])
+            $citizen = citizens::with([
+                'vaccinations',
+                'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+                'medications',
+                'healthRecords',
+                'maintenanceRecords' => fn ($query) => $query->latest(),
+            ])
                 ->where('id', $user->citizen_id)->first();
 
             if ($citizen) {
@@ -146,12 +152,14 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             ? app(\App\Http\Controllers\CitizenController::class)
                 ->makeCitizenQrImage($citizen)
             : null;
+        $vaccinationSchedulingEnabled = \App\Models\SystemSetting::boolean('vaccination_scheduling_enabled', true);
 
         return view('citizen.dashboard', compact(
             'announcements',
             'citizen',
             'maintenanceRecords',
-            'qrImage'
+            'qrImage',
+            'vaccinationSchedulingEnabled'
         ));
     })->name('dashboard');
 
@@ -225,7 +233,10 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Electronic Health & Vaccination Card Routes (NEW)
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
     Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
+    Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');
     Route::post('/citizen/{id}/medication', [CitizenController::class, 'storeMedication'])->name('citizen.medication.store');
+    Route::post('/citizen/{id}/password-reset', [CitizenController::class, 'resetCitizenPassword'])->name('citizen.password.reset');
 
     Route::get('/citizen/{id}', fn ($id) => app(CitizenController::class)->show($id))->name('citizen.show');
     Route::get('/citizendetails/{id}', fn ($id) => app(CitizenController::class)->citizendetails($id))->name('citizendetails');
@@ -284,6 +295,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
     Route::get('/citizen-export', [CitizenController::class,'export'])->name('citizen.export');
+    Route::get('/citizen-export/pdf', [CitizenController::class, 'exportPdf'])->name('citizen.export.pdf');
 });
 
 Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {

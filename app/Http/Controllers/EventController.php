@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\PurokSubgroup;
+use App\Models\Purok;
+use App\Models\SystemSetting;
+use App\Models\UserPermission;
+use App\Models\citizens;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -14,7 +19,26 @@ class EventController extends Controller
      */
     public function index()
     {
-        return view('bhw.calendar');
+        $user = Auth::user();
+        $citizenQuery = citizens::with('vaccinations')->orderBy('Citizen_LName')->orderBy('Citizen_FName');
+        $canViewAll = UserPermission::where('user_id', $user->id)
+            ->where('feature', 'view_all_citizens')
+            ->where('access', '!=', 'none')
+            ->exists();
+
+        if (!$canViewAll) {
+            $assignedSubgroups = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+            $citizenQuery->where(function ($query) use ($assignedSubgroups) {
+                $query->whereIn('subgroup_id', $assignedSubgroups)
+                    ->orWhereHas('family', fn ($family) => $family->whereIn('subgroup_id', $assignedSubgroups));
+            });
+        }
+
+        return view('bhw.calendar', [
+            'calendarCitizens' => $citizenQuery->get(),
+            'calendarPuroks' => Purok::orderBy('name')->get(),
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+        ]);
     }
 
     public function publicindex()
