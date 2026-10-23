@@ -18,6 +18,7 @@ use App\Models\citizens;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\VaccinationRecord;
+use App\Models\VaccinationSchedule;
 use App\Models\MaintenanceRecord;
 use App\Models\MedicationRecord;
 use App\Models\Supply;
@@ -31,6 +32,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
+use App\Models\SystemSetting;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -686,6 +688,7 @@ class CitizenController extends Controller
             'maintenanceRecords' => fn ($query) => $query->latest(),
             'medications' => fn ($query) => $query->latest(),
             'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
             'family.purok',
             'family.subgroup',
             'subgroup',
@@ -711,13 +714,90 @@ class CitizenController extends Controller
             'Viewed citizen details page'
         );
 
+        $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
+
         return view('bhw.citizendetails', compact(
             'citizen',
             'families',
             'puroks',
             'availableMedicines',
-            'canEdit'
+            'canEdit',
+            'vaccinationSchedulingEnabled'
         ));
+    }
+
+    public function administerVaccinationSchedule(Request $request, $id, $scheduleId)
+    {
+        abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
+
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $citizen = citizens::findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
+
+        $schedule = VaccinationSchedule::where('id', $scheduleId)
+            ->where('citizen_id', $citizen->id)
+            ->where('status', 'scheduled')
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'date_administered' => 'required|date|before_or_equal:today',
+        ]);
+
+        VaccinationRecord::create([
+            'citizen_id' => $citizen->id,
+            'vaccine_name' => $schedule->vaccine_name,
+            'dose_number' => $schedule->dose_number ?: 'Scheduled dose',
+            'date_administered' => $validated['date_administered'],
+            'administered_by' => $user->name,
+        ]);
+
+        $schedule->update(['status' => 'completed']);
+
+        $this->logActivity(
+            'update',
+            'vaccination_schedule',
+            $citizen->id,
+            'Marked scheduled ' . $schedule->vaccine_name . ' vaccination as administered'
+        );
+
+        return back()->with('success', 'Vaccination marked as administered and added to immunization history.');
+    }
+
+    public function resetCitizenPassword(Request $request, $id)
+    {
+        $user = auth()->user();
+        abort_unless($user && $user->hasWriteAccess('citizen_password_reset'), 403, 'You do not have permission to reset citizen passwords.');
+
+        $citizen = citizens::findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
+
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $citizenAccount = User::where('citizen_id', $citizen->id)
+            ->where('role', 'citizen')
+            ->firstOrFail();
+
+        $citizenAccount->update([
+            'password' => Hash::make($validated['password']),
+            'must_change_password' => true,
+            'failed_login_attempts' => 0,
+            'is_locked' => false,
+        ]);
+
+        $this->logActivity(
+            'password_reset',
+            'citizen',
+            $citizen->id,
+            'Reset citizen account password; citizen must change it at next login'
+        );
+
+        return back()->with('success', 'Citizen password reset successfully. The citizen must change it at next login.');
     }
 
     /*
@@ -858,6 +938,7 @@ class CitizenController extends Controller
 {
     $citizen = citizens::with([
         'vaccinations',
+        'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
         'medications',
         'healthRecords',
         'maintenanceRecords' => fn ($query) => $query->latest(),
@@ -865,19 +946,66 @@ class CitizenController extends Controller
 
     $this->authorizeCitizenEdit($citizen);
 
-    return view('bhw.ecard', compact('citizen'));
+    return view('bhw.ecard', [
+        'citizen' => $citizen,
+        'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+    ]);
 }
+
+    public function scheduleVaccination(Request $request)
+    {
+        abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
+
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'schedules' => 'required|array|min:1',
+            'schedules.*.citizen_id' => 'required|exists:citizens,id',
+            'schedules.*.vaccine_name' => 'required|string|max:255',
+            'schedules.*.dose_number' => 'nullable|string|max:100',
+            'schedules.*.scheduled_date' => 'required|date|after_or_equal:today',
+            'schedules.*.notes' => 'nullable|string|max:2000',
+        ]);
+
+        DB::transaction(function () use ($validated, $user) {
+            foreach ($validated['schedules'] as $scheduleData) {
+                $citizen = citizens::findOrFail($scheduleData['citizen_id']);
+                $this->authorizeCitizenEdit($citizen);
+
+                VaccinationSchedule::create([
+                    'citizen_id' => $citizen->id,
+                    'vaccine_name' => $scheduleData['vaccine_name'],
+                    'dose_number' => $scheduleData['dose_number'] ?? null,
+                    'scheduled_date' => $scheduleData['scheduled_date'],
+                    'notes' => $scheduleData['notes'] ?? null,
+                    'status' => 'scheduled',
+                    'scheduled_by' => $user->id,
+                ]);
+
+                $this->logActivity('create', 'vaccination_schedule', $citizen->id, 'Scheduled ' . $scheduleData['vaccine_name'] . ' vaccination');
+            }
+        });
+
+        return back()->with('success', count($validated['schedules']) . ' vaccination schedule(s) added successfully.');
+    }
 
     public function showElectronicCardByToken(string $token)
 {
     $citizen = citizens::with([
         'vaccinations',
+        'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
         'medications',
         'healthRecords',
         'maintenanceRecords' => fn ($query) => $query->latest(),
     ])->where('qr_token', $token)->firstOrFail();
 
-    return view('bhw.ecard', compact('citizen'));
+    return view('bhw.ecard', [
+        'citizen' => $citizen,
+        'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+    ]);
 }
 
     public function makeCitizenQrImage(citizens $citizen): string
@@ -1016,6 +1144,7 @@ class CitizenController extends Controller
 
         $citizen = citizens::with([
                 'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
                 'medications',
                 'healthRecords',
                 'maintenanceRecords' => fn ($query) => $query->latest(),
@@ -1028,6 +1157,7 @@ class CitizenController extends Controller
         return view('citizen.ecard', [
             'citizen' => $citizen,
             'qrImage' => $qrImage,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
         ]);
     }
 }

@@ -5,6 +5,16 @@
     <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+    <style>
+        .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-password-modal.is-open { display: flex; }
+        .citizen-password-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-password-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-password-dialog p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-password-dialog label { display: block; margin: 12px 0 6px; color: #334155; font-size: 12px; font-weight: 700; }
+        .citizen-password-dialog input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .citizen-password-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    </style>
 @endsection
 
 @section('content')
@@ -568,6 +578,20 @@
 
                 </a>
 
+                @if(auth()->user()->hasWriteAccess('citizen_password_reset'))
+                <button type="button"
+
+                class="btn-secondary resetCitizenPasswordBtn"
+
+                data-citizen-id="{{ $citizen->id }}"
+
+                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
+
+                Reset Password
+
+                </button>
+                @endif
+
                 {{-- DELETE BUTTON --}}
 
                 <form action="{{ route('citizen.delete', $citizen->id) }}"
@@ -694,6 +718,24 @@
 
 </div>
 
+<div id="citizenPasswordResetModal" class="citizen-password-modal" role="dialog" aria-modal="true" aria-labelledby="citizenPasswordResetTitle">
+    <div class="citizen-password-dialog">
+        <h2 id="citizenPasswordResetTitle">Reset Citizen Password</h2>
+        <p>Set a temporary password for <strong id="resetCitizenName"></strong>. The citizen will be required to change it at the next login.</p>
+        <form method="POST" id="citizenPasswordResetForm">
+            @csrf
+            <label for="resetCitizenPassword">Temporary password</label>
+            <input type="password" id="resetCitizenPassword" name="password" minlength="8" required autocomplete="new-password">
+            <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
+            <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
+            <div class="citizen-password-dialog-actions">
+                <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset">Cancel</button>
+                <button type="submit" class="btn-primary">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- APEXCHARTS CDN --}}
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -719,6 +761,33 @@
         }
 
     }
+
+
+            const citizenPasswordResetModal = document.getElementById('citizenPasswordResetModal');
+            const citizenPasswordResetForm = document.getElementById('citizenPasswordResetForm');
+            const resetCitizenName = document.getElementById('resetCitizenName');
+
+            document.querySelectorAll('.resetCitizenPasswordBtn').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    citizenPasswordResetForm.action = '{{ url('/citizen') }}/' + button.dataset.citizenId + '/password-reset';
+                    resetCitizenName.textContent = button.dataset.citizenName;
+                    citizenPasswordResetForm.reset();
+                    citizenPasswordResetModal.classList.add('is-open');
+                    document.getElementById('resetCitizenPassword').focus();
+                });
+            });
+
+            document.getElementById('cancelCitizenPasswordReset').addEventListener('click', function () {
+                citizenPasswordResetModal.classList.remove('is-open');
+                citizenPasswordResetForm.reset();
+            });
+
+            citizenPasswordResetModal.addEventListener('click', function (event) {
+                if (event.target === citizenPasswordResetModal) {
+                    citizenPasswordResetModal.classList.remove('is-open');
+                    citizenPasswordResetForm.reset();
+                }
+            });
 
     // ============================================================
 

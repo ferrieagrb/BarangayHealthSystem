@@ -381,6 +381,30 @@
                     <p class="immunization-preview-note">Read-only: this citizen is not assigned to your subgroup.</p>
                 @endif
 
+                @if($vaccinationSchedulingEnabled)
+                    <div class="immunization-history" style="margin-bottom: 18px;">
+                        <h4>Scheduled Immunizations</h4>
+                        @forelse ($citizen->vaccinationSchedules as $schedule)
+                            <div class="immunization-history-item" style="border-left: 3px solid #f59e0b;">
+                                <strong>{{ $schedule->vaccine_name }}</strong>
+                                <span>{{ $schedule->dose_number ?: 'Scheduled dose' }} · Scheduled for {{ $schedule->scheduled_date->format('M d, Y') }}</span>
+                                <small>Not yet administered{{ $schedule->notes ? ' · ' . $schedule->notes : '' }}</small>
+                                @if($canEdit && (int)$citizen->Citizen_IsDeceased !== 1)
+                                    <form method="POST" action="{{ route('citizen.vaccination.schedule.administer', [$citizen->id, $schedule->id]) }}" style="display:flex; align-items:end; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                                        @csrf
+                                        <label style="font-size:12px; color:#475569;">Date administered
+                                            <input type="date" name="date_administered" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" required style="display:block; margin-top:4px;">
+                                        </label>
+                                        <button type="submit" class="btn-primary">Mark Administered</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @empty
+                            <p>No pending immunization schedules.</p>
+                        @endforelse
+                    </div>
+                @endif
+
                 <div class="immunization-history">
                     <h4>Immunization History</h4>
                     @forelse ($citizen->vaccinations as $vaccination)

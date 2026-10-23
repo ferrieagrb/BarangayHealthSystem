@@ -54,6 +54,15 @@
         </section>
 
         <section class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-blue-900">Vaccination Scheduling</h2>
+            <p class="mt-1 text-sm text-gray-500">Allow BHWs to schedule future vaccinations and show those schedules on citizen dashboards.</p>
+            <label class="mt-5 flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <span><strong class="block text-sm text-gray-800">Enable vaccination scheduling</strong><small class="text-xs text-gray-500">When disabled, scheduling forms and schedule displays are unavailable.</small></span>
+                <input type="checkbox" name="vaccination_scheduling_enabled" value="1" {{ $vaccinationSchedulingEnabled ? 'checked' : '' }} class="h-5 w-5">
+            </label>
+        </section>
+
+        <section class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 class="text-lg font-semibold text-blue-900">Login Security</h2>
             <p class="mt-1 text-sm text-gray-500">Lock accounts after repeated failed password attempts.</p>
             <label class="mt-5 block text-sm font-semibold text-gray-700">Maximum failed login attempts
