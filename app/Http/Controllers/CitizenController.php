@@ -293,9 +293,6 @@ class CitizenController extends Controller
             ->orderBy('name')
             ->paginate(10, ['*'], 'medicine_page');
 
-
-
-
         /*
         |--------------------------------------------------------------------------
         | PAGINATION
@@ -571,7 +568,6 @@ class CitizenController extends Controller
             'severity' => 'nullable|in:Low / Mild,Moderate,High / Severe,Critical,Resolved',
             'weight' => 'nullable|numeric|min:1|max:500',
             'height' => 'nullable|numeric|min:1|max:300',
-            // Temperature is optional by design.
             'temperature' => 'nullable|numeric|min:25|max:45',
             'blood_pressure' => 'nullable|string|max:20',
         ]);
@@ -595,7 +591,6 @@ class CitizenController extends Controller
             'blood_pressure' => isset($validated['blood_pressure']) ? trim($validated['blood_pressure']) : null,
         ]);
 
-        // Keep the citizen profile's current measurements in sync when supplied.
         $profileUpdates = [];
         if ($weight !== null) $profileUpdates['Citizen_Weight'] = $weight;
         if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
@@ -696,62 +691,60 @@ class CitizenController extends Controller
     }
 
     public function storeMaintenance(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    if (!$user || $user->role !== 'bhw') {
-        abort(403);
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'citizen_id'       => 'required|integer|exists:citizens,id',
+            'medicine_name'    => 'required|string|max:255',
+            'quantity_dispensed' => 'required|integer|min:1|max:100000',
+            'dosage'           => 'required|string|max:100',
+            'frequency'        => 'required|string|max:100',
+            'start_date'       => 'required|date',
+            'end_date'         => 'nullable|date|after_or_equal:start_date',
+            'notes'            => 'nullable|string|max:2000',
+        ]);
+
+        $citizen = citizens::findOrFail($validated['citizen_id']);
+        $this->authorizeCitizenEdit($citizen);
+
+        $medicineName = trim($validated['medicine_name']);
+
+        if ($medicineName === '') {
+            return back()
+                ->withErrors(['medicine_name' => 'Please enter a medicine name.'])
+                ->withInput();
+        }
+
+        $record = MaintenanceRecord::create([
+            'citizen_id'        => $citizen->id,
+            'medicine_name'     => $medicineName,
+            'quantity_dispensed'=> (int) $validated['quantity_dispensed'],
+            'dosage'            => trim($validated['dosage']),
+            'frequency'         => trim($validated['frequency']),
+            'start_date'        => $validated['start_date'],
+            'end_date'          => $validated['end_date'] ?? null,
+            'notes'             => isset($validated['notes']) ? trim($validated['notes']) : null,
+            'user_id'           => $user->id,
+        ]);
+
+        $this->logActivity(
+            'create',
+            'maintenance',
+            $citizen->id,
+            'Added maintenance medicine: ' . $medicineName
+                . ' (quantity ' . $record->quantity_dispensed
+                . ', ' . $record->dosage . ', ' . $record->frequency . ').'
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Maintenance medicine added successfully.');
     }
-
-    // These field names must match the Maintenance Medicines form.
-    $validated = $request->validate([
-        'citizen_id'       => 'required|integer|exists:citizens,id',
-        'medicine_name'    => 'required|string|max:255',
-        'quantity_dispensed' => 'required|integer|min:1|max:100000',
-        'dosage'           => 'required|string|max:100',
-        'frequency'        => 'required|string|max:100',
-        'start_date'       => 'required|date',
-        'end_date'         => 'nullable|date|after_or_equal:start_date',
-        'notes'            => 'nullable|string|max:2000',
-    ]);
-
-    $citizen = citizens::findOrFail($validated['citizen_id']);
-    $this->authorizeCitizenEdit($citizen);
-
-    $medicineName = trim($validated['medicine_name']);
-
-    if ($medicineName === '') {
-        return back()
-            ->withErrors(['medicine_name' => 'Please enter a medicine name.'])
-            ->withInput();
-    }
-
-    // Save with an explicit citizen_id so the record is linked to the selected citizen.
-    $record = MaintenanceRecord::create([
-        'citizen_id'        => $citizen->id,
-        'medicine_name'     => $medicineName,
-        'quantity_dispensed'=> (int) $validated['quantity_dispensed'],
-        'dosage'            => trim($validated['dosage']),
-        'frequency'         => trim($validated['frequency']),
-        'start_date'        => $validated['start_date'],
-        'end_date'          => $validated['end_date'] ?? null,
-        'notes'             => isset($validated['notes']) ? trim($validated['notes']) : null,
-        'user_id'           => $user->id,
-    ]);
-
-    $this->logActivity(
-        'create',
-        'maintenance',
-        $citizen->id,
-        'Added maintenance medicine: ' . $medicineName
-            . ' (quantity ' . $record->quantity_dispensed
-            . ', ' . $record->dosage . ', ' . $record->frequency . ').'
-    );
-
-    return redirect()
-        ->back()
-        ->with('success', 'Maintenance medicine added successfully.');
-}
 
     public function healthIndex()
     {
@@ -827,7 +820,6 @@ class CitizenController extends Controller
             ->get();
         $puroks = Purok::with('subgroups')->get();
 
-        // The citizen details Blade view uses this list in the medicine selector.
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
             ->distinct()
@@ -936,7 +928,6 @@ class CitizenController extends Controller
     {
         $citizen = citizens::findOrFail($id);
 
-        // Enforce subgroup assignment check
         $this->authorizeCitizenEdit($citizen);
 
         $this->logActivity('delete', 'citizen', $citizen->id, 'Deleted citizen');
@@ -954,7 +945,6 @@ class CitizenController extends Controller
     {
         $citizen = citizens::findOrFail($id);
 
-        // Enforce subgroup assignment check
         $this->authorizeCitizenEdit($citizen);
 
         $validated = $request->validate([
@@ -1213,6 +1203,9 @@ class CitizenController extends Controller
     */
     public function import(Request $request)
     {
+        // Prevent timeout errors on large file uploads (allows up to 5 minutes)
+        set_time_limit(300);
+
         $request->validate([
             'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
@@ -1230,7 +1223,9 @@ class CitizenController extends Controller
                 "Citizens imported successfully. {$import->createdAccounts} citizen accounts were created with the default temporary password."
             );
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Citizen Import Error: ' . $e->getMessage() . ' on line ' . $e->getLine());
             $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());
+            
             return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }
@@ -1241,22 +1236,22 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function showElectronicCard($id)
-{
-    $citizen = citizens::with([
-        'vaccinations',
-        'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
-        'medications',
-        'healthRecords',
-        'maintenanceRecords' => fn ($query) => $query->latest(),
-    ])->findOrFail($id);
+    {
+        $citizen = citizens::with([
+            'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+            'medications',
+            'healthRecords',
+            'maintenanceRecords' => fn ($query) => $query->latest(),
+        ])->findOrFail($id);
 
-    $this->authorizeCitizenEdit($citizen);
+        $this->authorizeCitizenEdit($citizen);
 
-    return view('bhw.ecard', [
-        'citizen' => $citizen,
-        'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
-    ]);
-}
+        return view('bhw.ecard', [
+            'citizen' => $citizen,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+        ]);
+    }
 
     public function scheduleVaccination(Request $request)
     {
@@ -1299,20 +1294,20 @@ class CitizenController extends Controller
     }
 
     public function showElectronicCardByToken(string $token)
-{
-    $citizen = citizens::with([
-        'vaccinations',
-        'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
-        'medications',
-        'healthRecords',
-        'maintenanceRecords' => fn ($query) => $query->latest(),
-    ])->where('qr_token', $token)->firstOrFail();
+    {
+        $citizen = citizens::with([
+            'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+            'medications',
+            'healthRecords',
+            'maintenanceRecords' => fn ($query) => $query->latest(),
+        ])->where('qr_token', $token)->firstOrFail();
 
-    return view('bhw.ecard', [
-        'citizen' => $citizen,
-        'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
-    ]);
-}
+        return view('bhw.ecard', [
+            'citizen' => $citizen,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+        ]);
+    }
 
     public function makeCitizenQrImage(citizens $citizen): string
     {
@@ -1321,14 +1316,10 @@ class CitizenController extends Controller
             $citizen->save();
         }
 
-        // Use a stable public Health ID URL. The public page does not expose
-        // medical information; authorized providers must sign in to view records.
         $url = route('health-id.public', [
             'token' => $citizen->qr_token,
         ]);
 
-        // Generate the QR locally instead of sending the citizen token to a
-        // third-party QR-generation service.
         $qrCode = new QrCode(
             data: $url,
             encoding: new Encoding('UTF-8'),
@@ -1421,7 +1412,7 @@ class CitizenController extends Controller
             'date_dispensed' => 'required|date',
         ]);
 
-        $validated['citizen_id'] = $citizenId;
+        $validated['citizen_id'] = $id;
 
         MedicationRecord::create($validated);
 
