@@ -568,14 +568,40 @@ class CitizenController extends Controller
             'diagnosis' => 'required|string|max:255',
             'record_date' => 'required|date',
             'comments' => 'nullable|string|max:2000',
+            'severity' => 'nullable|in:Low / Mild,Moderate,High / Severe,Critical,Resolved',
+            'weight' => 'nullable|numeric|min:1|max:500',
+            'height' => 'nullable|numeric|min:1|max:300',
+            // Temperature is optional by design.
+            'temperature' => 'nullable|numeric|min:25|max:45',
+            'blood_pressure' => 'nullable|string|max:20',
         ]);
+
+        $weight = isset($validated['weight']) && $validated['weight'] !== '' ? (float) $validated['weight'] : null;
+        $height = isset($validated['height']) && $validated['height'] !== '' ? (float) $validated['height'] : null;
+        $bmi = ($weight !== null && $height !== null && $height > 0)
+            ? round($weight / (($height / 100) ** 2), 1)
+            : null;
 
         $record = HealthRecord::create([
             'citizen_id' => $validated['citizen_id'],
             'diagnosis' => trim($validated['diagnosis']),
             'record_date' => $validated['record_date'],
-            'comments' => $validated['comments'] ?? null,
+            'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
+            'severity' => $validated['severity'] ?? 'Low / Mild',
+            'weight' => $weight,
+            'height' => $height,
+            'bmi' => $bmi,
+            'temperature' => $validated['temperature'] ?? null,
+            'blood_pressure' => isset($validated['blood_pressure']) ? trim($validated['blood_pressure']) : null,
         ]);
+
+        // Keep the citizen profile's current measurements in sync when supplied.
+        $profileUpdates = [];
+        if ($weight !== null) $profileUpdates['Citizen_Weight'] = $weight;
+        if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
+        if ($profileUpdates) {
+            $citizen->forceFill($profileUpdates)->save();
+        }
 
         HealthRecordActivityLog::create([
             'user_id' => Auth::id(),
@@ -588,6 +614,85 @@ class CitizenController extends Controller
         $this->logActivity('create', 'health_record', $validated['citizen_id'], 'Added health record: ' . $validated['diagnosis']);
 
         return back()->with('success', 'Diagnosis added successfully.');
+    }
+
+    public function deleteHealthRecord($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $record = HealthRecord::with('citizen')->findOrFail($id);
+        $citizen = $record->citizen;
+
+        if (!$citizen || !$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this diagnosis record.');
+        }
+
+        $diagnosis = $record->diagnosis;
+        $citizenId = $record->citizen_id;
+        $recordId = $record->id;
+
+        HealthRecordActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'delete',
+            'citizen_id' => $citizenId,
+            'health_record_id' => $recordId,
+            'description' => 'Deleted health record: ' . $diagnosis,
+        ]);
+
+        $record->delete();
+        $this->logActivity('delete', 'health_record', $citizenId, 'Deleted health record: ' . $diagnosis);
+
+        return back()->with('success', 'Diagnosis record deleted successfully.');
+    }
+
+    public function deleteVaccinationRecord($citizenId, $recordId)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $citizen = citizens::findOrFail($citizenId);
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this vaccination record.');
+        }
+
+        $record = VaccinationRecord::where('citizen_id', $citizen->id)
+            ->findOrFail($recordId);
+
+        $description = 'Deleted vaccination: ' . $record->vaccine_name
+            . ' (' . $record->dose_number . ')';
+        $record->delete();
+
+        $this->logActivity('delete', 'vaccination', $citizen->id, $description);
+
+        return back()->with('success', 'Vaccination record deleted successfully.');
+    }
+
+    public function deleteMaintenanceRecord($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $record = MaintenanceRecord::with('citizen')->findOrFail($id);
+        $citizen = $record->citizen;
+
+        if (!$citizen || !$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this maintenance medicine record.');
+        }
+
+        $citizenId = $citizen->id;
+        $medicineName = $record->medicine_name;
+        $record->delete();
+
+        $this->logActivity('delete', 'maintenance', $citizenId, 'Deleted maintenance medicine: ' . $medicineName);
+
+        return back()->with('success', 'Maintenance medicine deleted successfully.');
     }
 
     public function storeMaintenance(Request $request)

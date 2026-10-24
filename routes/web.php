@@ -233,6 +233,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Electronic Health & Vaccination Card Routes (NEW)
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
     Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::delete('/citizen/{citizenId}/vaccination-record/{recordId}', [CitizenController::class, 'deleteVaccinationRecord'])->name('citizen.vaccination.delete');
     Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
     Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');
     Route::post('/citizen/{id}/medication', [CitizenController::class, 'storeMedication'])->name('citizen.medication.store');
@@ -249,7 +250,9 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
     Route::get('/analytics', [BhwAnalyticsController::class, 'index'])->name('bhw.analytics');
     Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
+    Route::post('/health-record/{id}/delete', [CitizenController::class, 'deleteHealthRecord'])->name('health.record.delete');
     Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
+    Route::delete('/health-record/maintenance/{id}', [CitizenController::class, 'deleteMaintenanceRecord'])->name('health.maintenance.delete');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
