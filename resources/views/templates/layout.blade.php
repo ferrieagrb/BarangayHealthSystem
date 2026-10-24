@@ -236,7 +236,7 @@
                     </a>
                 </li>
                 <li>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
                         @csrf
                         <button type="submit">
                             <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>

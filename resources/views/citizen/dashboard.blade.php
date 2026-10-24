@@ -1561,14 +1561,25 @@
                         </div>
 
                         <div class="c-id-field">
-                            <span>CONTACT NUMBER</span>
-                            <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
-                        </div>
-
-                        <div class="c-id-field">
                             <span>ADDRESS / PUROK</span>
                             <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
                         </div>
+                    </div>
+                </div>
+
+                {{-- SECONDARY DETAILS, MATCHING THE CITIZEN E-CARD VIEW --}}
+                <div class="c-id-secondary-details">
+                    <div class="c-id-field">
+                        <span>SEX</span>
+                        <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
+                    </div>
+                    <div class="c-id-field">
+                        <span>AGE</span>
+                        <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age : ($citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A') }}</strong>
+                    </div>
+                    <div class="c-id-field">
+                        <span>CONTACT NUMBER</span>
+                        <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
                     </div>
                 </div>
 
@@ -1709,6 +1720,10 @@
                             <tr>
                                 <th>Diagnosis</th>
                                 <th>Date recorded</th>
+                                <th>BMI</th>
+                                <th>Weight / Height</th>
+                                <th>Temperature</th>
+                                <th>BP</th>
                                 <th>Notes / Comments</th>
                             </tr>
                         </thead>
@@ -1717,11 +1732,15 @@
                                 <tr>
                                     <td>{{ $record->diagnosis ?: 'N/A' }}</td>
                                     <td>{{ $record->record_date ?: optional($record->created_at)->format('Y-m-d') ?: 'N/A' }}</td>
+                                    <td>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1) . ' kg/m²' : 'N/A' }}</td>
+                                    <td>{{ $record->weight !== null ? $record->weight . ' kg' : 'N/A' }} / {{ $record->height !== null ? $record->height . ' cm' : 'N/A' }}</td>
+                                    <td>{{ $record->temperature !== null ? number_format((float)$record->temperature, 1) . ' °C' : 'N/A' }}</td>
+                                    <td>{{ $record->blood_pressure ?: 'N/A' }}</td>
                                     <td>{{ $record->comments ?: 'No notes' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="none" colspan="3">No diagnosis or health records found.</td>
+                                    <td class="none" colspan="7">No diagnosis or health records found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -1882,15 +1901,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <style>
-/* Dashboard health card matches My Health Card: photo left, details middle, QR right. */
+/* Only the dashboard health card is styled here; other dashboard sections are untouched. */
+.c-home .c-id-card {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+}
 .c-home .c-id-body {
     display: grid;
-    grid-template-columns: 132px minmax(0, 1fr) 150px;
+    grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
     align-items: center;
-    gap: 24px;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 32px);
 }
+.c-home .c-id-details { min-width: 0; }
+.c-home .c-id-details-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+.c-home .c-id-secondary-details {
+    min-width: 0;
+    align-self: center;
+}
+.c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
 .c-home .c-id-body > .c-id-qr-centered {
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
     width: 100%;
     margin: 0;
@@ -1924,14 +1961,29 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 @media (max-width: 760px) {
     .c-home .c-id-body {
-        grid-template-columns: 76px minmax(0, 1fr) 90px;
-        gap: 10px;
+        grid-template-columns: 76px minmax(0, 1fr);
+        align-items: start;
+        gap: 12px;
         padding: 15px 12px;
     }
+    .c-home .c-id-body .c-photo {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+    .c-home .c-id-details { grid-column: 2; grid-row: 1; }
+    .c-home .c-id-secondary-details {
+        grid-column: 2;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 12px;
+    }
+    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 9px; }
     .c-home .c-id-body > .c-id-qr-centered {
-        grid-column: 3;
-        grid-row: 1;
-        padding: 0;
+        grid-column: 2;
+        grid-row: 3;
+        justify-self: start;
+        align-items: flex-start;
     }
     .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
         width: 72px;
@@ -1940,23 +1992,15 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 @media (max-width: 420px) {
     .c-home .c-id-body {
-        grid-template-columns: 58px minmax(0, 1fr) 66px;
-        gap: 7px;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 8px;
         padding: 12px 8px;
     }
-    .c-home .c-id-body .c-photo {
-        width: 58px;
-        height: 76px;
-    }
+    .c-home .c-id-body .c-photo { width: 58px; height: 76px; }
+    .c-home .c-id-secondary-details { grid-template-columns: minmax(0, 1fr); }
     .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-        width: 54px;
-        height: 54px;
-    }
-    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
-        padding: 3px;
-    }
-    .c-home .c-id-body > .c-id-qr-centered > span {
-        font-size: 6px;
+        width: 60px;
+        height: 60px;
     }
 }
 </style>
