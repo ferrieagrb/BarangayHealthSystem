@@ -1,0 +1,572 @@
+
+/* =========================================================
+   1. SYSTEM CONNECTIONS BASE LAYOUT
+========================================================= */
+
+.system-connections-container {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 2rem;
+    color: #1f2937;
+}
+
+.system-connections-container *,
+.system-connections-container *::before,
+.system-connections-container *::after {
+    box-sizing: border-box;
+}
+
+.system-connections-container .page-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.system-connections-container .page-title-group {
+    min-width: 0;
+}
+
+.system-connections-container .page-title-group h1 {
+    margin: 0;
+    color: #0f172a;
+    line-height: 1.4;
+}
+
+.system-connections-container .page-title-group p {
+    margin: 0.35rem 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   2. REFRESH BUTTON
+========================================================= */
+
+.connections-refresh-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.625rem 1rem;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    border: 1px solid #2563eb;
+    border-radius: 0.625rem;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.connections-refresh-button:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.connections-refresh-button:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 3px;
+}
+
+.connections-refresh-button svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.connections-refresh-button.is-loading svg {
+    animation: connections-spin 1s linear infinite;
+}
+
+.connections-refresh-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   3. LAST CHECKED AND SUMMARY BAR
+========================================================= */
+
+.connections-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    width: 100%;
+    min-width: 0;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.035);
+}
+
+.connections-last-checked {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.connections-last-checked strong {
+    color: #334155;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.connections-summary-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.connections-summary-status::before {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    background-color: currentColor;
+    border-radius: 50%;
+    content: "";
+}
+
+.connections-summary-status.is-healthy {
+    color: #15803d;
+}
+
+.connections-summary-status.is-failed {
+    color: #dc2626;
+}
+
+.connections-summary-status.is-warning {
+    color: #b45309;
+}
+
+.connections-summary-status.is-loading {
+    color: #64748b;
+}
+
+.connections-summary-status.is-neutral {
+    color: #64748b;
+}
+
+
+/* =========================================================
+   4. CONNECTIONS GRID
+========================================================= */
+
+.connections-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1.25rem;
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* =========================================================
+   5. CONNECTION CARDS
+========================================================= */
+
+.connection-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 200px;
+    padding: 1.25rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #cbd5e1;
+    border-radius: 0.875rem;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.connection-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
+}
+
+.connection-healthy {
+    border-color: #d1fae5;
+    border-top-color: #10b981;
+}
+
+.connection-warning {
+    border-color: #fde68a;
+    border-top-color: #f59e0b;
+}
+
+.connection-failed {
+    border-color: #fecaca;
+    border-top-color: #ef4444;
+}
+
+.connection-unknown {
+    border-color: #e2e8f0;
+    border-top-color: #94a3b8;
+}
+
+
+/* =========================================================
+   6. CONNECTION CARD HEADER
+========================================================= */
+
+.connection-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.connection-card-title {
+    min-width: 0;
+    margin: 0;
+    color: #0f172a;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.connection-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.connection-badge-healthy {
+    background-color: #d1fae5;
+    color: #047857;
+}
+
+.connection-badge-warning {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.connection-badge-failed {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.connection-badge-unknown {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+
+/* =========================================================
+   7. CONNECTION STATUS AND DETAILS
+========================================================= */
+
+.connection-card-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.125rem;
+    color: #334155;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.connection-status-indicator {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    background-color: #94a3b8;
+    border-radius: 50%;
+}
+
+.connection-healthy .connection-status-indicator {
+    background-color: #10b981;
+}
+
+.connection-warning .connection-status-indicator {
+    background-color: #f59e0b;
+}
+
+.connection-failed .connection-status-indicator {
+    background-color: #ef4444;
+}
+
+.connection-card-detail {
+    margin: 0.5rem 0 1rem;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.connection-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.connection-state-label {
+    color: #64748b;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.connection-healthy .connection-state-label {
+    color: #047857;
+}
+
+.connection-warning .connection-state-label {
+    color: #b45309;
+}
+
+.connection-failed .connection-state-label {
+    color: #b91c1c;
+}
+
+
+/* =========================================================
+   8. LOADING STATE
+========================================================= */
+
+.connections-loading-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.875rem;
+    grid-column: 1 / -1;
+    min-height: 200px;
+    padding: 2rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    color: #64748b;
+    text-align: center;
+}
+
+.connections-loading-card p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.connections-loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid #dbeafe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: connections-spin 0.8s linear infinite;
+}
+
+@keyframes connections-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   9. EMPTY AND ERROR STATES
+========================================================= */
+
+.connections-empty-state,
+.connections-error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    min-height: 240px;
+    padding: 2rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    text-align: center;
+}
+
+.connections-empty-icon,
+.connections-error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.875rem;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.connections-empty-icon {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+
+.connections-error-icon {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.connections-empty-state h2,
+.connections-error-state h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.connections-empty-state p,
+.connections-error-state p {
+    max-width: 100%;
+    margin: 0.5rem 0 0;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.connections-error-state span {
+    margin-top: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   10. RESPONSIVE: SMALL DESKTOPS AND TABLETS
+========================================================= */
+
+@media (max-width: 1280px) {
+    .connections-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .connections-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .connection-card {
+        min-height: 190px;
+    }
+}
+
+
+/* =========================================================
+   11. RESPONSIVE: MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+    .system-connections-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .system-connections-container .page-top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .system-connections-container .page-title-group h1 {
+        font-size: 1.25rem;
+    }
+
+    .system-connections-container .page-title-group p {
+        font-size: 0.8125rem;
+    }
+
+    .connections-refresh-button {
+        width: 100%;
+    }
+
+    .connections-summary {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.625rem;
+        padding: 1rem;
+        margin-bottom: 1.125rem;
+    }
+
+    .connections-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    .connection-card {
+        min-height: 0;
+        padding: 1.125rem;
+    }
+
+    .connections-loading-card,
+    .connections-empty-state,
+    .connections-error-state {
+        min-height: 190px;
+        padding: 1.5rem 1rem;
+    }
+}
+
+
+/* =========================================================
+   12. ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .connections-refresh-button,
+    .connection-card {
+        transition: none;
+    }
+
+    .connections-loading-spinner,
+    .connections-refresh-button.is-loading svg {
+        animation: none;
+    }
+
+    .connection-card:hover {
+        transform: none;
+    }
+}

@@ -1,7 +1,14 @@
+
 @extends('templates.superadmin')
 
+@section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/superadmin/system_analytics.css') }}">
+@endsection
+
 @section('content')
-<div class="w-full space-y-6">
+<div class="system-analytics-container">
+
+    {{-- Page Header --}}
     <div class="page-top">
         <div class="page-title-group">
             <h1>System Analytics &amp; Infrastructure</h1>
@@ -9,165 +16,419 @@
         </div>
     </div>
 
-    <!-- Section 1: Core System Overview Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div>
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Registered Users</p>
-                <div class="mt-1 text-2xl font-bold text-gray-800" id="total-users-text">Loading...</div>
-            </div>
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            </div>
-        </div>
+    {{-- Section 1: Core System Overview --}}
+    <section class="analytics-section">
+        <div class="analytics-overview-grid">
 
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div>
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Users (Last 15m)</p>
-                <div class="mt-1 text-2xl font-bold text-green-600" id="active-users-text">Loading...</div>
-            </div>
-            <div class="p-3 bg-green-50 text-green-600 rounded-lg">
-                <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-            </div>
-        </div>
+            <div class="analytics-card overview-card">
+                <div class="overview-card-content">
+                    <p class="analytics-label">Total Registered Users</p>
+                    <div class="analytics-stat-value" id="total-users-text">
+                        Loading...
+                    </div>
+                </div>
 
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-            <div>
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Recorded Page Views</p>
-                <div class="mt-1 text-2xl font-bold text-gray-800" id="total-views-text">Loading...</div>
+                <div class="analytics-icon icon-blue" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </div>
             </div>
-            <div class="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+
+            <div class="analytics-card overview-card">
+                <div class="overview-card-content">
+                    <p class="analytics-label">Active Users (Last 15m)</p>
+                    <div class="analytics-stat-value stat-green" id="active-users-text">
+                        Loading...
+                    </div>
+                </div>
+
+                <div class="analytics-icon icon-green" aria-hidden="true">
+                    <span class="status-pulse">
+                        <span class="status-pulse-ring"></span>
+                        <span class="status-pulse-dot"></span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="analytics-card overview-card">
+                <div class="overview-card-content">
+                    <p class="analytics-label">Total Recorded Page Views</p>
+                    <div class="analytics-stat-value" id="total-views-text">
+                        Loading...
+                    </div>
+                </div>
+
+                <div class="analytics-icon icon-purple" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Section 2: Infrastructure and Storage --}}
+    <section class="analytics-section">
+        <div class="infrastructure-grid">
+
+            <div class="analytics-card infrastructure-card">
+                <h3 class="analytics-label">Disk Storage (Hostinger)</h3>
+
+                <div class="analytics-stat-value" id="disk-usage-text">
+                    Loading...
+                </div>
+
+                <p class="analytics-muted-text" id="disk-subtext">
+                    Calculating storage...
+                </p>
+
+                <div class="progress-track"
+                    role="progressbar"
+                    aria-label="Disk storage usage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                    id="disk-progress-track">
+
+                    <div class="progress-bar" id="disk-progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="analytics-card infrastructure-card">
+                <h3 class="analytics-label">Database Size</h3>
+
+                <div class="analytics-stat-value" id="db-size-text">
+                    Loading...
+                </div>
+
+                <p class="analytics-muted-text">
+                    MySQL on Hostinger Server
+                </p>
+            </div>
+
+            <div class="analytics-card infrastructure-card">
+                <h3 class="analytics-label">PHP Environment</h3>
+
+                <div class="analytics-stat-value" id="php-version-text">
+                    Loading...
+                </div>
+
+                <p class="environment-status">
+                    <span class="environment-status-dot"></span>
+                    Active &amp; Running
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Section 3: Analytics Lists and Demographics --}}
+    <section class="analytics-section">
+        <div class="analytics-details-grid">
+
+            {{-- Top Visited Pages --}}
+            <div class="analytics-card top-pages-card">
+                <h3 class="analytics-card-title">Top Visited Pages</h3>
+
+                <div class="top-pages-list" id="top-pages-list">
+                    <p class="analytics-empty-message">
+                        Loading top visited pages...
+                    </p>
+                </div>
+            </div>
+
+            {{-- Browser Demographics --}}
+            <div class="analytics-card browser-card">
+                <h3 class="analytics-card-title">User Browsers</h3>
+
+                <div class="browser-demographics-list"
+                    id="browser-demographics-list">
+
+                    <p class="analytics-empty-message">
+                        Fetching browser distribution...
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Section 4: Background Processing and Errors --}}
+    <section class="analytics-section">
+        <div class="analytics-card errors-card">
+            <h3 class="analytics-card-title">
+                Background Processing &amp; Errors
+            </h3>
+
+            <div class="failed-jobs-panel">
+                <div class="failed-jobs-content">
+                    <span class="failed-jobs-title">Failed Queue Jobs</span>
+
+                    <p class="failed-jobs-description">
+                        Unprocessed background tasks that require attention.
+                    </p>
+                </div>
+
+                <span class="failed-jobs-badge" id="failed-jobs-badge">0</span>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Section 2: Infrastructure & Storage Health -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Disk Storage (Hostinger)</h4>
-            <div class="mt-2 text-2xl font-bold text-gray-800" id="disk-usage-text">Loading...</div>
-            <p class="text-xs text-gray-400 mt-1" id="disk-subtext">Calculating storage...</p>
-            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3">
-                <div id="disk-progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Database Size</h4>
-            <div class="mt-2 text-2xl font-bold text-gray-800" id="db-size-text">Loading...</div>
-            <p class="text-xs text-gray-400 mt-1">MySQL on Hostinger Server</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">PHP Environment</h4>
-            <div class="mt-2 text-2xl font-bold text-gray-800" id="php-version-text">Loading...</div>
-            <p class="text-xs text-green-600 mt-1">● Active & Running</p>
-        </div>
-    </div>
-
-    <!-- Section 3: Analytics Lists & Demographics -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Top Visited Pages -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">Top Visited Pages</h3>
-            <div id="top-pages-list" class="space-y-3">
-                <p class="text-sm text-gray-400">Loading top visited pages...</p>
-            </div>
-        </div>
-
-        <!-- User Browsers & Devices -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">User Browsers</h3>
-            <div id="browser-demographics-list" class="space-y-3">
-                <p class="text-sm text-gray-400">Fetching browser distribution...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 4: Errors & Queue -->
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-lg font-medium text-gray-800 mb-4">Background Processing & Errors</h3>
-        <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
-            <div>
-                <span class="font-semibold text-red-700">Failed Queue Jobs</span>
-                <p class="text-xs text-red-500">Unprocessed background tasks that require attention.</p>
-            </div>
-            <span id="failed-jobs-badge" class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-bold">0</span>
-        </div>
-    </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async function() {
+document.addEventListener('DOMContentLoaded', async function () {
+    const numberFormat = new Intl.NumberFormat();
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value ?? 'N/A';
+        }
+    }
+
+    function createElement(tag, className, textContent = '') {
+        const element = document.createElement(tag);
+
+        if (className) {
+            element.className = className;
+        }
+
+        element.textContent = textContent;
+
+        return element;
+    }
+
     try {
         const response = await fetch('/superadmin/system-analytics-data');
+
+        if (!response.ok) {
+            throw new Error('Unable to fetch system analytics data.');
+        }
+
         const data = await response.json();
 
-        // Populate Section 1: Core Record Counts
-        document.getElementById('total-users-text').textContent = data.records.total_users.toLocaleString();
-        document.getElementById('active-users-text').textContent = `${data.records.active_sessions} Online`;
-        document.getElementById('total-views-text').textContent = data.records.total_page_views.toLocaleString();
+        // Section 1: Core System Overview
+        const records = data.records ?? {};
 
-        // Populate Section 2: Storage & PHP
-        document.getElementById('disk-usage-text').textContent = `${data.server.disk_used_text} / ${data.server.disk_total_text}`;
-        document.getElementById('disk-subtext').textContent = `${data.server.disk_usage_percent}% of total capacity used`;
-        document.getElementById('disk-progress-bar').style.width = `${data.server.disk_usage_percent}%`;
+        setText(
+            'total-users-text',
+            numberFormat.format(Number(records.total_users) || 0)
+        );
 
-        document.getElementById('db-size-text').textContent = `${data.server.db_size_mb} MB`;
-        document.getElementById('php-version-text').textContent = `PHP ${data.server.php_version}`;
+        setText(
+            'active-users-text',
+            `${numberFormat.format(Number(records.active_sessions) || 0)} Online`
+        );
 
-        // Populate Section 3: Top Pages
+        setText(
+            'total-views-text',
+            numberFormat.format(Number(records.total_page_views) || 0)
+        );
+
+        // Section 2: Infrastructure and Storage
+        const server = data.server ?? {};
+
+        setText(
+            'disk-usage-text',
+            `${server.disk_used_text ?? 'N/A'} / ${server.disk_total_text ?? 'N/A'}`
+        );
+
+        const usagePercent = Math.min(
+            100,
+            Math.max(0, Number(server.disk_usage_percent) || 0)
+        );
+
+        setText(
+            'disk-subtext',
+            `${usagePercent}% of total capacity used`
+        );
+
+        const progressBar = document.getElementById('disk-progress-bar');
+        const progressTrack = document.getElementById('disk-progress-track');
+
+        if (progressBar) {
+            progressBar.style.width = `${usagePercent}%`;
+        }
+
+        if (progressTrack) {
+            progressTrack.setAttribute('aria-valuenow', usagePercent);
+        }
+
+        setText(
+            'db-size-text',
+            `${server.db_size_mb ?? 'N/A'} MB`
+        );
+
+        setText(
+            'php-version-text',
+            `PHP ${server.php_version ?? 'N/A'}`
+        );
+
+        // Section 3: Top Visited Pages
         const topPagesContainer = document.getElementById('top-pages-list');
-        if (data.top_pages && data.top_pages.length > 0) {
-            let html = '<div class="divide-y divide-gray-100">';
-            data.top_pages.forEach((p, idx) => {
-                // Shorten displayed URL for clean visual presentation
-                const parsedUrl = new URL(p.url, window.location.origin);
-                const path = parsedUrl.pathname;
+        const topPages = Array.isArray(data.top_pages)
+            ? data.top_pages
+            : [];
 
-                html += `
-                    <div class="py-2.5 flex items-center justify-between text-sm">
-                        <div class="flex items-center space-x-3 overflow-hidden pr-2">
-                            <span class="font-bold text-gray-400 w-5 text-right">${idx + 1}.</span>
-                            <span class="text-gray-700 font-medium truncate" title="${p.url}">${path}</span>
-                        </div>
-                        <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md font-semibold text-xs whitespace-nowrap">
-                            ${p.total_views.toLocaleString()} views
-                        </span>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            topPagesContainer.innerHTML = html;
-        } else {
-            topPagesContainer.innerHTML = `<p class="text-xs text-gray-400">No page view records logged yet.</p>`;
+        if (topPagesContainer) {
+            topPagesContainer.replaceChildren();
+
+            if (topPages.length > 0) {
+                const list = createElement('div', 'top-pages-items');
+
+                topPages.forEach((page, index) => {
+                    let path = String(page.url ?? '/');
+
+                    try {
+                        path = new URL(
+                            path,
+                            window.location.origin
+                        ).pathname;
+                    } catch (error) {
+                        path = '/';
+                    }
+
+                    const row = createElement('div', 'top-page-row');
+                    const pageInfo = createElement('div', 'top-page-info');
+
+                    const rank = createElement(
+                        'span',
+                        'top-page-rank',
+                        `${index + 1}.`
+                    );
+
+                    const pagePath = createElement(
+                        'span',
+                        'top-page-path',
+                        path
+                    );
+
+                    pagePath.title = String(page.url ?? path);
+
+                    const views = createElement(
+                        'span',
+                        'top-page-views',
+                        `${numberFormat.format(Number(page.total_views) || 0)} views`
+                    );
+
+                    pageInfo.append(rank, pagePath);
+                    row.append(pageInfo, views);
+                    list.appendChild(row);
+                });
+
+                topPagesContainer.appendChild(list);
+            } else {
+                topPagesContainer.appendChild(
+                    createElement(
+                        'p',
+                        'analytics-empty-message',
+                        'No page view records logged yet.'
+                    )
+                );
+            }
         }
 
-        // Populate Section 3: Browsers
-        const browserContainer = document.getElementById('browser-demographics-list');
-        if (data.demographics && data.demographics.length > 0) {
-            let html = '';
-            data.demographics.forEach(b => {
-                html += `
-                    <div class="flex justify-between items-center text-sm py-1 border-b border-gray-50 last:border-0">
-                        <span class="text-gray-600 font-medium">${b.browser || 'Unknown'}</span>
-                        <span class="font-semibold text-gray-800">${b.total.toLocaleString()} visits</span>
-                    </div>`;
-            });
-            browserContainer.innerHTML = html;
-        } else {
-            browserContainer.innerHTML = `<p class="text-xs text-gray-400">No browser tracking logs found yet.</p>`;
+        // Section 3: Browser Demographics
+        const browserContainer = document.getElementById(
+            'browser-demographics-list'
+        );
+
+        const demographics = Array.isArray(data.demographics)
+            ? data.demographics
+            : [];
+
+        if (browserContainer) {
+            browserContainer.replaceChildren();
+
+            if (demographics.length > 0) {
+                demographics.forEach(browser => {
+                    const row = createElement(
+                        'div',
+                        'browser-demographics-row'
+                    );
+
+                    const name = createElement(
+                        'span',
+                        'browser-name',
+                        browser.browser || 'Unknown'
+                    );
+
+                    const visits = createElement(
+                        'span',
+                        'browser-visits',
+                        `${numberFormat.format(Number(browser.total) || 0)} visits`
+                    );
+
+                    row.append(name, visits);
+                    browserContainer.appendChild(row);
+                });
+            } else {
+                browserContainer.appendChild(
+                    createElement(
+                        'p',
+                        'analytics-empty-message',
+                        'No browser tracking logs found yet.'
+                    )
+                );
+            }
         }
 
-        // Populate Section 4: Failed Jobs
-        document.getElementById('failed-jobs-badge').textContent = data.errors.failed_jobs;
+        // Section 4: Failed Queue Jobs
+        const errors = data.errors ?? {};
 
-    } catch (err) {
-        console.error("Failed to load system analytics:", err);
+        setText(
+            'failed-jobs-badge',
+            numberFormat.format(Number(errors.failed_jobs) || 0)
+        );
+
+    } catch (error) {
+        console.error('Failed to load system analytics:', error);
+
+        setText('total-users-text', 'Unavailable');
+        setText('active-users-text', 'Unavailable');
+        setText('total-views-text', 'Unavailable');
+        setText('disk-usage-text', 'Unavailable');
+        setText('db-size-text', 'Unavailable');
+        setText('php-version-text', 'Unavailable');
+
+        const topPagesContainer = document.getElementById('top-pages-list');
+        const browserContainer = document.getElementById(
+            'browser-demographics-list'
+        );
+
+        if (topPagesContainer) {
+            topPagesContainer.replaceChildren(
+                createElement(
+                    'p',
+                    'analytics-error-message',
+                    'Unable to load top visited pages.'
+                )
+            );
+        }
+
+        if (browserContainer) {
+            browserContainer.replaceChildren(
+                createElement(
+                    'p',
+                    'analytics-error-message',
+                    'Unable to load browser demographics.'
+                )
+            );
+        }
     }
 });
 </script>

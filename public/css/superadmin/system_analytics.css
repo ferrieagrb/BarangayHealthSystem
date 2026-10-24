@@ -1,0 +1,610 @@
+
+/* =========================================================
+   1. SYSTEM ANALYTICS BASE LAYOUT
+========================================================= */
+
+.system-analytics-container {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 2rem;
+    color: #1f2937;
+}
+
+.system-analytics-container *,
+.system-analytics-container *::before,
+.system-analytics-container *::after {
+    box-sizing: border-box;
+}
+
+.system-analytics-container .page-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.system-analytics-container .page-title-group h1 {
+    margin: 0;
+    color: #0f172a;
+    
+    line-height: 1.4;
+}
+
+.system-analytics-container .page-title-group p {
+    margin: 0.35rem 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.analytics-section {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 1.5rem;
+}
+
+
+/* =========================================================
+   2. GRID LAYOUTS
+========================================================= */
+
+.analytics-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.infrastructure-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.analytics-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.top-pages-card {
+    grid-column: span 2;
+}
+
+
+/* =========================================================
+   3. ANALYTICS CARDS
+========================================================= */
+
+.analytics-card {
+    min-width: 0;
+    padding: 1.25rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.analytics-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.06);
+}
+
+.overview-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.overview-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.infrastructure-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 165px;
+}
+
+.analytics-card-title {
+    margin: 0 0 1rem;
+    color: #0f172a;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   4. LABELS AND STATISTICS
+========================================================= */
+
+.analytics-label {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.analytics-stat-value {
+    margin-top: 0.5rem;
+    color: #0f172a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-green {
+    color: #15803d;
+}
+
+.analytics-muted-text {
+    margin: 0.4rem 0 0;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   5. OVERVIEW ICONS
+========================================================= */
+
+.analytics-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+}
+
+.analytics-icon svg {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.icon-blue {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.icon-green {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.icon-purple {
+    background-color: #faf5ff;
+    color: #9333ea;
+}
+
+
+/* =========================================================
+   6. ACTIVE STATUS INDICATOR
+========================================================= */
+
+.status-pulse {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.status-pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #4ade80;
+    border-radius: 50%;
+    opacity: 0.65;
+    animation: analytics-pulse 1.8s ease-out infinite;
+}
+
+.status-pulse-dot {
+    position: relative;
+    display: block;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #22c55e;
+    border: 2px solid #dcfce7;
+    border-radius: 50%;
+}
+
+@keyframes analytics-pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+
+    70%,
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   7. DISK STORAGE PROGRESS BAR
+========================================================= */
+
+.progress-track {
+    width: 100%;
+    height: 0.625rem;
+    margin-top: 1rem;
+    overflow: hidden;
+    background-color: #e2e8f0;
+    border-radius: 9999px;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: inherit;
+    transition: width 0.5s ease;
+}
+
+
+/* =========================================================
+   8. PHP ENVIRONMENT STATUS
+========================================================= */
+
+.environment-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+    color: #15803d;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.environment-status-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    background-color: #22c55e;
+    border-radius: 50%;
+}
+
+
+/* =========================================================
+   9. TOP VISITED PAGES
+========================================================= */
+
+.top-pages-list,
+.browser-demographics-list {
+    width: 100%;
+    min-width: 0;
+}
+
+.top-pages-items {
+    width: 100%;
+}
+
+.top-page-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.top-page-row:first-child {
+    padding-top: 0;
+}
+
+.top-page-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.top-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.top-page-rank {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1.5rem;
+    color: #94a3b8;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.top-page-path {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: #334155;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top-page-views {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0.35rem 0.625rem;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   10. BROWSER DEMOGRAPHICS
+========================================================= */
+
+.browser-demographics-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.browser-demographics-row:first-child {
+    padding-top: 0;
+}
+
+.browser-demographics-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.browser-name {
+    min-width: 0;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.browser-visits {
+    flex-shrink: 0;
+    color: #0f172a;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   11. BACKGROUND PROCESSING AND ERRORS
+========================================================= */
+
+.errors-card {
+    width: 100%;
+}
+
+.failed-jobs-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.625rem;
+}
+
+.failed-jobs-content {
+    min-width: 0;
+}
+
+.failed-jobs-title {
+    display: block;
+    color: #b91c1c;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.failed-jobs-description {
+    margin: 0.25rem 0 0;
+    color: #dc2626;
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+.failed-jobs-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.35rem 0.625rem;
+    background-color: #dc2626;
+    color: #ffffff;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   12. EMPTY AND ERROR MESSAGES
+========================================================= */
+
+.analytics-empty-message {
+    margin: 0;
+    padding: 0.5rem 0;
+    color: #94a3b8;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+}
+
+.analytics-error-message {
+    margin: 0;
+    padding: 0.5rem 0;
+    color: #dc2626;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   13. RESPONSIVE LAYOUT: TABLETS
+========================================================= */
+
+@media (max-width: 1024px) {
+    .analytics-overview-grid,
+    .infrastructure-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .analytics-details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .top-pages-card {
+        grid-column: span 2;
+    }
+
+    .browser-card {
+        grid-column: span 2;
+    }
+}
+
+
+/* =========================================================
+   14. RESPONSIVE LAYOUT: MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+    .system-analytics-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .system-analytics-container .page-top {
+        margin-bottom: 1.25rem;
+    }
+
+    .system-analytics-container .page-title-group h1 {
+        font-size: 1.25rem;
+    }
+
+    .system-analytics-container .page-title-group p {
+        font-size: 0.8125rem;
+    }
+
+    .analytics-section {
+        margin-bottom: 1.125rem;
+    }
+
+    .analytics-overview-grid,
+    .infrastructure-grid,
+    .analytics-details-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    .analytics-card {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .overview-card {
+        gap: 0.75rem;
+    }
+
+    .analytics-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .analytics-icon {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .infrastructure-card {
+        min-height: auto;
+    }
+
+    .top-pages-card,
+    .browser-card {
+        grid-column: auto;
+    }
+
+    .top-page-row,
+    .browser-demographics-row {
+        gap: 0.5rem;
+    }
+
+    .top-page-info {
+        gap: 0.5rem;
+    }
+
+    .top-page-path,
+    .browser-name {
+        font-size: 0.8125rem;
+    }
+
+    .top-page-views,
+    .browser-visits {
+        font-size: 0.6875rem;
+    }
+
+    .failed-jobs-panel {
+        align-items: flex-start;
+        padding: 0.875rem;
+    }
+
+    .failed-jobs-description {
+        font-size: 0.75rem;
+    }
+}
+
+
+/* =========================================================
+   15. ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .status-pulse-ring {
+        animation: none;
+    }
+
+    .progress-bar,
+    .analytics-card {
+        transition: none;
+    }
+}

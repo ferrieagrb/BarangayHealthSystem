@@ -1,0 +1,753 @@
+
+/* =========================================================
+   1. BASE DASHBOARD LAYOUT
+========================================================= */
+
+.dashboard-container {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 2rem;
+    color: #1f2937;
+}
+
+.page-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-title-group h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1f2937;
+}
+
+.page-title-group p {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   2. GRID AND STACK LAYOUTS
+========================================================= */
+
+.dashboard-grid-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.dashboard-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.dashboard-header-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.dashboard-header-flex h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.dashboard-widget-header {
+    margin-bottom: 1rem;
+}
+
+
+/* =========================================================
+   3. DASHBOARD CARDS
+========================================================= */
+
+.dashboard-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    box-shadow:
+        0 4px 6px -1px rgba(15, 23, 42, 0.08),
+        0 2px 4px -1px rgba(15, 23, 42, 0.04);
+}
+
+.dashboard-card-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.dashboard-card-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.dashboard-card-subtitle {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+.dashboard-widget-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   4. CHARTS
+========================================================= */
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#userAnalyticsApexChart,
+#websitePerformanceChart {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+
+.chart-container .apexcharts-canvas {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   5. STATUS BADGES
+========================================================= */
+
+.badge-guard,
+.badge-online,
+.badge-monitor,
+.badge-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: fit-content;
+    max-width: 100%;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.badge-guard {
+    padding: 0.3rem 0.75rem;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-online {
+    padding: 0.3rem 0.625rem;
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-monitor {
+    padding: 0.3rem 0.625rem;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-action {
+    padding: 0.25rem 0.625rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+}
+
+
+/* =========================================================
+   6. SECURITY ALERTS
+========================================================= */
+
+.security-alert-box {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 0.5rem;
+}
+
+.security-alert-title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #991b1b;
+}
+
+.security-alert-desc {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    color: #dc2626;
+}
+
+.security-button-wrapper {
+    margin-top: 1rem;
+}
+
+
+/* =========================================================
+   7. BUTTONS
+========================================================= */
+
+.btn-danger-outline {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background-color: #ffffff;
+    color: #dc2626;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.btn-danger-outline:hover {
+    background-color: #fef2f2;
+    border-color: #f87171;
+}
+
+.btn-danger-outline:focus-visible {
+    outline: 2px solid #ef4444;
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   8. TABLE LAYOUT
+========================================================= */
+
+.table-responsive {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-table {
+    width: 100%;
+    min-width: 500px;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #475569;
+    border-collapse: collapse;
+}
+
+.dashboard-table thead {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dashboard-table th {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.035em;
+    white-space: nowrap;
+    color: #64748b;
+}
+
+.dashboard-table td {
+    padding: 0.875rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.dashboard-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.dashboard-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dashboard-table td:first-child,
+.dashboard-table th:first-child {
+    padding-left: 0.875rem;
+}
+
+.dashboard-table td:last-child,
+.dashboard-table th:last-child {
+    padding-right: 0.875rem;
+}
+
+
+/* =========================================================
+   9. TABLE TEXT STYLES
+========================================================= */
+
+.table-user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    color: #1e293b;
+}
+
+.table-user-email {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    color: #94a3b8;
+}
+
+.table-subtext {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    color: #64748b;
+}
+
+.table-mono {
+    font-family: monospace;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+    color: #64748b;
+}
+
+.empty-table {
+    padding: 1.5rem 1rem !important;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: #94a3b8;
+}
+
+
+/* =========================================================
+   10. AUDIT TRAIL
+========================================================= */
+
+.audit-trail-title {
+    margin-bottom: 1rem;
+}
+
+.audit-table {
+    min-width: 700px;
+}
+
+.audit-table td {
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   11. RESPONSIVE LAYOUT
+========================================================= */
+
+@media (min-width: 1024px) {
+    .dashboard-grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .page-top {
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+    }
+
+    .page-title-group h1 {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-grid-2,
+    .dashboard-stack {
+        gap: 1rem;
+    }
+
+    .dashboard-grid-2 {
+        margin-bottom: 1.25rem;
+    }
+
+    .dashboard-card {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .dashboard-header-flex {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-header-flex h2 {
+        font-size: 1.0625rem;
+    }
+
+    .chart-container {
+        height: 260px;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: 0.75rem 0.625rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title-group h1 {
+        font-size: 1.125rem;
+    }
+
+    .page-title-group p {
+        font-size: 0.8125rem;
+    }
+
+    .dashboard-card-title {
+        font-size: 1rem;
+    }
+
+    .chart-container {
+        height: 240px;
+    }
+
+    .badge-guard,
+    .badge-online,
+    .badge-monitor {
+        font-size: 0.6875rem;
+    }
+}
+
+/* =========================================================
+   1. BASE DASHBOARD LAYOUT
+========================================================= */
+
+.dashboard-container {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.dashboard-title-group h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.dashboard-title-group p {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   2. GRID LAYOUTS
+========================================================= */
+
+.dashboard-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.dashboard-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.dashboard-header-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dashboard-header-flex h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   3. DASHBOARD CARDS AND WIDGETS
+========================================================= */
+
+.dashboard-card {
+    width: 100%;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-card-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dashboard-card-title {
+    margin-bottom: 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.dashboard-card-subtitle {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.dashboard-widget-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   4. CHARTS
+========================================================= */
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   5. STATUS BADGES
+========================================================= */
+
+.badge-guard {
+    padding: 0.25rem 0.75rem;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-online {
+    padding: 0.25rem 0.625rem;
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-monitor {
+    padding: 0.25rem 0.625rem;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badge-action {
+    padding: 0.25rem 0.625rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+}
+
+
+/* =========================================================
+   6. SECURITY ALERTS
+========================================================= */
+
+.security-alert-box {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.security-alert-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #991b1b;
+}
+
+.security-alert-desc {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   7. BUTTONS
+========================================================= */
+
+.btn-danger-outline {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-danger-outline:hover {
+    background-color: #fef2f2;
+}
+
+
+/* =========================================================
+   8. TABLE LAYOUT
+========================================================= */
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.dashboard-table {
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: #4b5563;
+    border-collapse: collapse;
+}
+
+.dashboard-table thead {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #9ca3af;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dashboard-table th {
+    padding-bottom: 0.75rem;
+}
+
+.dashboard-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.dashboard-table td {
+    padding: 0.75rem 0;
+}
+
+
+/* =========================================================
+   9. TABLE TEXT STYLES
+========================================================= */
+
+.table-user-name {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.table-user-email {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.table-subtext {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.table-mono {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.empty-table {
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
