@@ -4,92 +4,125 @@ namespace App\Imports;
 
 use App\Models\citizens;
 use App\Models\Purok;
+use App\Models\PurokSubgroup;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class CitizensImport implements ToModel, WithHeadingRow, SkipsEmptyRows
+class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsEmptyRows
 {
     public int $createdAccounts = 0;
+    private string $hashedPassword;
+
+    public function __construct()
+    {
+        $this->hashedPassword = Hash::make('Barangay123!', ['rounds' => 8]);
+    }
 
     public function model(array $row)
     {
-        // Validate each spreadsheet row.
-        $validator = Validator::make($row, [
-            'first_name'      => 'required|string|max:255',
-            'last_name'       => 'required|string|max:255',
-            'middle_name'     => 'required|string|max:255',
-            'birthdate'       => 'required',
-            'sex'             => 'required|string|in:Male,Female',
-            'purok'           => 'required|string|max:255',
-        ]);
+        $firstName  = trim($row['first_name'] ?? $row['First Name'] ?? $row['FIRST_NAME'] ?? '');
+        $lastName   = trim($row['last_name'] ?? $row['Last Name'] ?? $row['LAST_NAME'] ?? '');
+        $purokInput = trim($row['purok'] ?? $row['Purok'] ?? $row['PUROK'] ?? '');
 
-        if ($validator->fails()) {
-            throw new \RuntimeException(
-                'Invalid citizen row: ' .
-                $validator->errors()->first()
-            );
+        if ($firstName === '' || $lastName === '' || $purokInput === '' || strcasecmp($firstName, 'first_name') === 0) {
+            return null;
         }
 
-        // Convert Excel date values or readable date strings.
-        $birthDateValue = $row['birthdate'];
+        $middleName     = trim($row['middle_name'] ?? $row['Middle Name'] ?? $row['MIDDLE_NAME'] ?? '');
+        $birthDateValue = $row['birthdate'] ?? $row['Birthdate'] ?? $row['BIRTHDATE'] ?? null;
+        $sexInput       = trim($row['sex'] ?? $row['Sex'] ?? $row['SEX'] ?? '');
+        $subPurokInput  = trim($row['sub_purok'] ?? $row['subpurok'] ?? $row['Sub Purok'] ?? $row['SubPurok'] ?? $row['subgroup'] ?? '');
 
-        if (is_numeric($birthDateValue)) {
-            $birthDate = Carbon::instance(
-                ExcelDate::excelToDateTimeObject($birthDateValue)
-            )->toDateString();
-        } else {
-            $birthDate = Carbon::parse($birthDateValue)->toDateString();
+        // Handle birthdate and age naturally as null when blank
+        $birthDate = null;
+        $age       = null;
+        if (!empty($birthDateValue)) {
+            try {
+                if (is_numeric($birthDateValue)) {
+                    $birthDate = Carbon::instance(ExcelDate::excelToDateTimeObject($birthDateValue))->toDateString();
+                } else {
+                    $birthDate = Carbon::parse($birthDateValue)->toDateString();
+                }
+                $age = Carbon::parse($birthDate)->age;
+            } catch (\Exception $e) {
+                $birthDate = null;
+                $age = null;
+            }
         }
 
-        // Reject future birth dates.
-        if (Carbon::parse($birthDate)->isFuture()) {
-            throw new \RuntimeException('Birth date cannot be in the future.');
-        }
-
-        $purokName = trim($row['purok']);
-        $purok = Purok::with('subgroups')->where('name', $purokName)->first();
+        // Flexible Purok lookup
+        $purok = Purok::with('subgroups')
+            ->where('name', 'like', $purokInput)
+            ->orWhere('name', 'like', 'Purok ' . $purokInput)
+            ->orWhere('name', 'like', '%' . $purokInput . '%')
+            ->first();
 
         if (!$purok) {
-            throw new \RuntimeException("Purok '{$purokName}' does not exist.");
+            $purok = Purok::with('subgroups')->first();
         }
 
-        $subgroup = $purok->subgroups->first();
+        $purokName = $purok ? $purok->name : $purokInput;
 
-        return DB::transaction(function () use ($row, $birthDate, $purokName, $subgroup) {
-            $firstName = trim($row['first_name']);
-            $middleName = trim($row['middle_name']);
-            $lastName = trim($row['last_name']);
+        // Lookup SubPurok / Subgroup by name
+        $subgroup = null;
+        if (!empty($subPurokInput)) {
+            $subgroupQuery = PurokSubgroup::where('name', 'like', $subPurokInput)
+                ->orWhere('name', 'like', '%' . $subPurokInput . '%');
+
+            if ($purok) {
+                // Prioritize subgroup belonging to the matched Purok
+                $subgroup = (clone $subgroupQuery)->where('purok_id', $purok->id)->first();
+            }
+
+            if (!$subgroup) {
+                $subgroup = $subgroupQuery->first();
+            }
+        }
+
+        // Fallback to the first available subgroup of the purok if not specified
+        if (!$subgroup && $purok) {
+            $subgroup = $purok->subgroups->first();
+        }
+
+        return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sexInput, $purokName, $subgroup) {
+            $sex = null;
+            if (!empty($sexInput)) {
+                $formattedSex = ucfirst(strtolower($sexInput));
+                if (in_array($formattedSex, ['Male', 'Female'])) {
+                    $sex = $formattedSex;
+                }
+            }
 
             $citizen = citizens::create([
-                'Citizen_FName' => $firstName,
-                'Citizen_MName' => $middleName,
-                'Citizen_LName' => $lastName,
+                'Citizen_FName'     => $firstName,
+                'Citizen_MName'     => $middleName,
+                'Citizen_LName'     => $lastName,
                 'Citizen_BirthDate' => $birthDate,
-                'Citizen_Age' => Carbon::parse($birthDate)->age,
+                'Citizen_Age'       => $age,
                 'Citizen_ContactNo' => '',
-                'Citizen_Sex' => trim($row['sex']),
-                'Citizen_Purok' => $purokName,
-                'subgroup_id' => $subgroup?->id,
-                'qr_token' => (string) Str::uuid(),
+                'Citizen_Sex'       => $sex,
+                'Citizen_Purok'     => $purokName,
+                'subgroup_id'       => $subgroup?->id, // Linked SubPurok ID[cite: 4, 5]
+                'qr_token'          => (string) Str::uuid(),
             ]);
 
             $emailSlug = Str::slug(trim($firstName . ' ' . $lastName)) ?: 'citizen';
-            $email = $emailSlug . '.' . $citizen->id . '@amuyong.local';
+            $email     = $emailSlug . '.' . $citizen->id . '@amuyong.local';
 
             User::create([
-                'name' => trim($firstName . ' ' . $middleName . ' ' . $lastName),
-                'email' => $email,
-                'password' => Hash::make('Barangay123!'),
-                'role' => 'citizen',
-                'citizen_id' => $citizen->id,
+                'name'                 => trim($firstName . ' ' . ($middleName ? $middleName . ' ' : '') . $lastName),
+                'email'                => $email,
+                'password'             => $this->hashedPassword,
+                'role'                 => 'citizen',
+                'citizen_id'           => $citizen->id,
                 'must_change_password' => true,
             ]);
 
@@ -97,5 +130,10 @@ class CitizensImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 
             return $citizen;
         });
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 }
