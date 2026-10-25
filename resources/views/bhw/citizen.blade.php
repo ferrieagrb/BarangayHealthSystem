@@ -5,6 +5,39 @@
     <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<<<<<<< HEAD
+=======
+    <style>
+        .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-password-modal.is-open { display: flex; }
+        .citizen-password-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-password-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-password-dialog p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-password-dialog label { display: block; margin: 12px 0 6px; color: #334155; font-size: 12px; font-weight: 700; }
+        .citizen-password-dialog input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .citizen-password-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+        .citizen-export-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-export-modal.is-open { display: flex; }
+        .citizen-export-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-export-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-export-dialog p { margin: 0 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-export-options { display: grid; gap: 10px; }
+        .citizen-export-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #172033; text-align: left; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+        .citizen-export-option:hover { border-color: #2563eb; background: #eff6ff; }
+        .citizen-export-option strong { display: block; color: #173b82; }
+        .citizen-export-option small { display: block; margin-top: 3px; color: #64748b; }
+        .citizen-export-close { display: flex; justify-content: flex-end; margin-top: 18px; }
+        .citizen-export-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
+        .citizen-export-field { display: flex; align-items: center; gap: 8px; color: #334155; font-size: 13px; }
+        .citizen-export-field input { width: 16px; height: 16px; }
+        .citizen-export-format { display: flex; justify-content: center; gap: 0; margin-top: 20px; }
+        .citizen-export-format button { padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; cursor: pointer; }
+        .citizen-export-format button:first-child { border-radius: 7px 0 0 7px; }
+        .citizen-export-format button:last-child { border-radius: 0 7px 7px 0; }
+        .citizen-export-format button.active { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
+        .citizen-export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    </style>
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @endsection
 
 @section('content')
@@ -85,11 +118,23 @@
 
     </div>
 
-    <a href="{{ route('citizen.add') }}" class="btn-primary">
+    <div class="page-header-actions" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
 
-        + Add Citizen
+        <a href="{{ route('citizen.add') }}" class="btn-primary">
 
-    </a>
+            + Add Citizen
+
+        </a>
+
+        <button type="button"
+                class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();">
+
+            Import List
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -259,27 +304,7 @@
 
 <div class="toolbar-actions">
 
-    {{-- EXPORT CITIZENS TO EXCEL --}} 
-
-    <a href="{{ route('citizen.export') }}"
-
-    class="btn-secondary"
-
-    style="text-decoration: none;
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            box-sizing: border-box;
-
-            vertical-align: middle;">
-
-        Export List
-
-    </a>
+    <button type="button" id="openCitizenExportModal" class="btn-secondary">Export List</button>
 
     {{-- HIDDEN EXCEL IMPORT FORM --}}
 
@@ -307,19 +332,90 @@
 
     </form>
 
-    {{-- IMPORT BUTTON --}}
-
-    <button type="button"
-
-            class="btn-secondary"
-
-            onclick="document.getElementById('excelFileInput').click();">
-
-        Import Excel
-
-    </button>
-
 </div>
+
+<div id="citizenExportModal" class="citizen-export-modal" role="dialog" aria-modal="true" aria-labelledby="citizenExportTitle">
+    <div class="citizen-export-dialog">
+        <h2 id="citizenExportTitle">Export Citizen Records</h2>
+        <p>Check the citizen details to include in the file. Only checked fields will be exported.</p>
+        <form id="citizenExportForm" data-no-loader="true">
+            @php
+                $defaultExportFields = [
+                    'Citizen_FName',
+                    'Citizen_MName',
+                    'Citizen_LName',
+                    'Citizen_BirthDate',
+                    'Citizen_ContactNo',
+                    'Citizen_Purok',
+                    'Citizen_Sex',
+                    'Citizen_Age',
+                    'Citizen_HousingStatus',
+                ];
+            @endphp
+            <div class="citizen-export-fields">
+                @foreach($exportFieldDefinitions as $field => $label)
+                    <label class="citizen-export-field"><input type="checkbox" name="fields[]" value="{{ $field }}" {{ in_array($field, $defaultExportFields, true) ? 'checked' : '' }}> <span>{{ $label }}</span></label>
+                @endforeach
+            </div>
+            <div class="citizen-export-format" role="group" aria-label="Export format">
+                <button type="button" class="active" data-export-format="xlsx">Excel (.xlsx)</button>
+                <button type="button" data-export-format="pdf">PDF (.pdf)</button>
+            </div>
+            <input type="hidden" name="format" id="citizenExportFormat" value="xlsx">
+            <div class="citizen-export-actions">
+                <button type="button" id="closeCitizenExportModal" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Download</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const exportModal = document.getElementById('citizenExportModal');
+    const openExportButton = document.getElementById('openCitizenExportModal');
+    const closeExportButton = document.getElementById('closeCitizenExportModal');
+    const exportForm = document.getElementById('citizenExportForm');
+    const exportFormat = document.getElementById('citizenExportFormat');
+    const exportFormatButtons = exportModal ? exportModal.querySelectorAll('[data-export-format]') : [];
+
+    if (!exportModal || !openExportButton) return;
+
+    openExportButton.addEventListener('click', function () {
+        exportModal.classList.add('is-open');
+    });
+
+    closeExportButton.addEventListener('click', function () {
+        exportModal.classList.remove('is-open');
+    });
+
+    exportModal.addEventListener('click', function (event) {
+        if (event.target === exportModal) exportModal.classList.remove('is-open');
+    });
+
+    exportFormatButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            exportFormat.value = button.dataset.exportFormat;
+            exportFormatButtons.forEach(item => item.classList.toggle('active', item === button));
+        });
+    });
+
+    exportForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const currentFilters = new URLSearchParams(window.location.search);
+        const selectedFields = new FormData(exportForm);
+        const fields = selectedFields.getAll('fields[]');
+        if (!fields.length) {
+            window.alert('Select at least one citizen detail to export.');
+            return;
+        }
+        fields.forEach(field => currentFilters.append('fields[]', field));
+        const exportPath = exportFormat.value === 'pdf' ? '{{ route('citizen.export.pdf') }}' : '{{ route('citizen.export') }}';
+        window.location.href = exportPath + '?' + currentFilters.toString();
+        exportModal.classList.remove('is-open');
+    });
+});
+</script>
 
 {{-- CITIZEN STATUS FILTER MODAL --}}
 <div id="citizenStatusFilterModal" class="citizen-status-overlay" aria-hidden="true">
@@ -395,6 +491,12 @@
 
         </p>
 
+
+
+    </div>
+
+    <div id="citizen-results">
+
         @php
             $activeFilters = [];
 
@@ -422,15 +524,15 @@
             }
         @endphp
 
-        @if(count($activeFilters) > 0)
-            <p id="active-citizen-filters" style="color: #9ca3af; font-size: 13px; margin-top: 4px;">
-                (Showing {{ implode(', ', $activeFilters) }})
-            </p>
-        @endif
-
-    </div>
-
-    <div id="citizen-results">
+        <div id="citizen-results-summary"
+             class="citizen-results-highlight"
+             style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:6px; margin:0 0 12px; padding:8px 12px; border:1px solid #bbf7d0; border-radius:8px; background:#f0fdf4; color:#166534; font-size:13px; font-weight:500; line-height:1.5;">
+            <strong style="font-weight:700;">Showing {{ $citizens->total() }} results</strong>
+            @if(count($activeFilters) > 0)
+                <span aria-hidden="true" style="color:#86a98e; font-weight:700;">·</span>
+                <span id="active-citizen-filters">{{ implode(', ', $activeFilters) }}</span>
+            @endif
+        </div>
 
         {{-- CITIZEN TABLE --}}
 
@@ -564,9 +666,23 @@
 
                 class="btn-primary">
 
-                Manage E-Card
+                E-Card
 
                 </a>
+
+                @if(auth()->user()->hasWriteAccess('citizen_password_reset'))
+                <button type="button"
+
+                class="btn-secondary resetCitizenPasswordBtn"
+
+                data-citizen-id="{{ $citizen->id }}"
+
+                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
+
+                Reset Password
+
+                </button>
+                @endif
 
                 {{-- DELETE BUTTON --}}
 
@@ -694,6 +810,24 @@
 
 </div>
 
+<div id="citizenPasswordResetModal" class="citizen-password-modal" role="dialog" aria-modal="true" aria-labelledby="citizenPasswordResetTitle">
+    <div class="citizen-password-dialog">
+        <h2 id="citizenPasswordResetTitle">Reset Citizen Password</h2>
+        <p>Set a temporary password for <strong id="resetCitizenName"></strong>. The citizen will be required to change it at the next login.</p>
+        <form method="POST" id="citizenPasswordResetForm">
+            @csrf
+            <label for="resetCitizenPassword">Temporary password</label>
+            <input type="password" id="resetCitizenPassword" name="password" minlength="8" required autocomplete="new-password">
+            <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
+            <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
+            <div class="citizen-password-dialog-actions">
+                <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset">Cancel</button>
+                <button type="submit" class="btn-primary">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- APEXCHARTS CDN --}}
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -719,6 +853,33 @@
         }
 
     }
+
+
+            const citizenPasswordResetModal = document.getElementById('citizenPasswordResetModal');
+            const citizenPasswordResetForm = document.getElementById('citizenPasswordResetForm');
+            const resetCitizenName = document.getElementById('resetCitizenName');
+
+            document.querySelectorAll('.resetCitizenPasswordBtn').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    citizenPasswordResetForm.action = '{{ url('/citizen') }}/' + button.dataset.citizenId + '/password-reset';
+                    resetCitizenName.textContent = button.dataset.citizenName;
+                    citizenPasswordResetForm.reset();
+                    citizenPasswordResetModal.classList.add('is-open');
+                    document.getElementById('resetCitizenPassword').focus();
+                });
+            });
+
+            document.getElementById('cancelCitizenPasswordReset').addEventListener('click', function () {
+                citizenPasswordResetModal.classList.remove('is-open');
+                citizenPasswordResetForm.reset();
+            });
+
+            citizenPasswordResetModal.addEventListener('click', function (event) {
+                if (event.target === citizenPasswordResetModal) {
+                    citizenPasswordResetModal.classList.remove('is-open');
+                    citizenPasswordResetForm.reset();
+                }
+            });
 
     // ============================================================
 
@@ -1274,6 +1435,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = modal.querySelector('input[name="filter_health[]"][value="' + value + '"]');
         if (input) input.checked = true;
     });
+    params.getAll('health_filter_vaccine[]').forEach(function (value) {
+        const input = modal.querySelector('input[name="health_filter_vaccine"][value="' + value + '"]');
+        if (input) input.checked = true;
+    });
 
     const deceased = document.getElementById('filterIncludeDeceased');
     if (deceased) deceased.checked = params.get('filter_deceased') === '1';
@@ -1292,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const query = targetUrl.searchParams;
 
         // Clear out old status filter parameters and pagination page before setting fresh ones
-        ['filter_sex', 'filter_housing[]', 'filter_health[]', 'filter_deceased', 'page'].forEach(function (key) {
+        ['filter_sex', 'filter_housing[]', 'filter_health[]', 'health_filter_vaccine[]', 'filter_deceased', 'page'].forEach(function (key) {
             query.delete(key);
         });
 
@@ -1312,6 +1477,10 @@ document.addEventListener('DOMContentLoaded', function () {
             query.append('filter_health[]', input.value);
         });
 
+        modal.querySelectorAll('input[name="health_filter_vaccine"]:checked').forEach(function (input) {
+            query.append('health_filter_vaccine[]', input.value);
+        });
+
         // Add Deceased flag if checked
         if (deceased && deceased.checked) {
             query.set('filter_deceased', '1');
@@ -1326,42 +1495,84 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.querySelector('.citizen-filter-form');
-    const searchInput = searchForm ? searchForm.querySelector('input[name="search"]') : null;
-    const results = document.getElementById('citizen-results');
-    let searchTimer;
-    let requestController;
+    const searchInput = searchForm
+        ? searchForm.querySelector('input[name="search"]')
+        : null;
 
-    if (!searchForm || !searchInput || !results) return;
+    let searchTimer = null;
+    let requestController = null;
+
+    if (!searchForm || !searchInput) return;
 
     searchInput.addEventListener('input', function () {
         clearTimeout(searchTimer);
+
         searchTimer = setTimeout(async function () {
-            if (requestController) requestController.abort();
-            requestController = new AbortController();
-            const params = new URLSearchParams(new FormData(searchForm));
-            params.delete('page');
-            if (!searchInput.value.trim()) {
-                params.delete('search');
-                const activeFilters = document.getElementById('active-citizen-filters');
-                if (activeFilters) activeFilters.remove();
+            if (requestController) {
+                requestController.abort();
             }
+
+            requestController = new AbortController();
+
+            // Preserve existing modal/status filters in the URL.
+            // Update only search, Purok, and age from the toolbar.
+            const params = new URLSearchParams(window.location.search);
+
+            ['search', 'purok', 'age', 'page'].forEach(function (key) {
+                params.delete(key);
+            });
+
+            const formData = new FormData(searchForm);
+
+            ['search', 'purok', 'age'].forEach(function (key) {
+                const value = formData.get(key);
+
+                if (value !== null && String(value).trim() !== '') {
+                    params.set(key, String(value).trim());
+                }
+            });
+
+            const results = document.getElementById('citizen-results');
+            if (!results) return;
+
             results.setAttribute('aria-busy', 'true');
 
             try {
-                const response = await fetch(`${searchForm.action}?${params.toString()}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
+                const queryString = params.toString();
+                const requestUrl = queryString
+                    ? searchForm.action + '?' + queryString
+                    : searchForm.action;
+
+                const response = await fetch(requestUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    },
                     signal: requestController.signal
                 });
-                if (!response.ok) throw new Error('Search request failed');
+
+                if (!response.ok) {
+                    throw new Error('Search request failed');
+                }
+
                 const html = await response.text();
                 const parsed = new DOMParser().parseFromString(html, 'text/html');
                 const updatedResults = parsed.getElementById('citizen-results');
-                if (updatedResults) results.replaceWith(updatedResults);
+
+                if (updatedResults) {
+                    results.replaceWith(updatedResults);
+                    window.history.replaceState({}, '', requestUrl);
+                }
             } catch (error) {
-                if (error.name !== 'AbortError') console.error(error);
+                if (error.name !== 'AbortError') {
+                    console.error(error);
+                }
             } finally {
                 const currentResults = document.getElementById('citizen-results');
-                if (currentResults) currentResults.removeAttribute('aria-busy');
+
+                if (currentResults) {
+                    currentResults.removeAttribute('aria-busy');
+                }
             }
         }, 350);
     });

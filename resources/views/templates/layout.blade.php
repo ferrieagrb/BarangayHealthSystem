@@ -34,6 +34,40 @@
             min-width: 25px;
             text-align: center;
         }
+        .sidebar .nav-dropdown-toggle {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            height: 60px;
+            gap: 12px;
+            padding: 0 25px;
+            border: 0;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            white-space: nowrap;
+        }
+        .sidebar .nav-dropdown-toggle i:first-child { display: flex; align-items: center; justify-content: center; width: 40px; min-width: 40px; font-size: 22px; text-align: center; }
+        .sidebar .nav-dropdown-toggle .nav-item { opacity: 1; transform: translateX(0); }
+        .sidebar .nav-dropdown-toggle .nav-chevron { margin-left: auto; font-size: 16px; transition: transform 0.24s ease; }
+        .sidebar .nav-dropdown.is-open .nav-dropdown-toggle .nav-chevron { transform: rotate(180deg); }
+        .sidebar ul li:has(.nav-dropdown.is-open) { height: auto; }
+        .sidebar .nav-dropdown-menu { position: static; display: block; width: 100%; max-height: 0; overflow: hidden; padding: 0 0 0 65px; background: #3e5894; border: 0; border-radius: 0; box-shadow: none; opacity: 0; transform: translateY(-6px); transition: max-height 0.28s ease, padding 0.28s ease, opacity 0.2s ease, transform 0.28s ease; }
+        .sidebar .nav-dropdown.is-open .nav-dropdown-menu { max-height: 96px; padding: 4px 0 8px 65px; opacity: 1; transform: translateY(0); }
+        .sidebar .nav-dropdown-menu a { height: 40px; padding: 0 12px; gap: 12px; color: #fff; background: #3e5894; border-radius: 6px; font-size: 13px; }
+        .sidebar .nav-dropdown-menu a:hover { background: #334b82; color: #fff; }
+        .sidebar .nav-dropdown-menu a i { width: 25px; min-width: 25px; font-size: 19px; color: #fff; }
+        .sidebar.collapsed .nav-dropdown-toggle { justify-content: center; padding: 0; }
+        .sidebar.collapsed .nav-dropdown-toggle .nav-item,
+        .sidebar.collapsed .nav-dropdown-toggle .nav-chevron { display: none; }
+        .sidebar.collapsed .nav-dropdown-menu { position: absolute; top: 0; left: 80px; width: 220px; max-height: 0; padding: 0 8px; background: #fff; border: 1px solid #dce4ee; border-radius: 8px; box-shadow: 0 8px 18px rgba(15,23,42,.18); }
+        .sidebar.collapsed .nav-dropdown.is-open .nav-dropdown-menu { max-height: 96px; padding: 6px 8px; }
+        .sidebar.collapsed .nav-dropdown-menu a { color: #334155; background: #fff; }
+        .sidebar.collapsed .nav-dropdown-menu a:hover { background: #eff6ff; color: #173b82; }
+        .sidebar.collapsed .nav-dropdown-menu a i { color: #334155; }
     </style>
 
     @yield('CSSown')
@@ -73,6 +107,7 @@
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             if (link && link.href && 
+                link.dataset.noLoader !== 'true' &&
                 link.getAttribute('target') !== '_blank' && 
                 !link.href.startsWith('#') && 
                 !link.href.startsWith('javascript:') &&
@@ -126,10 +161,23 @@
 
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
-                    <a href="{{ route('bhw.reports') }}">
-                        <i class="bx bx-file"></i>
-                        <span class="nav-item">Reports</span>
-                    </a>
+                    <div class="nav-dropdown {{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'is-open' : '' }}">
+                        <button type="button" class="nav-dropdown-toggle" aria-expanded="{{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'true' : 'false' }}" aria-controls="bhwReportsMenu">
+                            <i class="bx bx-file"></i>
+                            <span class="nav-item">Reports</span>
+                            <i class="bx bx-chevron-down nav-chevron"></i>
+                        </button>
+                        <div class="nav-dropdown-menu" id="bhwReportsMenu">
+                            <a href="{{ route('bhw.analytics') }}">
+                                <i class="bx bx-line-chart"></i>
+                                <span class="nav-item">Analytics</span>
+                            </a>
+                            <a href="{{ route('bhw.reports') }}">
+                                <i class="bx bx-file-blank"></i>
+                                <span class="nav-item">Report Builder</span>
+                            </a>
+                        </div>
+                    </div>
                 </li>
             @endif
 
@@ -188,7 +236,11 @@
                     </a>
                 </li>
                 <li>
+<<<<<<< HEAD
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
+=======
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                         @csrf
                         <button type="submit">
                             <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
@@ -233,6 +285,14 @@ const toggleBtn = document.querySelector(".topbutton");
 
 toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("collapsed");
+});
+
+document.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+        const dropdown = button.closest(".nav-dropdown");
+        const isOpen = dropdown.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
 });
 </script>
 

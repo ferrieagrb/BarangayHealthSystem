@@ -1713,14 +1713,25 @@
                         </div>
 
                         <div class="c-id-field">
-                            <span>CONTACT NUMBER</span>
-                            <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
-                        </div>
-
-                        <div class="c-id-field">
                             <span>ADDRESS / PUROK</span>
                             <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
                         </div>
+                    </div>
+                </div>
+
+                {{-- SECONDARY DETAILS, MATCHING THE CITIZEN E-CARD VIEW --}}
+                <div class="c-id-secondary-details">
+                    <div class="c-id-field">
+                        <span>SEX</span>
+                        <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
+                    </div>
+                    <div class="c-id-field">
+                        <span>AGE</span>
+                        <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age : ($citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A') }}</strong>
+                    </div>
+                    <div class="c-id-field">
+                        <span>CONTACT NUMBER</span>
+                        <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
                     </div>
                 </div>
 
@@ -1773,8 +1784,20 @@
                             <strong>{{ $citizen->Citizen_LName }}, {{ $citizen->Citizen_FName }}</strong>
                         </div>
                         <div class="c-stat">
-                            <span>Date of birth / age</span>
-                            <strong>{{ $citizen->Citizen_BirthDate ?: 'N/A' }} / {{ $citizen->Citizen_Age ?? 'N/A' }}</strong>
+                            <span>Date of birth</span>
+                            <strong>{{ $citizen->Citizen_BirthDate ?: 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Age</span>
+                            <strong>{{ $citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age . ' years old' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Height</span>
+                            <strong>{{ $citizen->Citizen_Height !== null && $citizen->Citizen_Height !== '' ? $citizen->Citizen_Height . ' cm' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Weight</span>
+                            <strong>{{ $citizen->Citizen_Weight !== null && $citizen->Citizen_Weight !== '' ? $citizen->Citizen_Weight . ' kg' : 'N/A' }}</strong>
                         </div>
                         <div class="c-stat">
                             <span>Purok</span>
@@ -1799,8 +1822,8 @@
                                 </thead>
                                 <tbody>
                                     @forelse($citizen->vaccinations as $vax)<tr>
-                                        <td>COVID-19 / Health Vax</td>
-                                        <td>{{ $vax->vaccine_name }} — {{ $vax->dose_number }}</td>
+                                        <td>{{ $vax->vaccine_name }}</td>
+                                        <td>{{ $vax->dose_number }}</td>
                                         <td>{{ $vax->date_administered ?: 'N/A' }}</td>
                                         <td>{{ $vax->administered_by ?: 'N/A' }}</td>
                                     </tr>
@@ -1812,33 +1835,103 @@
                     </table>
                 </div>
             </div>
+            @if($vaccinationSchedulingEnabled)
+                <div class="c-record">
+                    <h3>Upcoming Vaccination Schedules</h3>
+                    <div class="c-tablewrap">
+                        <table class="c-table">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Dose / Label</th>
+                                    <th>Scheduled date</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($citizen->vaccinationSchedules as $schedule)
+                                    <tr>
+                                        <td>{{ $schedule->vaccine_name }}</td>
+                                        <td>{{ $schedule->dose_number ?: 'N/A' }}</td>
+                                        <td>{{ $schedule->scheduled_date->format('M d, Y') }}</td>
+                                        <td>{{ $schedule->notes ?: 'No notes' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td class="none" colspan="4">No upcoming vaccination schedules.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
             <div class="c-record">
-                <h3>Dispensed Medicines</h3>
+                <h3>Diagnosis &amp; Health Records</h3>
+                <div class="c-tablewrap">
+                    <table class="c-table">
+                        <thead>
+                            <tr>
+                                <th>Diagnosis</th>
+                                <th>Date recorded</th>
+                                <th>BMI</th>
+                                <th>Weight / Height</th>
+                                <th>Temperature</th>
+                                <th>BP</th>
+                                <th>Notes / Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($citizen->healthRecords as $record)
+                                <tr>
+                                    <td>{{ $record->diagnosis ?: 'N/A' }}</td>
+                                    <td>{{ $record->record_date ?: optional($record->created_at)->format('Y-m-d') ?: 'N/A' }}</td>
+                                    <td>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1) . ' kg/m²' : 'N/A' }}</td>
+                                    <td>{{ $record->weight !== null ? $record->weight . ' kg' : 'N/A' }} / {{ $record->height !== null ? $record->height . ' cm' : 'N/A' }}</td>
+                                    <td>{{ $record->temperature !== null ? number_format((float)$record->temperature, 1) . ' °C' : 'N/A' }}</td>
+                                    <td>{{ $record->blood_pressure ?: 'N/A' }}</td>
+                                    <td>{{ $record->comments ?: 'No notes' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td class="none" colspan="7">No diagnosis or health records found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="c-record">
+                <h3>Maintenance Medicines</h3>
                 <div class="c-tablewrap">
                     <table class="c-table">
                         <thead>
                             <tr>
                                 <th>Medicine</th>
-                                <th>Dosage</th>
                                 <th>Quantity</th>
-                                <th>Date dispensed</th>
+                                <th>Dosage</th>
+                                <th>Frequency</th>
+                                <th>Start Date</th>
+                                <th>End Date / Status</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($citizen->medications as $med)<tr>
-                                <td>{{ $med->medicine_name }}</td>
-                                <td>{{ $med->dosage ?: 'N/A' }}</td>
-                                <td>{{ $med->quantity_dispensed }}</td>
-                                <td>{{ $med->date_dispensed ?: 'N/A' }}</td>
-                            </tr>
-                        @empty<tr>
-                            <td class="none" colspan="4">No medication records found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+                            @forelse($citizen->maintenanceRecords as $maintenance)
+                                <tr>
+                                    <td>{{ $maintenance->medicine_name ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->quantity_dispensed ?? 'N/A' }}</td>
+                                    <td>{{ $maintenance->dosage ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->frequency ?: 'N/A' }}</td>
+                                    <td>{{ $maintenance->start_date ? \Carbon\Carbon::parse($maintenance->start_date)->format('M d, Y') : 'N/A' }}</td>
+                                    <td>{{ $maintenance->end_date ? \Carbon\Carbon::parse($maintenance->end_date)->format('M d, Y') : 'Ongoing' }}</td>
+                                    <td>{{ $maintenance->notes ?: '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td class="none" colspan="7">No maintenance medicines recorded.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
     <div class="c-actions" style="padding:20px 0 0">
         <a class="c-btn" href="{{ route('citizen.ecard') }}">View Printable Health Record</a>
     </div>
@@ -2088,15 +2181,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <style>
-/* Dashboard health card matches My Health Card: photo left, details middle, QR right. */
+/* Only the dashboard health card is styled here; other dashboard sections are untouched. */
+.c-home .c-id-card {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+}
 .c-home .c-id-body {
     display: grid;
-    grid-template-columns: 132px minmax(0, 1fr) 150px;
+    grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
     align-items: center;
-    gap: 24px;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 32px);
 }
+.c-home .c-id-details { min-width: 0; }
+.c-home .c-id-details-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+.c-home .c-id-secondary-details {
+    min-width: 0;
+    align-self: center;
+}
+.c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
 .c-home .c-id-body > .c-id-qr-centered {
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
     width: 100%;
     margin: 0;
@@ -2130,14 +2241,29 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 @media (max-width: 760px) {
     .c-home .c-id-body {
-        grid-template-columns: 76px minmax(0, 1fr) 90px;
-        gap: 10px;
+        grid-template-columns: 76px minmax(0, 1fr);
+        align-items: start;
+        gap: 12px;
         padding: 15px 12px;
     }
+    .c-home .c-id-body .c-photo {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+    .c-home .c-id-details { grid-column: 2; grid-row: 1; }
+    .c-home .c-id-secondary-details {
+        grid-column: 2;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 12px;
+    }
+    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 9px; }
     .c-home .c-id-body > .c-id-qr-centered {
-        grid-column: 3;
-        grid-row: 1;
-        padding: 0;
+        grid-column: 2;
+        grid-row: 3;
+        justify-self: start;
+        align-items: flex-start;
     }
     .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
         width: 72px;
@@ -2146,23 +2272,15 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 @media (max-width: 420px) {
     .c-home .c-id-body {
-        grid-template-columns: 58px minmax(0, 1fr) 66px;
-        gap: 7px;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 8px;
         padding: 12px 8px;
     }
-    .c-home .c-id-body .c-photo {
-        width: 58px;
-        height: 76px;
-    }
+    .c-home .c-id-body .c-photo { width: 58px; height: 76px; }
+    .c-home .c-id-secondary-details { grid-template-columns: minmax(0, 1fr); }
     .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-        width: 54px;
-        height: 54px;
-    }
-    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
-        padding: 3px;
-    }
-    .c-home .c-id-body > .c-id-qr-centered > span {
-        font-size: 6px;
+        width: 60px;
+        height: 60px;
     }
 }
 </style>

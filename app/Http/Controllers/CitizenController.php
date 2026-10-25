@@ -18,6 +18,7 @@ use App\Models\citizens;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\VaccinationRecord;
+use App\Models\VaccinationSchedule;
 use App\Models\MaintenanceRecord;
 use App\Models\MedicationRecord;
 use App\Models\Supply;
@@ -28,9 +29,11 @@ use App\Imports\CitizensImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
+use App\Models\SystemSetting;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -165,6 +168,24 @@ class CitizenController extends Controller
             }
         }
 
+        $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
+        if ($vaccineFilters) {
+            $vaccineTerms = [
+                'bcg' => ['bcg'], 'hepb' => ['hepatitis b', 'hepb'], 'penta' => ['pentavalent', 'penta'],
+                'opv' => ['oral polio', 'opv'], 'ipv' => ['inactivated polio', 'ipv'], 'pcv' => ['pneumococcal', 'pcv'],
+                'mmr' => ['measles, mumps', 'mmr'], 'mr' => ['measles-rubella', 'mr'], 'td' => ['tetanus', 'td'], 'hpv' => ['human papillomavirus', 'hpv'],
+            ];
+            $query->whereHas('vaccinations', function ($vaccinationQuery) use ($vaccineFilters, $vaccineTerms) {
+                $vaccinationQuery->where(function ($builder) use ($vaccineFilters, $vaccineTerms) {
+                    foreach ($vaccineFilters as $filter) {
+                        foreach ($vaccineTerms[$filter] ?? [$filter] as $term) {
+                            $builder->orWhere('vaccine_name', 'like', "%{$term}%");
+                        }
+                    }
+                });
+            });
+        }
+
         if (!$request->boolean('filter_deceased')) {
             $query->where(function ($q) {
                 $q->whereNull('Citizen_IsDeceased')
@@ -272,9 +293,6 @@ class CitizenController extends Controller
             ->orderBy('name')
             ->paginate(10, ['*'], 'medicine_page');
 
-
-
-
         /*
         |--------------------------------------------------------------------------
         | PAGINATION
@@ -368,6 +386,8 @@ class CitizenController extends Controller
             $citizenDisplayIds[$ordinalCitizen->id] = str_pad((string) $subgroupOrdinals[$subgroupKey], 3, '0', STR_PAD_LEFT) . '-' . $subgroupName;
         }
 
+        $exportFieldDefinitions = $this->exportFieldDefinitions();
+
         return view('bhw.citizen', compact(
             'citizens',
             'totalCitizens',
@@ -376,7 +396,8 @@ class CitizenController extends Controller
             'seniors',
             'citizenTrends',
             'puroks',
-            'citizenDisplayIds'
+            'citizenDisplayIds',
+            'exportFieldDefinitions'
         ));
     }
 
@@ -544,14 +565,45 @@ class CitizenController extends Controller
             'diagnosis' => 'required|string|max:255',
             'record_date' => 'required|date',
             'comments' => 'nullable|string|max:2000',
+<<<<<<< HEAD
+=======
+            'severity' => 'nullable|in:Low / Mild,Moderate,High / Severe,Critical,Resolved',
+            'weight' => 'nullable|numeric|min:1|max:500',
+            'height' => 'nullable|numeric|min:1|max:300',
+            'temperature' => 'nullable|numeric|min:25|max:45',
+            'blood_pressure' => 'nullable|string|max:20',
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         ]);
+
+        $weight = isset($validated['weight']) && $validated['weight'] !== '' ? (float) $validated['weight'] : null;
+        $height = isset($validated['height']) && $validated['height'] !== '' ? (float) $validated['height'] : null;
+        $bmi = ($weight !== null && $height !== null && $height > 0)
+            ? round($weight / (($height / 100) ** 2), 1)
+            : null;
 
         $record = HealthRecord::create([
             'citizen_id' => $validated['citizen_id'],
             'diagnosis' => trim($validated['diagnosis']),
             'record_date' => $validated['record_date'],
+<<<<<<< HEAD
             'comments' => $validated['comments'] ?? null,
+=======
+            'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
+            'severity' => $validated['severity'] ?? 'Low / Mild',
+            'weight' => $weight,
+            'height' => $height,
+            'bmi' => $bmi,
+            'temperature' => $validated['temperature'] ?? null,
+            'blood_pressure' => isset($validated['blood_pressure']) ? trim($validated['blood_pressure']) : null,
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         ]);
+
+        $profileUpdates = [];
+        if ($weight !== null) $profileUpdates['Citizen_Weight'] = $weight;
+        if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
+        if ($profileUpdates) {
+            $citizen->forceFill($profileUpdates)->save();
+        }
 
         HealthRecordActivityLog::create([
             'user_id' => Auth::id(),
@@ -564,6 +616,7 @@ class CitizenController extends Controller
         $this->logActivity('create', 'health_record', $validated['citizen_id'], 'Added health record: ' . $validated['diagnosis']);
 
         return back()->with('success', 'Diagnosis added successfully.');
+<<<<<<< HEAD
     }
 
     public function storeMaintenance(Request $request)
@@ -572,6 +625,143 @@ class CitizenController extends Controller
 
     if (!$user || $user->role !== 'bhw') {
         abort(403);
+=======
+    }
+
+    public function deleteHealthRecord($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $record = HealthRecord::with('citizen')->findOrFail($id);
+        $citizen = $record->citizen;
+
+        if (!$citizen || !$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this diagnosis record.');
+        }
+
+        $diagnosis = $record->diagnosis;
+        $citizenId = $record->citizen_id;
+        $recordId = $record->id;
+
+        HealthRecordActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'delete',
+            'citizen_id' => $citizenId,
+            'health_record_id' => $recordId,
+            'description' => 'Deleted health record: ' . $diagnosis,
+        ]);
+
+        $record->delete();
+        $this->logActivity('delete', 'health_record', $citizenId, 'Deleted health record: ' . $diagnosis);
+
+        return back()->with('success', 'Diagnosis record deleted successfully.');
+    }
+
+    public function deleteVaccinationRecord($citizenId, $recordId)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $citizen = citizens::findOrFail($citizenId);
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this vaccination record.');
+        }
+
+        $record = VaccinationRecord::where('citizen_id', $citizen->id)
+            ->findOrFail($recordId);
+
+        $description = 'Deleted vaccination: ' . $record->vaccine_name
+            . ' (' . $record->dose_number . ')';
+        $record->delete();
+
+        $this->logActivity('delete', 'vaccination', $citizen->id, $description);
+
+        return back()->with('success', 'Vaccination record deleted successfully.');
+    }
+
+    public function deleteMaintenanceRecord($id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $record = MaintenanceRecord::with('citizen')->findOrFail($id);
+        $citizen = $record->citizen;
+
+        if (!$citizen || !$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to delete this maintenance medicine record.');
+        }
+
+        $citizenId = $citizen->id;
+        $medicineName = $record->medicine_name;
+        $record->delete();
+
+        $this->logActivity('delete', 'maintenance', $citizenId, 'Deleted maintenance medicine: ' . $medicineName);
+
+        return back()->with('success', 'Maintenance medicine deleted successfully.');
+    }
+
+    public function storeMaintenance(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'citizen_id'       => 'required|integer|exists:citizens,id',
+            'medicine_name'    => 'required|string|max:255',
+            'quantity_dispensed' => 'required|integer|min:1|max:100000',
+            'dosage'           => 'required|string|max:100',
+            'frequency'        => 'required|string|max:100',
+            'start_date'       => 'required|date',
+            'end_date'         => 'nullable|date|after_or_equal:start_date',
+            'notes'            => 'nullable|string|max:2000',
+        ]);
+
+        $citizen = citizens::findOrFail($validated['citizen_id']);
+        $this->authorizeCitizenEdit($citizen);
+
+        $medicineName = trim($validated['medicine_name']);
+
+        if ($medicineName === '') {
+            return back()
+                ->withErrors(['medicine_name' => 'Please enter a medicine name.'])
+                ->withInput();
+        }
+
+        $record = MaintenanceRecord::create([
+            'citizen_id'        => $citizen->id,
+            'medicine_name'     => $medicineName,
+            'quantity_dispensed'=> (int) $validated['quantity_dispensed'],
+            'dosage'            => trim($validated['dosage']),
+            'frequency'         => trim($validated['frequency']),
+            'start_date'        => $validated['start_date'],
+            'end_date'          => $validated['end_date'] ?? null,
+            'notes'             => isset($validated['notes']) ? trim($validated['notes']) : null,
+            'user_id'           => $user->id,
+        ]);
+
+        $this->logActivity(
+            'create',
+            'maintenance',
+            $citizen->id,
+            'Added maintenance medicine: ' . $medicineName
+                . ' (quantity ' . $record->quantity_dispensed
+                . ', ' . $record->dosage . ', ' . $record->frequency . ').'
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Maintenance medicine added successfully.');
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
     }
 
     // These field names must match the Maintenance Medicines form.
@@ -686,6 +876,7 @@ class CitizenController extends Controller
             'maintenanceRecords' => fn ($query) => $query->latest(),
             'medications' => fn ($query) => $query->latest(),
             'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
             'family.purok',
             'family.subgroup',
             'subgroup',
@@ -697,7 +888,6 @@ class CitizenController extends Controller
             ->get();
         $puroks = Purok::with('subgroups')->get();
 
-        // The citizen details Blade view uses this list in the medicine selector.
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
             ->distinct()
@@ -711,13 +901,90 @@ class CitizenController extends Controller
             'Viewed citizen details page'
         );
 
+        $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
+
         return view('bhw.citizendetails', compact(
             'citizen',
             'families',
             'puroks',
             'availableMedicines',
-            'canEdit'
+            'canEdit',
+            'vaccinationSchedulingEnabled'
         ));
+    }
+
+    public function administerVaccinationSchedule(Request $request, $id, $scheduleId)
+    {
+        abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
+
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $citizen = citizens::findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
+
+        $schedule = VaccinationSchedule::where('id', $scheduleId)
+            ->where('citizen_id', $citizen->id)
+            ->where('status', 'scheduled')
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'date_administered' => 'required|date|before_or_equal:today',
+        ]);
+
+        VaccinationRecord::create([
+            'citizen_id' => $citizen->id,
+            'vaccine_name' => $schedule->vaccine_name,
+            'dose_number' => $schedule->dose_number ?: 'Scheduled dose',
+            'date_administered' => $validated['date_administered'],
+            'administered_by' => $user->name,
+        ]);
+
+        $schedule->update(['status' => 'completed']);
+
+        $this->logActivity(
+            'update',
+            'vaccination_schedule',
+            $citizen->id,
+            'Marked scheduled ' . $schedule->vaccine_name . ' vaccination as administered'
+        );
+
+        return back()->with('success', 'Vaccination marked as administered and added to immunization history.');
+    }
+
+    public function resetCitizenPassword(Request $request, $id)
+    {
+        $user = auth()->user();
+        abort_unless($user && $user->hasWriteAccess('citizen_password_reset'), 403, 'You do not have permission to reset citizen passwords.');
+
+        $citizen = citizens::findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
+
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $citizenAccount = User::where('citizen_id', $citizen->id)
+            ->where('role', 'citizen')
+            ->firstOrFail();
+
+        $citizenAccount->update([
+            'password' => Hash::make($validated['password']),
+            'must_change_password' => true,
+            'failed_login_attempts' => 0,
+            'is_locked' => false,
+        ]);
+
+        $this->logActivity(
+            'password_reset',
+            'citizen',
+            $citizen->id,
+            'Reset citizen account password; citizen must change it at next login'
+        );
+
+        return back()->with('success', 'Citizen password reset successfully. The citizen must change it at next login.');
     }
 
     /*
@@ -729,7 +996,6 @@ class CitizenController extends Controller
     {
         $citizen = citizens::findOrFail($id);
 
-        // Enforce subgroup assignment check
         $this->authorizeCitizenEdit($citizen);
 
         $this->logActivity('delete', 'citizen', $citizen->id, 'Deleted citizen');
@@ -747,7 +1013,6 @@ class CitizenController extends Controller
     {
         $citizen = citizens::findOrFail($id);
 
-        // Enforce subgroup assignment check
         $this->authorizeCitizenEdit($citizen);
 
         $validated = $request->validate([
@@ -810,14 +1075,193 @@ class CitizenController extends Controller
     | EXPORT CITIZENS
     |--------------------------------------------------------------------------
     */
-    public function export()
+    private function exportCitizenQuery(Request $request)
     {
+        $query = citizens::query();
+
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $query->where('Citizen_Sex', $request->filter_sex);
+        }
+
+        if ($request->filled('filter_housing')) {
+            $query->whereIn('Citizen_HousingStatus', (array) $request->filter_housing);
+        }
+
+        if ($request->filled('filter_health')) {
+            $healthValues = (array) $request->filter_health;
+            $query->when(in_array('pregnant', $healthValues), fn ($builder) => $builder->where('Citizen_Pregnant', 1));
+            $query->when(in_array('in_pills', $healthValues), fn ($builder) => $builder->where('Citizen_InPills', 1));
+        }
+
+        if (!$request->boolean('filter_deceased')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('Citizen_IsDeceased')->orWhere('Citizen_IsDeceased', 0);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($builder) use ($search) {
+                $builder->where('Citizen_FName', 'like', "%{$search}%")
+                    ->orWhere('Citizen_LName', 'like', "%{$search}%")
+                    ->orWhere('id', $search)
+                    ->orWhereHas('healthRecords', fn ($healthQuery) => $healthQuery->where('diagnosis', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purokValue = $request->purok;
+            $purokRecord = Purok::find($purokValue);
+            $query->where(function ($builder) use ($purokRecord, $purokValue) {
+                $builder->where('Citizen_Purok', $purokRecord?->name ?: $purokValue)
+                    ->orWhere('Citizen_Purok', $purokValue);
+            });
+        }
+
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroupId = $request->subgroup;
+            $query->where(function ($builder) use ($subgroupId) {
+                $builder->where('subgroup_id', $subgroupId)
+                    ->orWhereHas('family', fn ($familyQuery) => $familyQuery->where('subgroup_id', $subgroupId));
+            });
+        }
+
+        if ($request->filled('age')) {
+            $age = trim($request->age);
+            if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $age, $matches)) {
+                $query->whereBetween('Citizen_Age', [min((int) $matches[1], (int) $matches[2]), max((int) $matches[1], (int) $matches[2])]);
+            } elseif (is_numeric($age)) {
+                $query->where('Citizen_Age', (int) $age);
+            }
+        }
+
+        if ($request->filled('age_group')) {
+            $query->when($request->age_group === 'kid', fn ($builder) => $builder->where('Citizen_Age', '<=', 17));
+            $query->when($request->age_group === 'adult', fn ($builder) => $builder->whereBetween('Citizen_Age', [18, 59]));
+            $query->when($request->age_group === 'senior', fn ($builder) => $builder->where('Citizen_Age', '>=', 60));
+        }
+
+        $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
+        if ($vaccineFilters) {
+            $vaccineTerms = [
+                'bcg' => ['bcg'], 'hepb' => ['hepatitis b', 'hepb'], 'penta' => ['pentavalent', 'penta'],
+                'opv' => ['oral polio', 'opv'], 'ipv' => ['inactivated polio', 'ipv'], 'pcv' => ['pneumococcal', 'pcv'],
+                'mmr' => ['measles, mumps', 'mmr'], 'mr' => ['measles-rubella', 'mr'], 'td' => ['tetanus', 'td'], 'hpv' => ['human papillomavirus', 'hpv'],
+            ];
+            $query->whereHas('vaccinations', function ($vaccinationQuery) use ($vaccineFilters, $vaccineTerms) {
+                $vaccinationQuery->where(function ($builder) use ($vaccineFilters, $vaccineTerms) {
+                    foreach ($vaccineFilters as $filter) {
+                        foreach ($vaccineTerms[$filter] ?? [$filter] as $term) {
+                            $builder->orWhere('vaccine_name', 'like', "%{$term}%");
+                        }
+                    }
+                });
+            });
+        }
+
+        return $query->orderBy('id');
+    }
+
+    private function exportFilterSummary(Request $request): array
+    {
+        $filters = [];
+
+        if ($request->filled('search')) {
+            $filters[] = 'Search: ' . trim($request->search);
+        }
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purok = Purok::find($request->purok);
+            $filters[] = 'Purok: ' . ($purok?->name ?: $request->purok);
+        }
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroup = PurokSubgroup::find($request->subgroup);
+            $filters[] = 'Subgroup: ' . ($subgroup?->name ?: $request->subgroup);
+        }
+        if ($request->filled('age')) {
+            $filters[] = 'Age: ' . trim($request->age);
+        }
+        if ($request->filled('age_group')) {
+            $filters[] = 'Age group: ' . ucfirst($request->age_group);
+        }
+        if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
+            $filters[] = 'Gender: ' . $request->filter_sex;
+        }
+        if ($request->filled('filter_housing')) {
+            $filters[] = 'Housing: ' . implode(', ', (array) $request->filter_housing);
+        }
+        if ($request->filled('filter_health')) {
+            $filters[] = 'Health: ' . implode(', ', (array) $request->filter_health);
+        }
+        if ($request->filled('health_filter_vaccine')) {
+            $filters[] = 'Vaccines: ' . implode(', ', (array) $request->health_filter_vaccine);
+        }
+
+        $filters[] = $request->boolean('filter_deceased')
+            ? 'Includes deceased citizens'
+            : 'Excludes deceased citizens';
+
+        return $filters;
+    }
+
+    private function exportFieldDefinitions(): array
+    {
+        return [
+            'id' => 'Citizen ID',
+            'Citizen_FName' => 'First Name',
+            'Citizen_MName' => 'Middle Name',
+            'Citizen_LName' => 'Last Name',
+            'Citizen_BirthDate' => 'Birth Date',
+            'Citizen_ContactNo' => 'Contact Number',
+            'Citizen_Purok' => 'Purok',
+            'family_id' => 'Family ID',
+            'subgroup_id' => 'Subgroup ID',
+            'Citizen_Age' => 'Age',
+            'Citizen_Sex' => 'Gender',
+            'Citizen_Height' => 'Height',
+            'Citizen_Weight' => 'Weight',
+            'Citizen_HousingStatus' => 'Housing Status',
+            'Citizen_Pregnant' => 'Pregnant',
+            'Citizen_InPills' => 'Taking Pills',
+            'Citizen_IsDeceased' => 'Deceased',
+        ];
+    }
+
+    private function selectedExportFields(Request $request): array
+    {
+        $availableFields = $this->exportFieldDefinitions();
+        $requestedFields = $request->has('fields')
+            ? $request->input('fields', [])
+            : array_keys($availableFields);
+        $selectedFields = array_values(array_intersect((array) $requestedFields, array_keys($availableFields)));
+
+        abort_if(!$selectedFields, 422, 'Select at least one citizen detail to export.');
+
+        return $selectedFields;
+    }
+
+    public function export(Request $request)
+    {
+        $selectedFields = $this->selectedExportFields($request);
         $this->logAdminActivity('citizens.exported', 'Exported citizen records to Excel.', 'data');
 
         return Excel::download(
-            new CitizensExport(),
+            new CitizensExport($this->exportCitizenQuery($request), $this->exportFilterSummary($request), $selectedFields, $this->exportFieldDefinitions()),
             'citizen_records_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
         );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $citizens = $this->exportCitizenQuery($request)->get();
+        $filterSummary = $this->exportFilterSummary($request);
+        $fieldDefinitions = $this->exportFieldDefinitions();
+        $selectedFields = $this->selectedExportFields($request);
+
+        $this->logAdminActivity('citizens.exported_pdf', 'Exported citizen records to PDF.', 'data');
+
+        return Pdf::loadView('exports.citizens-pdf', compact('citizens', 'filterSummary', 'fieldDefinitions', 'selectedFields'))
+            ->setPaper('a4', 'landscape')
+            ->download('citizen_records_' . now()->format('Y-m-d_H-i-s') . '.pdf');
     }
 
     /*
@@ -827,6 +1271,9 @@ class CitizenController extends Controller
     */
     public function import(Request $request)
     {
+        // Prevent timeout errors on large file uploads (allows up to 5 minutes)
+        set_time_limit(300);
+
         $request->validate([
             'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
@@ -844,7 +1291,9 @@ class CitizenController extends Controller
                 "Citizens imported successfully. {$import->createdAccounts} citizen accounts were created with the default temporary password."
             );
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Citizen Import Error: ' . $e->getMessage() . ' on line ' . $e->getLine());
             $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());
+            
             return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }
@@ -855,6 +1304,7 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function showElectronicCard($id)
+<<<<<<< HEAD
 {
     $citizen = citizens::with([
         'vaccinations',
@@ -879,6 +1329,80 @@ class CitizenController extends Controller
 
     return view('bhw.ecard', compact('citizen'));
 }
+=======
+    {
+        $citizen = citizens::with([
+            'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+            'medications',
+            'healthRecords',
+            'maintenanceRecords' => fn ($query) => $query->latest(),
+        ])->findOrFail($id);
+
+        $this->authorizeCitizenEdit($citizen);
+
+        return view('bhw.ecard', [
+            'citizen' => $citizen,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+        ]);
+    }
+
+    public function scheduleVaccination(Request $request)
+    {
+        abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
+
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'schedules' => 'required|array|min:1',
+            'schedules.*.citizen_id' => 'required|exists:citizens,id',
+            'schedules.*.vaccine_name' => 'required|string|max:255',
+            'schedules.*.dose_number' => 'nullable|string|max:100',
+            'schedules.*.scheduled_date' => 'required|date|after_or_equal:today',
+            'schedules.*.notes' => 'nullable|string|max:2000',
+        ]);
+
+        DB::transaction(function () use ($validated, $user) {
+            foreach ($validated['schedules'] as $scheduleData) {
+                $citizen = citizens::findOrFail($scheduleData['citizen_id']);
+                $this->authorizeCitizenEdit($citizen);
+
+                VaccinationSchedule::create([
+                    'citizen_id' => $citizen->id,
+                    'vaccine_name' => $scheduleData['vaccine_name'],
+                    'dose_number' => $scheduleData['dose_number'] ?? null,
+                    'scheduled_date' => $scheduleData['scheduled_date'],
+                    'notes' => $scheduleData['notes'] ?? null,
+                    'status' => 'scheduled',
+                    'scheduled_by' => $user->id,
+                ]);
+
+                $this->logActivity('create', 'vaccination_schedule', $citizen->id, 'Scheduled ' . $scheduleData['vaccine_name'] . ' vaccination');
+            }
+        });
+
+        return back()->with('success', count($validated['schedules']) . ' vaccination schedule(s) added successfully.');
+    }
+
+    public function showElectronicCardByToken(string $token)
+    {
+        $citizen = citizens::with([
+            'vaccinations',
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+            'medications',
+            'healthRecords',
+            'maintenanceRecords' => fn ($query) => $query->latest(),
+        ])->where('qr_token', $token)->firstOrFail();
+
+        return view('bhw.ecard', [
+            'citizen' => $citizen,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
+        ]);
+    }
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
     public function makeCitizenQrImage(citizens $citizen): string
     {
@@ -887,14 +1411,10 @@ class CitizenController extends Controller
             $citizen->save();
         }
 
-        // Use a stable public Health ID URL. The public page does not expose
-        // medical information; authorized providers must sign in to view records.
         $url = route('health-id.public', [
             'token' => $citizen->qr_token,
         ]);
 
-        // Generate the QR locally instead of sending the citizen token to a
-        // third-party QR-generation service.
         $qrCode = new QrCode(
             data: $url,
             encoding: new Encoding('UTF-8'),
@@ -987,7 +1507,7 @@ class CitizenController extends Controller
             'date_dispensed' => 'required|date',
         ]);
 
-        $validated['citizen_id'] = $citizenId;
+        $validated['citizen_id'] = $id;
 
         MedicationRecord::create($validated);
 
@@ -1016,6 +1536,10 @@ class CitizenController extends Controller
 
         $citizen = citizens::with([
                 'vaccinations',
+<<<<<<< HEAD
+=======
+            'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                 'medications',
                 'healthRecords',
                 'maintenanceRecords' => fn ($query) => $query->latest(),
@@ -1028,6 +1552,7 @@ class CitizenController extends Controller
         return view('citizen.ecard', [
             'citizen' => $citizen,
             'qrImage' => $qrImage,
+            'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
         ]);
     }
 }

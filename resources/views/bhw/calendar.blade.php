@@ -192,10 +192,45 @@ INPUTS
     margin-top: 22px;
 }
 
+<<<<<<< HEAD
+=======
+.vaccination-schedule-modal .modal-content { width: min(1080px, calc(100vw - 32px)); overflow-x: hidden; }
+.vaccination-schedule-help { margin: -10px 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
+.citizen-picker-modal .modal-content { width: min(680px, calc(100vw - 32px)); }
+.citizen-picker-search { margin-bottom: 14px !important; }
+.citizen-picker-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.citizen-picker-filters input:not([type="checkbox"]), .citizen-picker-filters select { width: 100%; min-width: 0; margin: 0; padding: 9px 10px; border: 1px solid #dbe3ed; border-radius: 7px; background: #fff; color: #172033; box-sizing: border-box; }
+.citizen-picker-filters .citizen-picker-search { grid-column: 1 / -1; }
+.citizen-picker-deceased { display: flex; align-items: center; gap: 7px; color: #475569; font-size: 12px; }
+.citizen-picker-deceased input { width: auto; margin: 0; }
+.citizen-picker-list { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
+.citizen-picker-option { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; padding: 12px 14px; border: 1px solid #dbe3ed; border-radius: 8px; background: #fff; color: #172033; text-align: left; cursor: pointer; }
+.citizen-picker-option:hover { border-color: #2563eb; background: #eff6ff; }
+.citizen-picker-option strong { display: block; font-size: 14px; }
+.citizen-picker-option small { display: block; margin-top: 3px; color: #64748b; font-size: 11px; }
+.citizen-picker-empty { padding: 18px; color: #64748b; text-align: center; }
+.vaccination-schedule-rows { display: grid; gap: 12px; }
+.vaccination-schedule-row { display: grid; grid-template-columns: minmax(180px, 1.3fr) minmax(150px, 1fr) minmax(120px, .8fr) minmax(150px, 1fr) 38px; gap: 8px; align-items: end; padding: 12px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; }
+.vaccination-schedule-row label { display: block; color: #334155; font-size: 12px; font-weight: 600; }
+.vaccination-schedule-row input, .vaccination-schedule-row select, .schedule-citizen-picker { width: 100%; min-height: 40px; margin-top: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #172033; box-sizing: border-box; }
+.schedule-citizen-picker { overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.remove-schedule-row { width: 38px; height: 40px; border: 0; border-radius: 7px; background: #fee2e2; color: #b91c1c; cursor: pointer; font-size: 20px; }
+.add-schedule-row { margin-top: 12px; border: 1px dashed #2563eb; background: #eff6ff; color: #1d4ed8; }
+
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @media (max-width: 640px) {
     .modal-content { padding: 22px; }
     .add-event-form-grid { grid-template-columns: 1fr; gap: 14px; }
     .add-event-field-full { grid-column: auto; }
+<<<<<<< HEAD
+=======
+}
+
+@media (max-width: 900px) {
+    .vaccination-schedule-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .vaccination-schedule-row label[style] { grid-column: 1 / -1 !important; }
+    .vaccination-schedule-row .remove-schedule-row { width: 100%; }
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 }
 
 /* =========================================================
@@ -489,6 +524,11 @@ MOBILE
         width: 100%;
     }
 
+    .citizen-picker-filters { grid-template-columns: 1fr; }
+    .citizen-picker-filters .citizen-picker-search { grid-column: auto; }
+    .vaccination-schedule-row { grid-template-columns: 1fr; }
+    .vaccination-schedule-row label[style] { grid-column: auto !important; }
+
 }
 </style>
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
@@ -501,11 +541,143 @@ MOBILE
         <h1>Event Calendar</h1>
         <p>Manage scheduled events and activities</p>
     </div>
+    @if($vaccinationSchedulingEnabled)
+        <button type="button" id="openVaccinationScheduleBtn" class="btn-primary">Schedule Vaccination</button>
+    @endif
 </div>
 
 <div class="calendar-wrapper">
     <div id="calendar"></div>
 </div>
+
+@if($vaccinationSchedulingEnabled)
+    @php
+        $calendarVaccineOptions = [
+            'BCG',
+            'Hepatitis B (HepB)',
+            'Pentavalent (Penta)',
+            'Oral Polio Vaccine (OPV)',
+            'Inactivated Polio Vaccine (IPV)',
+            'Pneumococcal Conjugate Vaccine (PCV)',
+            'Measles, Mumps, Rubella (MMR)',
+            'Measles-Rubella (MR)',
+            'Tetanus-Diphtheria (Td)',
+            'Human Papillomavirus (HPV)',
+        ];
+    @endphp
+    <div id="vaccinationScheduleModal" class="modal vaccination-schedule-modal">
+        <div class="modal-content">
+            <h2>Schedule Vaccination</h2>
+            <p class="vaccination-schedule-help">Add one schedule at a time. Repeat the action to create multiple schedules for the same citizen.</p>
+            <form method="POST" action="{{ route('citizen.vaccination.schedule') }}" id="vaccinationScheduleForm">
+                @csrf
+                <div class="vaccination-schedule-rows" id="vaccinationScheduleRows">
+                    <div class="vaccination-schedule-row" data-schedule-index="0">
+                        <label>Citizen
+                            <input type="hidden" name="schedules[0][citizen_id]" class="schedule-citizen-id">
+                            <button type="button" class="schedule-citizen-picker">Choose citizen</button>
+                        </label>
+                        <label>Vaccine or immunization
+                            <select name="schedules[0][vaccine_name]" class="schedule-vaccine-name" required>
+                                <option value="">Select a vaccine</option>
+                                @foreach($calendarVaccineOptions as $calendarVaccine)
+                                    <option value="{{ $calendarVaccine }}">{{ $calendarVaccine }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>Dose / label
+                            <input type="text" name="schedules[0][dose_number]" placeholder="Dose 1 or Booster">
+                        </label>
+                        <label>Scheduled date
+                            <input type="date" name="schedules[0][scheduled_date]" min="{{ now()->format('Y-m-d') }}" required>
+                        </label>
+                        <button type="button" class="remove-schedule-row" aria-label="Remove schedule row" disabled>&times;</button>
+                        <label style="grid-column: 1 / -2;">Notes
+                            <input type="text" name="schedules[0][notes]" placeholder="Optional instructions">
+                        </label>
+                    </div>
+                </div>
+                <button type="button" id="addVaccinationScheduleRow" class="btn-secondary add-schedule-row">+ Add another schedule</button>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Save All Schedules</button>
+                    <button type="button" id="closeVaccinationScheduleBtn" class="btn-secondary">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="citizenPickerModal" class="modal citizen-picker-modal">
+        <div class="modal-content">
+            <h2>Choose Citizen</h2>
+            <div class="citizen-picker-filters">
+                <input type="search" id="citizenPickerSearch" class="citizen-picker-search" placeholder="Search citizen name or ID">
+                <select id="citizenPickerPurok">
+                    <option value="">All Purok</option>
+                    @foreach($calendarPuroks as $calendarPurok)
+                        <option value="{{ strtolower($calendarPurok->name) }}">{{ $calendarPurok->name }}</option>
+                    @endforeach
+                </select>
+                <input type="text" id="citizenPickerAge" placeholder="Age or range (e.g. 8 or 4-10)">
+                <select id="citizenPickerSex">
+                    <option value="">All Sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+                <select id="citizenPickerHousing">
+                    <option value="">All Housing</option>
+                    <option value="permanent resident">Permanent Resident</option>
+                    <option value="renter">Renter</option>
+                </select>
+                <select id="citizenPickerHealth">
+                    <option value="">All Health Status</option>
+                    <option value="pregnant">Pregnant</option>
+                    <option value="in_pills">In-Pills</option>
+                </select>
+                <select id="citizenPickerVaccine">
+                    <option value="">All Vaccines</option>
+                    <option value="bcg">BCG</option>
+                    <option value="hepb">Hepatitis B</option>
+                    <option value="penta">Pentavalent</option>
+                    <option value="opv">OPV</option>
+                    <option value="ipv">IPV</option>
+                    <option value="pcv">PCV</option>
+                    <option value="mmr">MMR</option>
+                    <option value="mr">MR</option>
+                    <option value="td">Td</option>
+                    <option value="hpv">HPV</option>
+                </select>
+                <label class="citizen-picker-deceased"><input type="checkbox" id="citizenPickerIncludeDeceased"> Include deceased residents</label>
+            </div>
+            <div class="citizen-picker-list" id="citizenPickerList">
+                @forelse($calendarCitizens as $calendarCitizen)
+                    <button type="button" class="citizen-picker-option"
+                        data-citizen-id="{{ $calendarCitizen->id }}"
+                        data-citizen-label="{{ $calendarCitizen->Citizen_LName }}, {{ $calendarCitizen->Citizen_FName }} - {{ $calendarCitizen->Citizen_Purok ?: 'Unassigned' }}"
+                        data-search="{{ strtolower($calendarCitizen->Citizen_FName . ' ' . $calendarCitizen->Citizen_LName . ' ' . $calendarCitizen->id) }}"
+                        data-purok="{{ strtolower($calendarCitizen->Citizen_Purok ?: '') }}"
+                        data-age="{{ $calendarCitizen->Citizen_Age }}"
+                        data-sex="{{ strtolower($calendarCitizen->Citizen_Sex ?: '') }}"
+                        data-housing="{{ strtolower($calendarCitizen->Citizen_HousingStatus ?: '') }}"
+                        data-pregnant="{{ $calendarCitizen->Citizen_Pregnant ? '1' : '0' }}"
+                        data-pills="{{ $calendarCitizen->Citizen_InPills ? '1' : '0' }}"
+                        data-deceased="{{ $calendarCitizen->Citizen_IsDeceased ? '1' : '0' }}"
+                        data-vaccines="{{ strtolower($calendarCitizen->vaccinations->pluck('vaccine_name')->implode('|')) }}">
+                        <span>
+                            <strong>{{ $calendarCitizen->Citizen_LName }}, {{ $calendarCitizen->Citizen_FName }}</strong>
+                            <small>Citizen ID: C-{{ str_pad($calendarCitizen->id, 4, '0', STR_PAD_LEFT) }} · {{ $calendarCitizen->Citizen_Purok ?: 'Unassigned' }}</small>
+                        </span>
+                        <span aria-hidden="true">Select</span>
+                    </button>
+                @empty
+                    <div class="citizen-picker-empty">No assigned citizens available.</div>
+                @endforelse
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="closeCitizenPickerBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+@endif
 
 <!-- =========================
 EDIT MODAL
@@ -738,6 +910,168 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let addModal =
         document.getElementById('addModal');
+
+    const vaccinationScheduleModal = document.getElementById('vaccinationScheduleModal');
+    const openVaccinationScheduleBtn = document.getElementById('openVaccinationScheduleBtn');
+    const closeVaccinationScheduleBtn = document.getElementById('closeVaccinationScheduleBtn');
+    const vaccinationScheduleForm = document.getElementById('vaccinationScheduleForm');
+    const vaccinationScheduleRows = document.getElementById('vaccinationScheduleRows');
+    const addVaccinationScheduleRow = document.getElementById('addVaccinationScheduleRow');
+    const citizenPickerModal = document.getElementById('citizenPickerModal');
+    const closeCitizenPickerBtn = document.getElementById('closeCitizenPickerBtn');
+    const citizenPickerSearch = document.getElementById('citizenPickerSearch');
+    const citizenPickerPurok = document.getElementById('citizenPickerPurok');
+    const citizenPickerAge = document.getElementById('citizenPickerAge');
+    const citizenPickerSex = document.getElementById('citizenPickerSex');
+    const citizenPickerHousing = document.getElementById('citizenPickerHousing');
+    const citizenPickerHealth = document.getElementById('citizenPickerHealth');
+    const citizenPickerVaccine = document.getElementById('citizenPickerVaccine');
+    const citizenPickerIncludeDeceased = document.getElementById('citizenPickerIncludeDeceased');
+    const citizenPickerOptions = document.querySelectorAll('.citizen-picker-option');
+    const vaccineOptions = @json($calendarVaccineOptions ?? []);
+    let activeScheduleRow = null;
+    let nextScheduleIndex = 1;
+
+    function vaccineOptionsMarkup() {
+        return '<option value="">Select a vaccine</option>' + vaccineOptions.map(function (vaccine) {
+            return '<option value="' + vaccine.replace(/"/g, '&quot;') + '">' + vaccine + '</option>';
+        }).join('');
+    }
+
+    function scheduleRowMarkup(index) {
+        return '<div class="vaccination-schedule-row" data-schedule-index="' + index + '">' +
+            '<label>Citizen<input type="hidden" name="schedules[' + index + '][citizen_id]" class="schedule-citizen-id"><button type="button" class="schedule-citizen-picker">Choose citizen</button></label>' +
+            '<label>Vaccine or immunization<select name="schedules[' + index + '][vaccine_name]" required>' + vaccineOptionsMarkup() + '</select></label>' +
+            '<label>Dose / label<input type="text" name="schedules[' + index + '][dose_number]" placeholder="Dose 1 or Booster"></label>' +
+            '<label>Scheduled date<input type="date" name="schedules[' + index + '][scheduled_date]" min="{{ now()->format('Y-m-d') }}" required></label>' +
+            '<button type="button" class="remove-schedule-row" aria-label="Remove schedule row">&times;</button>' +
+            '<label style="grid-column: 1 / -2;">Notes<input type="text" name="schedules[' + index + '][notes]" placeholder="Optional instructions"></label>' +
+            '</div>';
+    }
+
+    function updateRemoveButtons() {
+        const rows = vaccinationScheduleRows.querySelectorAll('.vaccination-schedule-row');
+        rows.forEach(function (row) {
+            row.querySelector('.remove-schedule-row').disabled = rows.length === 1;
+        });
+    }
+
+    function resetVaccinationScheduleRows() {
+        vaccinationScheduleRows.innerHTML = scheduleRowMarkup(0);
+        nextScheduleIndex = 1;
+        wireScheduleRow(vaccinationScheduleRows.firstElementChild);
+        updateRemoveButtons();
+    }
+
+    function wireScheduleRow(row) {
+        row.querySelector('.schedule-citizen-picker').addEventListener('click', function () {
+            activeScheduleRow = row;
+            citizenPickerModal.style.display = 'flex';
+            citizenPickerSearch.focus();
+            applyCitizenPickerFilters();
+        });
+
+        row.querySelector('.remove-schedule-row').addEventListener('click', function () {
+            row.remove();
+            updateRemoveButtons();
+        });
+    }
+
+    function citizenMatchesAge(age, filter) {
+        if (!filter) return true;
+        if (filter.includes('-')) {
+            const range = filter.split('-').map(Number);
+            return range.length === 2 && Number.isFinite(range[0]) && Number.isFinite(range[1]) && Number(age) >= range[0] && Number(age) <= range[1];
+        }
+        return Number(age) === Number(filter);
+    }
+
+    function applyCitizenPickerFilters() {
+        const search = citizenPickerSearch.value.toLowerCase().trim();
+        const purok = citizenPickerPurok.value;
+        const age = citizenPickerAge.value.trim();
+        const sex = citizenPickerSex.value;
+        const housing = citizenPickerHousing.value;
+        const health = citizenPickerHealth.value;
+        const vaccine = citizenPickerVaccine.value;
+        const includeDeceased = citizenPickerIncludeDeceased.checked;
+
+        citizenPickerOptions.forEach(function (option) {
+            const matches = (!search || option.dataset.search.includes(search))
+                && (!purok || option.dataset.purok === purok)
+                && citizenMatchesAge(option.dataset.age, age)
+                && (!sex || option.dataset.sex === sex)
+                && (!housing || option.dataset.housing === housing)
+                && (!health || (health === 'pregnant' ? option.dataset.pregnant === '1' : option.dataset.pills === '1'))
+                && (!vaccine || option.dataset.vaccines.includes(vaccine))
+                && (includeDeceased || option.dataset.deceased !== '1');
+
+            option.style.display = matches ? 'flex' : 'none';
+        });
+    }
+
+    if (openVaccinationScheduleBtn && vaccinationScheduleModal) {
+        wireScheduleRow(vaccinationScheduleRows.firstElementChild);
+
+        openVaccinationScheduleBtn.addEventListener('click', function () {
+            vaccinationScheduleModal.style.display = 'flex';
+        });
+
+        citizenPickerOptions.forEach(function (option) {
+            option.addEventListener('click', function () {
+                if (!activeScheduleRow) return;
+                activeScheduleRow.querySelector('.schedule-citizen-id').value = option.dataset.citizenId;
+                activeScheduleRow.querySelector('.schedule-citizen-picker').textContent = option.dataset.citizenLabel;
+                citizenPickerModal.style.display = 'none';
+            });
+        });
+
+        [citizenPickerSearch, citizenPickerPurok, citizenPickerAge, citizenPickerSex, citizenPickerHousing, citizenPickerHealth, citizenPickerVaccine, citizenPickerIncludeDeceased].forEach(function (field) {
+            field.addEventListener(field.type === 'search' || field.type === 'text' ? 'input' : 'change', applyCitizenPickerFilters);
+        });
+
+        closeCitizenPickerBtn.addEventListener('click', function () {
+            citizenPickerModal.style.display = 'none';
+        });
+
+        citizenPickerModal.addEventListener('click', function (event) {
+            if (event.target === citizenPickerModal) {
+                citizenPickerModal.style.display = 'none';
+            }
+        });
+
+        closeVaccinationScheduleBtn.addEventListener('click', function () {
+            vaccinationScheduleModal.style.display = 'none';
+            vaccinationScheduleForm.reset();
+            resetVaccinationScheduleRows();
+        });
+
+        vaccinationScheduleModal.addEventListener('click', function (event) {
+            if (event.target === vaccinationScheduleModal) {
+                vaccinationScheduleModal.style.display = 'none';
+                vaccinationScheduleForm.reset();
+                resetVaccinationScheduleRows();
+            }
+        });
+
+        addVaccinationScheduleRow.addEventListener('click', function () {
+            vaccinationScheduleRows.insertAdjacentHTML('beforeend', scheduleRowMarkup(nextScheduleIndex));
+            wireScheduleRow(vaccinationScheduleRows.lastElementChild);
+            nextScheduleIndex += 1;
+            updateRemoveButtons();
+        });
+
+        vaccinationScheduleForm.addEventListener('submit', function (event) {
+            const missingCitizen = Array.from(vaccinationScheduleRows.querySelectorAll('.schedule-citizen-id')).find(function (input) {
+                return !input.value;
+            });
+            if (missingCitizen) {
+                event.preventDefault();
+                activeScheduleRow = missingCitizen.closest('.vaccination-schedule-row');
+                activeScheduleRow.querySelector('.schedule-citizen-picker').focus();
+            }
+        });
+    }
 
 
     let editBtn =

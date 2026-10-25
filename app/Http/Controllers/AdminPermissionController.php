@@ -19,6 +19,7 @@ class AdminPermissionController extends Controller
         'reports_health' => 'Reports: Health & Immunization',
         'reports_operations' => 'Reports: Operations',
         'family'   => 'Family Profiles',
+        'citizen_password_reset' => 'Citizen Password Reset',
         'audit_logs' => 'Audit Logs',
     ];
 

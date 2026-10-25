@@ -11,7 +11,13 @@ class HealthRecord extends Model
         'citizen_id',
         'diagnosis',
         'record_date',
-        'comments'
+        'comments',
+        'severity',
+        'weight',
+        'height',
+        'bmi',
+        'temperature',
+        'blood_pressure'
     ];
 
     public function citizen()

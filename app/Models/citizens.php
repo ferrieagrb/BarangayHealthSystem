@@ -80,6 +80,11 @@ class citizens extends Authenticatable
     return $this->hasMany(VaccinationRecord::class, 'citizen_id', 'id');
 }
 
+    public function vaccinationSchedules()
+    {
+        return $this->hasMany(VaccinationSchedule::class, 'citizen_id');
+    }
+
     public function medications()
 {
     return $this->hasMany(MedicationRecord::class, 'citizen_id', 'id');

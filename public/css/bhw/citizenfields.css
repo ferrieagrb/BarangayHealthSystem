@@ -1080,4 +1080,201 @@ body:has(.maintenance-section) .health-alert-error {
     .immunization-form-grid {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
 }
+=======
+}
+
+/* Immunization and Maintenance Medicines — align with Diagnosis panels */
+.immunization-section.diagnosis-panel,
+.maintenance-container-box.diagnosis-panel {
+    display:block; width:100%; min-width:0; margin:24px 0; padding:24px;
+    border:1px solid #dbe4ef; border-radius:16px; background:#fff; color:#0f172a;
+    box-shadow:0 1px 3px rgba(15,23,42,.04);
+}
+.immunization-section .diagnosis-panel-head,
+.maintenance-container-box .diagnosis-panel-head {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding-bottom:16px; margin-bottom:20px; border-bottom:1px solid #edf2f7;
+}
+.immunization-section .diagnosis-panel-head h3,
+.maintenance-container-box .diagnosis-panel-head h3 {
+    margin:0; padding:0; border:0; color:#0f172a; font-size:20px;
+    font-weight:700; line-height:1.4;
+}
+.immunization-section .immunization-heading p,
+.maintenance-container-box .diagnosis-subtitle {
+    margin:4px 0 0; color:#64748b; font-size:12px; line-height:1.6;
+}
+.immunization-section .immunization-form-grid,
+.maintenance-container-box .maintenance-form-grid {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px;
+    width:100%; min-width:0;
+}
+.immunization-section .immunization-field,
+.maintenance-container-box .maintenance-form-field {
+    display:flex; flex-direction:column; gap:7px; min-width:0;
+}
+.immunization-section .immunization-field label,
+.maintenance-container-box .maintenance-form-field label {
+    color:#334155; font-size:12px; font-weight:600;
+}
+.immunization-section .immunization-field input,
+.immunization-section .immunization-field select,
+.maintenance-container-box .maintenance-form-field input,
+.maintenance-container-box .maintenance-form-field select,
+.maintenance-container-box .maintenance-form-field textarea {
+    box-sizing:border-box; width:100%; min-width:0; min-height:44px;
+    padding:11px 13px; border:1px solid #dbe4ef; border-radius:10px;
+    background:#f8fafc; color:#0f172a; font:inherit; font-size:13px;
+}
+.maintenance-container-box .maintenance-form-field-full { grid-column:1 / -1; }
+.immunization-section .immunization-action-wrapper {
+    display:flex; align-items:end; justify-content:flex-start; grid-column:1 / -1;
+}
+.immunization-section .immunization-history-item,
+.maintenance-container-box .maintenance-record-card {
+    margin:0; padding:16px 18px; border:1px solid #dbe4ef;
+    border-radius:12px; background:#f8fafc; box-shadow:none;
+}
+.immunization-section .immunization-history-item { gap:6px; }
+.maintenance-container-box .maintenance-record-card {
+    margin-bottom:12px; border-left:3px solid #3b82f6;
+}
+.maintenance-container-box .maintenance-form.edit-gated-form {
+    margin-top:20px; padding-top:20px; border-top:1px solid #edf2f7;
+}
+.maintenance-container-box .maintenance-form button[type="submit"] {
+    grid-column:1 / -1; justify-self:start; width:auto; min-height:42px;
+    padding:10px 18px; border:0; border-radius:11px; background:#2563eb;
+    color:#fff; font-weight:600; cursor:pointer;
+}
+@media (max-width:640px) {
+    .immunization-section.diagnosis-panel, .maintenance-container-box.diagnosis-panel { padding:16px; }
+    .immunization-section .immunization-form-grid,
+    .maintenance-container-box .maintenance-form-grid { grid-template-columns:minmax(0,1fr); }
+    .maintenance-container-box .maintenance-form-field-full,
+    .immunization-section .immunization-action-wrapper { grid-column:1; }
+    .immunization-section .immunization-action-wrapper .btn-primary,
+    .maintenance-container-box .maintenance-form button[type="submit"] { width:100%; }
+}
+
+
+/* FINAL ALIGNMENT: use the same history-card treatment as Diagnosis History */
+.immunization-section .immunization-history-item,
+.maintenance-container-box .maintenance-record-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    margin: 0 0 14px;
+    padding: 18px 20px;
+    border: 1px solid #dbe4ef;
+    border-top: 0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.immunization-section .immunization-history-item::before,
+.maintenance-container-box .maintenance-record-card::before {
+    content: "";
+    display: block;
+    height: 4px;
+    margin: -18px -20px 14px;
+    background: #3b82f6;
+}
+.immunization-section .immunization-history-item strong {
+    display: inline-block;
+    margin-bottom: 2px;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 700;
+}
+.immunization-section .immunization-history-item span {
+    color: #64748b;
+    font-size: 12px;
+}
+.immunization-section .immunization-history-item small {
+    color: #64748b;
+    font-size: 12px;
+}
+.maintenance-container-box .maintenance-record-card {
+    border-left: 1px solid #dbe4ef;
+}
+.maintenance-container-box .maintenance-record-card p {
+    margin: 5px 0;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.maintenance-container-box .maintenance-record-card p:first-of-type {
+    margin-top: 0;
+}
+.immunization-section .immunization-history-item:last-child,
+.maintenance-container-box .maintenance-record-card:last-child {
+    margin-bottom: 0;
+}
+/* Keep the Diagnosis-style panel spacing consistent; remove the previous extra gap. */
+.immunization-section.diagnosis-panel,
+.maintenance-container-box.diagnosis-panel {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+
+/* Maintenance medicine record: mirror Diagnosis History card layout */
+.maintenance-container-box .maintenance-history-card {
+    margin-bottom: 14px;
+}
+.maintenance-container-box .maintenance-history-card .diagnosis-history-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+.maintenance-container-box .maintenance-vitals {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.maintenance-container-box .maintenance-vitals > div {
+    min-width: 0;
+}
+.maintenance-container-box .maintenance-vitals strong {
+    display: block;
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+}
+.maintenance-container-box .maintenance-history-card .diagnosis-notes {
+    max-height: 110px;
+}
+@media (max-width: 640px) {
+    .maintenance-container-box .maintenance-vitals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* Consistent Add Vaccination button sizing with the other record actions. */
+.immunization-section .immunization-form-grid .immunization-action-wrapper {
+    align-self: end;
+    min-width: 0;
+}
+.immunization-section .immunization-form-grid button[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 145px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.immunization-section > .health-alert { margin: 0 0 14px; }
+.diagnosis-page .health-alert { margin: 0 0 16px; }
+@media (max-width: 900px) {
+    .immunization-section .immunization-form-grid .immunization-action-wrapper { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+    .immunization-section .immunization-form-grid button[type="submit"] { width: 100%; }
+}
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816

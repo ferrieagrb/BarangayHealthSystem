@@ -93,6 +93,14 @@ class HealthRecordController extends Controller
             'diagnosis' => 'required|string|max:2000',
             'record_date' => 'required|date',
             'comments' => 'nullable|string|max:2000',
+<<<<<<< HEAD
+=======
+            'severity' => 'nullable|in:Low / Mild,Moderate,High / Severe,Critical,Resolved',
+            'weight' => 'nullable|numeric|min:1|max:500',
+            'height' => 'nullable|numeric|min:1|max:300',
+            'temperature' => 'nullable|numeric|min:25|max:45',
+            'blood_pressure' => 'nullable|string|max:20',
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         ]);
 
         $citizenId = $id ?: $request->input('citizen_id');
@@ -103,13 +111,37 @@ class HealthRecordController extends Controller
             abort(422, 'Citizen ID mismatch.');
         }
 
+<<<<<<< HEAD
+=======
+        $weight = $validated['weight'] ?? null;
+        $height = $validated['height'] ?? null;
+        $bmi = ($weight && $height) ? round($weight / (($height / 100) ** 2), 1) : null;
+
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         HealthRecord::create([
             'citizen_id' => $citizen->id,
             'diagnosis' => trim($validated['diagnosis']),
             'record_date' => $validated['record_date'],
             'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
+<<<<<<< HEAD
         ]);
 
+=======
+            'severity' => $validated['severity'] ?? 'Low / Mild',
+            'weight' => $weight,
+            'height' => $height,
+            'bmi' => $bmi,
+            'temperature' => $validated['temperature'] ?? null,
+            'blood_pressure' => isset($validated['blood_pressure']) ? trim($validated['blood_pressure']) : null,
+        ]);
+
+        // Keep the citizen's latest weight/height in sync with the profile where these fields exist.
+        $profileUpdates = [];
+        if ($weight !== null) $profileUpdates['Citizen_Weight'] = $weight;
+        if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
+        if ($profileUpdates) $citizen->forceFill($profileUpdates)->save();
+
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         return redirect()->back()->with('success', 'Diagnosis added successfully.');
     }
 

@@ -1159,3 +1159,58 @@ body.theme-dark .inventory-category-list {
         text-align: center;
     }
 }
+
+
+/* =========================================
+   SHARED ADMIN PAGE ALIGNMENT OVERRIDES
+========================================= */
+.inventory-page-header { width:100%; margin:0 0 20px; align-items:flex-start; }
+.inventory-page-header h1 { margin:0; font-size:30px; line-height:1.4; }
+.inventory-page-header p { margin:6px 0 0; line-height:1.5; }
+.inventory-summary-cards, .inventory-toolbar, .inventory-container { width:100%; min-width:0; }
+
+
+/* FINAL FIX: consistent left edge for inventory title and subtitle */
+.inventory-page-header {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+.inventory-page-header > div:first-child,
+.inventory-page-header .page-title,
+.inventory-page-header .page-title-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+.inventory-page-header h1,
+.inventory-page-header p {
+    margin-left: 0;
+    padding-left: 0;
+    text-indent: 0;
+    transform: none;
+}
+.inventory-page-header h1 { margin-top: 0; margin-bottom: 0; }
+.inventory-page-header p { margin-top: 6px; margin-bottom: 0; }
+
+
+/* Consistent title/subtitle alignment with Admin Home. */
+.inventory-page-header {
+    align-items: flex-start;
+    margin: 0 0 20px;
+}
+.inventory-page-header > div:first-child {
+    min-width: 0;
+    text-align: left;
+}
+.inventory-page-header h1 {
+    margin: 0;
+    line-height: 1.4;
+}
+.inventory-page-header p {
+    margin: 6px 0 0;
+    line-height: 1.6;
+}
