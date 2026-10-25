@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CitizenController;
+use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\CitizenSupplyController;
 use App\Http\Controllers\AnnouncementController;
@@ -31,14 +32,17 @@ use App\Models\Referral;
 use App\Models\Announcement;
 use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
+use App\Models\MaintenanceRecord;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\SuperAdmin\UserAnalyticsController;
 use App\Http\Controllers\SuperAdmin\WebsitePerformanceController;
 use App\Http\Controllers\SuperAdmin\SystemAnalyticsController;
+use App\Http\Controllers\SuperAdmin\SystemConnectionsController;
 use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
+use App\Http\Controllers\PublicAssetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,6 +80,10 @@ Route::get('/publicannouncements/{announcement}', [AnnouncementController::class
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
 Route::get('/login', fn () => view('login'))->name('login');
+Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
+Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announcementImage'])
+    ->where('path', '.*')
+    ->name('announcement.image');
 
 Route::post('/login', [UserController::class, 'login'])->name('login.submit');
 
@@ -119,9 +127,18 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
 
         $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
+        $maintenanceRecords = collect();
+
         if ($user->citizen_id) {
-            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords', 'maintenanceRecords' => fn ($query) => $query->latest()])
                 ->where('id', $user->citizen_id)->first();
+
+            if ($citizen) {
+                // Query by the linked citizen ID directly, rather than relying only on eager loading.
+                $maintenanceRecords = MaintenanceRecord::where('citizen_id', $citizen->id)
+                    ->latest()
+                    ->get();
+            }
         }
 
         $qrImage = $citizen
@@ -132,6 +149,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         return view('citizen.dashboard', compact(
             'announcements',
             'citizen',
+            'maintenanceRecords',
             'qrImage'
         ));
     })->name('dashboard');
@@ -217,8 +235,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Health Records
     Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
-    Route::post('/health-record/store', [HealthRecordController::class, 'store'])->name('health.record.store');
-    Route::post('/health-record/maintenance', [HealthRecordController::class, 'storeMaintenance'])->name('health.maintenance.store');
+    Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
+    Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
@@ -234,6 +252,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Announcements
     Route::get('/announcements', fn () => app(AnnouncementController::class)->index())->name('announcements');
     Route::post('/announcements/store', fn () => app(AnnouncementController::class)->store(request()))->name('announcements.store');
+    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     Route::get('/announcements/create', fn () => view('bhw.announcement_create'))->name('announcements.create');
 
     // Logs
@@ -358,6 +377,8 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
     Route::get('/system-analytics-page', function () {
         return view('superadmin.system-analytics');
     })->name('system.analytics.page');
+    Route::get('/system-connections', [SystemConnectionsController::class, 'page'])->name('system.connections.page');
+    Route::get('/system-connections/status', [SystemConnectionsController::class, 'status'])->name('system.connections.status');
 
     // JSON endpoint for the widgets
     Route::get('/system-analytics-data', [SystemAnalyticsController::class, 'index']);

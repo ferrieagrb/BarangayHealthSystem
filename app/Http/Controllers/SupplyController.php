@@ -48,6 +48,42 @@ class SupplyController extends Controller
             ->where('quantity', '>', 0)
             ->count();
 
+        $latestPeriodStart = now()->subDays(13)->startOfDay();
+        $previousPeriodStart = now()->subDays(27)->startOfDay();
+        $previousPeriodEnd = now()->subDays(14)->endOfDay();
+        $rate = function (int|float $current, int|float $previous): array {
+            if ($previous == 0) {
+                return [
+                    'value' => $current > 0 ? '+100%' : 'No change',
+                    'state' => $current > 0 ? 'up' : 'flat',
+                    'icon' => $current > 0 ? '▲' : '•',
+                ];
+            }
+
+            $change = round((($current - $previous) / $previous) * 100, 1);
+
+            return [
+                'value' => $change > 0 ? '+' . abs($change) . '%' : ($change < 0 ? '-' . abs($change) . '%' : 'No change'),
+                'state' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'flat'),
+                'icon' => $change > 0 ? '▲' : ($change < 0 ? '▼' : '•'),
+            ];
+        };
+
+        $supplyTrends = [
+            'total' => $rate(
+                Supply::whereBetween('created_at', [$latestPeriodStart, now()])->sum('quantity'),
+                Supply::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->sum('quantity')
+            ),
+            'low' => $rate(
+                Supply::whereColumn('quantity', '<=', 'min_stock')->where('quantity', '>', 0)->whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                Supply::whereColumn('quantity', '<=', 'min_stock')->where('quantity', '>', 0)->whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+            ),
+            'well' => $rate(
+                Supply::whereColumn('quantity', '>', 'min_stock')->whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                Supply::whereColumn('quantity', '>', 'min_stock')->whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+            ),
+        ];
+
         // Step 1 Integration: Dynamic view switching based on user role
         $user = Auth::user();
         $view = ($user && $user->role === 'admin') 
@@ -59,6 +95,7 @@ class SupplyController extends Controller
             'totalsupply',
             'wellStocked',
             'lowStock',
+            'supplyTrends',
             'categories',
         ));
     }

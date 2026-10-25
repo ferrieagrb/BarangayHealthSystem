@@ -54,6 +54,7 @@
     @media (max-width: 850px) { .qr-layout { grid-template-columns: 1fr; } .qr-page { padding: 16px; } }
     @media (max-width: 600px) { .qr-info-grid { grid-template-columns: 1fr; } .qr-diagnosis-form { grid-template-columns:1fr; } .qr-diagnosis-form .full { grid-column:auto; } .qr-panel { padding: 16px; } .qr-heading h1 { font-size: 23px; } }
 </style>
+<link rel="stylesheet" href="{{ asset('css/bhw/qr-checker-alignment.css') }}">
 @endsection
 
 @section('content')

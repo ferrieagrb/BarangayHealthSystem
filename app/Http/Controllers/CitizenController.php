@@ -302,6 +302,60 @@ class CitizenController extends Controller
         $kids = (clone $summaryQuery)->where('Citizen_Age', '<=', 17)->count();
         $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
         $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
+        $latestPeriodStart = now()->subDays(13)->startOfDay();
+        $previousPeriodStart = now()->subDays(27)->startOfDay();
+        $previousPeriodEnd = now()->subDays(14)->endOfDay();
+
+        $rate = function (int $current, int $previous): array {
+            if ($previous === 0) {
+                return [
+                    'value' => $current > 0 ? '+100%' : 'No change',
+                    'state' => $current > 0 ? 'up' : 'flat',
+                    'icon' => $current > 0 ? '▲' : '•',
+                ];
+            }
+
+            $change = round((($current - $previous) / $previous) * 100, 1);
+
+            return [
+                'value' => $change > 0 ? '+' . abs($change) . '%' : ($change < 0 ? '-' . abs($change) . '%' : 'No change'),
+                'state' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'flat'),
+                'icon' => $change > 0 ? '▲' : ($change < 0 ? '▼' : '•'),
+            ];
+        };
+
+        $periodCount = function ($baseQuery, $start, $end, ?string $group = null): int {
+            $query = (clone $baseQuery)->whereBetween('created_at', [$start, $end]);
+
+            if ($group === 'kids') {
+                $query->where('Citizen_Age', '<=', 17);
+            } elseif ($group === 'adults') {
+                $query->whereBetween('Citizen_Age', [18, 59]);
+            } elseif ($group === 'seniors') {
+                $query->where('Citizen_Age', '>=', 60);
+            }
+
+            return $query->count();
+        };
+
+        $citizenTrends = [
+            'total' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now()),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd)
+            ),
+            'kids' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'kids'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'kids')
+            ),
+            'adults' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'adults'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'adults')
+            ),
+            'seniors' => $rate(
+                $periodCount($summaryQuery, $latestPeriodStart, now(), 'seniors'),
+                $periodCount($summaryQuery, $previousPeriodStart, $previousPeriodEnd, 'seniors')
+            ),
+        ];
 
         $ordinalCitizens = citizens::with(['subgroup', 'family.subgroup'])->orderBy('id')->get();
         $subgroupOrdinals = [];
@@ -320,6 +374,7 @@ class CitizenController extends Controller
             'kids',
             'adults',
             'seniors',
+            'citizenTrends',
             'puroks',
             'citizenDisplayIds'
         ));
@@ -475,18 +530,27 @@ class CitizenController extends Controller
     public function storeHealthRecord(Request $request)
     {
         $user = Auth::user();
-        if (!$user || $user->role !== 'bhw') abort(403);
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
+        }
+
+        $citizen = citizens::findOrFail($request->input('citizen_id'));
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to add a diagnosis to this citizen record.');
+        }
 
         $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
             'diagnosis' => 'required|string|max:255',
-            'notes' => 'nullable|string',
+            'record_date' => 'required|date',
+            'comments' => 'nullable|string|max:2000',
         ]);
 
         $record = HealthRecord::create([
             'citizen_id' => $validated['citizen_id'],
-            'diagnosis' => $validated['diagnosis'],
-            'notes' => $validated['notes'] ?? null,
+            'diagnosis' => trim($validated['diagnosis']),
+            'record_date' => $validated['record_date'],
+            'comments' => $validated['comments'] ?? null,
         ]);
 
         HealthRecordActivityLog::create([
@@ -498,40 +562,67 @@ class CitizenController extends Controller
         ]);
 
         $this->logActivity('create', 'health_record', $validated['citizen_id'], 'Added health record: ' . $validated['diagnosis']);
-        return back()->with('success', 'Health record added successfully.');
+
+        return back()->with('success', 'Diagnosis added successfully.');
     }
 
     public function storeMaintenance(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user || $user->role !== 'bhw') abort(403);
+{
+    $user = Auth::user();
 
-        $validated = $request->validate([
-            'citizen_id' => 'required|exists:citizens,id',
-            'medicine_source' => 'required|in:existing,custom',
-            'existing_medicine' => 'nullable|required_if:medicine_source,existing|string|max:255|exists:supplies,name',
-            'custom_medicine' => 'nullable|required_if:medicine_source,custom|string|max:255',
-            'dosage' => 'required|string|max:255',
-            'frequency' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'notes' => 'nullable|string|max:2000',
-        ]);
-
-        MaintenanceRecord::create([
-            'citizen_id' => $validated['citizen_id'],
-            'medicine_name' => $validated['medicine_source'] === 'custom' ? $validated['custom_medicine'] : $validated['existing_medicine'],
-            'dosage' => $validated['dosage'],
-            'frequency' => $validated['frequency'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-            'user_id' => Auth::id(),
-        ]);
-
-        $this->logActivity('create', 'maintenance', $validated['citizen_id'], 'Added maintenance medicine.');
-        return back()->with('success', 'Maintenance medicine added successfully.');
+    if (!$user || $user->role !== 'bhw') {
+        abort(403);
     }
+
+    // These field names must match the Maintenance Medicines form.
+    $validated = $request->validate([
+        'citizen_id'       => 'required|integer|exists:citizens,id',
+        'medicine_name'    => 'required|string|max:255',
+        'quantity_dispensed' => 'required|integer|min:1|max:100000',
+        'dosage'           => 'required|string|max:100',
+        'frequency'        => 'required|string|max:100',
+        'start_date'       => 'required|date',
+        'end_date'         => 'nullable|date|after_or_equal:start_date',
+        'notes'            => 'nullable|string|max:2000',
+    ]);
+
+    $citizen = citizens::findOrFail($validated['citizen_id']);
+    $this->authorizeCitizenEdit($citizen);
+
+    $medicineName = trim($validated['medicine_name']);
+
+    if ($medicineName === '') {
+        return back()
+            ->withErrors(['medicine_name' => 'Please enter a medicine name.'])
+            ->withInput();
+    }
+
+    // Save with an explicit citizen_id so the record is linked to the selected citizen.
+    $record = MaintenanceRecord::create([
+        'citizen_id'        => $citizen->id,
+        'medicine_name'     => $medicineName,
+        'quantity_dispensed'=> (int) $validated['quantity_dispensed'],
+        'dosage'            => trim($validated['dosage']),
+        'frequency'         => trim($validated['frequency']),
+        'start_date'        => $validated['start_date'],
+        'end_date'          => $validated['end_date'] ?? null,
+        'notes'             => isset($validated['notes']) ? trim($validated['notes']) : null,
+        'user_id'           => $user->id,
+    ]);
+
+    $this->logActivity(
+        'create',
+        'maintenance',
+        $citizen->id,
+        'Added maintenance medicine: ' . $medicineName
+            . ' (quantity ' . $record->quantity_dispensed
+            . ', ' . $record->dosage . ', ' . $record->frequency . ').'
+    );
+
+    return redirect()
+        ->back()
+        ->with('success', 'Maintenance medicine added successfully.');
+}
 
     public function healthIndex()
     {
@@ -540,7 +631,6 @@ class CitizenController extends Controller
         $totalRecords = HealthRecord::count();
 
         HealthRecordActivityLog::create([
-            'user_id' => Auth::id(),
             'action' => 'view',
             'citizen_id' => null,
             'health_record_id' => null,
@@ -575,7 +665,6 @@ class CitizenController extends Controller
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen health record');
 
         HealthRecordActivityLog::create([
-            'user_id' => Auth::id(),
             'action' => 'view',
             'citizen_id' => $citizen->id,
             'health_record_id' => null,
@@ -595,6 +684,7 @@ class CitizenController extends Controller
         $citizen = citizens::with([
             'healthRecords' => fn ($query) => $query->latest(),
             'maintenanceRecords' => fn ($query) => $query->latest(),
+            'medications' => fn ($query) => $query->latest(),
             'vaccinations',
             'family.purok',
             'family.subgroup',
@@ -765,20 +855,30 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
     public function showElectronicCard($id)
-    {
-        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])->findOrFail($id);
+{
+    $citizen = citizens::with([
+        'vaccinations',
+        'medications',
+        'healthRecords',
+        'maintenanceRecords' => fn ($query) => $query->latest(),
+    ])->findOrFail($id);
 
-        return view('bhw.ecard', compact('citizen'));
-    }
+    $this->authorizeCitizenEdit($citizen);
+
+    return view('bhw.ecard', compact('citizen'));
+}
 
     public function showElectronicCardByToken(string $token)
-    {
-        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
-            ->where('qr_token', $token)
-            ->firstOrFail();
+{
+    $citizen = citizens::with([
+        'vaccinations',
+        'medications',
+        'healthRecords',
+        'maintenanceRecords' => fn ($query) => $query->latest(),
+    ])->where('qr_token', $token)->firstOrFail();
 
-        return view('bhw.ecard', compact('citizen'));
-    }
+    return view('bhw.ecard', compact('citizen'));
+}
 
     public function makeCitizenQrImage(citizens $citizen): string
     {
@@ -914,7 +1014,12 @@ class CitizenController extends Controller
             abort(403, 'This account is not linked to a citizen profile.');
         }
 
-        $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords'])
+        $citizen = citizens::with([
+                'vaccinations',
+                'medications',
+                'healthRecords',
+                'maintenanceRecords' => fn ($query) => $query->latest(),
+            ])
             ->where('id', $user->citizen_id)
             ->firstOrFail();
 

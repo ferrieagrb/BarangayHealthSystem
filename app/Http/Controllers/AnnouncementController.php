@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\LogsActivity;
 
 class AnnouncementController extends Controller
@@ -16,7 +17,7 @@ class AnnouncementController extends Controller
     // SHOW PAGE
     public function index()
     {
-        $announcements = Announcement::latest()->get();
+        $announcements = Announcement::with('images')->latest()->get();
 
         $totalPosts = Announcement::count();
         $thisMonth = Announcement::whereMonth('created_at', now()->month)->count();
@@ -81,7 +82,8 @@ class AnnouncementController extends Controller
 
         // Cross-post to Facebook Page if checked
         if ($request->boolean('post_to_facebook')) {
-            $this->publishToFacebookPage($announcement->title, $announcement->description, $announcement->category);
+            $announcement->load('images');
+            $this->publishToFacebookPage($announcement);
         }
 
         return redirect()->route('announcements')
@@ -91,7 +93,7 @@ class AnnouncementController extends Controller
     /**
      * Post message directly to Facebook Page Feed using Meta Graph API
      */
-    private function publishToFacebookPage(string $title, string $description, string $category)
+    private function publishToFacebookPage(Announcement $announcement)
     {
         $pageId = config('services.facebook.page_id');
         $accessToken = config('services.facebook.access_token');
@@ -102,24 +104,97 @@ class AnnouncementController extends Controller
             return;
         }
 
-        // Format post message text
-        $message = "📢 [{$category}] {$title}\n\n{$description}";
+        $message = "📢 [{$announcement->category}] {$announcement->title}\n\n{$announcement->description}";
 
         try {
-            $response = Http::post("https://graph.facebook.com/v26.0/{$pageId}/feed", [
-                'message' => $message,
+            $image = $announcement->images->first();
+            $endpoint = $image
+                ? "https://graph.facebook.com/{$pageId}/photos"
+                : "https://graph.facebook.com/{$pageId}/feed";
+
+            $payload = [
                 'access_token' => $accessToken,
-            ]);
+            ];
+
+            if ($image) {
+                $payload['caption'] = $message;
+                $payload['published'] = true;
+
+                $imageContents = Storage::disk('public')->get($image->path);
+
+                $response = Http::timeout(30)
+                    ->attach(
+                        'source',
+                        $imageContents,
+                        basename($image->path)
+                    )
+                    ->post($endpoint, $payload);
+            } else {
+                $payload['message'] = $message;
+                $response = Http::timeout(20)->post($endpoint, $payload);
+            }
 
             if ($response->failed()) {
                 Log::error('Facebook Post Error: ' . $response->body());
                 $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting failed: ' . substr($response->body(), 0, 500), 'integration');
             } else {
-                $this->logAdminActivity('facebook.posted', 'Announcement posted successfully to Facebook.', 'integration');
+                $facebookPostId = $response->json('post_id') ?: $response->json('id');
+                $announcement->update([
+                    'facebook_post_id' => $facebookPostId,
+                ]);
+
+                if (!$facebookPostId) {
+                    Log::warning('Facebook post succeeded without a deletable post ID: ' . $response->body());
+                }
+                $this->logAdminActivity(
+                    'facebook.posted',
+                    $image ? 'Announcement photo posted successfully to Facebook.' : 'Announcement posted successfully to Facebook.',
+                    'integration'
+                );
             }
         } catch (\Exception $e) {
             Log::error('Facebook API Exception: ' . $e->getMessage());
             $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting threw an exception: ' . $e->getMessage(), 'integration');
         }
+    }
+
+    public function destroy(Announcement $announcement)
+    {
+        $pageId = config('services.facebook.page_id');
+        $accessToken = config('services.facebook.access_token');
+        $facebookDeleteFailed = false;
+
+        if ($announcement->facebook_post_id && $pageId && $accessToken) {
+            try {
+                $response = Http::timeout(15)->delete(
+                    'https://graph.facebook.com/' . $announcement->facebook_post_id,
+                    ['access_token' => $accessToken]
+                );
+
+                if ($response->failed()) {
+                    $facebookDeleteFailed = true;
+                    Log::warning('Facebook announcement deletion failed: ' . $response->body());
+                    $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed.', 'integration');
+                }
+            } catch (\Throwable $exception) {
+                $facebookDeleteFailed = true;
+                report($exception);
+                $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception.', 'integration');
+            }
+        }
+
+        foreach ($announcement->images as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        $announcement->delete();
+
+        $message = $facebookDeleteFailed
+            ? 'Announcement deleted locally, but Facebook deletion failed. Check the Facebook access token and permissions.'
+            : ($announcement->facebook_post_id
+                ? 'Announcement deleted from the system and Facebook.'
+                : 'Announcement deleted locally. It has no tracked Facebook post ID.');
+
+        return redirect()->route('announcements')->with($facebookDeleteFailed ? 'error' : 'success', $message);
     }
 }

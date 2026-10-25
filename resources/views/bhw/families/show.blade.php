@@ -1,92 +1,81 @@
 @extends('templates.layout')
 
 @section('CSSown')
-<style>
-    .family-container { width: 100%; max-width: none; margin: 0; padding: 24px; font-family: Arial, sans-serif; color: #333; box-sizing: border-box; }
-    .card { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
-    .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-    .form-control { flex: 1; min-width: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .btn { padding: 10px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .btn-primary { background: #3498db; color: #fff; }
-    .btn-secondary { background: #95a5a6; color: #fff; }
-    .btn-danger { background: #e74c3c; color: #fff; padding: 6px 12px; font-size: 12px; border-radius: 4px; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; background: #2ecc71; color: #fff; text-decoration: none; border-radius: 4px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
-    th { background: #f8f9fa; color: #2c3e50; }
-
-    /* Modal Styling - Centered */
-    dialog.family-modal {
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        width: 100%;
-        max-width: 650px;
-        padding: 0;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        margin: 0;
-    }
-    dialog.family-modal::backdrop {
-        background: rgba(0, 0, 0, 0.5);
-    }
-    .modal-header {
-        background: #f8f9fa;
-        padding: 16px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-    }
-    .modal-body {
-        padding: 24px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-    .pagination-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 15px;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}">
 @endsection
 
 @section('content')
-<div class="family-container">
+<div class="family-container bhw-families-page">
     @if(session('success'))
-        <div style="background:#d4edda; color:#155724; padding:12px; border-radius:4px; margin-bottom:15px;">
-            {{ session('success') }}
+        <div class="family-container-alert" id="familyPageAlert" role="status">
+            <div class="family-alert-content">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.7a8.3 8.3 0 1 0 0 16.6 8.3 8.3 0 0 0 0-16.6Zm3.7 6.1-4.2 4.7a.9.9 0 0 1-1.3.1L6.4 11a.9.9 0 1 1 1.2-1.3l1.2 1.1 3.6-4a.9.9 0 0 1 1.3 1.2Z"/></svg>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" class="family-alert-close" aria-label="Dismiss notification" onclick="document.getElementById('familyPageAlert').remove()">&times;</button>
         </div>
     @endif
 
-    <h1>Family Registry & Household Management</h1>
+    <header class="family-page-header">
+        <div>
+            <h1>Family Registry &amp; Household Management</h1>
+            <p>Manage barangay family records, citizen associations, and purok subgroup assignments.</p>
+        </div>
+        <button type="button" class="btn btn-secondary header-browse-button" onclick="openSubgroupPicker('browse')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 8 3l8 3 5-2.5v15L16 21l-8-3-5 2.5v-15ZM8 3v15m8-12v15M5.5 8.5 6.7 8m7.1.7.7.3m-8.3 4.8.5-.3"/></svg>
+            Browse Puroks
+        </button>
+    </header>
 
     <!-- Register Family Form -->
     @if(auth()->user()->hasWriteAccess('family'))
-    <div class="card">
-        <h2>Register New Family</h2>
+    <section class="card family-card family-register-card">
+        <h2 class="section-card-title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4z"/><path d="M12 8v9M7.5 12.5h9"/></svg>
+            Register New Family
+        </h2>
         <form action="{{ route('bhw.families.store') }}" method="POST">
             @csrf
-            <div class="form-row">
-                <input type="text" name="family_name" placeholder="Family Name (e.g., Santos Family)" class="form-control" required>
-                
-                <!-- Purok Picker Input Trigger -->
-                <input type="hidden" name="subgroup_id" id="registerSubgroupId" required>
-                <input type="text" id="registerSubgroupDisplay" class="form-control" placeholder="-- Select Purok / Subgroup --" readonly style="background: #f9f9f9; cursor: pointer;" onclick="openSubgroupPicker('register')" required>
-                <button type="button" class="btn btn-secondary" onclick="openSubgroupPicker('register')">Browse Puroks</button>
+            <div class="form-row register-form-row">
+                <label class="family-field">
+                    <span>Family Name</span>
+                    <input type="text" name="family_name" placeholder="e.g., Santos Family" class="form-control" required>
+                </label>
+                <label class="family-field">
+                    <span>Purok / Subgroup</span>
+                    <span class="family-select-trigger">
+                        <input type="hidden" name="subgroup_id" id="registerSubgroupId" required>
+                        <input type="text" id="registerSubgroupDisplay" class="form-control" placeholder="-- Select Purok / Subgroup --" readonly onclick="openSubgroupPicker('register')" required aria-label="Select Purok or subgroup">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
+                    </span>
+                </label>
+                <button type="button" class="btn btn-secondary register-browse-button" onclick="openSubgroupPicker('register')">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    Browse Puroks
+                </button>
             </div>
-            <button type="submit" class="btn btn-primary">Create Family Record</button>
+            <button type="submit" class="btn btn-primary create-family-button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                Create Family Record
+            </button>
         </form>
-    </div>
+    </section>
     @endif
 
     <!-- Registered Families Table -->
-    <div class="card">
-        <h2>Registered Families</h2>
-        <table>
+    <div class="card family-card family-registry-card">
+        <div class="family-list-heading">
+            <div>
+                <h2>Registered Families</h2>
+                <p>Showing all registered households and assigned citizens.</p>
+                <p class="family-filter-notice" id="familyFilterNotice" hidden></p>
+            </div>
+            <div class="family-search">
+                <input type="search" id="familySearchInput" class="form-control" placeholder="Search family or ID..." aria-label="Search registered families">
+            </div>
+        </div>
+        <div class="family-table-wrap"><table class="family-table">
             <thead>
                 <tr>
                     <th>Family ID</th>
@@ -96,9 +85,9 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="familiesTableBody">
                 @forelse($families as $fam)
-                    <tr>
+                    <tr class="family-row" data-subgroup-id="{{ $fam->subgroup_id }}">
                         <td><strong>F-{{ str_pad($fam->id, 4, '0', STR_PAD_LEFT) }}</strong></td>
                         <td><strong>{{ $fam->family_name }}</strong></td>
                         <td>
@@ -110,9 +99,9 @@
                         <td>{{ $fam->members->count() }} citizen(s)</td>
                         <td>
                             @if(auth()->user()->hasWriteAccess('family'))
-                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">Manage / Edit</button>
+                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.8 4.2 15.8 8.2M4 16l3.6-.8 8.9-8.9a1.8 1.8 0 0 0-2.6-2.6L5 12.6 4 16Z"/></svg>Manage / Edit</button>
                             @else
-                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">View</button>
+                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z"/><circle cx="10" cy="10" r="2"/></svg>View</button>
                             @endif
                         </td>
                     </tr>
@@ -122,77 +111,110 @@
                     </tr>
                 @endforelse
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 
 <!-- MAIN FAMILY MANAGEMENT MODAL -->
-<dialog id="familyModal" class="family-modal">
-    <div class="modal-header">
-        <h3 id="modalTitle" style="margin: 0; color: #2c3e50;">Manage Family</h3>
-        <button type="button" onclick="closeFamilyModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #7f8c8d;">&times;</button>
+<dialog id="familyModal" class="family-modal family-management-modal" aria-labelledby="modalTitle">
+    <div class="modal-header family-management-header">
+        <div class="family-modal-title-wrap">
+            <span class="family-modal-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/><path d="M7 11h.01M17 11h.01"/></svg>
+            </span>
+            <div>
+                <h3 id="modalTitle">Manage Family</h3>
+                <p>Household details &amp; member directory</p>
+            </div>
+        </div>
+        <button type="button" class="modal-close-button" onclick="closeFamilyModal()" aria-label="Close family details">&times;</button>
     </div>
-    
-    <div class="modal-body">
-        <!-- 1. Edit Family Purok / Subgroup Form -->
-        <form id="editFamilyForm" method="POST">
+
+    <div class="modal-body family-management-body">
+        <!-- Edit Family Details -->
+        <form id="editFamilyForm" method="POST" class="family-edit-form">
             @csrf
             @method('PUT')
-            <h4 style="margin-top: 0; color: #2c3e50;">Edit Family Details</h4>
-            <div class="form-row">
-                <input type="text" name="family_name" id="modalFamilyName" class="form-control" placeholder="Family Name" required>
-                
-                <!-- Edit Modal Purok Picker Input Trigger -->
-                <input type="hidden" name="subgroup_id" id="modalSubgroupId" required>
-                <input type="text" id="modalSubgroupDisplay" class="form-control" placeholder="-- Select Purok / Subgroup --" readonly style="background: #f9f9f9; cursor: pointer;" onclick="openSubgroupPicker('modal')" required>
+            <h4>Edit Family Details</h4>
+            <div class="form-row family-edit-row">
+                <label class="family-field">
+                    <span>Family Name</span>
+                    <input type="text" name="family_name" id="modalFamilyName" class="form-control" placeholder="Family Name" required>
+                </label>
+                <label class="family-field">
+                    <span>Purok &amp; Subgroup</span>
+                    <span class="family-select-trigger">
+                        <input type="hidden" name="subgroup_id" id="modalSubgroupId" required>
+                        <input type="text" id="modalSubgroupDisplay" class="form-control" placeholder="-- Select Purok / Subgroup --" readonly onclick="openSubgroupPicker('modal')" required aria-label="Select Purok or subgroup">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
+                    </span>
+                </label>
                 @if(auth()->user()->hasWriteAccess('family'))
-                <button type="button" class="btn btn-secondary" onclick="openSubgroupPicker('modal')">Browse</button>
-                @endif
-            </div>
-            @if(auth()->user()->hasWriteAccess('family'))
-            <button type="submit" class="btn btn-primary" style="margin-bottom: 20px;">Update Details</button>
-            @endif
-        </form>
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-        <!-- 2. Add Citizen to Family Form using Paginated Modal Picker -->
-        <h4 style="color: #2c3e50;">Add Citizen Member</h4>
-        <form id="addMemberForm" method="POST">
-            @csrf
-            <div class="form-row">
-                <input type="hidden" name="citizen_id" id="selectedCitizenId" required>
-                <input type="text" id="selectedCitizenDisplay" class="form-control" placeholder="-- Select Unassigned Citizen --" readonly style="background: #f9f9f9; cursor: pointer;" onclick="openCitizenPicker()">
-                @if(auth()->user()->hasWriteAccess('supplies'))
-                <button type="button" class="btn btn-secondary" onclick="openCitizenPicker()">Browse Citizens</button>
-                <button type="submit" class="btn btn-primary">Add Member</button>
-                @else
-                <span style="color: #6b7280; font-size: 0.85rem;">-</span>
+                <button type="submit" class="btn btn-primary update-family-button">Update Details</button>
                 @endif
             </div>
         </form>
 
-        <!-- 3. Current Members Table inside Modal -->
-        <h4 style="margin-top: 25px; color: #2c3e50;">Current Members</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="modalMembersList">
-                <!-- Populated dynamically via JavaScript -->
-            </tbody>
-        </table>
+        <hr class="family-modal-divider">
+
+        <!-- Add Citizen to Family -->
+        <section class="family-member-add-section">
+            <div class="family-section-heading">
+                <h4>Add Family Member</h4>
+            </div>
+            <form id="addMemberForm" method="POST">
+                @csrf
+                <div class="form-row add-member-row">
+                    <input type="hidden" name="citizen_id" id="selectedCitizenId" required>
+                    <label class="family-field member-select-field">
+                        <span class="visually-hidden">Selected unassigned citizen</span>
+                        <span class="family-select-trigger">
+                            <input type="text" id="selectedCitizenDisplay" class="form-control" placeholder="-- Select Unassigned Citizen --" readonly onclick="openCitizenPicker()" aria-label="Select unassigned citizen">
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
+                        </span>
+                    </label>
+                    @if(auth()->user()->hasWriteAccess('supplies'))
+                    <button type="submit" class="btn btn-success add-member-button">Add Family</button>
+                    @else
+                    <span class="read-only-note">View only</span>
+                    @endif
+                </div>
+            </form>
+        </section>
+
+        <hr class="family-modal-divider">
+
+        <!-- Current Members -->
+        <section class="family-current-members">
+            <div class="family-section-heading">
+                <h4>Current Members</h4>
+                <span class="family-count-badge" id="modalMemberCount">0 member(s)</span>
+            </div>
+            <div class="modal-table-wrap">
+                <table class="family-members-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalMembersList">
+                        <tr><td colspan="3" class="empty-members-message">No members added to this family yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <div class="modal-footer family-management-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeFamilyModal()">Close</button>
     </div>
 </dialog>
 
 <!-- SECONDARY CITIZEN PICKER MODAL (Paginated & Searchable) -->
 <dialog id="citizenPickerModal" class="family-modal" style="max-width: 600px;">
     <div class="modal-header">
-        <h3 style="margin: 0; color: #2c3e50;">Select Unassigned Citizen</h3>
+        <h3 style="margin: 0;">Select Unassigned Citizen</h3>
         <button type="button" onclick="closeCitizenPicker()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #7f8c8d;">&times;</button>
     </div>
     <div class="modal-body">
@@ -219,33 +241,25 @@
     </div>
 </dialog>
 
-<!-- SECONDARY SUBGROUP PICKER MODAL (Paginated & Searchable) -->
-<dialog id="subgroupPickerModal" class="family-modal" style="max-width: 600px;">
+<!-- SUBGROUP PICKER / PUROK BROWSER -->
+<dialog id="subgroupPickerModal" class="family-modal subgroup-picker-modal" aria-labelledby="subgroupPickerTitle">
     <div class="modal-header">
-        <h3 style="margin: 0; color: #2c3e50;">Select Purok / Subgroup</h3>
-        <button type="button" onclick="closeSubgroupPicker()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #7f8c8d;">&times;</button>
+        <h3 id="subgroupPickerTitle">Barangay Purok Subgroups</h3>
+        <button type="button" class="modal-close-button" onclick="closeSubgroupPicker()" aria-label="Close purok list">&times;</button>
     </div>
-    <div class="modal-body">
-        <input type="text" id="subgroupSearch" class="form-control" placeholder="Search purok or subgroup..." style="width: 100%; margin-bottom: 15px;" oninput="filterSubgroups()">
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Purok Name</th>
-                    <th>Subgroup Name</th>
-                    <th style="text-align: right;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="subgroupPickerTableBody">
-                <!-- Populated via JS pagination -->
-            </tbody>
-        </table>
-
-        <div class="pagination-controls">
+    <div class="modal-body subgroup-picker-body">
+        <p id="subgroupPickerDescription" class="subgroup-picker-description">Select a purok to view details or filter family registry records:</p>
+        <input type="text" id="subgroupSearch" class="form-control subgroup-search-input" placeholder="Search purok or subgroup..." oninput="filterSubgroups()" aria-label="Search purok or subgroup">
+        <div id="subgroupPickerList" class="subgroup-picker-list" aria-live="polite"></div>
+        <div class="pagination-controls subgroup-pagination" id="subgroupPagination">
             <button type="button" class="btn btn-secondary" id="prevSubgroupPageBtn" onclick="changeSubgroupPage(-1)">Previous</button>
-            <span id="subgroupPageInfo" style="font-size: 14px; color: #555;">Page 1 of 1</span>
+            <span id="subgroupPageInfo">Page 1 of 1</span>
             <button type="button" class="btn btn-secondary" id="nextSubgroupPageBtn" onclick="changeSubgroupPage(1)">Next</button>
         </div>
+    </div>
+    <div class="modal-footer subgroup-picker-footer">
+        <button type="button" class="btn btn-link" id="resetFamilyFilterButton" onclick="resetFamilySubgroupFilter()">Reset Filter (Show All)</button>
+        <button type="button" class="btn btn-secondary" onclick="closeSubgroupPicker()">Close</button>
     </div>
 </dialog>
 
@@ -261,7 +275,7 @@
                     id: sub.id,
                     purokName: purok.name,
                     subgroupName: sub.name,
-                    displayName: `${purok.name} → ${sub.name}`
+                    displayName: `${purok.name} (${sub.name})`
                 });
             });
         }
@@ -283,6 +297,7 @@
         const modal = document.getElementById('familyModal');
         
         document.getElementById('modalTitle').textContent = `F-${String(family.id).padStart(4, '0')} · ${family.family_name}`;
+        document.getElementById('modalMemberCount').textContent = `${(family.members || []).length} member(s)`;
         document.getElementById('modalFamilyName').value = family.family_name;
         
         // Set existing subgroup values for edit modal
@@ -323,7 +338,7 @@
         } else {
             membersListContainer.innerHTML = `
                 <tr>
-                    <td colspan="3" style="text-align: center; color: #7f8c8d; font-style: italic;">No members added to this family yet.</td>
+                    <td colspan="3" class="empty-members-message">No members added to this family yet.</td>
                 </tr>
             `;
         }
@@ -335,13 +350,25 @@
         document.getElementById('familyModal').close();
     }
 
-    // Subgroup Picker Controls
+    // Subgroup picker and the top-level Purok browser.
     function openSubgroupPicker(target) {
         currentSubgroupTarget = target;
         filteredSubgroups = [...flattenedSubgroups];
         currentSubgroupPage = 1;
-        renderSubgroupPickerTable();
+
+        const isBrowseMode = target === 'browse';
+        document.getElementById('subgroupPickerTitle').textContent = isBrowseMode
+            ? 'Barangay Purok Subgroups'
+            : 'Select Purok / Subgroup';
+        document.getElementById('subgroupPickerDescription').textContent = isBrowseMode
+            ? 'Select a purok to view details or filter family registry records:'
+            : 'Choose a purok subgroup to assign to this family record:';
         document.getElementById('subgroupSearch').value = '';
+        document.getElementById('subgroupSearch').hidden = isBrowseMode;
+        document.getElementById('subgroupPagination').hidden = isBrowseMode;
+        document.getElementById('resetFamilyFilterButton').hidden = !isBrowseMode;
+        document.getElementById('subgroupPickerModal').classList.toggle('is-browse-mode', isBrowseMode);
+        renderSubgroupPickerTable();
         document.getElementById('subgroupPickerModal').showModal();
     }
 
@@ -350,53 +377,67 @@
     }
 
     function filterSubgroups() {
-        const query = document.getElementById('subgroupSearch').value.toLowerCase();
-        filteredSubgroups = flattenedSubgroups.filter(s => {
-            return s.displayName.toLowerCase().includes(query);
-        });
+        const query = document.getElementById('subgroupSearch').value.trim().toLowerCase();
+        filteredSubgroups = flattenedSubgroups.filter(s => s.displayName.toLowerCase().includes(query));
         currentSubgroupPage = 1;
         renderSubgroupPickerTable();
     }
 
+    function getSubgroupHouseholdCount(subgroupId) {
+        return Array.from(document.querySelectorAll('.bhw-families-page .family-row'))
+            .filter(row => String(row.dataset.subgroupId) === String(subgroupId)).length;
+    }
+
     function renderSubgroupPickerTable() {
-        const tbody = document.getElementById('subgroupPickerTableBody');
-        tbody.innerHTML = '';
-
+        const list = document.getElementById('subgroupPickerList');
+        list.innerHTML = '';
+        const isBrowseMode = currentSubgroupTarget === 'browse';
         const start = (currentSubgroupPage - 1) * subgroupPageSize;
-        const end = start + subgroupPageSize;
-        const paginatedItems = filteredSubgroups.slice(start, end);
+        const items = isBrowseMode ? filteredSubgroups : filteredSubgroups.slice(start, start + subgroupPageSize);
 
-        if (paginatedItems.length > 0) {
-            paginatedItems.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.purokName}</td>
-                    <td>${item.subgroupName}</td>
-                    <td style="text-align: right;">
-                        <button type="button" class="btn btn-sm" onclick="selectSubgroup(${item.id}, '${item.displayName}')">Select</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+        if (items.length) {
+            items.forEach(item => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'subgroup-option';
+                option.setAttribute('aria-label', `${item.displayName}, ${getSubgroupHouseholdCount(item.id)} households`);
+
+                const name = document.createElement('span');
+                name.className = 'subgroup-option-name';
+                name.textContent = item.displayName;
+                const count = document.createElement('span');
+                count.className = 'subgroup-option-count';
+                const householdCount = getSubgroupHouseholdCount(item.id);
+                count.textContent = `${householdCount} household${householdCount === 1 ? '' : 's'}`;
+                option.append(name, count);
+
+                option.addEventListener('click', () => {
+                    if (isBrowseMode) {
+                        applyFamilySubgroupFilter(item.id, item.displayName);
+                        closeSubgroupPicker();
+                    } else {
+                        selectSubgroup(item.id, item.displayName);
+                    }
+                });
+                list.appendChild(option);
             });
         } else {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; color: #7f8c8d; font-style: italic;">No puroks or subgroups found.</td>
-                </tr>
-            `;
+            const empty = document.createElement('p');
+            empty.className = 'subgroup-empty-state';
+            empty.textContent = 'No puroks or subgroups found.';
+            list.appendChild(empty);
         }
 
         const totalPages = Math.ceil(filteredSubgroups.length / subgroupPageSize) || 1;
         document.getElementById('subgroupPageInfo').textContent = `Page ${currentSubgroupPage} of ${totalPages}`;
         document.getElementById('prevSubgroupPageBtn').disabled = currentSubgroupPage === 1;
         document.getElementById('nextSubgroupPageBtn').disabled = currentSubgroupPage >= totalPages;
+        document.getElementById('subgroupPagination').hidden = isBrowseMode || filteredSubgroups.length <= subgroupPageSize;
     }
 
     function changeSubgroupPage(direction) {
         const totalPages = Math.ceil(filteredSubgroups.length / subgroupPageSize) || 1;
-        currentSubgroupPage += direction;
-        if (currentSubgroupPage < 1) currentSubgroupPage = 1;
-        if (currentSubgroupPage > totalPages) currentSubgroupPage = totalPages;
+        currentSubgroupPage = Math.min(totalPages, Math.max(1, currentSubgroupPage + direction));
         renderSubgroupPickerTable();
     }
 
@@ -409,6 +450,36 @@
             document.getElementById('modalSubgroupDisplay').value = displayName;
         }
         closeSubgroupPicker();
+    }
+
+    let activeFamilySubgroupFilter = null;
+    function applyFamilySubgroupFilter(subgroupId, displayName) {
+        activeFamilySubgroupFilter = String(subgroupId);
+        document.getElementById('familySearchInput').value = '';
+        const notice = document.getElementById('familyFilterNotice');
+        notice.textContent = `Filtered by ${displayName}`;
+        notice.hidden = false;
+        applyFamilyFilters();
+    }
+
+    function resetFamilySubgroupFilter() {
+        activeFamilySubgroupFilter = null;
+        const search = document.getElementById('familySearchInput');
+        if (search) search.value = '';
+        const notice = document.getElementById('familyFilterNotice');
+        if (notice) notice.hidden = true;
+        applyFamilyFilters();
+        if (document.getElementById('subgroupPickerModal').open) closeSubgroupPicker();
+    }
+
+    function applyFamilyFilters() {
+        const search = document.getElementById('familySearchInput');
+        const query = search ? search.value.trim().toLowerCase() : '';
+        document.querySelectorAll('.bhw-families-page .family-row').forEach(row => {
+            const matchesSearch = row.textContent.toLowerCase().includes(query);
+            const matchesSubgroup = activeFamilySubgroupFilter === null || String(row.dataset.subgroupId) === activeFamilySubgroupFilter;
+            row.hidden = !(matchesSearch && matchesSubgroup);
+        });
     }
 
     // Citizen Picker Controls
@@ -481,5 +552,23 @@
         document.getElementById('selectedCitizenDisplay').value = fullName;
         closeCitizenPicker();
     }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const search = document.getElementById('familySearchInput');
+    if (search) search.addEventListener('input', applyFamilyFilters);
+
+    // Flash success messages as a brief popup toast instead of a page banner.
+    const toast = document.getElementById('familyPageAlert');
+    if (toast) {
+        window.setTimeout(function () {
+            if (!toast.isConnected) return;
+            toast.classList.add('is-hiding');
+            window.setTimeout(function () {
+                if (toast.isConnected) toast.remove();
+            }, 220);
+        }, 4500);
+    }
+});
 </script>
 @endsection

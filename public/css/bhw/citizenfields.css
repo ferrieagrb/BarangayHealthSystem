@@ -11,7 +11,7 @@
 .main .btn-primary, .main .btn-secondary, .main .btn-danger { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 16px; border:1px solid transparent; border-radius:8px; font-size:13px; font-weight:600; line-height:1.4; text-decoration:none; cursor:pointer; transition:background-color .2s,border-color .2s,box-shadow .2s; }
 .main .btn-primary { background:#0e42b1; color:#fff; text-decoration: none; }
 .main .btn-primary:hover { background:#123a9d; }
-.main .btn-secondary { border-color:#e2e8f0; background:#e2e8f0; color:#0f172a; }
+.main .btn-secondary { border-color:#e2e8f0; background:#e2e8f0; color:#0f172a; text-decoration: none;}
 .main .btn-secondary:hover { background:#cbd5e1; }
 .main .btn-danger { background:#b91c1c; border-color:#b91c1c; color:#fff; }
 .main .btn-danger:hover { background:#991b1b; }
@@ -42,24 +42,30 @@
 .citizen-form-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:12px; padding-top:18px; border-top:1px solid #e2e8f0; }
 #citizenForm #saveBtn, #citizenForm #cancelBtn { min-width:115px; }
 
-/* Vaccine preview */
-.immunization-section, .maintenance-section, .health-record-section { width:100%; min-width:0; margin:22px 0 0; padding:24px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(15,23,42,.04); }
+/* Immunization / vaccination dropdown form */
+.immunization-section { width:100%; min-width:0; margin:22px 0 0; padding:24px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(15,23,42,.04); }
 .immunization-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px 18px; margin:0 0 18px; }
 .immunization-heading > div { flex:1 1 260px; min-width:0; }
 .immunization-heading h3, .maintenance-section > h3, .health-record-section > h3, .main > h3:has(+ #diagnosisForm) { margin:0 0 12px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; color:#0f172a; font-size:19px; font-weight:600; line-height:1.45; overflow-wrap:anywhere; }
 .immunization-heading p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
-.immunization-count { padding:6px 10px; border:1px solid #dbeafe; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:12px; font-weight:600; }
-.immunization-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.vaccine-option { display:flex; align-items:center; gap:12px; min-height:54px; padding:12px 14px; border:1px solid #e2e8f0; border-radius:9px; background:#fff; color:#334155; cursor:pointer; }
-.vaccine-option:hover { border-color:#93c5fd; background:#f8fbff; }
-.vaccine-option:has(.vaccine-checkbox:checked) { border-color:#2563eb; background:#eff6ff; }
-.vaccine-checkbox { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-.vaccine-checkmark { display:inline-flex; flex:0 0 19px; align-items:center; justify-content:center; width:19px; height:19px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; }
-.vaccine-checkbox:checked + .vaccine-checkmark { border-color:#2563eb; background:#2563eb; }
-.vaccine-checkbox:checked + .vaccine-checkmark::after { content:''; width:5px; height:9px; margin-top:-2px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
-.vaccine-checkbox:focus-visible + .vaccine-checkmark { outline:3px solid rgba(37,99,235,.2); outline-offset:2px; }
-.vaccine-label { flex:1; min-width:0; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.immunization-form { display:flex; flex-direction:column; gap:16px; width:100%; min-width:0; }
+.immunization-field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+.immunization-field label { margin:0; color:#475569; font-size:12px; font-weight:500; line-height:1.5; }
+.immunization-field input, .immunization-field select { display:block; width:100%; min-width:0; min-height:43px; margin:0; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#0f172a; font-family:inherit; font-size:13px; line-height:1.5; outline:none; transition:border-color .2s,box-shadow .2s; }
+.immunization-field input::placeholder { color:#94a3b8; opacity:1; }
+.immunization-field input:focus, .immunization-field select:focus { border-color:#0e42b1; box-shadow:0 0 0 3px rgba(14,66,177,.08); }
+.immunization-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; width:100%; min-width:0; }
+.immunization-fields .immunization-field:last-child { grid-column:1 / -1; }
+.immunization-form > button[type="submit"] { align-self:flex-start; min-height:42px; padding:10px 16px; border:1px solid #0e42b1; border-radius:8px; background:#0e42b1; color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background-color .2s; }
+.immunization-form > button[type="submit"]:hover { background:#123a9d; }
 .immunization-preview-note { display:flex; gap:8px; margin:16px 0 0; padding:11px 13px; border:1px solid #dbeafe; border-radius:8px; background:#f8fbff; color:#64748b; font-size:12px; line-height:1.6; }
+.immunization-history { display:flex; flex-direction:column; gap:10px; margin-top:22px; padding-top:18px; border-top:1px solid #e2e8f0; }
+.immunization-history h4 { margin:0 0 4px; color:#0f172a; font-size:15px; font-weight:600; }
+.immunization-history > p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
+.immunization-history-item { display:flex; flex-direction:column; gap:5px; min-width:0; padding:13px 15px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; }
+.immunization-history-item strong { color:#0f172a; font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+.immunization-history-item span { color:#334155; font-size:12px; line-height:1.5; }
+.immunization-history-item small { color:#64748b; font-size:11px; line-height:1.5; overflow-wrap:anywhere; }
 
 /* Existing maintenance records */
 .maintenance-record-card { width:100%; margin:0 0 14px; padding:18px 20px; border:1px solid #dbe1e8; border-left:4px solid #8db8e8; border-radius:10px; background:#e9edf1; box-shadow:0 3px 7px rgba(15,23,42,.12); }
@@ -155,7 +161,6 @@
 }
 @media(max-width:760px) {
  .immunization-section, .maintenance-section, .health-record-section { padding:18px; }
- .immunization-grid { grid-template-columns:1fr; }
  #diagnosisForm { padding:18px; }
 }
 @media(max-width:600px) {
@@ -175,8 +180,9 @@
  .citizen-form-actions { flex-direction:column-reverse; align-items:stretch; margin-top:18px; }
  #citizenForm #saveBtn, #citizenForm #cancelBtn { width:100%; min-height:44px; }
  .immunization-section, .maintenance-section, .health-record-section { margin-top:16px; padding:15px 13px; }
- .immunization-grid { gap:9px; }
- .vaccine-option { min-height:50px; padding:11px; }
+ .immunization-fields { grid-template-columns:minmax(0,1fr); gap:12px; }
+ .immunization-fields .immunization-field:last-child { grid-column:1; }
+ .immunization-form > button[type="submit"] { align-self:stretch; width:100%; }
  .maintenance-form { grid-template-columns:minmax(0,1fr); gap:12px; }
  .maintenance-field, .maintenance-field.full-width, .maintenance-actions { grid-column:1; }
  .maintenance-actions button[type="submit"] { width:100%; }
@@ -185,5 +191,893 @@
  .diagnosis-confirm-buttons button, .deceased-modal-buttons button { width:100%; }
  .medicine-picker-dialog { max-height:90vh; }
 }
+
+/* =========================================================
+   CITIZEN DETAILS — RESPONSIVE PAGE / SCROLL FIX
+   Keep long forms (including immunization) in normal document flow.
+   ========================================================= */
+html:has(body .main .citizen-section-title),
+body:has(.main .citizen-section-title) {
+    min-height: 100%;
+    height: auto !important;
+}
+body:has(.main .citizen-section-title) {
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    background: #f2f5fa;
+}
+body:has(.main .citizen-section-title) .main,
+body:has(.main .citizen-section-title) main,
+body:has(.main .citizen-section-title) #app,
+body:has(.main .citizen-section-title) .content,
+body:has(.main .citizen-section-title) .content-wrapper,
+body:has(.main .citizen-section-title) .main-content {
+    height: auto !important;
+    min-height: 100vh;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #f2f5fa;
+}
+body:has(.main .citizen-section-title) .main {
+    padding: clamp(18px, 3vw, 40px);
+    padding-bottom: 56px;
+}
+body:has(.main .citizen-section-title) .info-card,
+body:has(.main .citizen-section-title) .immunization-section,
+body:has(.main .citizen-section-title) .maintenance-section,
+body:has(.main .citizen-section-title) #diagnosisForm {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    margin-bottom: 24px;
+}
+body:has(.main .citizen-section-title) .immunization-section {
+    clear: both;
+    position: relative;
+    z-index: 1;
+}
+@media (max-width: 700px) {
+    body:has(.main .citizen-section-title) .main {
+        padding: 18px 14px 40px;
+    }
+}
+
+
+/* =========================================================
+   IMMUNIZATION SELECTION — FIX WHITE GAP / SCROLL JUMP
+   Keep the citizen details page in one natural scrolling flow.
+   ========================================================= */
+html:has(.immunization-section),
+body:has(.immunization-section) {
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: clip !important;
+    scroll-behavior: auto;
+}
+
+body:has(.immunization-section) {
+    position: static !important;
+}
+
+body:has(.immunization-section) .main,
+body:has(.immunization-section) main,
+body:has(.immunization-section) #app,
+body:has(.immunization-section) .content,
+body:has(.immunization-section) .content-wrapper,
+body:has(.immunization-section) .main-content,
+body:has(.immunization-section) .page-content {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior-y: auto;
+}
+
+body:has(.immunization-section) .main {
+    padding-bottom: 64px !important;
+}
+
+body:has(.immunization-section) #citizenForm,
+body:has(.immunization-section) .info-card,
+body:has(.immunization-section) .info-card .card,
+body:has(.immunization-section) .immunization-section,
+body:has(.immunization-section) .immunization-form,
+body:has(.immunization-section) .immunization-grid,
+body:has(.immunization-section) .immunization-history {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+body:has(.immunization-section) .immunization-section {
+    display: block;
+    position: relative;
+    scroll-margin-top: 24px;
+    contain: none !important;
+}
+
+body:has(.immunization-section) .vaccine-option {
+    scroll-margin-block: 24px;
+}
+
+body:has(.immunization-section) .vaccine-checkbox {
+    scroll-margin-block: 24px;
+}
+
+@media (max-width: 760px) {
+    body:has(.immunization-section) .main {
+        padding-bottom: 48px !important;
+    }
+
+    body:has(.immunization-section) .immunization-section {
+        padding: 16px !important;
+    }
+}
+
+
+
+/* =========================================================
+   IMMUNIZATION + MAINTENANCE MEDICINES — POLISHED FORM LAYOUT
+   Scoped to these two sections so other Citizen Details UI stays unchanged.
+   ========================================================= */
+
+/* Keep both panels consistent with the other information cards. */
+.immunization-section,
+.maintenance-section {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 22px 0 0;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .045);
+    color: #0f172a;
+}
+
+.immunization-section *,
+.maintenance-section * {
+    box-sizing: border-box;
+}
+
+.immunization-heading {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.immunization-heading h3,
+.maintenance-section > h3 {
+    margin: 0 0 7px;
+    padding: 0;
+    border: 0;
+    color: #0f172a;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.immunization-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Vaccine choice tiles */
+.immunization-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 20px;
+}
+
+.vaccine-option {
+    min-height: 54px;
+    padding: 12px 14px;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #fff;
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.vaccine-option:hover {
+    border-color: #93b4f5;
+    background: #f8fbff;
+}
+
+.vaccine-option:has(.vaccine-checkbox:checked) {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .06);
+}
+
+/* Dose, date and administered-by fields: aligned in a responsive grid. */
+.immunization-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    width: 100%;
+    margin: 0 0 16px;
+}
+
+.immunization-fields > label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    margin: 0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.immunization-fields input,
+.immunization-fields select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.immunization-fields input:focus,
+.immunization-fields select:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+.immunization-section button[type="submit"],
+.maintenance-section button[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    margin: 0;
+    padding: 10px 18px;
+    border: 1px solid #1649b8;
+    border-radius: 8px;
+    background: #1649b8;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background .18s ease, box-shadow .18s ease;
+}
+
+.immunization-section button[type="submit"]:hover,
+.maintenance-section button[type="submit"]:hover {
+    background: #123a9d;
+}
+
+/* History is presented as distinct readable record cards. */
+.immunization-history {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.immunization-history h4 {
+    margin: 0 0 12px;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.immunization-history-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 13px 15px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.immunization-history-item strong {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.immunization-history-item span,
+.immunization-history-item small {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+/* Maintenance records and entry form */
+.maintenance-section > h3 {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.maintenance-section > p {
+    margin: 8px 0 16px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.maintenance-record-card {
+    margin: 0 0 12px;
+    padding: 15px 17px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.maintenance-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.maintenance-form > input[type="hidden"] {
+    display: none !important;
+}
+
+.maintenance-form > label,
+.maintenance-form > #existingMedicineGroup,
+.maintenance-form > #customMedicineGroup,
+.maintenance-form > button[type="submit"] {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.maintenance-form > label,
+.maintenance-form #existingMedicineGroup > label,
+.maintenance-form #customMedicineGroup > label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.maintenance-form input:not([type="hidden"]),
+.maintenance-form select,
+.maintenance-form textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.maintenance-form textarea {
+    min-height: 92px;
+    resize: vertical;
+}
+
+.maintenance-form input:focus,
+.maintenance-form select:focus,
+.maintenance-form textarea:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+.maintenance-form #existingMedicineGroup,
+.maintenance-form #customMedicineGroup {
+    display: block;
+    width: 100%;
+}
+
+.maintenance-form #customMedicineGroup[hidden],
+.maintenance-form [hidden] {
+    display: none !important;
+}
+
+.maintenance-form .medicine-picker-trigger {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 7px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.maintenance-form > button[type="submit"] {
+    justify-self: start;
+    margin-top: 4px;
+}
+
+/* Tablet and mobile */
+@media (max-width: 900px) {
+    .immunization-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .immunization-fields > label:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .immunization-section,
+    .maintenance-section {
+        margin-top: 16px;
+        padding: 16px 14px;
+        border-radius: 11px;
+    }
+
+    .immunization-grid,
+    .immunization-fields,
+    .maintenance-form {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .immunization-fields > label:last-child,
+    .maintenance-form > label,
+    .maintenance-form > #existingMedicineGroup,
+    .maintenance-form > #customMedicineGroup,
+    .maintenance-form > button[type="submit"] {
+        grid-column: 1;
+    }
+
+    .immunization-section button[type="submit"],
+    .maintenance-section button[type="submit"] {
+        width: 100%;
+    }
+
+    .immunization-history-item,
+    .maintenance-record-card {
+        padding: 12px;
+    }
+}
+
+
+
+/* Maintenance medicine: clean responsive layout and consistent fields */
+.maintenance-section {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 22px 0 0;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .045);
+}
+.maintenance-section > h3 {
+    margin: 0 0 16px;
+    padding: 0 0 14px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
+    font-size: 19px;
+    font-weight: 600;
+}
+.maintenance-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+.maintenance-form > input[type="hidden"] { display: none !important; }
+.maintenance-form > label,
+.maintenance-form > #existingMedicineGroup,
+.maintenance-form > #customMedicineGroup,
+.maintenance-form > button[type="submit"] { grid-column: 1 / -1; min-width: 0; }
+.maintenance-form > label,
+.maintenance-form #existingMedicineGroup > label,
+.maintenance-form #customMedicineGroup > label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+.maintenance-form input:not([type="hidden"]),
+.maintenance-form select,
+.maintenance-form textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+.maintenance-form textarea { min-height: 92px; resize: vertical; }
+.maintenance-form input:focus,
+.maintenance-form select:focus,
+.maintenance-form textarea:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+.maintenance-form #existingMedicineGroup,
+.maintenance-form #customMedicineGroup { display: block; width: 100%; min-width: 0; }
+.maintenance-form #customMedicineGroup[hidden],
+.maintenance-form [hidden] { display: none !important; }
+.maintenance-form .medicine-picker-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 7px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+}
+.maintenance-form > button[type="submit"] {
+    justify-self: start;
+    min-height: 42px;
+    margin-top: 2px;
+    padding: 10px 18px;
+    border: 1px solid #1649b8;
+    border-radius: 8px;
+    background: #1649b8;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.maintenance-form > button[type="submit"]:hover { background: #123a9d; }
+@media (max-width: 650px) {
+    .maintenance-section { padding: 16px 14px; }
+    .maintenance-form { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .maintenance-form > label,
+    .maintenance-form > #existingMedicineGroup,
+    .maintenance-form > #customMedicineGroup,
+    .maintenance-form > button[type="submit"] { grid-column: 1; }
+    .maintenance-form > button[type="submit"] { width: 100%; }
+}
+
+
+/* Maintenance Medicine form — final responsive polish */
+body:has(.maintenance-section) .maintenance-section {
+    width: 100%;
+    margin: 24px 0;
+    padding: clamp(18px, 2.2vw, 28px);
+    border: 1px solid #dbe4f0;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .055);
+}
+body:has(.maintenance-section) .maintenance-section > h3 {
+    margin: 0 0 18px;
+    padding: 0 0 15px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #10213e;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+body:has(.maintenance-section) .maintenance-section > p {
+    color: #64748b;
+    font-size: 13px;
+}
+body:has(.maintenance-section) .maintenance-section .maintenance-form {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start;
+    gap: 16px 18px !important;
+    width: 100%;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e7edf5;
+}
+body:has(.maintenance-section) .maintenance-form > label {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+    width: 100%;
+    margin: 0 !important;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+}
+body:has(.maintenance-section) .maintenance-form > #existingMedicineGroup,
+body:has(.maintenance-section) .maintenance-form > #customMedicineGroup,
+body:has(.maintenance-section) .maintenance-form > button[type="submit"] {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+}
+body:has(.maintenance-section) .maintenance-form input:not([type="hidden"]),
+body:has(.maintenance-section) .maintenance-form select,
+body:has(.maintenance-section) .maintenance-form textarea {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    margin: 0 !important;
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #fff;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .025);
+}
+body:has(.maintenance-section) .maintenance-form textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+body:has(.maintenance-section) .maintenance-form input:focus,
+body:has(.maintenance-section) .maintenance-form select:focus,
+body:has(.maintenance-section) .maintenance-form textarea:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .13);
+}
+body:has(.maintenance-section) .maintenance-form .medicine-picker-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100% !important;
+    min-height: 46px;
+    margin: 7px 0 0 !important;
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 13px;
+}
+body:has(.maintenance-section) .maintenance-form > button[type="submit"] {
+    justify-self: start;
+    min-height: 44px;
+    margin-top: 2px !important;
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 9px;
+    background: #1747b5;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(23, 71, 181, .16);
+}
+body:has(.maintenance-section) .maintenance-form > button[type="submit"]:hover {
+    background: #123a98;
+}
+body:has(.maintenance-section) .maintenance-record-card {
+    margin: 0 0 12px;
+    padding: 16px 18px;
+    border: 1px solid #dce6f2;
+    border-left: 4px solid #2563eb;
+    border-radius: 11px;
+    background: #f8fbff;
+}
+body:has(.maintenance-section) .maintenance-record-card p {
+    margin: 5px 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+body:has(.maintenance-section) .maintenance-record-card strong { color: #0f172a; }
+body:has(.maintenance-section) .health-alert-error {
+    padding: 13px 16px;
+    border-radius: 10px;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+@media (max-width: 650px) {
+    body:has(.maintenance-section) .maintenance-section { padding: 16px 13px; }
+    body:has(.maintenance-section) .maintenance-form { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
+    body:has(.maintenance-section) .maintenance-form > #existingMedicineGroup,
+    body:has(.maintenance-section) .maintenance-form > #customMedicineGroup,
+    body:has(.maintenance-section) .maintenance-form > button[type="submit"] { grid-column: 1; }
+    body:has(.maintenance-section) .maintenance-form > button[type="submit"] { width: 100%; }
+}
+
+/* Maintenance medicines table on the citizen's Health Information page */
+.health-info-section {
+    margin: 0 0 24px;
+    overflow: hidden;
+    border: 1px solid #dbe4f0;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .045);
+}
+.health-info-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fbff;
+}
+.health-info-section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #e7efff;
+    color: #1747b5;
+    font-size: 19px;
+    font-weight: 700;
+}
+.health-info-section-heading h3 {
+    margin: 0;
+    color: #10213e;
+    font-size: 16px;
+    font-weight: 700;
+}
+.health-info-section-heading p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.health-info-table-wrap { width: 100%; overflow-x: auto; }
+.health-info-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
+}
+.health-info-table thead { background: #f1f5f9; }
+.health-info-table th {
+    padding: 12px 14px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+    white-space: nowrap;
+}
+.health-info-table td {
+    padding: 13px 14px;
+    border-top: 1px solid #edf2f7;
+    color: #334155;
+    vertical-align: top;
+    line-height: 1.55;
+}
+.health-info-table tbody tr:hover { background: #f8fbff; }
+.health-info-table .health-info-empty {
+    padding: 22px 14px;
+    color: #64748b;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Maintenance medicine form: matching aligned fields across both BHW citizen pages. */
+.maintenance-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 18px; margin-bottom:8px; }
+.maintenance-form-field { min-width:0; }
+.maintenance-form-field-full { grid-column:1 / -1; }
+.maintenance-form-field label { display:block; margin:12px 0 6px; color:#334155; font-size:12px; font-weight:600; }
+.maintenance-form .maintenance-field { display:block; width:100%; min-width:0; min-height:42px; margin:0 0 12px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#1e293b; font:400 12px/1.5 'Poppins',sans-serif; box-sizing:border-box; }
+.maintenance-form .maintenance-field:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10); outline:none; }
+.maintenance-form textarea.maintenance-field { min-height:76px; resize:vertical; }
+@media (max-width:700px) { .maintenance-form-grid { grid-template-columns:minmax(0,1fr); } .maintenance-form-field-full { grid-column:auto; } }
 @media(max-width:380px) { .main { padding:16px 10px; } .info-card { padding:15px 12px; } .right { gap:8px; } .main .btn-primary, .main .btn-secondary { padding:9px 11px; font-size:12px; } }
 @media(prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
+
+
+/* Custom Grid Styling for New Immunization UI Layout */
+.immunization-form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.2fr auto;
+    gap: 14px;
+    align-items: flex-end;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.immunization-action-wrapper {
+    display: flex;
+    align-items: flex-end;
+}
+
+.immunization-form-grid button[type="submit"] {
+    width: 100%;
+    min-height: 43px;
+    white-space: nowrap;
+}
+
+/* Container box para sa Maintenance Medicines para magkaroon ng card UI */
+.maintenance-container-box {
+    width: 100%;
+    min-width: 0;
+    margin-top: 22px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.maintenance-section {
+    margin-top: 0;
+}
+
+/* Responsive adjustment para sa mobile / tablet */
+@media(max-width: 900px) {
+    .immunization-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .immunization-action-wrapper {
+        grid-column: 1 / -1;
+    }
+}
+
+@media(max-width: 600px) {
+    .immunization-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

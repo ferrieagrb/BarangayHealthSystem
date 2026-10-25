@@ -4,6 +4,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen_show.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 
@@ -303,6 +304,8 @@
 
             <p><strong>Medicine:</strong> {{ $maintenance->medicine_name }}</p>
 
+            <p><strong>Quantity:</strong> {{ $maintenance->quantity_dispensed ?? 1 }}</p>
+
             <p><strong>Dosage:</strong> {{ $maintenance->dosage }}</p>
 
             <p><strong>Frequency:</strong> {{ $maintenance->frequency }}</p>
@@ -336,146 +339,41 @@
 
 
     <form class="maintenance-form" method="POST" action="{{ route('health.maintenance.store') }}">
-
         @csrf
-
         <input type="hidden" name="citizen_id" value="{{ $citizen->id }}">
 
-
-
-        <label for="medicine_source">Medicine Source</label>
-
-        <select name="medicine_source" id="medicine_source" class="maintenance-source-select" required>
-
-            <option value="existing" {{ old('medicine_source', 'existing') === 'existing' ? 'selected' : '' }}>Existing medicine</option>
-
-            <option value="custom" {{ old('medicine_source') === 'custom' ? 'selected' : '' }}>Add reference-only medicine</option>
-
-        </select>
-
-
-
-        <div id="existingMedicineGroup">
-
-            <label for="existing_medicine">Select Medicine</label>
-
-            <input type="hidden" name="existing_medicine" id="existing_medicine" value="{{ old('existing_medicine') }}">
-
-            <button type="button" id="openMedicinePicker" class="medicine-picker-trigger">
-
-                <span id="selectedMedicineLabel">{{ old('existing_medicine', 'Select an available medicine') }}</span>
-
-                <span aria-hidden="true">&#9662;</span>
-
-            </button>
-
+        <div class="maintenance-form-grid">
+            <div class="maintenance-form-field">
+                <label for="maintenance_medicine_name">Medicine Name</label>
+                <input type="text" name="medicine_name" id="maintenance_medicine_name" class="maintenance-field" value="{{ old('medicine_name') }}" placeholder="Enter medicine name" maxlength="255" required>
+            </div>
+            <div class="maintenance-form-field">
+                <label for="maintenance_quantity">Quantity</label>
+                <input type="number" name="quantity_dispensed" id="maintenance_quantity" class="maintenance-field" value="{{ old('quantity_dispensed', 1) }}" min="1" max="100000" step="1" placeholder="e.g. 30" required>
+            </div>
+            <div class="maintenance-form-field">
+                <label for="maintenance_dosage">Dosage</label>
+                <input type="text" name="dosage" id="maintenance_dosage" class="maintenance-field" value="{{ old('dosage') }}" placeholder="e.g. 500 mg" maxlength="100" required>
+            </div>
+            <div class="maintenance-form-field">
+                <label for="maintenance_frequency">Frequency</label>
+                <input type="text" name="frequency" id="maintenance_frequency" class="maintenance-field" value="{{ old('frequency') }}" placeholder="e.g. Once daily" maxlength="100" required>
+            </div>
+            <div class="maintenance-form-field">
+                <label for="maintenance_start_date">Start Date</label>
+                <input type="date" name="start_date" id="maintenance_start_date" class="maintenance-field" value="{{ old('start_date', now()->format('Y-m-d')) }}" required>
+            </div>
+            <div class="maintenance-form-field">
+                <label for="maintenance_end_date">End Date (Optional)</label>
+                <input type="date" name="end_date" id="maintenance_end_date" class="maintenance-field" value="{{ old('end_date') }}">
+            </div>
+            <div class="maintenance-form-field maintenance-form-field-full">
+                <label for="maintenance_notes">Notes</label>
+                <textarea name="notes" id="maintenance_notes" class="maintenance-field" maxlength="2000" placeholder="Additional instructions or notes...">{{ old('notes') }}</textarea>
+            </div>
         </div>
-
-
-
-        <div id="customMedicineGroup" class="custom-medicine-group" hidden>
-
-            <label for="custom_medicine">Reference-Only Medicine Name</label>
-
-            <input type="text" name="custom_medicine" id="custom_medicine" class="maintenance-custom-input" value="{{ old('custom_medicine') }}" placeholder="Enter medicine name">
-
-            <small>This name is saved only in the citizen's maintenance record, not in supplies.</small>
-
-        </div>
-
-
-
-        <label for="maintenance_dosage">Dosage</label>
-
-        <input type="text" name="dosage" id="maintenance_dosage" class="maintenance-field" value="{{ old('dosage') }}" placeholder="e.g. 500 mg" required>
-
-
-
-        <label for="maintenance_frequency">Frequency</label>
-
-        <input type="text" name="frequency" id="maintenance_frequency" class="maintenance-field" value="{{ old('frequency') }}" placeholder="e.g. Once daily" required>
-
-
-
-        <label for="maintenance_start_date">Start Date</label>
-
-        <input type="date" name="start_date" id="maintenance_start_date" class="maintenance-field" value="{{ old('start_date', now()->format('Y-m-d')) }}" required>
-
-
-
-        <label for="maintenance_end_date">End Date (Optional)</label>
-
-        <input type="date" name="end_date" id="maintenance_end_date" class="maintenance-field" value="{{ old('end_date') }}">
-
-
-
-        <label for="maintenance_notes">Notes</label>
-
-        <textarea name="notes" id="maintenance_notes" class="maintenance-field" placeholder="Additional instructions or notes...">{{ old('notes') }}</textarea>
-
-
-
         <button type="submit" class="btn-primary">Add Maintenance</button>
-
     </form>
-
-
-
-    <div id="medicinePickerModal" class="medicine-picker-modal" role="dialog" aria-modal="true" aria-labelledby="medicinePickerTitle" aria-hidden="true">
-
-        <div class="medicine-picker-dialog">
-
-            <div class="medicine-picker-header">
-
-                <div>
-
-                    <h3 id="medicinePickerTitle">Select Existing Medicine</h3>
-
-                    <p>Showing 10 medicines per page.</p>
-
-                </div>
-
-                <button type="button" id="closeMedicinePicker" class="medicine-picker-close" aria-label="Close medicine picker">&times;</button>
-
-            </div>
-
-
-
-            <div>
-
-                @forelse($availableMedicines as $medicine)
-
-                    <button type="button" class="medicine-option" data-medicine="{{ $medicine->name }}">
-
-                        {{ $medicine->name }}
-
-                    </button>
-
-                @empty
-
-                    <p>No medicines are currently available in supplies.</p>
-
-                @endforelse
-
-            </div>
-
-
-
-            @if($availableMedicines->hasPages())
-
-                <div class="medicine-picker-pagination">
-
-                    {{ $availableMedicines->onEachSide(1)->links() }}
-
-                </div>
-
-            @endif
-
-        </div>
-
-    </div>
-
-</div>
 
 
 
@@ -507,7 +405,7 @@
 
     method="POST"
 
-    action="{{ route('health.record.store') }}"
+    action="{{ route('citizen.health-info.diagnosis.store', ['id' => $citizen->id]) }}"
 
 \>
 
@@ -854,114 +752,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
 
-
-    const medicineSource = document.getElementById("medicine_source");
-
-    const existingMedicineGroup = document.getElementById("existingMedicineGroup");
-
-    const customMedicineGroup = document.getElementById("customMedicineGroup");
-
-    const existingMedicine = document.getElementById("existing_medicine");
-
-    const customMedicine = document.getElementById("custom_medicine");
-
-    const medicinePickerModal = document.getElementById("medicinePickerModal");
-
-    const openMedicinePicker = document.getElementById("openMedicinePicker");
-
-    const closeMedicinePicker = document.getElementById("closeMedicinePicker");
-
-    const selectedMedicineLabel = document.getElementById("selectedMedicineLabel");
-
-
-
-    function closeMedicinePickerModal() {
-
-        medicinePickerModal.classList.remove("is-open");
-
-        medicinePickerModal.setAttribute("aria-hidden", "true");
-
-    }
-
-
-
-    openMedicinePicker.addEventListener("click", function () {
-
-        medicinePickerModal.classList.add("is-open");
-
-        medicinePickerModal.setAttribute("aria-hidden", "false");
-
-    });
-
-
-
-    closeMedicinePicker.addEventListener("click", closeMedicinePickerModal);
-
-
-
-    medicinePickerModal.addEventListener("click", function (event) {
-
-        if (event.target === medicinePickerModal) {
-
-            closeMedicinePickerModal();
-
-        }
-
-    });
-
-
-
-    document.querySelectorAll(".medicine-option").forEach(function (option) {
-
-        option.addEventListener("click", function () {
-
-            existingMedicine.value = option.dataset.medicine;
-
-            selectedMedicineLabel.textContent = option.dataset.medicine;
-
-            closeMedicinePickerModal();
-
-        });
-
-    });
-
-
-
-    document.addEventListener("keydown", function (event) {
-
-        if (event.key === "Escape") {
-
-            closeMedicinePickerModal();
-
-        }
-
-    });
-
-
-
-    function updateMedicineSourceFields() {
-
-        const isCustom = medicineSource.value === "custom";
-
-        existingMedicineGroup.hidden = isCustom;
-
-        customMedicineGroup.hidden = !isCustom;
-
-        existingMedicine.required = !isCustom;
-
-        customMedicine.required = isCustom;
-
-        existingMedicine.disabled = isCustom;
-
-        customMedicine.disabled = !isCustom;
-
-    }
-
-
-
-    medicineSource.addEventListener("change", updateMedicineSourceFields);
-
-    updateMedicineSourceFields();
 
     // Immunization UI preview only; this is not connected to a database.
     const vaccineCheckboxes = document.querySelectorAll(".vaccine-checkbox");

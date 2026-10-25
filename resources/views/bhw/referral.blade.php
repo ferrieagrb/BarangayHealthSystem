@@ -3,6 +3,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/referral.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
 @section('content')

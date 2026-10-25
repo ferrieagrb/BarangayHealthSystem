@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use App\Models\SystemSetting;
 use Ifsnop\Mysqldump\Mysqldump;
 use Carbon\Carbon;
@@ -24,6 +25,10 @@ class SuperAdminController extends Controller
             ->orderBy('sessions.last_activity', 'desc')
             ->take(5)
             ->get();
+
+        $activeSessions->each(function ($session) {
+            $session->location = $this->resolveIpLocation($session->ip_address);
+        });
 
         $activeUserCount = DB::table('sessions')->whereNotNull('user_id')->distinct('user_id')->count();
 
@@ -52,6 +57,7 @@ class SuperAdminController extends Controller
         ->get()
         ->map(function ($session) {
             $session->time_ago = Carbon::createFromTimestamp($session->last_activity)->diffForHumans();
+            $session->location = $this->resolveIpLocation($session->ip_address);
             return $session;
         });
 
@@ -62,6 +68,32 @@ class SuperAdminController extends Controller
         'sessions' => $activeSessions
     ]);
 }
+
+    private function resolveIpLocation(?string $ip): string
+    {
+        if (!$ip || !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return 'Local or private network';
+        }
+
+        return Cache::remember('ip_location_' . $ip, now()->addDay(), function () use ($ip) {
+            try {
+                $response = Http::timeout(3)->get('https://ipwho.is/' . $ip);
+                if (!$response->successful() || !$response->json('success')) {
+                    return 'Location unavailable';
+                }
+
+                return $response->json('city')
+                    ?: collect([
+                        $response->json('region'),
+                        $response->json('country'),
+                    ])->filter()->join(', ')
+                    ?: 'Location unavailable';
+            } catch (\Throwable $exception) {
+                report($exception);
+                return 'Location unavailable';
+            }
+        });
+    }
 public function systemSettings()
     {
         return view('superadmin.settings', [
@@ -71,6 +103,7 @@ public function systemSettings()
             'backupDestination' => SystemSetting::value('backup_destination', 'hostinger'),
             'maxFailedLoginAttempts' => (int) SystemSetting::value('max_failed_login_attempts', 10),
             'maintenanceMode' => SystemSetting::boolean('maintenance_mode', false),
+            'logoUrl' => SystemSetting::logoUrl(),
         ]);
     }
 
@@ -80,6 +113,7 @@ public function systemSettings()
             'backup_frequency' => ['required', 'in:disabled,daily,weekly,monthly'],
             'backup_destination' => ['required', 'in:local,hostinger'],
             'max_failed_login_attempts' => ['required', 'integer', 'min:3', 'max:20'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $settings = [
@@ -93,6 +127,16 @@ public function systemSettings()
 
         foreach ($settings as $key => $value) {
             SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
+        }
+
+        if ($request->hasFile('logo')) {
+            $oldLogo = SystemSetting::value('site_logo');
+            $logoPath = $request->file('logo')->store('site-logo', 'public');
+            SystemSetting::updateOrCreate(['key' => 'site_logo'], ['value' => $logoPath]);
+
+            if ($oldLogo && str_starts_with($oldLogo, 'site-logo/')) {
+                Storage::disk('public')->delete($oldLogo);
+            }
         }
 
         return back()->with('success', 'System settings saved successfully.');
@@ -145,7 +189,9 @@ public function systemSettings()
         }
 
         $destination = SystemSetting::value('backup_destination', 'hostinger');
-        $backupPath = 'backups/' . $downloadFilename;
+        $backupPath = $destination === 'hostinger'
+            ? $downloadFilename
+            : 'backups/' . $downloadFilename;
 
         try {
             $disk = $destination === 'hostinger' ? 'sftp' : 'local';
