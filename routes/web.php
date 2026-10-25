@@ -196,9 +196,18 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
+    // Citizen Announcement Details
+Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
+    $user = auth()->user();
+
+    if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    return view('citizen.announcement-detail', compact('announcement'));
+})->name('announcements.show');
 
 });
-
 
 
 /*
@@ -427,3 +436,4 @@ Route::middleware(['auth'])->group(function () {
         return back()->with('success', 'A verification link has been sent to your email address.');
     })->middleware('throttle:6,1')->name('verification.send');
 });
+

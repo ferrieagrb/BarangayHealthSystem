@@ -27,6 +27,24 @@
     scroll-margin-top: 165px;
 }
 
+/* Adjust only the announcement card/slider width, not its heading or View All link. */
+.c-home #announcements > .c-ann-slider,
+.c-home #announcements > .c-panel.c-empty {
+    box-sizing: border-box;
+    width: calc(100% - clamp(96px, 28vw, 440px));
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Use the available width on smaller screens. */
+@media (max-width: 760px) {
+    .c-home #announcements > .c-ann-slider,
+    .c-home #announcements > .c-panel.c-empty {
+        width: 100%;
+    }
+}
+
 /* Give Health Information enough space so its tab remains active while reading. */
 #health-information { min-height: 72vh; }
 #health-information .c-health { padding: clamp(22px, 3vw, 42px); }
@@ -754,8 +772,21 @@
 
 /* Announcement slider */
 .c-home .c-ann-slider { position: relative; overflow: hidden; padding: 4px 2px 12px; }
-.c-home .c-ann-track { display: flex; align-items: stretch; gap: 18px; transition: transform .45s ease; will-change: transform; }
+.c-home .c-ann-track { display: flex; align-items: stretch; gap: 18px; transition: transform .65s cubic-bezier(.22,.61,.36,1); will-change: transform; }
 .c-home .c-ann-slide { flex: 0 0 100%; min-width: 0; }
+.c-home .c-ann-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 15px;
+}
+.c-home .c-ann-link:focus-visible {
+    outline: 3px solid #d9a441;
+    outline-offset: 4px;
+}
+.c-home .c-ann-link .c-ann-card { height: 100%; }
+
 .c-home .c-ann-card {
     min-width: 0;
     overflow: hidden;
@@ -1430,8 +1461,43 @@
     }
 }
 
-
-
+.c-home .c-ann-cover {
+    min-height: 260px;
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.c-home .c-ann-cover h3 {
+    margin-top: 32px;
+}
+.c-home .c-ann-body {
+    min-height: 190px;
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+@media (max-width: 760px) {
+    .c-home .c-ann-cover {
+        min-height: 230px;
+        padding: 26px 20px;
+    }
+    .c-home .c-ann-body {
+        min-height: 175px;
+        padding: 24px 20px;
+    }
+}
+@media (max-width: 600px) {
+    .c-home .c-ann-cover {
+        min-height: 215px;
+        padding: 24px 18px;
+    }
+    .c-home .c-ann-body {
+        min-height: 165px;
+        padding: 22px 18px;
+    }
+}
 
 </style>
 
@@ -1521,7 +1587,10 @@
                                 }
                             @endphp
                             <div class="c-ann-slide">
-                                <article class="c-ann-card">
+                                <a class="c-ann-link"
+                                   href="{{ route('citizen.announcements.show', $announcement->id) }}"
+                                   aria-label="Read full announcement: {{ $announcement->title }}">
+                                    <article class="c-ann-card">
                                     <div class="c-ann-cover">
                                         <span class="c-ann-label">📢 Health Advisory</span>
                                         @if($isUrgentAnnouncement)
@@ -1549,7 +1618,8 @@
                                             <span>Barangay Amuyong</span>
                                         </div>
                                     </div>
-                                </article>
+                                    </article>
+                                </a>
                             </div>
                         @endforeach
                     </div>
@@ -1798,39 +1868,134 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Announcement slider: one announcement per slide.
+    // Announcement slider: seamless infinite loop, with manual controls and a 5-second delay.
+    const announcementSlider = document.getElementById('citizenAnnouncementSlider');
     const announcementTrack = document.getElementById('citizenAnnouncementTrack');
-    const announcementSlides = announcementTrack
+    const announcementOriginalSlides = announcementTrack
         ? Array.from(announcementTrack.querySelectorAll('.c-ann-slide'))
         : [];
     const announcementPrev = document.getElementById('citizenAnnouncementPrev');
     const announcementNext = document.getElementById('citizenAnnouncementNext');
     const announcementIndicator = document.getElementById('citizenAnnouncementIndicator');
+    const announcementSlideDelay = 5000;
+    const announcementTransitionMs = 650;
+    let announcementAutoTimer = null;
     let announcementIndex = 0;
+    let announcementPosition = 0;
+    let announcementIsAnimating = false;
+    let announcementRealSlides = announcementOriginalSlides.slice();
 
-    function updateAnnouncementSlider() {
-        if (!announcementTrack || !announcementSlides.length) return;
-        const slideWidth = announcementSlides[0].getBoundingClientRect().width;
+    function announcementMeasureStep() {
+        if (!announcementTrack || !announcementRealSlides.length) return 0;
+        const slideWidth = announcementRealSlides[0].getBoundingClientRect().width;
         const gap = parseFloat(getComputedStyle(announcementTrack).gap) || 0;
-        announcementTrack.style.transform = `translateX(-${announcementIndex * (slideWidth + gap)}px)`;
-        if (announcementIndicator) {
-            announcementIndicator.textContent = `Announcement ${announcementIndex + 1} of ${announcementSlides.length}`;
-        }
-        if (announcementPrev) announcementPrev.disabled = announcementIndex === 0;
-        if (announcementNext) announcementNext.disabled = announcementIndex === announcementSlides.length - 1;
+        return slideWidth + gap;
     }
 
-    if (announcementSlides.length > 1) {
+    function announcementSetPosition(animate = true) {
+        if (!announcementTrack || !announcementRealSlides.length) return;
+        announcementTrack.style.transition = animate
+            ? 'transform .65s cubic-bezier(.22,.61,.36,1)'
+            : 'none';
+        announcementTrack.style.transform =
+            `translateX(-${announcementPosition * announcementMeasureStep()}px)`;
+    }
+
+    function announcementUpdateIndicator() {
+        if (announcementIndicator && announcementRealSlides.length) {
+            announcementIndicator.textContent =
+                `Announcement ${announcementIndex + 1} of ${announcementRealSlides.length}`;
+        }
+        if (announcementPrev) announcementPrev.disabled = announcementRealSlides.length < 2;
+        if (announcementNext) announcementNext.disabled = announcementRealSlides.length < 2;
+    }
+
+    function announcementMove(direction) {
+        if (announcementRealSlides.length < 2 || announcementIsAnimating) return;
+        announcementIsAnimating = true;
+        announcementPosition += direction;
+        announcementIndex = (announcementIndex + direction + announcementRealSlides.length)
+            % announcementRealSlides.length;
+        announcementSetPosition(true);
+        announcementUpdateIndicator();
+    }
+
+    function stopAnnouncementAutoSlide() {
+        if (announcementAutoTimer !== null) {
+            window.clearTimeout(announcementAutoTimer);
+            announcementAutoTimer = null;
+        }
+    }
+
+    function startAnnouncementAutoSlide() {
+        stopAnnouncementAutoSlide();
+        if (announcementRealSlides.length < 2) return;
+        announcementAutoTimer = window.setTimeout(function advanceAnnouncement() {
+            announcementMove(1);
+            // The next timeout is scheduled after the current slide transition completes.
+        }, announcementSlideDelay);
+    }
+
+    if (announcementTrack && announcementOriginalSlides.length > 1) {
+        // Add one clone at each end so both forward and backward wrapping are seamless.
+        const firstClone = announcementOriginalSlides[0].cloneNode(true);
+        const lastClone = announcementOriginalSlides[announcementOriginalSlides.length - 1].cloneNode(true);
+
+        [firstClone, lastClone].forEach(function (clone) {
+            clone.setAttribute('aria-hidden', 'true');
+            clone.querySelectorAll('a, button, input, select, textarea, [tabindex]').forEach(function (el) {
+                el.setAttribute('tabindex', '-1');
+            });
+        });
+
+        announcementTrack.appendChild(firstClone);
+        announcementTrack.insertBefore(lastClone, announcementTrack.firstChild);
+        announcementPosition = 1;
+        announcementSetPosition(false);
+        announcementUpdateIndicator();
+
+        // Force the initial no-transition position to be applied before enabling animation.
+        requestAnimationFrame(function () {
+            announcementTrack.style.transition = 'transform .65s cubic-bezier(.22,.61,.36,1)';
+        });
+
+        announcementTrack.addEventListener('transitionend', function (event) {
+            if (event.propertyName !== 'transform') return;
+
+            // If we land on either clone, silently reset to the matching real slide.
+            if (announcementPosition === announcementRealSlides.length + 1) {
+                announcementPosition = 1;
+                announcementSetPosition(false);
+            } else if (announcementPosition === 0) {
+                announcementPosition = announcementRealSlides.length;
+                announcementSetPosition(false);
+            }
+
+            announcementIsAnimating = false;
+            startAnnouncementAutoSlide();
+        });
+
         announcementPrev?.addEventListener('click', function () {
-            announcementIndex = Math.max(0, announcementIndex - 1);
-            updateAnnouncementSlider();
+            stopAnnouncementAutoSlide();
+            announcementMove(-1);
         });
         announcementNext?.addEventListener('click', function () {
-            announcementIndex = Math.min(announcementSlides.length - 1, announcementIndex + 1);
-            updateAnnouncementSlider();
+            stopAnnouncementAutoSlide();
+            announcementMove(1);
         });
-        window.addEventListener('resize', updateAnnouncementSlider);
-        updateAnnouncementSlider();
+
+        // Pause autoplay while hovered or focused; resume with a fresh 5-second wait.
+        announcementSlider?.addEventListener('mouseenter', stopAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('mouseleave', startAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('focusin', stopAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('focusout', startAnnouncementAutoSlide);
+
+        window.addEventListener('resize', function () {
+            announcementSetPosition(false);
+        });
+        startAnnouncementAutoSlide();
+    } else {
+        announcementUpdateIndicator();
     }
 
     const nav = document.getElementById('citizenSectionNav');
@@ -1919,8 +2084,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateActiveTab();
 });
 </script>
-
-
 
 
 
