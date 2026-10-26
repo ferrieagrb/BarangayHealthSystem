@@ -123,7 +123,22 @@
 
             <!-- SEARCH AND FILTERS: SEARCH, PUROK, STATUS FILTER ON ONE ROW -->
             <div class="toolbar health-record-toolbar">
-                <form method="GET" action="{{ route('citizenlist') }}" class="health-record-filter-form">
+                <form method="GET" action="{{ route('healthrecord') }}" class="health-record-filter-form">
+                    @if(request()->filled('health_filter_sex'))
+                        <input type="hidden" name="health_filter_sex" value="{{ request('health_filter_sex') }}">
+                    @endif
+                    @foreach((array) request('health_filter_housing', []) as $value)
+                        <input type="hidden" name="health_filter_housing[]" value="{{ $value }}">
+                    @endforeach
+                    @foreach((array) request('health_filter_health', []) as $value)
+                        <input type="hidden" name="health_filter_health[]" value="{{ $value }}">
+                    @endforeach
+                    @foreach((array) request('health_filter_vaccine', []) as $value)
+                        <input type="hidden" name="health_filter_vaccine[]" value="{{ $value }}">
+                    @endforeach
+                    @if(request()->boolean('filter_deceased'))
+                        <input type="hidden" name="filter_deceased" value="1">
+                    @endif
                     <input
                         type="text"
                         name="search"
@@ -134,8 +149,9 @@
 
                     <select name="purok" class="form-select health-record-purok">
                         <option value="all" {{ request('purok', 'all') == 'all' ? 'selected' : '' }}>All Puroks</option>
-                        <option value="1" {{ request('purok') == '1' ? 'selected' : '' }}>Purok 1</option>
-                        <option value="2" {{ request('purok') == '2' ? 'selected' : '' }}>Purok 2</option>
+                        @foreach($puroks as $purok)
+                            <option value="{{ $purok->id }}" {{ (string) request('purok') === (string) $purok->id ? 'selected' : '' }}>{{ $purok->name }}</option>
+                        @endforeach
                     </select>
 
                     <button type="button" id="openCitizenStatusFilter" class="citizen-status-filter-btn" aria-haspopup="dialog" aria-controls="citizenStatusFilterModal">
@@ -416,7 +432,7 @@
             <section class="citizen-status-section">
                 <h3>Sex</h3>
                 <div class="citizen-status-radio-group">
-                    <label><input type="radio" name="health_filter_sex" value="all" checked><span>All</span></label>
+                    <label><input type="radio" name="health_filter_sex" value="all"><span>All</span></label>
                     <label><input type="radio" name="health_filter_sex" value="male"><span>Male</span></label>
                     <label><input type="radio" name="health_filter_sex" value="female"><span>Female</span></label>
                 </div>
@@ -446,7 +462,7 @@
             </section>
             <section class="citizen-status-section">
                 <h3>Vital Status</h3>
-                <label class="citizen-status-option"><input type="checkbox" id="healthFilterIncludeDeceased" value="1"><span>Include Deceased Residents</span></label>
+                <label class="citizen-status-option"><input type="checkbox" id="healthFilterIncludeDeceased" value="1"><span>Show Deceased Residents Only</span></label>
             </section>
         </div>
         <div class="citizen-status-footer">
@@ -464,7 +480,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeButton = document.getElementById('closeCitizenStatusFilter');
     const clearButton = document.getElementById('clearCitizenStatusFilters');
     const applyButton = document.getElementById('applyCitizenStatusFilters');
-    const rows = Array.from(document.querySelectorAll('.list-tab tbody tr[data-citizen-sex]'));
     if (!modal || !openButton || !closeButton || !clearButton || !applyButton) return;
 
     const sexInputs = Array.from(modal.querySelectorAll('input[name="health_filter_sex"]'));
@@ -472,6 +487,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const healthInputs = Array.from(modal.querySelectorAll('input[name="health_filter_health"]'));
     const vaccineInputs = Array.from(modal.querySelectorAll('input[name="health_filter_vaccine"]'));
     const deceasedInput = document.getElementById('healthFilterIncludeDeceased');
+    const params = new URLSearchParams(window.location.search);
+    const selectedSex = params.get('health_filter_sex') || 'all';
+    sexInputs.forEach(input => { input.checked = input.value === selectedSex; });
+    [
+        ['health_filter_housing', housingInputs],
+        ['health_filter_health', healthInputs],
+        ['health_filter_vaccine', vaccineInputs]
+    ].forEach(([key, inputs]) => {
+        const selected = [...params.getAll(`${key}[]`), ...params.getAll(key)];
+        inputs.forEach(input => { input.checked = selected.includes(input.value); });
+    });
+    deceasedInput.checked = params.get('filter_deceased') === '1';
 
     function openModal() {
         modal.classList.add('active');
@@ -486,25 +513,35 @@ document.addEventListener('DOMContentLoaded', function () {
         openButton.classList.remove('active');
     }
     function applyFilters() {
-        const sex = (sexInputs.find(input => input.checked) || { value: 'all' }).value;
-        const housing = housingInputs.filter(input => input.checked).map(input => input.value);
-        const health = healthInputs.filter(input => input.checked).map(input => input.value);
-        const includeDeceased = deceasedInput.checked;
+        const url = new URL(window.location.href);
+        const query = url.searchParams;
+        [
+            'health_filter_sex',
+            'health_filter_housing',
+            'health_filter_housing[]',
+            'health_filter_health',
+            'health_filter_health[]',
+            'health_filter_vaccine',
+            'health_filter_vaccine[]',
+            'filter_deceased',
+            'page'
+        ].forEach(key => query.delete(key));
 
-        rows.forEach(row => {
-            const rowSex = (row.dataset.citizenSex || '').toLowerCase();
-            const rowHousing = (row.dataset.citizenHousing || '').toLowerCase().replace(/[ -]/g, '_');
-            const pregnant = row.dataset.citizenPregnant === '1';
-            const inPills = row.dataset.citizenInPills === '1';
-            const deceased = row.dataset.citizenDeceased === '1';
-            const sexMatch = sex === 'all' || rowSex === sex;
-            const housingMatch = housing.length === 0 || housing.includes(rowHousing);
-            const healthMatch = health.length === 0 || health.some(value =>
-                (value === 'pregnant' && pregnant) || (value === 'in_pills' && inPills)
-            );
-            const vitalMatch = includeDeceased || !deceased;
-            row.hidden = !(sexMatch && housingMatch && healthMatch && vitalMatch);
+        const sex = sexInputs.find(input => input.checked);
+        if (sex && sex.value !== 'all') query.set('health_filter_sex', sex.value);
+
+        [
+            ['health_filter_housing', housingInputs],
+            ['health_filter_health', healthInputs],
+            ['health_filter_vaccine', vaccineInputs]
+        ].forEach(([key, inputs]) => {
+            inputs.filter(input => input.checked).forEach(input => {
+                query.append(`${key}[]`, input.value);
+            });
         });
+
+        if (deceasedInput.checked) query.set('filter_deceased', '1');
+        window.location.href = url.toString();
     }
 
     openButton.addEventListener('click', openModal);
@@ -520,8 +557,7 @@ document.addEventListener('DOMContentLoaded', function () {
         vaccineInputs.forEach(input => { input.checked = false; });
         deceasedInput.checked = false;
     });
-    applyButton.addEventListener('click', function () { applyFilters(); closeModal(); });
-    applyFilters();
+    applyButton.addEventListener('click', applyFilters);
 });
 </script>
 

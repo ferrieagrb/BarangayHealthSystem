@@ -97,12 +97,20 @@
                             @endif
                         </td>
                         <td>{{ $fam->members->count() }} citizen(s)</td>
-                        <td>
-                            @if(auth()->user()->hasWriteAccess('family'))
-                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.8 4.2 15.8 8.2M4 16l3.6-.8 8.9-8.9a1.8 1.8 0 0 0-2.6-2.6L5 12.6 4 16Z"/></svg>Manage / Edit</button>
-                            @else
-                            <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z"/><circle cx="10" cy="10" r="2"/></svg>View</button>
-                            @endif
+                        <td class="family-actions-cell">
+                            <div class="family-actions">
+                                @if(auth()->user()->hasWriteAccess('family'))
+                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.8 4.2 15.8 8.2M4 16l3.6-.8 8.9-8.9a1.8 1.8 0 0 0-2.6-2.6L5 12.6 4 16Z"/></svg>
+                                    Manage / Edit
+                                </button>
+                                @else
+                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z"/><circle cx="10" cy="10" r="2"/></svg>
+                                    View
+                                </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -173,7 +181,7 @@
                             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
                         </span>
                     </label>
-                    @if(auth()->user()->hasWriteAccess('supplies'))
+                    @if(auth()->user()->hasWriteAccess('family'))
                     <button type="submit" class="btn btn-success add-member-button">Add Family</button>
                     @else
                     <span class="read-only-note">View only</span>
@@ -318,21 +326,41 @@
         if (family.members && family.members.length > 0) {
             family.members.forEach(member => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${member.Citizen_FName} ${member.Citizen_LName}</td>
-                    <td>${member.Citizen_Age ?? 'N/A'}</td>
-                    <td>
-                        <form action="/bhw/families/members/${member.id}" method="POST" onsubmit="return confirm('Remove citizen from family?')">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            @if(auth()->user()->hasWriteAccess('family'))
-                            <button type="submit" class="btn-danger">Remove</button>
-                            @else
-                            <span style="color: #6b7280; font-size: 0.85rem;">-</span>
-                            @endif
-                        </form>
-                    </td>
-                `;
+                const nameCell = document.createElement('td');
+                nameCell.textContent = `${member.Citizen_FName} ${member.Citizen_LName}`;
+                const ageCell = document.createElement('td');
+                ageCell.textContent = member.Citizen_Age ?? 'N/A';
+                const actionCell = document.createElement('td');
+                const form = document.createElement('form');
+                form.action = `/bhw/families/members/${member.id}`;
+                form.method = 'POST';
+                form.onsubmit = () => confirm('Remove citizen from family?');
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = @json(csrf_token());
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.append(csrfInput, methodInput);
+
+                @if(auth()->user()->hasWriteAccess('family'))
+                const removeButton = document.createElement('button');
+                removeButton.type = 'submit';
+                removeButton.className = 'btn-danger';
+                removeButton.textContent = 'Remove';
+                form.appendChild(removeButton);
+                @else
+                const readOnly = document.createElement('span');
+                readOnly.style.cssText = 'color: #6b7280; font-size: 0.85rem;';
+                readOnly.textContent = '-';
+                form.appendChild(readOnly);
+                @endif
+
+                actionCell.appendChild(form);
+                tr.append(nameCell, ageCell, actionCell);
                 membersListContainer.appendChild(tr);
             });
         } else {
@@ -516,13 +544,20 @@
         if (paginatedItems.length > 0) {
             paginatedItems.forEach(citizen => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${citizen.Citizen_FName} ${citizen.Citizen_LName}</td>
-                    <td>${citizen.Citizen_Age ?? 'N/A'}</td>
-                    <td style="text-align: right;">
-                        <button type="button" class="btn btn-sm" onclick="selectCitizen(${citizen.id}, '${citizen.Citizen_FName} ${citizen.Citizen_LName}')">Select</button>
-                    </td>
-                `;
+                const nameCell = document.createElement('td');
+                const fullName = `${citizen.Citizen_FName} ${citizen.Citizen_LName}`;
+                nameCell.textContent = fullName;
+                const ageCell = document.createElement('td');
+                ageCell.textContent = citizen.Citizen_Age ?? 'N/A';
+                const actionCell = document.createElement('td');
+                actionCell.style.textAlign = 'right';
+                const selectButton = document.createElement('button');
+                selectButton.type = 'button';
+                selectButton.className = 'btn btn-sm';
+                selectButton.textContent = 'Select';
+                selectButton.addEventListener('click', () => selectCitizen(citizen.id, fullName));
+                actionCell.appendChild(selectButton);
+                tr.append(nameCell, ageCell, actionCell);
                 tbody.appendChild(tr);
             });
         } else {

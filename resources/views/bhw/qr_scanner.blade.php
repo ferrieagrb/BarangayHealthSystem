@@ -54,6 +54,7 @@
     @media (max-width: 850px) { .qr-layout { grid-template-columns: 1fr; } .qr-page { padding: 16px; } }
     @media (max-width: 600px) { .qr-info-grid { grid-template-columns: 1fr; } .qr-diagnosis-form { grid-template-columns:1fr; } .qr-diagnosis-form .full { grid-column:auto; } .qr-panel { padding: 16px; } .qr-heading h1 { font-size: 23px; } }
 </style>
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/qr-checker-alignment.css') }}">
 @endsection
 
@@ -67,7 +68,7 @@
     <div class="qr-layout">
         <section class="qr-panel" aria-labelledby="scanner-title">
             <h2 id="scanner-title">Scan Health ID</h2>
-            <p class="qr-muted">Allow camera access when prompted. On phones, use the rear camera and keep the QR code inside the frame.</p>
+            <p class="qr-muted">Allow camera access when prompted. On the same computer, use <strong>localhost</strong> for local HTTP. A phone opening the site through a local IP address requires HTTPS for camera access. Saved-image and manual lookup remain available if camera access is blocked.</p>
 
             <div id="qr-reader"></div>
 
@@ -116,7 +117,7 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-scanner');
@@ -132,8 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let cameraRunning = false;
     let lookupInProgress = false;
     let scanHandled = false;
+    let nativeStream = null;
+    let nativeVideo = null;
+    let nativeDetector = null;
+    let nativeFrame = null;
 
-    const lookupUrlTemplate = @json(route('qr.scanner.lookup', ['token' => 'TOKEN_PLACEHOLDER']));
+    const lookupUrlTemplate = @json(route('qr.scanner.lookup', ['token' => 'TOKEN_PLACEHOLDER'], false));
 
     function setStatus(message, type = '') {
         statusBox.textContent = message;
@@ -154,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const url = new URL(value, window.location.origin);
+            const legacyIdMatch = url.pathname.match(/\/citizen\/health-card\/(\d+)(?:\/|$)/i);
+            if (legacyIdMatch) return `legacy-id-${legacyIdMatch[1]}`;
+
             const match = url.pathname.match(/\/(?:citizen\/qr|health-id)\/([0-9a-f-]{36})(?:\/|$)/i);
             return match ? match[1] : null;
         } catch (error) {
@@ -324,20 +332,79 @@ document.addEventListener('DOMContentLoaded', () => {
             try { await scanner.stop(); } catch (error) {}
             try { await scanner.clear(); } catch (error) {}
         }
+        if (nativeFrame !== null) {
+            cancelAnimationFrame(nativeFrame);
+            nativeFrame = null;
+        }
+        if (nativeStream) {
+            nativeStream.getTracks().forEach(track => track.stop());
+            nativeStream = null;
+        }
+        if (nativeVideo) {
+            nativeVideo.srcObject = null;
+            nativeVideo.remove();
+            nativeVideo = null;
+        }
         cameraRunning = false;
         startButton.disabled = false;
         stopButton.disabled = true;
         if (showMessage) setStatus('Camera stopped.');
     }
 
-    startButton.addEventListener('click', async () => {
-        if (typeof Html5Qrcode === 'undefined') {
-            setStatus('The scanner library could not load. Check your internet connection, then refresh the page.', 'error');
-            return;
-        }
+    async function startNativeCamera() {
+        if (!('BarcodeDetector' in window)) return false;
 
+        const formats = await BarcodeDetector.getSupportedFormats();
+        if (!formats.includes('qr_code')) return false;
+
+        nativeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+        nativeStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: 'environment' } },
+            audio: false
+        });
+        nativeVideo = document.createElement('video');
+        nativeVideo.autoplay = true;
+        nativeVideo.muted = true;
+        nativeVideo.playsInline = true;
+        nativeVideo.style.width = '100%';
+        nativeVideo.style.display = 'block';
+        nativeVideo.srcObject = nativeStream;
+        document.getElementById('qr-reader').replaceChildren(nativeVideo);
+        await nativeVideo.play();
+
+        cameraRunning = true;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        setStatus('Camera is active. Point it at the citizen Health ID QR code.');
+
+        const scanFrame = async () => {
+            if (!cameraRunning || !nativeVideo || !nativeDetector) return;
+
+            try {
+                const detections = await nativeDetector.detect(nativeVideo);
+                if (detections.length && !scanHandled) {
+                    scanHandled = true;
+                    const decodedText = detections[0].rawValue;
+                    await stopCamera(false);
+                    await lookupCitizen(decodedText);
+                    return;
+                }
+            } catch (error) {
+                setStatus('Unable to read the camera image. Try adjusting the QR code or use the saved-image option.', 'error');
+                await stopCamera(false);
+                return;
+            }
+
+            nativeFrame = requestAnimationFrame(scanFrame);
+        };
+
+        nativeFrame = requestAnimationFrame(scanFrame);
+        return true;
+    }
+
+    startButton.addEventListener('click', async () => {
         if (!window.isSecureContext) {
-            setStatus('Live camera scanning requires HTTPS. Open the HTTPS version of this website or use localhost.', 'error');
+            setStatus('Camera access requires HTTPS, except on localhost. On another device, open this site over HTTPS or use image/manual lookup.', 'error');
             return;
         }
 
@@ -351,23 +418,34 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('Requesting camera access...');
 
         try {
-            scanner = new Html5Qrcode('qr-reader');
-            await scanner.start(
-                { facingMode: 'environment' },
-                { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1.0 },
-                async decodedText => {
-                    if (lookupInProgress || scanHandled) return;
-                    scanHandled = true;
-                    await stopCamera(false);
-                    await lookupCitizen(decodedText);
-                },
-                () => {}
-            );
-            cameraRunning = true;
-            stopButton.disabled = false;
-            startButton.disabled = true;
-            setStatus('Camera is active. Point it at the citizen Health ID QR code.');
+            const nativeStarted = await startNativeCamera();
+            if (!nativeStarted) {
+                if (typeof Html5Qrcode === 'undefined') {
+                    throw new Error('This browser has no built-in QR scanner and the fallback scanner library could not load. Use a current Chrome/Edge browser or scan an image/manual token.');
+                }
+
+                scanner = new Html5Qrcode('qr-reader');
+                await scanner.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1.0 },
+                    async decodedText => {
+                        if (lookupInProgress || scanHandled) return;
+                        scanHandled = true;
+                        await stopCamera(false);
+                        await lookupCitizen(decodedText);
+                    },
+                    () => {}
+                );
+                cameraRunning = true;
+                stopButton.disabled = false;
+                startButton.disabled = true;
+                setStatus('Camera is active. Point it at the citizen Health ID QR code.');
+            }
         } catch (error) {
+            if (nativeStream) {
+                nativeStream.getTracks().forEach(track => track.stop());
+                nativeStream = null;
+            }
             cameraRunning = false;
             startButton.disabled = false;
             stopButton.disabled = true;
@@ -378,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? 'No camera was found on this device. Use the saved QR image option below.'
                     : errorName === 'NotReadableError' || errorName === 'TrackStartError'
                         ? 'The camera is busy or unavailable. Close other camera apps and try again.'
-                        : 'Unable to start the camera. Confirm this page uses HTTPS and that the browser allows camera access.';
+                        : error.message || 'Unable to start the camera. Confirm this page uses HTTPS and that the browser allows camera access.';
             setStatus(message, 'error');
         }
     });
@@ -386,17 +464,36 @@ document.addEventListener('DOMContentLoaded', () => {
     stopButton.addEventListener('click', () => stopCamera());
     imageInput.addEventListener('change', async event => {
         const file = event.target.files?.[0];
-        if (!file || typeof Html5Qrcode === 'undefined') return;
+        if (!file) return;
 
         try {
             if (cameraRunning) await stopCamera(false);
+            if ('BarcodeDetector' in window && typeof createImageBitmap === 'function') {
+                const bitmap = await createImageBitmap(file);
+                try {
+                    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                    const detections = await detector.detect(bitmap);
+                    if (detections.length) {
+                        await lookupCitizen(detections[0].rawValue);
+                        return;
+                    }
+                } finally {
+                    bitmap.close();
+                }
+                throw new Error('The selected image does not contain a readable QR code.');
+            }
+
+            if (typeof Html5Qrcode === 'undefined') {
+                throw new Error('Image scanning is unavailable in this browser while offline. Use Chrome/Edge or enter the QR token manually.');
+            }
+
             scanner = new Html5Qrcode('qr-reader');
             setStatus('Reading the selected QR image...');
             const decodedText = await scanner.scanFile(file, true);
             await scanner.clear();
             await lookupCitizen(decodedText);
         } catch (error) {
-            setStatus('The selected image does not contain a readable Health ID QR code.', 'error');
+            setStatus(error.message || 'The selected image does not contain a readable Health ID QR code.', 'error');
         } finally {
             imageInput.value = '';
         }

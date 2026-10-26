@@ -278,6 +278,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/calendar', fn () => app(EventController::class)->index());
     Route::get('/events', fn () => app(EventController::class)->fetchEvents());
     Route::post('/events', fn () => app(EventController::class)->storeEvent(request()));
+    Route::put('/events/{id}', [EventController::class, 'updateEvent']);
     Route::delete('/events/{id}', fn ($id) => app(EventController::class)->destroy($id));
 
     Route::post('/vehicle-logs', [VehicleLogController::class, 'store'])->name('vehicle.logs.store');
@@ -285,7 +286,6 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // QR Scanner (BHW-only routes; protected by this group's auth + role middleware).
     Route::get('/qr-scanner', [QRScannerController::class, 'index'])->name('qr.scanner');
     Route::get('/qr-scanner/lookup/{token}', [QRScannerController::class, 'lookup'])
-        ->whereUuid('token')
         ->name('qr.scanner.lookup');
     Route::post('/qr-scanner/diagnosis', [QRScannerController::class, 'storeDiagnosis'])
         ->name('qr.scanner.diagnosis.store');
@@ -301,7 +301,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/citizen-export/pdf', [CitizenController::class, 'exportPdf'])->name('citizen.export.pdf');
 });
 
-Route::middleware(['auth', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
+Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
     Route::get('/families', [FamilyController::class, 'index'])->name('families.index');
     Route::post('/families', [FamilyController::class, 'store'])->name('families.store');
     Route::post('/families/quick-store', [FamilyController::class, 'storeQuick'])->name('families.quick.store');
@@ -366,7 +366,6 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::patch('/referrals/{referral}/status', [ReferralController::class, 'updateStatus'])->name('referrals.status');
     Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');
 
-    Route::get('/citizen/{id}/records', [CitizenController::class, 'show'])->name('citizen.show');
     Route::post('/vaccination/store', [CitizenController::class, 'storeVaccinationRecord'])->name('vaccination.store');
 });
 

@@ -56,6 +56,10 @@ class CitizensExport implements FromCollection, WithHeadings, WithMapping, WithC
     public function map($citizen): array
     {
         return array_map(function ($field) use ($citizen) {
+            if (str_starts_with($field, 'immunization_')) {
+                return $citizen->hasImmunization(substr($field, strlen('immunization_'))) ? 'Yes' : 'No';
+            }
+
             if (in_array($field, ['Citizen_Pregnant', 'Citizen_InPills', 'Citizen_IsDeceased'], true)) {
                 return $citizen->{$field} ? 'Yes' : 'No';
             }

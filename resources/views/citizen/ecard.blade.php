@@ -119,7 +119,11 @@
     {{-- CENTERED QR VERIFICATION --}}
     <div class="bheams-id-qr bheams-id-qr-centered">
         <div class="bheams-qr-frame">
-            <img src="{{ $qrImage ?? ('https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode(url('/citizen/health-card/' . $citizen->id))) }}" alt="Citizen Verification QR Code">
+            @if(!empty($qrImage))
+                <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
+            @else
+                <span>QR code unavailable</span>
+            @endif
         </div>
         <strong>SCAN TO VERIFY</strong>
         <small>Citizen Record Verification</small>

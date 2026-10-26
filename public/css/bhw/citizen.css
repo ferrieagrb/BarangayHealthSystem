@@ -1,36 +1,22 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-/* =========================================================
-   CITIZEN MANAGEMENT — GLOBAL
-   ========================================================= */
-
 *,
 *::before,
+
 *::after {
     box-sizing: border-box;
 }
-
-.page-top,
-.citizen-overview,
-.toolbar,
-.table-container {
-    font-family: 'Poppins', sans-serif;
-    min-width: 0;
-}
-
 .page-top,
 .citizen-overview,
 .toolbar,
 .table-container,
 .summary-card,
+
 .chart-card {
+    font-family: 'Poppins', sans-serif;
     min-width: 0;
 }
 
-/* =========================================================
-   PAGE HEADER
-   ========================================================= */
+/* PAGE HEADER */
 
 .page-top {
     display: flex;
@@ -40,14 +26,14 @@
     gap: 15px;
     margin-bottom: 20px;
 }
-
 .page-title-group,
+
 .page-title {
     min-width: 0;
     max-width: 100%;
 }
-
 .page-title-group h1,
+
 .page-title h1 {
     margin: 0;
     color: #0f172a;
@@ -55,8 +41,8 @@
     line-height: 1.35;
     overflow-wrap: anywhere;
 }
-
 .page-title-group p,
+
 .page-title p {
     margin-top: 6px;
     color: #64748b;
@@ -71,24 +57,22 @@
     font-weight: 700;
 }
 
-/* =========================================================
-   BUTTONS
-   ========================================================= */
+/* BUTTONS */
 
 button {
     font-family: 'Poppins', sans-serif;
     cursor: pointer;
 }
-
 .btn-primary,
+
 .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    text-decoration: none;
+    padding: 10px 14px;
     border: none;
     border-radius: 8px;
-    padding: 10px 14px;
+    text-decoration: none;
     cursor: pointer;
 }
 
@@ -125,8 +109,8 @@ button {
     flex-wrap: nowrap;
     gap: 6px;
 }
-
 .action-group .btn-primary,
+
 .action-group .btn-danger {
     display: inline-flex;
     align-items: center;
@@ -140,9 +124,7 @@ button {
     white-space: nowrap;
 }
 
-/* =========================================================
-   CITIZEN OVERVIEW
-   ========================================================= */
+/* CITIZEN OVERVIEW */
 
 .citizen-overview {
     display: grid;
@@ -155,9 +137,7 @@ button {
 .summary-cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: space-between;
     grid-auto-rows: minmax(0, 1fr);
-    height: 100%;
     gap: 12px;
     width: 100%;
     height: 100%;
@@ -167,7 +147,8 @@ button {
 .summary-card {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 8px;
     width: 100%;
     min-height: 140px;
     padding: 16px 18px;
@@ -175,8 +156,6 @@ button {
     background: #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     overflow-wrap: anywhere;
-    gap: 8px;
-    justify-content: flex-start;
 }
 
 .summary-card > span {
@@ -192,12 +171,11 @@ button {
 .summary-card-trend {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
     flex-wrap: nowrap;
-    width: 100%;
     gap: 7px;
-    margin-top: auto;
+    width: 100%;
     min-height: 24px;
+    margin-top: auto;
     font-size: 11px;
 }
 
@@ -205,13 +183,13 @@ button {
     display: inline-flex;
     align-items: center;
     margin: 0;
-    line-height: 1;
     padding: 4px 8px;
     border-radius: 999px;
     background: #ecfdf5;
     color: #047857;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1;
 }
 
 .summary-card-trend.trend-down span {
@@ -251,8 +229,8 @@ button {
     width: 100%;
     min-height: 260px;
 }
-
 .chart-card canvas,
+
 .chart-card svg {
     max-width: 100%;
 }
@@ -262,9 +240,7 @@ button {
     line-height: 1.3;
 }
 
-/* =========================================================
-   TOOLBAR
-   ========================================================= */
+/* TOOLBAR */
 
 .toolbar {
     display: flex;
@@ -272,32 +248,33 @@ button {
     justify-content: space-between;
     gap: 14px;
     width: 100%;
+    min-width: 0;
     margin-bottom: 18px;
     padding: 16px 20px;
-    border-radius: 11px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     background: #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 .toolbar-left {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    width: 100%;
     min-width: 0;
 }
 
-/*
-   Desktop layout:
-   Search | Purok | Age | Status Filters
-
-   The search field has a maximum width so it does not
-   stretch excessively across the whole toolbar.
-*/
+/* SEARCH, PUROK, AGE AND STATUS FILTERS */
 
 .citizen-filter-form {
     display: grid;
-    grid-template-columns: minmax(260px, 420px) 140px 190px 145px;
+    grid-template-columns:
+        minmax(180px, 1fr)
+        minmax(145px, 175px)
+        minmax(125px, 155px)
+        minmax(135px, 155px);
     align-items: center;
     gap: 10px;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
     min-width: 0;
     margin: 0;
@@ -306,8 +283,8 @@ button {
     border-radius: 0;
     box-shadow: none;
 }
-
 .search-box,
+
 .filter-box {
     display: flex;
     align-items: center;
@@ -316,9 +293,51 @@ button {
     margin: 0;
 }
 
+/* PUROK FILTER */
+
+.citizen-filter-form .purok-filter-box {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+}
+
+.citizen-filter-form #purokFilter {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 48px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #334155;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.citizen-filter-form #purokFilter:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.citizen-filter-form #purokFilter optgroup {
+    color: #166534;
+    font-weight: 700;
+}
+
+.citizen-filter-form #purokFilter option {
+    color: #334155;
+    font-weight: 400;
+}
+
+/* INPUTS AND FILTER CONTROLS */
 .search-box input,
 .filter-box select,
 .filter-box input[name="age"],
+
 .citizen-status-filter-btn {
     width: 100%;
     min-width: 0;
@@ -336,16 +355,16 @@ button {
 .search-box input {
     padding: 0 14px;
 }
-
 .search-box input::placeholder,
+
 .filter-box input[name="age"]::placeholder {
     color: #64748b;
     opacity: 1;
 }
-
 .search-box input:focus,
 .filter-box select:focus,
 .filter-box input[name="age"]:focus,
+
 .citizen-status-filter-btn:focus-visible {
     border-color: #1646bd;
     box-shadow: 0 0 0 3px rgba(22, 70, 189, 0.1);
@@ -359,9 +378,7 @@ button {
     padding: 0 10px;
 }
 
-/* =========================================================
-   STATUS FILTER BUTTON AND ARROW
-   ========================================================= */
+/* STATUS FILTER BUTTON */
 
 .citizen-status-filter-btn {
     display: inline-flex;
@@ -370,16 +387,16 @@ button {
     gap: 10px;
     padding: 0 12px;
     cursor: pointer;
-    white-space: nowrap;
     text-align: left;
+    white-space: nowrap;
 }
 
 .citizen-status-filter-btn:hover {
     border-color: #1646bd;
 }
-
 .citizen-status-filter-btn:focus-visible,
 .citizen-status-close:focus-visible,
+
 .citizen-status-footer button:focus-visible {
     outline: 3px solid rgba(22, 70, 189, 0.22);
     outline-offset: 2px;
@@ -412,9 +429,7 @@ button {
     transform: rotate(180deg);
 }
 
-/* =========================================================
-   EXPORT AND IMPORT BUTTONS
-   ========================================================= */
+/* EXPORT AND IMPORT BUTTONS */
 
 .toolbar-actions {
     display: flex;
@@ -436,9 +451,7 @@ button {
     white-space: nowrap;
 }
 
-/* =========================================================
-   CITIZEN TABLE CONTAINER
-   ========================================================= */
+/* TABLE CONTAINER */
 
 .table-container {
     width: 100%;
@@ -469,9 +482,7 @@ button {
     overflow-wrap: anywhere;
 }
 
-/* =========================================================
-   CITIZEN TABLE
-   ========================================================= */
+/* CITIZEN TABLE */
 
 .table-container table {
     width: 100%;
@@ -524,9 +535,7 @@ button {
     margin-bottom: 0;
 }
 
-/* =========================================================
-   DELETE CONFIRMATION MODAL
-   ========================================================= */
+/* DELETE CONFIRMATION MODAL */
 
 .citizen-delete-confirm-overlay {
     position: fixed;
@@ -593,8 +602,8 @@ button {
     gap: 15px;
     margin-top: 28px;
 }
-
 .citizen-delete-cancel,
+
 .citizen-delete-save {
     min-height: 44px;
     padding: 12px 25px;
@@ -630,16 +639,13 @@ button {
         opacity: 0;
         transform: scale(0.96) translateY(8px);
     }
-
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
 }
 
-/* =========================================================
-   STATUS FILTER MODAL
-   ========================================================= */
+/* STATUS FILTER MODAL */
 
 .citizen-status-overlay {
     position: fixed;
@@ -743,8 +749,8 @@ button {
     flex-wrap: wrap;
     gap: 12px 26px;
 }
-
 .citizen-status-radio-group label,
+
 .citizen-status-option {
     display: flex;
     align-items: center;
@@ -765,8 +771,8 @@ button {
 .citizen-status-option:last-child {
     margin-bottom: 0;
 }
-
 .citizen-status-body input[type="radio"],
+
 .citizen-status-body input[type="checkbox"] {
     flex: 0 0 16px;
     width: 16px;
@@ -826,104 +832,90 @@ button {
         opacity: 0;
         transform: translateY(8px) scale(0.98);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-/* =========================================================
-   TABLETS AND SMALL LAPTOPS
-   ========================================================= */
+/* TABLETS AND SMALL LAPTOPS */
 
 @media screen and (max-width: 1200px) {
     .citizen-overview {
         grid-template-columns: minmax(0, 1fr);
     }
-
     .summary-cards {
         grid-template-rows: auto;
     }
-
     .toolbar {
         align-items: stretch;
         flex-direction: column;
     }
-
     .toolbar-left {
         width: 100%;
     }
-
     .citizen-filter-form {
-        display: grid;
-        grid-template-columns: minmax(220px, 1fr) 140px 170px 145px;
+        grid-template-columns:
+            minmax(160px, 1fr)
+            minmax(140px, 175px)
+            minmax(120px, 150px)
+            minmax(130px, 150px);
         width: 100%;
     }
-
     .toolbar-actions {
         align-self: flex-end;
     }
 }
 
-/* =========================================================
-   TABLETS
-   ========================================================= */
+/* TABLETS */
 
 @media screen and (max-width: 800px) {
     .page-top {
         align-items: flex-start;
     }
-
     .summary-cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: auto;
     }
-
     .summary-card {
         min-height: 110px;
     }
-
     .toolbar {
         padding: 16px;
     }
-
     .citizen-filter-form {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
     }
-
     .search-box {
         grid-column: 1 / -1;
     }
-
     .filter-box,
+    .purok-filter-box,
     .citizen-status-filter-btn {
         width: 100%;
+        min-width: 0;
     }
-
+    .citizen-filter-form .purok-filter-box {
+        max-width: 100%;
+    }
     .filter-box select,
     .filter-box input[name="age"] {
         width: 100%;
     }
-
     .toolbar-actions {
         align-self: stretch;
         flex-wrap: wrap;
     }
-
     .table-container {
         padding: 14px;
     }
-
     .citizen-status-filter-btn {
         min-height: 40px;
     }
 }
 
-/* =========================================================
-   MOBILE PHONES
-   ========================================================= */
+/* MOBILE PHONES */
 
 @media screen and (max-width: 600px) {
     .page-top {
@@ -932,57 +924,46 @@ button {
         gap: 12px;
         margin-bottom: 16px;
     }
-
     .page-title-group h1,
     .page-title h1 {
         font-size: 22px;
     }
-
     .page-title-group p,
     .page-title p {
         font-size: 13px;
     }
-
     .page-top .btn-primary {
         align-self: flex-start;
         max-width: 100%;
     }
-
     .header {
         margin-bottom: 14px;
         font-size: 19px;
     }
-
     .summary-cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
     }
-
     .summary-card {
         min-height: 100px;
         padding: 14px 12px;
     }
-
     .chart-card {
         min-height: 0;
         padding: 14px;
     }
-
     .toolbar {
         gap: 12px;
         margin-bottom: 14px;
         padding: 14px;
     }
-
     .citizen-filter-form {
         grid-template-columns: minmax(0, 1fr);
         gap: 10px;
     }
-
     .search-box {
         grid-column: auto;
     }
-
     .search-box input,
     .filter-box select,
     .filter-box input[name="age"],
@@ -990,13 +971,17 @@ button {
         height: 42px;
         font-size: 13px;
     }
-
+    .citizen-filter-form .purok-filter-box {
+        max-width: 100%;
+    }
+    .citizen-filter-form #purokFilter {
+        height: 42px;
+    }
     .toolbar-actions {
         display: flex;
         width: 100%;
         gap: 8px;
     }
-
     .toolbar-actions .btn-secondary {
         flex: 1 1 0;
         min-width: 0;
@@ -1005,51 +990,41 @@ button {
         white-space: normal;
         overflow-wrap: anywhere;
     }
-
     .table-container {
         width: 100%;
         padding: 12px;
         overflow-x: auto;
     }
-
     .table-container table {
         width: 100%;
         min-width: 650px;
     }
-
     .table-container thead th {
         padding: 10px;
         font-size: 12px;
     }
-
     .table-container tbody td {
         padding: 10px;
         font-size: 12px;
     }
-
     .record-name {
         font-size: 13px;
     }
-
     .record-sub {
         font-size: 11px;
     }
-
     .action-group {
         gap: 6px;
     }
-
     .action-group .btn-primary,
     .action-group .btn-danger {
         min-height: 34px;
         padding-inline: 9px;
         font-size: 11px;
     }
-
     .citizen-delete-confirm-overlay {
         padding: 12px;
     }
-
     .citizen-delete-confirm-modal {
         width: 100%;
         max-width: 420px;
@@ -1057,21 +1032,17 @@ button {
         padding: 26px 20px;
         border-radius: 14px;
     }
-
     .citizen-delete-confirm-modal h2 {
         margin-bottom: 14px;
     }
-
     .citizen-delete-confirm-modal p {
         font-size: 14px;
     }
-
     .citizen-delete-confirm-buttons {
         flex-direction: column-reverse;
         gap: 10px;
         margin-top: 22px;
     }
-
     .citizen-delete-cancel,
     .citizen-delete-save {
         width: 100%;
@@ -1079,106 +1050,83 @@ button {
         padding: 12px 16px;
         font-size: 14px;
     }
-
     .citizen-status-overlay {
         align-items: flex-end;
         padding: 0;
     }
-
     .citizen-status-modal {
         width: 100%;
         max-width: none;
         max-height: 90dvh;
         border-radius: 16px 16px 0 0;
     }
-
     .citizen-status-header {
         padding: 16px 18px;
     }
-
     .citizen-status-header h2 {
         font-size: 16px;
     }
-
     .citizen-status-body {
         padding: 22px 18px;
     }
-
     .citizen-status-section {
         margin-bottom: 24px;
     }
-
     .citizen-status-footer {
         padding: 13px 18px;
         padding-bottom: max(13px, env(safe-area-inset-bottom));
     }
-
     .citizen-status-footer button {
         flex: 1 1 0;
         min-width: 0;
         padding: 10px 8px;
         font-size: 12px;
     }
-
     .citizen-status-radio-group {
         gap: 12px 20px;
     }
 }
 
-/* =========================================================
-   VERY SMALL PHONES
-   ========================================================= */
+/* VERY SMALL PHONES */
 
 @media screen and (max-width: 380px) {
     .summary-cards {
         gap: 8px;
     }
-
     .summary-card {
         padding: 12px 9px;
     }
-
     .toolbar {
         padding: 12px;
     }
-
     .table-container {
         padding: 10px;
     }
-
     .citizen-delete-confirm-overlay {
         padding: 8px;
     }
-
     .citizen-delete-confirm-modal {
         padding: 22px 16px;
     }
-
     .citizen-status-header {
         padding-inline: 15px;
     }
-
     .citizen-status-body {
         padding: 20px 15px;
     }
-
     .citizen-status-footer {
         padding-inline: 15px;
     }
-
     .citizen-status-radio-group {
         gap: 12px 15px;
     }
-
     .citizen-status-radio-group label,
     .citizen-status-option {
         font-size: 12px;
     }
 }
 
-/* =========================================================
-   SHORT SCREENS / LANDSCAPE PHONES
-   ========================================================= */
+/* SHORT SCREENS AND LANDSCAPE PHONES */
 
 @media screen and (max-width: 768px) and (max-height: 500px) {
     .citizen-delete-confirm-overlay,
@@ -1186,26 +1134,24 @@ button {
         align-items: flex-start;
         padding: 8px;
     }
-
     .citizen-delete-confirm-modal {
         margin-block: 8px;
         max-height: calc(100% - 16px);
         padding-block: 20px;
     }
-
     .citizen-status-modal {
         max-height: calc(100dvh - 16px);
         border-radius: 12px;
     }
-
     .citizen-status-body {
         padding-block: 16px;
     }
-
     .citizen-status-section {
         margin-bottom: 16px;
     }
 }
+
+/* SEARCH RESULTS HIGHLIGHT */
 
 .citizen-results-highlight {
     display: inline-flex;
@@ -1230,4 +1176,388 @@ button {
 
 .citizen-results-highlight span:first-child {
     font-weight: 700;
+}
+
+/* PASSWORD RESET AND EXPORT MODALS */
+.citizen-password-modal,
+
+.citizen-export-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+    overflow-y: auto;
+}
+.citizen-password-modal.is-open,
+
+.citizen-export-modal.is-open {
+    display: flex;
+}
+.citizen-password-dialog,
+
+.citizen-export-dialog {
+    width: min(100%, 420px);
+    max-height: calc(100dvh - 40px);
+    padding: 24px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.24);
+}
+.citizen-password-dialog h2,
+
+.citizen-export-dialog h2 {
+    margin: 0 0 8px;
+    color: #173b82;
+    font-size: 20px;
+    line-height: 1.4;
+}
+.citizen-password-dialog p,
+
+.citizen-export-dialog p {
+    margin: 0 0 16px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.citizen-password-dialog label {
+    display: block;
+    margin: 12px 0 6px;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.citizen-password-dialog input {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.citizen-password-dialog input:focus {
+    outline: none;
+    border-color: #1646bd;
+    box-shadow: 0 0 0 3px rgba(22, 70, 189, 0.1);
+}
+.citizen-password-dialog-actions,
+
+.citizen-export-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.citizen-export-options {
+    display: grid;
+    gap: 10px;
+}
+
+.citizen-export-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+.citizen-export-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #334155;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.citizen-export-field input {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.citizen-export-format {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.citizen-export-format button {
+    padding: 10px 18px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+}
+
+.citizen-export-format button:first-child {
+    border-radius: 7px 0 0 7px;
+}
+
+.citizen-export-format button:last-child {
+    border-radius: 0 7px 7px 0;
+}
+
+.citizen-export-format button.active {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+}
+
+/* EXPORT FIELD PICKER */
+.citizen-export-modal {
+    z-index: 100001;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.citizen-export-dialog {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 700px);
+    max-height: calc(100dvh - 40px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    animation: citizenStatusModalIn 0.18s ease-out;
+}
+
+.citizen-export-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.citizen-export-header h2 {
+    margin: 0 0 5px;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.citizen-export-header p {
+    margin: 0;
+}
+
+.citizen-export-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-family: Arial, sans-serif;
+    font-size: 27px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.citizen-export-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.citizen-export-dialog form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.citizen-export-body {
+    padding: 18px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.citizen-export-selection-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 11px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 9px;
+    background: #eff6ff;
+    color: #334155;
+    font-size: 12px;
+}
+
+.citizen-export-selection-bar > div {
+    display: flex;
+    gap: 12px;
+}
+
+.citizen-export-selection-bar button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.citizen-export-section {
+    margin: 0 0 19px;
+}
+
+.citizen-export-section:last-child {
+    margin-bottom: 0;
+}
+
+.citizen-export-section h3 {
+    margin: 0 0 9px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.citizen-export-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+}
+
+.citizen-export-field {
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.citizen-export-field.selected {
+    border-color: #93c5fd;
+    background: #f8fbff;
+}
+
+.citizen-export-field input {
+    accent-color: #1646bd;
+}
+
+.citizen-export-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 15px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.citizen-export-format {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 0;
+}
+
+.citizen-export-format > span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.citizen-export-format > div {
+    display: flex;
+}
+
+.citizen-export-format button {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.citizen-export-format button:disabled,
+.citizen-export-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.citizen-export-actions {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+/* SEARCH FEEDBACK */
+
+#citizen-results[aria-busy="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+@media screen and (max-width: 640px) {
+    .citizen-export-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .citizen-export-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .citizen-export-dialog {
+        width: 100%;
+        max-height: 92dvh;
+        border-radius: 14px 14px 0 0;
+    }
+
+    .citizen-export-header,
+    .citizen-export-body {
+        padding-right: 18px;
+        padding-left: 18px;
+    }
+
+    .citizen-export-footer {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 14px 18px max(14px, env(safe-area-inset-bottom));
+    }
+
+    .citizen-export-format {
+        justify-content: space-between;
+    }
+
+    .citizen-export-actions {
+        justify-content: flex-end;
+    }
+
+    .citizen-password-dialog,
+    .citizen-export-dialog {
+        max-height: calc(100dvh - 24px);
+    }
+
+    .citizen-export-dialog {
+        max-height: 92dvh;
+    }
 }
