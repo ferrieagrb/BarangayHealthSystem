@@ -131,9 +131,6 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         $maintenanceRecords = collect();
 
         if ($user->citizen_id) {
-<<<<<<< HEAD
-            $citizen = citizens::with(['vaccinations', 'medications', 'healthRecords', 'maintenanceRecords' => fn ($query) => $query->latest()])
-=======
             $citizen = citizens::with([
                 'vaccinations',
                 'vaccinationSchedules' => fn ($query) => $query->where('status', 'scheduled')->orderBy('scheduled_date'),
@@ -141,7 +138,6 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
                 'healthRecords',
                 'maintenanceRecords' => fn ($query) => $query->latest(),
             ])
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                 ->where('id', $user->citizen_id)->first();
 
             if ($citizen) {
@@ -162,12 +158,8 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             'announcements',
             'citizen',
             'maintenanceRecords',
-<<<<<<< HEAD
-            'qrImage'
-=======
             'qrImage',
             'vaccinationSchedulingEnabled'
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         ));
     })->name('dashboard');
 
@@ -265,16 +257,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Health Records
     Route::get('/healthrecord', [HealthRecordController::class, 'index'])->name('healthrecord');
     Route::get('/reports', [BhwReportController::class, 'index'])->name('bhw.reports');
-<<<<<<< HEAD
-    Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
-    Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
-=======
     Route::get('/analytics', [BhwAnalyticsController::class, 'index'])->name('bhw.analytics');
     Route::post('/health-record/store', [CitizenController::class, 'storeHealthRecord'])->name('health.record.store');
     Route::post('/health-record/{id}/delete', [CitizenController::class, 'deleteHealthRecord'])->name('health.record.delete');
     Route::post('/health-record/maintenance', [CitizenController::class, 'storeMaintenance'])->name('health.maintenance.store');
     Route::delete('/health-record/maintenance/{id}', [CitizenController::class, 'deleteMaintenanceRecord'])->name('health.maintenance.delete');
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
     Route::get('/health-record/{id}', [HealthRecordController::class, 'show'])->name('health.record.show');
 
     // Supplies
