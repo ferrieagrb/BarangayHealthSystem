@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
     confirmButton.addEventListener('click', function () {
         if (!pendingForm) return;
         confirmButton.disabled = true;
+        if (typeof window.showLoader === 'function') window.showLoader();
         pendingForm.submit();
     });
 

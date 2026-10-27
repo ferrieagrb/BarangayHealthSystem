@@ -5,6 +5,15 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/citizenfields.css') }}">
 
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<style>
+    #citizenForm > .family-info-row { grid-column: 1 / -1; width: 100%; min-width: 0; }
+    .family-info-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: end; margin-bottom: 16px; }
+    .family-info-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .family-info-field label { display: block; margin: 0; color: #475569; font-size: 12px; font-weight: 500; line-height: 1.5; }
+    .family-info-field input { display: block; width: 100%; min-width: 0; min-height: 43px; margin: 0; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 13px; line-height: 1.5; outline: none; }
+    .family-info-field input:disabled { border-color: #e2e8f0; background: #f8fafc; color: #64748b; cursor: not-allowed; opacity: 1; }
+    @media (max-width: 760px) { .family-info-row { grid-template-columns: repeat(3, minmax(180px, 1fr)); overflow-x: auto; } }
+</style>
 @endsection
 
 @section('content')
@@ -165,35 +174,20 @@
 
             <h3 class="citizen-section-title">Family Information</h3>
 
-            <label for="displayFamilyId">Family ID</label>
-
-            <input type="text"
-
-                   id="displayFamilyId"
-
-                   value="{{ $citizen->family->id ?? 'None' }}"
-
-                   disabled>
-
-            <label for="displayFamilyName">Family Name</label>
-
-            <input type="text"
-
-                   id="displayFamilyName"
-
-                   value="{{ $citizen->family->family_name ?? 'No Family Assigned' }}"
-
-                   disabled>
-
-            <label for="displaySubgroupName">Subgroup / Purok Section</label>
-
-            <input type="text"
-
-                   id="displaySubgroupName"
-
-                   value="{{ $citizen->family->subgroup->name ?? 'None' }}"
-
-                   disabled>
+            <div class="family-info-row">
+                <div class="family-info-field">
+                    <label for="displayFamilyId">Family ID</label>
+                    <input type="text" id="displayFamilyId" value="{{ $citizen->family->id ?? 'None' }}" disabled>
+                </div>
+                <div class="family-info-field">
+                    <label for="displayFamilyName">Family Name</label>
+                    <input type="text" id="displayFamilyName" value="{{ $citizen->family->family_name ?? 'No Family Assigned' }}" disabled>
+                </div>
+                <div class="family-info-field">
+                    <label for="displaySubgroupName">Subgroup / Purok Section</label>
+                    <input type="text" id="displaySubgroupName" value="{{ $citizen->family->subgroup->name ?? 'None' }}" disabled>
+                </div>
+            </div>
 
             <div id="familyEditContainer" style="display: none;">
 
@@ -669,14 +663,33 @@
                 <label for="maintenance_quantity">Quantity</label>
                 <input type="number" name="quantity_dispensed" id="maintenance_quantity" class="maintenance-field" value="{{ old('quantity_dispensed', 1) }}" min="1" max="100000" step="1" placeholder="e.g. 30" required>
             </div>
-            <div class="maintenance-form-field">
-                <label for="maintenance_dosage">Dosage</label>
-                <input type="text" name="dosage" id="maintenance_dosage" class="maintenance-field" value="{{ old('dosage') }}" placeholder="e.g. 500 mg" maxlength="100" required>
+            
+            {{-- Dosage, Frequency (Times), and Period side by side in one row --}}
+            <div class="maintenance-form-field" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+                <div>
+                    <label for="maintenance_dosage">Dosage (Number only)</label>
+                    <input type="number" name="dosage" id="maintenance_dosage" class="maintenance-field" value="{{ old('dosage') }}" placeholder="e.g. 500" min="0.01" max="10000" step="any" required>
+                </div>
+                <div>
+                    <label for="maintenance_frequency_times">Frequency (Times)</label>
+                    <select name="frequency_times" id="maintenance_frequency_times" class="maintenance-field" required>
+                        <option value="" disabled selected>-- Select --</option>
+                        <option value="Once" {{ old('frequency_times') === 'Once' ? 'selected' : '' }}>Once</option>
+                        <option value="Twice" {{ old('frequency_times') === 'Twice' ? 'selected' : '' }}>Twice</option>
+                        <option value="Three times" {{ old('frequency_times') === 'Three times' ? 'selected' : '' }}>Three times</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="maintenance_frequency_period">Period</label>
+                    <select name="frequency_period" id="maintenance_frequency_period" class="maintenance-field" required>
+                        <option value="" disabled selected>-- Select --</option>
+                        <option value="per day" {{ old('frequency_period') === 'per day' ? 'selected' : '' }}>per day</option>
+                        <option value="per week" {{ old('frequency_period') === 'per week' ? 'selected' : '' }}>per week</option>
+                        <option value="every other day" {{ old('frequency_period') === 'every other day' ? 'selected' : '' }}>every other day</option>
+                    </select>
+                </div>
             </div>
-            <div class="maintenance-form-field">
-                <label for="maintenance_frequency">Frequency</label>
-                <input type="text" name="frequency" id="maintenance_frequency" class="maintenance-field" value="{{ old('frequency') }}" placeholder="e.g. Once daily" maxlength="100" required>
-            </div>
+
             <div class="maintenance-form-field">
                 <label for="maintenance_start_date">Start Date</label>
                 <input type="date" name="start_date" id="maintenance_start_date" class="maintenance-field" value="{{ old('start_date', now()->format('Y-m-d')) }}" required>
@@ -944,8 +957,6 @@ function enableEdit() {
 
     });
 
-    // Purok Subgroup is assigned through the Family/Assignment picker only.
-    // Keep it non-editable even after the main Edit button is pressed.
     const subgroupField = document.getElementById('Citizen_Subgroup');
     if (subgroupField) {
         subgroupField.readOnly = true;
@@ -966,8 +977,6 @@ function enableEdit() {
         document.getElementById(id).disabled = true;
 
     });
-
-    document.getElementById('displayFamilyName').style.display = 'none';
 
     document.getElementById('familyEditContainer').style.display = 'block';
 
@@ -1202,25 +1211,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    openMedicinePicker.addEventListener("click", function () {
+    if (openMedicinePicker) {
+        openMedicinePicker.addEventListener("click", function () {
 
-        medicinePickerModal.classList.add("active");
+            medicinePickerModal.classList.add("active");
 
-        medicinePickerModal.setAttribute("aria-hidden", "false");
+            medicinePickerModal.setAttribute("aria-hidden", "false");
 
-    });
+        });
+    }
 
-    closeMedicinePicker.addEventListener("click", closeMedicinePickerModal);
+    if (closeMedicinePicker) {
+        closeMedicinePicker.addEventListener("click", closeMedicinePickerModal);
+    }
 
-    medicinePickerModal.addEventListener("click", function (event) {
+    if (medicinePickerModal) {
+        medicinePickerModal.addEventListener("click", function (event) {
 
-        if (event.target === medicinePickerModal) {
+            if (event.target === medicinePickerModal) {
 
-            closeMedicinePickerModal();
+                closeMedicinePickerModal();
 
-        }
+            }
 
-    });
+        });
+    }
 
     document.querySelectorAll(".medicine-option").forEach(function (option) {
 
@@ -1247,7 +1262,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function updateMedicineSourceFields() {
-
+        if (!medicineSource) return;
         const isCustom = medicineSource.value === "custom";
 
         existingMedicineGroup.hidden = isCustom;
@@ -1264,16 +1279,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    medicineSource.addEventListener("change", updateMedicineSourceFields);
-
-    updateMedicineSourceFields();
+    if (medicineSource) {
+        medicineSource.addEventListener("change", updateMedicineSourceFields);
+        updateMedicineSourceFields();
+    }
     setEditGatedState(false);
-
-    /* ============================================================
-
-       DIAGNOSIS FORM ELEMENTS
-
-       ============================================================ */
 
     const diagnosisInput =
 
@@ -1292,6 +1302,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("saveDiagnosisBtn");
 
 
+
+});
 
 </script>
 
@@ -1339,7 +1351,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Delegate input events so BMI still updates even if other page scripts fail.
     document.addEventListener('input', function (event) {
         if (event.target && (event.target.id === 'weightInput' || event.target.id === 'heightInput')) {
             updateDiagnosisBMI();
@@ -1398,7 +1409,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // In case this script is loaded after DOMContentLoaded.
     if (document.readyState !== 'loading') updateDiagnosisBMI();
 })();
 </script>
