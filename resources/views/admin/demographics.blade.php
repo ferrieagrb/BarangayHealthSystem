@@ -2,8 +2,6 @@
 
 @section('CSSown')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.0/dist/leaflet-geoman.css">
 <link rel="stylesheet" href="{{ asset('css/admin/demographics.css') }}">
 @endsection
 
@@ -220,7 +218,7 @@
             <div class="map-legend" aria-label="Map legend"><span><i class="legend-pin"></i> Purok pin</span><span><i class="legend-subgroup-pin"></i> Subgroup pin</span><span><i class="legend-area"></i> Purok boundary</span><span><i class="legend-subgroup-area"></i> Subgroup boundary</span></div>
             <fieldset class="boundary-visibility"><legend>Boundary visibility</legend><div id="boundaryVisibilityOptions"></div></fieldset>
             <div id="demographicsMap" class="demographics-map" role="application" aria-label="Purok and subgroup map"></div>
-            <p class="map-attribution-note">Map tiles © OpenStreetMap contributors. Click to place pins. In boundary mode, add vertices, then select Finish drawing; use the edit tool to move, add, or remove vertices.</p>
+            <p class="map-attribution-note">Click to place pins. In boundary mode, add vertices, then select Finish drawing; use Edit saved boundary to drag vertices or midpoints.</p>
         </div>
     </section>
 
@@ -229,7 +227,8 @@
 @endsection
 
 @section('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs&loading=async"></script>
+<script src="{{ asset('js/admin/demographics.js') }}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initDemographicsMap" async defer></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -456,7 +455,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    initializeMap();
+    // Legacy Google Maps purok picker; its elements no longer exist on this page.
+    if (mapElement) initializeMap();
 });
 </script>
 @endsection

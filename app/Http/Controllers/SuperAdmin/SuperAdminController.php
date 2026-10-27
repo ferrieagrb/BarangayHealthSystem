@@ -103,10 +103,7 @@ public function systemSettings()
             'backupDestination' => SystemSetting::value('backup_destination', 'hostinger'),
             'maxFailedLoginAttempts' => (int) SystemSetting::value('max_failed_login_attempts', 10),
             'maintenanceMode' => SystemSetting::boolean('maintenance_mode', false),
-<<<<<<< HEAD
-=======
             'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             'logoUrl' => SystemSetting::logoUrl(),
         ]);
     }

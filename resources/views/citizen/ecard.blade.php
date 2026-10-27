@@ -203,14 +203,11 @@
                 </div>
 
                 <div>
-<<<<<<< HEAD
-=======
                     <span class="block text-xs text-gray-500">Sex</span>
                     <span class="font-semibold">{{ $citizen->Citizen_Sex ?: 'N/A' }}</span>
                 </div>
 
                 <div>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                     <span class="block text-xs text-gray-500">Patient Contact Number</span>
                     <span class="font-semibold">
                         {{ $citizen->Citizen_ContactNo ?: 'N/A' }}
@@ -219,8 +216,6 @@
 
             </div>
 
-<<<<<<< HEAD
-=======
 
             <div class="mb-6 grid grid-cols-1 gap-4 border-b border-gray-300 pb-4 text-sm sm:grid-cols-2">
                 <div><span class="block text-xs text-gray-500">Housing Status</span><span class="font-semibold">{{ $citizen->Citizen_HousingStatus ?: 'N/A' }}</span></div>
@@ -232,7 +227,6 @@
                 <div><span class="block text-xs text-gray-500">Subgroup</span><span class="font-semibold">{{ $citizen->subgroup?->name ?: ($citizen->family?->subgroup?->name ?: 'Not assigned') }}</span></div>
             </div>
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             {{-- DIAGNOSIS / HEALTH RECORDS --}}
             <div class="mb-6">
                 <h3 class="mb-2 border border-gray-300 bg-gray-100 p-2 text-sm font-bold uppercase text-gray-700">
@@ -244,13 +238,10 @@
                             <tr class="bg-gray-200 text-gray-800">
                                 <th class="border border-gray-400 p-2">Date Recorded</th>
                                 <th class="border border-gray-400 p-2">Diagnosis</th>
-<<<<<<< HEAD
-=======
                                 <th class="border border-gray-400 p-2">BMI</th>
                                 <th class="border border-gray-400 p-2">Weight / Height</th>
                                 <th class="border border-gray-400 p-2">Temperature</th>
                                 <th class="border border-gray-400 p-2">BP</th>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                 <th class="border border-gray-400 p-2">Comments / Notes</th>
                             </tr>
                         </thead>
@@ -261,22 +252,15 @@
                                         {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : 'N/A' }}
                                     </td>
                                     <td class="border border-gray-400 p-2 font-semibold">{{ $record->diagnosis ?: 'N/A' }}</td>
-<<<<<<< HEAD
-=======
                                     <td class="border border-gray-400 p-2">{{ $record->bmi !== null ? number_format((float)$record->bmi, 1) . ' kg/m²' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->weight !== null ? $record->weight . ' kg' : '—' }} / {{ $record->height !== null ? $record->height . ' cm' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->temperature !== null ? number_format((float)$record->temperature, 1) . ' °C' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->blood_pressure ?: '—' }}</td>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                     <td class="border border-gray-400 p-2">{{ $record->comments ?: '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-<<<<<<< HEAD
-                                    <td colspan="3" class="border border-gray-400 p-3 text-center italic text-gray-500">
-=======
                                     <td colspan="7" class="border border-gray-400 p-3 text-center italic text-gray-500">
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                         No diagnosis or health records found.
                                     </td>
                                 </tr>
@@ -376,11 +360,6 @@
                     </table>
                 </div>
             </div>
-<<<<<<< HEAD
-
-</section>
-=======
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
 
 
@@ -449,7 +428,6 @@ body.print-id-only .bheams-id-qr small{font-size:3.8px!important;line-height:1.1
 body.print-id-only .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
 body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
-
 </style>
 <script>
 let citizenPrintPageRule = null;

@@ -371,6 +371,32 @@ table tbody tr:hover td {
     background: #f8fafc;
 }
 
+/* Users table: equal-width, centered columns */
+table.users-table {
+    table-layout: fixed;
+}
+
+table.users-table th,
+table.users-table td {
+    width: 20%;
+    text-align: center;
+}
+
+table.users-table .action-group {
+    justify-content: center;
+}
+
+table.users-table th:first-child,
+table.users-table td:first-child {
+    text-align: left;
+    padding-left: 28px;
+}
+
+table.users-table th:last-child,
+table.users-table td:last-child {
+    padding-right: 28px;
+}
+
 /* =========================
    CITIZEN INFORMATION
 ========================= */
