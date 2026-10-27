@@ -1080,6 +1080,9 @@ body:has(.maintenance-section) .health-alert-error {
     .immunization-form-grid {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
+}
+=======
 }
 
 /* Immunization and Maintenance Medicines — align with Diagnosis panels */
@@ -1274,6 +1277,7 @@ body:has(.maintenance-section) .health-alert-error {
 @media (max-width: 600px) {
     .immunization-section .immunization-form-grid button[type="submit"] { width: 100%; }
 }
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
 /* =========================================================
    FAMILY INFORMATION — FIXED EDIT LAYOUT

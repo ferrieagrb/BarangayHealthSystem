@@ -729,6 +729,7 @@ class CitizenController extends Controller
             ->with('success', 'Maintenance medicine added successfully.');
     }
 
+
     public function healthIndex()
     {
         $citizens = citizens::paginate(10);
