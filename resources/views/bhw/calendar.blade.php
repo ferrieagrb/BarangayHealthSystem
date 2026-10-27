@@ -1338,13 +1338,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                 }
             )
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to save the event.');
+                }
 
                 modal.style.display =
                     'none';
 
                 calendar.refetchEvents();
-
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.message);
             });
 
         }
@@ -1441,7 +1447,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             )
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to delete the event.');
+                }
 
                 /*
                  * Close the original Edit Event modal.
@@ -1457,6 +1466,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 calendar.refetchEvents();
 
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.message);
             });
 
         }
@@ -1635,7 +1648,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                 }
             )
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to create the event.');
+                }
 
                 /*
                  * Close Add Event modal
@@ -1653,6 +1669,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 calendar.refetchEvents();
 
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.message);
             });
 
         }

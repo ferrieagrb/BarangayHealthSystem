@@ -24,7 +24,7 @@
 
 <div class="page-top">
     <div class="page-title-group">
-        <h1>Admin Dashboard</h1>
+        <h1>User Management</h1>
         <p>Manage system users, roles, and access permissions.</p>
     </div>
 

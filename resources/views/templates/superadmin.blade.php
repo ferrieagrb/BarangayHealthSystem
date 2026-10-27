@@ -48,6 +48,7 @@
         }
     </style>
     @yield('CSSown')
+    <link rel="stylesheet" href="{{ asset('css/admin/responsive.css') }}">
 </head>
 
 

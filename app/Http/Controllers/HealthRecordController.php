@@ -9,8 +9,8 @@ use App\Models\citizens;
 use App\Models\MaintenanceRecord;
 use App\Models\Supply;
 use App\Models\Purok;
+use App\Services\BhwCitizenAccess;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class HealthRecordController extends Controller
 {
@@ -19,63 +19,109 @@ class HealthRecordController extends Controller
     | INDEX / LIST HEALTH RECORDS (WITH SEARCH, PAGINATION & HEATMAP)
     |--------------------------------------------------------------------------
     */
-    public function index(Request $request)
-{
-    if (!Auth::check() || Auth::user()->role !== 'bhw') {
-        abort(403);
-    }
-
-    $search = $request->input('search');
-    $purok = $request->input('purok');
-
-    $query = citizens::with('healthRecords');
-
-    // Filter by Purok if selected
-    if ($purok && $purok !== 'all') {
-        $query->where('Citizen_Purok', $purok);
-    }
-
-    // Filter by Search query (Citizen Name or Diagnosis)
-    if ($search) {
-        $query->where(function($q) use ($search) {
-            $q->where('Citizen_FName', 'LIKE', "%{$search}%")
-              ->orWhere('Citizen_LName', 'LIKE', "%{$search}%")
-              ->orWhereHas('healthRecords', function($subQuery) use ($search) {
-                  $subQuery->where('diagnosis', 'LIKE', "%{$search}%");
-              });
-        });
-    }
-
-    $citizens = $query->paginate(10)->appends($request->all());
-
-    $allCitizens = citizens::with('healthRecords')->get();
-    $heatmapData = [];
-
-    foreach (Purok::whereNotNull('latitude')->whereNotNull('longitude')->get() as $purok) {
-        $purokKey = preg_replace('/[^0-9]/', '', (string) $purok->name);
-        $matchingCitizens = $allCitizens->filter(function($c) use ($purokKey) {
-            $dbPurok = preg_replace('/[^0-9]/', '', (string)$c->Citizen_Purok);
-            return $dbPurok === (string)$purokKey;
-        });
-
-        // Count total health records/diagnoses in this specific Purok
-        $recordCount = $matchingCitizens->sum(fn($c) => $c->healthRecords->count());
-
-        // STRICT REQUIREMENT: Only include zones that have 1 or more diagnoses
-        if ($recordCount > 0) {
-            $heatmapData[] = [
-                'location' => ['lat' => (float) $purok->latitude, 'lng' => (float) $purok->longitude],
-                // Severity scaled threefold based on the number of diagnoses
-                'weight' => $recordCount * 3,
-                'purok' => $purok->name,
-                'citizens_count' => $matchingCitizens->count(),
-                'records_count' => $recordCount
-            ];
+    public function index(Request $request, BhwCitizenAccess $citizenAccess)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            abort(403);
         }
-    }
 
-    return view('bhw.healthrecord', compact('citizens', 'heatmapData'));
-}
+        $search = trim((string) $request->input('search', ''));
+        $purok = $request->input('purok');
+        $canViewAll = $citizenAccess->canViewAll($user);
+        $assignedSubgroupIds = $citizenAccess->assignedSubgroupIds($user);
+        $puroks = Purok::query()
+            ->when(!$canViewAll, fn ($query) => $query->whereHas('subgroups', fn ($subgroups) => $subgroups->whereIn('id', $assignedSubgroupIds)))
+            ->orderBy('name')
+            ->get();
+
+        $query = $citizenAccess->scopeCitizens(citizens::with('healthRecords'), $user);
+
+        if ($purok && $purok !== 'all' && ($selectedPurok = $puroks->firstWhere('id', $purok))) {
+            $query->where(function ($builder) use ($selectedPurok) {
+                $builder->where('Citizen_Purok', $selectedPurok->name)
+                    ->orWhereHas('subgroup', fn ($subgroup) => $subgroup->where('purok_id', $selectedPurok->id))
+                    ->orWhereHas('family', fn ($family) => $family->where('purok_id', $selectedPurok->id));
+            });
+        }
+
+        if ($search) {
+            $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [$search];
+            $query->where(function ($builder) use ($search, $searchTerms) {
+                $builder->where(function ($nameQuery) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $nameQuery->where(function ($termQuery) use ($term) {
+                            $termQuery->where('Citizen_FName', 'like', "%{$term}%")
+                                ->orWhere('Citizen_MName', 'like', "%{$term}%")
+                                ->orWhere('Citizen_LName', 'like', "%{$term}%");
+                        });
+                    }
+                })->orWhereHas('healthRecords', function ($subQuery) use ($search) {
+                    $subQuery->where('diagnosis', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        if ($request->filled('health_filter_sex') && $request->input('health_filter_sex') !== 'all') {
+            $query->where('Citizen_Sex', ucfirst($request->input('health_filter_sex')));
+        }
+
+        $housingFilters = (array) $request->input('health_filter_housing', []);
+        if ($housingFilters) {
+            $housingValues = array_map(
+                fn ($value) => $value === 'permanent_resident' ? 'Permanent Resident' : 'Renter',
+                array_intersect($housingFilters, ['permanent_resident', 'renter'])
+            );
+            if ($housingValues) {
+                $query->whereIn('Citizen_HousingStatus', $housingValues);
+            }
+        }
+
+        $healthFilters = (array) $request->input('health_filter_health', []);
+        if ($healthFilters) {
+            $query->where(function ($builder) use ($healthFilters) {
+                if (in_array('pregnant', $healthFilters, true)) {
+                    $builder->orWhere('Citizen_Pregnant', true);
+                }
+                if (in_array('in_pills', $healthFilters, true)) {
+                    $builder->orWhere('Citizen_InPills', true);
+                }
+            });
+        }
+
+        $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
+        if ($vaccineFilters) {
+            $vaccineTerms = [
+                'bcg' => ['bcg'], 'hepb' => ['hepatitis b', 'hepb'], 'penta' => ['pentavalent', 'penta'],
+                'opv' => ['oral polio', 'opv'], 'ipv' => ['inactivated polio', 'ipv'], 'pcv' => ['pneumococcal', 'pcv'],
+                'mmr' => ['measles, mumps', 'mmr'], 'mr' => ['measles-rubella', 'mr'], 'td' => ['tetanus', 'td'],
+                'hpv' => ['human papillomavirus', 'hpv'],
+            ];
+            $query->whereHas('vaccinations', function ($vaccinationQuery) use ($vaccineFilters, $vaccineTerms) {
+                $vaccinationQuery->where(function ($builder) use ($vaccineFilters, $vaccineTerms) {
+                    foreach ($vaccineFilters as $filter) {
+                        foreach ($vaccineTerms[$filter] ?? [] as $term) {
+                            $builder->orWhere('vaccine_name', 'like', "%{$term}%");
+                        }
+                    }
+                });
+            });
+        }
+
+        if ($request->boolean('filter_deceased')) {
+            $query->where('Citizen_IsDeceased', true);
+        } else {
+            $query->where(function ($builder) {
+                $builder->whereNull('Citizen_IsDeceased')
+                    ->orWhere('Citizen_IsDeceased', false);
+            });
+        }
+
+        $citizens = $query->paginate(10)->withQueryString();
+        $canViewDiseaseAnalytics = $user->hasReadAccess('reports');
+
+        return view('bhw.healthrecord', compact('citizens', 'puroks', 'canViewDiseaseAnalytics'));
+    }
 
     /*
     |--------------------------------------------------------------------------

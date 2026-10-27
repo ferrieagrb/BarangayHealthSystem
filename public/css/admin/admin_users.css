@@ -409,6 +409,18 @@ table tbody tr:hover td {
     flex-shrink: 0;
 }
 
+.main-content .action-group button.btn-danger:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row) {
+    border-color: #dc2626;
+    background: transparent;
+    color: #b91c1c;
+}
+
+.main-content .action-group button.btn-danger:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):hover:not(:disabled) {
+    border-color: #b91c1c;
+    background: #dc2626;
+    color: #fff;
+}
+
 /* =========================
    STATUS BADGES
 ========================= */

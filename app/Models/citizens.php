@@ -80,6 +80,40 @@ class citizens extends Authenticatable
     return $this->hasMany(VaccinationRecord::class, 'citizen_id', 'id');
 }
 
+    public function hasImmunization(string $vaccineCode): bool
+    {
+        $searchTerms = [
+            'bcg' => ['bcg'],
+            'hepb' => ['hepatitis b', 'hepb'],
+            'penta' => ['pentavalent', 'penta'],
+            'opv' => ['oral polio', 'opv'],
+            'ipv' => ['inactivated polio', 'ipv'],
+            'pcv' => ['pneumococcal', 'pcv'],
+            'mmr' => ['measles, mumps', 'mmr'],
+            'mr' => ['measles-rubella', 'mr'],
+            'td' => ['tetanus', 'td'],
+            'hpv' => ['human papillomavirus', 'hpv'],
+        ];
+
+        $terms = $searchTerms[$vaccineCode] ?? [];
+
+        return $this->vaccinations->contains(function (VaccinationRecord $record) use ($terms) {
+            $vaccineName = strtolower($record->vaccine_name);
+
+            foreach ($terms as $term) {
+                if (strlen($term) <= 3) {
+                    if (preg_match('/(^|[^a-z0-9])' . preg_quote($term, '/') . '([^a-z0-9]|$)/', $vaccineName)) {
+                        return true;
+                    }
+                } elseif (str_contains($vaccineName, $term)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+    }
+
     public function vaccinationSchedules()
     {
         return $this->hasMany(VaccinationSchedule::class, 'citizen_id');
@@ -106,6 +140,4 @@ public function subgroup()
 }
 
 }
-
-
 

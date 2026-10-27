@@ -101,9 +101,9 @@ dialog.family-modal [hidden] {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    margin: 0 0 30px;
-    padding: 0 0 19px;
-    border-bottom: 1px solid #e2e8f0;
+    margin: 0 0 24px;
+    padding: 0;
+    border: 0;
 }
 
 .bhw-families-page .family-page-header h1 {
@@ -1046,7 +1046,8 @@ dialog.family-modal button:disabled {
         flex-direction: column;
         gap: 14px;
         margin-bottom: 20px;
-        padding-bottom: 17px;
+        padding: 0;
+        border: 0;
     }
 
     .bhw-families-page .family-page-header h1 {
@@ -1221,5 +1222,62 @@ dialog.family-modal .add-member-button {
         width: 100%;
         min-width: 0;
         max-height: none;
+    }
+}
+
+
+/* Page header and table action alignment fixes */
+.bhw-families-page .family-page-header {
+    border: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.bhw-families-page .family-table th:last-child,
+.bhw-families-page .family-table td.family-actions-cell {
+    width: 175px;
+    min-width: 175px;
+    text-align: center !important;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.bhw-families-page .family-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px;
+}
+
+.bhw-families-page .family-actions .btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 134px;
+    min-width: 134px;
+    min-height: 32px;
+    margin: 0;
+    padding: 6px 9px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.bhw-families-page .family-actions .btn-sm svg {
+    display: block;
+    flex: 0 0 12px;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .bhw-families-page .family-table th:last-child,
+    .bhw-families-page .family-table td.family-actions-cell {
+        width: 155px;
+        min-width: 155px;
+    }
+
+    .bhw-families-page .family-actions .btn-sm {
+        width: 128px;
+        min-width: 128px;
     }
 }

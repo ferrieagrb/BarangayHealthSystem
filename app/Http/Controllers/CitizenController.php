@@ -27,6 +27,7 @@ use App\Models\Purok;
 use App\Exports\CitizensExport;
 use App\Imports\CitizensImport;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -34,6 +35,7 @@ use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
 use App\Models\SystemSetting;
+use App\Services\BhwCitizenAccess;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -54,26 +56,11 @@ class CitizenController extends Controller
     private function canEditCitizen(citizens $citizen): bool
     {
         $user = auth()->user();
-        $citizen->loadMissing('family');
-
-            // Check if citizen belongs to one of the BHW's assigned purok subgroups
-            $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-            $family = $citizen->getAttribute('family');
-            $belongsToAssignedSubgroup = $family
-                && $assignedSubgroupIDs->contains($family->getAttribute('subgroup_id'));
-
-            if ($belongsToAssignedSubgroup) {
-                return true;
-            }
         if (!$user || $user->role !== 'bhw') {
             return true;
         }
 
-        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-        return $assignedSubgroupIDs->contains($citizen->subgroup_id)
-            || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
+        return app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
     }
 
     private function restrictToAssignedCitizens($query)
@@ -84,23 +71,19 @@ class CitizenController extends Controller
             return $query;
         }
 
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
+        return app(BhwCitizenAccess::class)->scopeCitizens($query, $user);
+    }
 
-        if ($canViewAll) {
-            return $query;
+    private function filterByAgeRange(Builder $query, int $minimumAge, ?int $maximumAge = null): void
+    {
+        $today = Carbon::today();
+        $latestBirthDate = $today->copy()->subYearsNoOverflow($minimumAge)->toDateString();
+        $query->whereDate('Citizen_BirthDate', '<=', $latestBirthDate);
+
+        if ($maximumAge !== null) {
+            $earliestBirthDate = $today->copy()->subYearsNoOverflow($maximumAge + 1)->toDateString();
+            $query->whereDate('Citizen_BirthDate', '>', $earliestBirthDate);
         }
-
-        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-        return $query->where(function ($citizenQuery) use ($assignedSubgroupIDs) {
-            $citizenQuery->whereIn('subgroup_id', $assignedSubgroupIDs)
-                ->orWhereHas('family', function ($familyQuery) use ($assignedSubgroupIDs) {
-                    $familyQuery->whereIn('subgroup_id', $assignedSubgroupIDs);
-                });
-        });
     }
 
     /*
@@ -110,34 +93,6 @@ class CitizenController extends Controller
     */
     public function index(Request $request)
     {
-        /*
-        |--------------------------------------------------------------------------
-        | FIX EXISTING AGE VALUES
-        |--------------------------------------------------------------------------
-        */
-        citizens::whereNotNull('Citizen_BirthDate')
-            ->chunkById(100, function ($citizens) {
-                foreach ($citizens as $citizen) {
-                    try {
-                        $birthDate = Carbon::parse($citizen->Citizen_BirthDate);
-
-                        if ($birthDate->isFuture()) {
-                            continue;
-                        }
-
-                        $correctAge = $birthDate->age;
-
-                        if ((int) $citizen->Citizen_Age !== $correctAge) {
-                            $citizen->update([
-                                'Citizen_Age' => $correctAge
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        // Ignore invalid birth dates
-                    }
-                }
-            });
-
         $query = citizens::query();
         $summaryQuery = clone $query;
 
@@ -186,7 +141,9 @@ class CitizenController extends Controller
             });
         }
 
-        if (!$request->boolean('filter_deceased')) {
+        if ($request->boolean('filter_deceased')) {
+            $query->where('Citizen_IsDeceased', 1);
+        } else {
             $query->where(function ($q) {
                 $q->whereNull('Citizen_IsDeceased')
                   ->orWhere('Citizen_IsDeceased', 0);
@@ -200,15 +157,24 @@ class CitizenController extends Controller
         */
         if ($request->filled('search')) {
             $search = trim($request->search);
-
-            $query->where(function ($q) use ($search) {
-                $q->where('Citizen_FName', 'like', '%' . $search . '%')
-                  ->orWhere('Citizen_LName', 'like', '%' . $search . '%')
-                  ->orWhere('id', $search)
-                  ->orWhereHas('healthRecords', function ($q2) use ($search) {
-                      $q2->where('diagnosis', 'like', '%' . $search . '%');
-                  });
-            });
+            if ($search !== '') {
+                $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [$search];
+                $query->where(function ($q) use ($search, $searchTerms) {
+                    $q->where(function ($nameQuery) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $nameQuery->where(function ($termQuery) use ($term) {
+                                $termQuery->where('Citizen_FName', 'like', '%' . $term . '%')
+                                    ->orWhere('Citizen_MName', 'like', '%' . $term . '%')
+                                    ->orWhere('Citizen_LName', 'like', '%' . $term . '%');
+                            });
+                        }
+                    })
+                      ->orWhere('id', $search)
+                      ->orWhereHas('healthRecords', function ($q2) use ($search) {
+                          $q2->where('diagnosis', 'like', '%' . $search . '%');
+                      });
+                });
+            }
         }
 
         /*
@@ -262,9 +228,9 @@ class CitizenController extends Controller
                     [$minAge, $maxAge] = [$maxAge, $minAge];
                 }
 
-                $query->whereBetween('Citizen_Age', [$minAge, $maxAge]);
+                $this->filterByAgeRange($query, $minAge, $maxAge);
             } elseif (is_numeric($age)) {
-                $query->where('Citizen_Age', (int) $age);
+                $this->filterByAgeRange($query, (int) $age, (int) $age);
             }
         }
 
@@ -277,11 +243,11 @@ class CitizenController extends Controller
             $ageGroup = $request->age_group;
 
             if ($ageGroup === 'kid') {
-                $query->where('Citizen_Age', '<=', 17);
+                $this->filterByAgeRange($query, 0, 17);
             } elseif ($ageGroup === 'adult') {
-                $query->whereBetween('Citizen_Age', [18, 59]);
+                $this->filterByAgeRange($query, 18, 59);
             } elseif ($ageGroup === 'senior') {
-                $query->where('Citizen_Age', '>=', 60);
+                $this->filterByAgeRange($query, 60);
             }
         }
 
@@ -293,23 +259,31 @@ class CitizenController extends Controller
             ->orderBy('name')
             ->paginate(10, ['*'], 'medicine_page');
 
+        $sort = $request->input('sort');
+        if ($sort === 'Youngest to Oldest') {
+            $query->orderByDesc('Citizen_BirthDate')
+                ->orderBy('Citizen_FName')
+                ->orderBy('Citizen_LName');
+        } elseif ($sort === 'Oldest to Youngest') {
+            $query->orderBy('Citizen_BirthDate')
+                ->orderBy('Citizen_FName')
+                ->orderBy('Citizen_LName');
+        } else {
+            $query->orderBy('Citizen_FName')
+                ->orderBy('Citizen_LName');
+        }
+
         /*
         |--------------------------------------------------------------------------
         | PAGINATION
         |--------------------------------------------------------------------------
         */
-        $citizens = $query->with(['subgroup', 'family.subgroup'])->paginate(10)->appends([
-            'search' => $request->search,
-            'purok' => $request->purok,
-            'subgroup' => $request->subgroup,
-            'age' => $request->age,
-            'age_group' => $request->age_group,
-            'sex' => $request->sex,
-            'housing_status' => $request->housing_status,
-            'pregnant' => $request->pregnant,
-            'in_pills' => $request->in_pills,
-            'include_deceased' => $request->include_deceased,
-        ]);
+        $citizens = $query->with(['subgroup', 'family.subgroup'])
+            ->paginate(10)
+            ->withQueryString();
+        foreach ($citizens as $citizen) {
+            $citizen->setAttribute('Citizen_Age', Carbon::parse($citizen->Citizen_BirthDate)->age);
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -317,9 +291,15 @@ class CitizenController extends Controller
         |--------------------------------------------------------------------------
         */
         $totalCitizens = (clone $summaryQuery)->count();
-        $kids = (clone $summaryQuery)->where('Citizen_Age', '<=', 17)->count();
-        $adults = (clone $summaryQuery)->whereBetween('Citizen_Age', [18, 59])->count();
-        $seniors = (clone $summaryQuery)->where('Citizen_Age', '>=', 60)->count();
+        $kidsQuery = clone $summaryQuery;
+        $this->filterByAgeRange($kidsQuery, 0, 17);
+        $kids = $kidsQuery->count();
+        $adultsQuery = clone $summaryQuery;
+        $this->filterByAgeRange($adultsQuery, 18, 59);
+        $adults = $adultsQuery->count();
+        $seniorsQuery = clone $summaryQuery;
+        $this->filterByAgeRange($seniorsQuery, 60);
+        $seniors = $seniorsQuery->count();
         $latestPeriodStart = now()->subDays(13)->startOfDay();
         $previousPeriodStart = now()->subDays(27)->startOfDay();
         $previousPeriodEnd = now()->subDays(14)->endOfDay();
@@ -346,11 +326,11 @@ class CitizenController extends Controller
             $query = (clone $baseQuery)->whereBetween('created_at', [$start, $end]);
 
             if ($group === 'kids') {
-                $query->where('Citizen_Age', '<=', 17);
+                $this->filterByAgeRange($query, 0, 17);
             } elseif ($group === 'adults') {
-                $query->whereBetween('Citizen_Age', [18, 59]);
+                $this->filterByAgeRange($query, 18, 59);
             } elseif ($group === 'seniors') {
-                $query->where('Citizen_Age', '>=', 60);
+                $this->filterByAgeRange($query, 60);
             }
 
             return $query->count();
@@ -1010,6 +990,12 @@ class CitizenController extends Controller
     private function exportCitizenQuery(Request $request)
     {
         $query = citizens::query();
+        $requestedFields = (array) $request->input('fields', []);
+        if (collect($requestedFields)->contains(
+            fn ($field) => is_string($field) && str_starts_with($field, 'immunization_')
+        )) {
+            $query->with('vaccinations');
+        }
 
         if ($request->filled('filter_sex') && $request->filter_sex !== 'all') {
             $query->where('Citizen_Sex', $request->filter_sex);
@@ -1025,7 +1011,9 @@ class CitizenController extends Controller
             $query->when(in_array('in_pills', $healthValues), fn ($builder) => $builder->where('Citizen_InPills', 1));
         }
 
-        if (!$request->boolean('filter_deceased')) {
+        if ($request->boolean('filter_deceased')) {
+            $query->where('Citizen_IsDeceased', 1);
+        } else {
             $query->where(function ($builder) {
                 $builder->whereNull('Citizen_IsDeceased')->orWhere('Citizen_IsDeceased', 0);
             });
@@ -1033,12 +1021,21 @@ class CitizenController extends Controller
 
         if ($request->filled('search')) {
             $search = trim($request->search);
-            $query->where(function ($builder) use ($search) {
-                $builder->where('Citizen_FName', 'like', "%{$search}%")
-                    ->orWhere('Citizen_LName', 'like', "%{$search}%")
-                    ->orWhere('id', $search)
-                    ->orWhereHas('healthRecords', fn ($healthQuery) => $healthQuery->where('diagnosis', 'like', "%{$search}%"));
-            });
+            if ($search !== '') {
+                $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [$search];
+                $query->where(function ($builder) use ($search, $searchTerms) {
+                    $builder->where(function ($nameQuery) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $nameQuery->where(function ($termQuery) use ($term) {
+                                $termQuery->where('Citizen_FName', 'like', "%{$term}%")
+                                    ->orWhere('Citizen_MName', 'like', "%{$term}%")
+                                    ->orWhere('Citizen_LName', 'like', "%{$term}%");
+                            });
+                        }
+                    })->orWhere('id', $search)
+                        ->orWhereHas('healthRecords', fn ($healthQuery) => $healthQuery->where('diagnosis', 'like', "%{$search}%"));
+                });
+            }
         }
 
         if ($request->filled('purok') && $request->purok !== 'all') {
@@ -1061,16 +1058,24 @@ class CitizenController extends Controller
         if ($request->filled('age')) {
             $age = trim($request->age);
             if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $age, $matches)) {
-                $query->whereBetween('Citizen_Age', [min((int) $matches[1], (int) $matches[2]), max((int) $matches[1], (int) $matches[2])]);
+                $this->filterByAgeRange(
+                    $query,
+                    min((int) $matches[1], (int) $matches[2]),
+                    max((int) $matches[1], (int) $matches[2])
+                );
             } elseif (is_numeric($age)) {
-                $query->where('Citizen_Age', (int) $age);
+                $this->filterByAgeRange($query, (int) $age, (int) $age);
             }
         }
 
         if ($request->filled('age_group')) {
-            $query->when($request->age_group === 'kid', fn ($builder) => $builder->where('Citizen_Age', '<=', 17));
-            $query->when($request->age_group === 'adult', fn ($builder) => $builder->whereBetween('Citizen_Age', [18, 59]));
-            $query->when($request->age_group === 'senior', fn ($builder) => $builder->where('Citizen_Age', '>=', 60));
+            if ($request->age_group === 'kid') {
+                $this->filterByAgeRange($query, 0, 17);
+            } elseif ($request->age_group === 'adult') {
+                $this->filterByAgeRange($query, 18, 59);
+            } elseif ($request->age_group === 'senior') {
+                $this->filterByAgeRange($query, 60);
+            }
         }
 
         $vaccineFilters = (array) $request->input('health_filter_vaccine', []);
@@ -1091,7 +1096,11 @@ class CitizenController extends Controller
             });
         }
 
-        return $query->orderBy('id');
+        return match ($request->input('sort')) {
+            'Youngest to Oldest' => $query->orderByDesc('Citizen_BirthDate')->orderBy('Citizen_FName')->orderBy('Citizen_LName'),
+            'Oldest to Youngest' => $query->orderBy('Citizen_BirthDate')->orderBy('Citizen_FName')->orderBy('Citizen_LName'),
+            default => $query->orderBy('Citizen_FName')->orderBy('Citizen_LName'),
+        };
     }
 
     private function exportFilterSummary(Request $request): array
@@ -1129,7 +1138,7 @@ class CitizenController extends Controller
         }
 
         $filters[] = $request->boolean('filter_deceased')
-            ? 'Includes deceased citizens'
+            ? 'Deceased citizens only'
             : 'Excludes deceased citizens';
 
         return $filters;
@@ -1155,6 +1164,16 @@ class CitizenController extends Controller
             'Citizen_Pregnant' => 'Pregnant',
             'Citizen_InPills' => 'Taking Pills',
             'Citizen_IsDeceased' => 'Deceased',
+            'immunization_bcg' => 'BCG Recorded',
+            'immunization_hepb' => 'Hepatitis B (HepB) Recorded',
+            'immunization_penta' => 'Pentavalent (Penta) Recorded',
+            'immunization_opv' => 'Oral Polio Vaccine (OPV) Recorded',
+            'immunization_ipv' => 'Inactivated Polio Vaccine (IPV) Recorded',
+            'immunization_pcv' => 'Pneumococcal Conjugate Vaccine (PCV) Recorded',
+            'immunization_mmr' => 'Measles, Mumps, Rubella (MMR) Recorded',
+            'immunization_mr' => 'Measles-Rubella (MR) Recorded',
+            'immunization_td' => 'Tetanus-Diphtheria (Td) Recorded',
+            'immunization_hpv' => 'Human Papillomavirus (HPV) Recorded',
         ];
     }
 
@@ -1246,9 +1265,11 @@ class CitizenController extends Controller
         ])->findOrFail($id);
 
         $this->authorizeCitizenEdit($citizen);
+        $qrImage = $this->makeCitizenQrImage($citizen);
 
         return view('bhw.ecard', [
             'citizen' => $citizen,
+            'qrImage' => $qrImage,
             'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
         ]);
     }
@@ -1302,9 +1323,11 @@ class CitizenController extends Controller
             'healthRecords',
             'maintenanceRecords' => fn ($query) => $query->latest(),
         ])->where('qr_token', $token)->firstOrFail();
+        $qrImage = $this->makeCitizenQrImage($citizen);
 
         return view('bhw.ecard', [
             'citizen' => $citizen,
+            'qrImage' => $qrImage,
             'vaccinationSchedulingEnabled' => SystemSetting::boolean('vaccination_scheduling_enabled', true),
         ]);
     }
@@ -1316,9 +1339,9 @@ class CitizenController extends Controller
             $citizen->save();
         }
 
-        $url = route('health-id.public', [
+        $url = request()->getSchemeAndHttpHost() . route('health-id.public', [
             'token' => $citizen->qr_token,
-        ]);
+        ], false);
 
         $qrCode = new QrCode(
             data: $url,
