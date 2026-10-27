@@ -100,7 +100,7 @@
         };
 
         document.addEventListener('submit', function(e) {
-            if (e.target.closest('[data-no-loader="true"]')) return;
+            if (e.target.closest('[data-no-loader="true"], .logout-form, .citizen-sidebar-logout')) return;
             showLoader();
         });
 

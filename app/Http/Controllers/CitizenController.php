@@ -679,14 +679,15 @@ class CitizenController extends Controller
         }
 
         $validated = $request->validate([
-            'citizen_id'       => 'required|integer|exists:citizens,id',
-            'medicine_name'    => 'required|string|max:255',
+            'citizen_id'         => 'required|integer|exists:citizens,id',
+            'medicine_name'      => 'required|string|max:255',
             'quantity_dispensed' => 'required|integer|min:1|max:100000',
-            'dosage'           => 'required|string|max:100',
-            'frequency'        => 'required|string|max:100',
-            'start_date'       => 'required|date',
-            'end_date'         => 'nullable|date|after_or_equal:start_date',
-            'notes'            => 'nullable|string|max:2000',
+            'dosage'             => 'required|numeric|min:0.01|max:10000',
+            'frequency_times'    => 'required|string|in:Once,Twice,Three times',
+            'frequency_period'   => 'required|string|in:per day,per week,every other day',
+            'start_date'         => 'required|date',
+            'end_date'           => 'nullable|date|after_or_equal:start_date',
+            'notes'              => 'nullable|string|max:2000',
         ]);
 
         $citizen = citizens::findOrFail($validated['citizen_id']);
@@ -700,16 +701,18 @@ class CitizenController extends Controller
                 ->withInput();
         }
 
+        $combinedFrequency = $validated['frequency_times'] . ' ' . $validated['frequency_period'];
+
         $record = MaintenanceRecord::create([
-            'citizen_id'        => $citizen->id,
-            'medicine_name'     => $medicineName,
-            'quantity_dispensed'=> (int) $validated['quantity_dispensed'],
-            'dosage'            => trim($validated['dosage']),
-            'frequency'         => trim($validated['frequency']),
-            'start_date'        => $validated['start_date'],
-            'end_date'          => $validated['end_date'] ?? null,
-            'notes'             => isset($validated['notes']) ? trim($validated['notes']) : null,
-            'user_id'           => $user->id,
+            'citizen_id'         => $citizen->id,
+            'medicine_name'      => $medicineName,
+            'quantity_dispensed' => (int) $validated['quantity_dispensed'],
+            'dosage'             => $validated['dosage'],
+            'frequency'          => $combinedFrequency,
+            'start_date'         => $validated['start_date'],
+            'end_date'           => $validated['end_date'] ?? null,
+            'notes'              => isset($validated['notes']) ? trim($validated['notes']) : null,
+            'user_id'            => $user->id,
         ]);
 
         $this->logActivity(
@@ -718,7 +721,7 @@ class CitizenController extends Controller
             $citizen->id,
             'Added maintenance medicine: ' . $medicineName
                 . ' (quantity ' . $record->quantity_dispensed
-                . ', ' . $record->dosage . ', ' . $record->frequency . ').'
+                . ', dosage ' . $record->dosage . ', frequency ' . $record->frequency . ').'
         );
 
         return redirect()
@@ -1222,7 +1225,6 @@ class CitizenController extends Controller
     */
     public function import(Request $request)
     {
-        // Prevent timeout errors on large file uploads (allows up to 5 minutes)
         set_time_limit(300);
 
         $request->validate([
