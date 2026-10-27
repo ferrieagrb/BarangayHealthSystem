@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
+@section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@endsection
+
 @section('content')
 <div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
     <div class="ecard-page-header print:hidden">
