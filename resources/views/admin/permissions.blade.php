@@ -39,7 +39,7 @@
                 <tr>
                     <th>BHW User</th>
                     <th>Email Address</th>
-                    <th style="text-align: right;">Action</th>
+                    <th>Action</th>
                 </tr>
             </thead>
 

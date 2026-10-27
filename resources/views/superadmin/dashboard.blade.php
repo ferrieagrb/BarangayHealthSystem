@@ -23,61 +23,8 @@
             <h2 class="dashboard-card-title">User Growth Analytics</h2>
             <p class="dashboard-card-subtitle">Daily User Registrations</p>
 
-<<<<<<< HEAD
-<!-- Security & Access Control Monitor Section -->
-<div class="w-full space-y-6">
-    <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-gray-800">Security & Access Control Monitor</h2>
-        <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">Live Guard Active</span>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        <!-- Widget 1: Active Sessions & Concurrent Logins -->
-        <div class="p-6 bg-white rounded-xl shadow-md flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-base font-bold text-gray-800">Active Sessions</h3>
-                    <!-- Updated with ID for real-time count updating -->
-                    <span id="active-session-count-badge" class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                        {{ $activeUserCount ?? 0 }} Online Now
-                    </span>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-gray-600">
-                        <thead class="border-b text-xs uppercase text-gray-400">
-                            <tr>
-                                <th class="pb-2">User</th>
-                                <th class="pb-2">Login Location</th>
-                                <th class="pb-2">Last Active</th>
-                            </tr>
-                        </thead>
-                        <!-- Updated with ID for dynamic table row refreshing -->
-                        <tbody id="active-sessions-table-body" class="divide-y divide-gray-100">
-                            @forelse($activeSessions ?? [] as $session)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-3">
-                                        <div class="font-medium text-gray-800">{{ $session->name }}</div>
-                                        <div class="text-xs text-gray-400">{{ $session->email }}</div>
-                                    </td>
-                                    <td class="py-3 text-xs text-gray-500">{{ $session->location ?? 'Location unavailable' }}</td>
-                                    <td class="py-3 text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans() }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="py-4 text-center text-gray-400 text-xs">No active sessions found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-=======
             <div class="chart-container">
                 <div id="userAnalyticsApexChart"></div>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             </div>
         </div>
 
@@ -276,56 +223,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     top: 0,
                     bottom: 0
                 }
-<<<<<<< HEAD
-            };
-
-            const perfChart = new ApexCharts(document.querySelector("#websitePerformanceChart"), perfOptions);
-            perfChart.render();
-        } catch (error) {
-            console.error('Failed to load website performance data:', error);
-        }
-
-        // --- Real-Time Active Sessions Polling (Every 10 seconds) ---
-        async function updateActiveSessions() {
-            try {
-                const response = await fetch('/superadmin/active-sessions-json');
-                const data = await response.json();
-
-                const badge = document.querySelector('#active-session-count-badge');
-                if (badge) {
-                    badge.textContent = `${data.count} Online Now`;
-                }
-
-                const tbody = document.querySelector('#active-sessions-table-body');
-                if (!tbody) return;
-
-                if (!data.sessions || data.sessions.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="3" class="py-4 text-center text-gray-400 text-xs">No active sessions found.</td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                let rowsHtml = '';
-                data.sessions.forEach(session => {
-                    rowsHtml += `
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-3">
-                                <div class="font-medium text-gray-800">${session.name}</div>
-                                <div class="text-xs text-gray-400">${session.email}</div>
-                            </td>
-                            <td class="py-3 text-xs text-gray-500">${session.location ?? 'Location unavailable'}</td>
-                            <td class="py-3 text-xs text-gray-500">${session.last_activity}</td>
-                        </tr>
-                    `;
-                });
-
-                tbody.innerHTML = rowsHtml;
-            } catch (error) {
-                console.error('Failed to fetch real-time active sessions:', error);
-=======
             },
             dataLabels: { enabled: false },
             stroke: {
@@ -350,7 +247,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             },
             noData: {
                 text: 'No user analytics available'
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             }
         };
 
