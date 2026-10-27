@@ -87,8 +87,6 @@
         <thead>
             <tr>
                 <th>Name / Email</th>
-            <tr>
-                <th>Name / Email</th>
                 <th>Role</th>
                 <th>Created At</th>
                 <th>Status</th>
