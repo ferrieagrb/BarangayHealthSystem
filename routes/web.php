@@ -335,11 +335,19 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::get('/demographics',[AdminSettings::class,'demographicsIndex'])->name('demographics');
     Route::post('/demographics/purok',[AdminSettings::class,'storePurok'])->name('puroks.store');
     Route::delete('/demographics/purok/{id}',[AdminSettings::class,'destroyPurok'])->name('puroks.destroy');
-    Route::put('/admin/puroks/{id}', [AdminSettings::class, 'updatePurok'])->name('puroks.update');
+    Route::delete('/demographics/purok/{id}/citizens', [AdminSettings::class, 'permanentlyDeletePurokCitizens'])->name('puroks.citizens.destroy');
+    Route::put('/puroks/{id}', [AdminSettings::class, 'updatePurok'])->name('puroks.update');
+    Route::put('/demographics/puroks/{purok}/pin', [AdminSettings::class, 'updatePurokPin'])->name('puroks.pin');
+    Route::put('/demographics/puroks/{purok}/boundary', [AdminSettings::class, 'updatePurokBoundary'])->name('puroks.boundary');
+    Route::delete('/demographics/puroks/{purok}/boundary', [AdminSettings::class, 'destroyPurokBoundary'])->name('puroks.boundary.destroy');
 
     Route::post('/purok-subgroups', [AdminSettings::class, 'storeSubgroup'])->name('subgroups.store');
     Route::put('/purok-subgroups/{id}', [AdminSettings::class, 'updateSubgroup'])->name('subgroups.update'); 
     Route::delete('/purok-subgroups/{id}', [AdminSettings::class, 'destroySubgroup'])->name('subgroups.destroy');
+    Route::delete('/purok-subgroups/{id}/citizens', [AdminSettings::class, 'permanentlyDeleteSubgroupCitizens'])->name('subgroups.citizens.destroy');
+    Route::put('/demographics/subgroups/{subgroup}/pin', [AdminSettings::class, 'updateSubgroupPin'])->name('subgroups.pin');
+    Route::put('/demographics/subgroups/{subgroup}/boundary', [AdminSettings::class, 'updateSubgroupBoundary'])->name('subgroups.boundary');
+    Route::delete('/demographics/subgroups/{subgroup}/boundary', [AdminSettings::class, 'destroySubgroupBoundary'])->name('subgroups.boundary.destroy');
 
     Route::post('/categories', [SupplyController::class, 'storeCategory'])->name('categories.store');
     Route::put('/categories/{id}', [SupplyController::class, 'updateCategory'])->name('categories.update');

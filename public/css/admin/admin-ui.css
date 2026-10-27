@@ -1,0 +1,379 @@
+.main-content {
+    padding: 24px;
+    color: #1f2937;
+    font-family: "Poppins", sans-serif;
+}
+
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content p,
+.main-content label,
+.main-content input,
+.main-content select,
+.main-content textarea,
+.main-content button,
+.main-content a,
+.main-content th,
+.main-content td {
+    font-family: "Poppins", sans-serif;
+}
+
+.main-content > .top-bar {
+    margin-bottom: 12px;
+}
+
+.main-content .page-top,
+.main-content .inventory-page-header,
+.main-content .demographics-header {
+    gap: 12px;
+    margin: 0 0 16px;
+}
+
+.main-content .page-title-group {
+    min-width: 0;
+}
+
+.main-content .page-title-group h1 {
+    margin: 0;
+    color: #0f172a;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.main-content .page-title-group p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.main-content .toolbar,
+.main-content .inventory-toolbar {
+    margin-bottom: 16px;
+}
+
+.main-content .table-container {
+    margin-top: 16px;
+}
+
+.main-content .form-grid > button {
+    grid-column: 1 / -1;
+}
+
+.main-content .page-title-group h1,
+.main-content .admin-page-header h1,
+.main-content .inventory-page-header h1,
+.main-content .demographics-header h1,
+.main-content .reports-page h1,
+.main-content .permissions-page .page-top h1 {
+    font-size: clamp(24px, 2.5vw, 30px);
+    line-height: 1.3;
+}
+
+.main-content h2,
+.main-content .table-header h2,
+.main-content .report-panel h2 {
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.main-content h3,
+.main-content .admin-logs-header h3 {
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+.main-content p {
+    line-height: 1.5;
+}
+
+.main-content .summary-cards,
+.main-content .admin-metrics,
+.main-content .admin-charts,
+.main-content .reports-grid,
+.main-content .report-layout,
+.main-content .inventory-summary-cards,
+.main-content .demographics-stats {
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.main-content .reports-page > .page-top .page-title-group p {
+    margin-bottom: 0;
+}
+
+.main-content .reports-page > .report-layout,
+.main-content .reports-page > .report-panel,
+.main-content .admin-logs-page > .tabs,
+.main-content .admin-logs-page > .tab-content {
+    margin-bottom: 16px;
+}
+
+.main-content .reports-page > .report-layout:last-child,
+.main-content .reports-page > .report-panel:last-child,
+.main-content .admin-logs-page > .tab-content:last-child {
+    margin-bottom: 0;
+}
+
+.main-content .summary-card,
+.main-content .admin-metric-card,
+.main-content .admin-chart-card,
+.main-content .admin-logs-card,
+.main-content .report-card,
+.main-content .report-panel,
+.main-content .inventory-summary-card,
+.main-content .inventory-container,
+.main-content .demographics-card {
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.main-content .form-container,
+.main-content .inventory-modal-content,
+.main-content .modal-card {
+    padding: 18px;
+}
+
+.main-content .form-grid,
+.main-content .subgroup-create-form,
+.main-content .purok-create-form {
+    gap: 12px;
+}
+
+.main-content .form-group label,
+.main-content .field > span {
+    margin-bottom: 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.main-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.main-content select,
+.main-content textarea {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.main-content table th,
+.main-content table td {
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row),
+.main-content a.btn,
+.main-content a.inventory-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 120px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #234f9b;
+    border-radius: 8px;
+    background: #234f9b;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+    cursor: pointer;
+    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):hover:not(:disabled),
+.main-content a.btn:hover,
+.main-content a.inventory-button:hover {
+    border-color: #193e7e;
+    background: #193e7e;
+    color: #fff;
+}
+
+.main-content button.btn-danger,
+.main-content button.inventory-link-danger,
+.main-content a.inventory-link-danger {
+    border-color: #dc2626;
+    background: transparent;
+    color: #b91c1c;
+}
+
+.main-content button.btn-danger:hover:not(:disabled),
+.main-content button.inventory-link-danger:hover,
+.main-content a.inventory-link-danger:hover {
+    border-color: #b91c1c;
+    background: #dc2626;
+    color: #fff;
+}
+
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):disabled {
+    cursor: not-allowed;
+    opacity: .58;
+}
+
+.main-content button.active:not(.tab):not(.demographics-tab) {
+    border-color: #12366e;
+    background: #12366e;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(35, 79, 155, .2);
+}
+
+.main-content .demographics-container .map-mode-controls > .button-group:first-child button.btn-secondary:not(.active) {
+    border-color: var(--demo-primary);
+    background: transparent;
+    color: var(--demo-primary);
+}
+
+.main-content .demographics-container .map-mode-controls > .button-group:first-child button.btn-secondary:not(.active):hover:not(:disabled) {
+    border-color: var(--demo-primary);
+    background: transparent;
+    color: var(--demo-primary-hover);
+}
+
+.main-content .demographics-container .map-mode-controls > .button-group:first-child button.btn-secondary.active,
+.main-content .demographics-container .map-mode-controls > .button-group:first-child button.btn-secondary.active:hover {
+    border-color: #12366e;
+    background: #12366e;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(35, 79, 155, .25), inset 0 0 0 1px rgba(255, 255, 255, .35);
+}
+
+.main-content .tab {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid #234f9b;
+    border-radius: 8px;
+    background: transparent;
+    color: #234f9b;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.main-content .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.main-content .tab.active {
+    border-color: #12366e;
+    background: #12366e;
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(35, 79, 155, .16);
+}
+
+.main-content .action-group,
+.main-content .inventory-header-actions,
+.main-content .record-actions,
+.main-content .button-group {
+    align-items: center;
+    gap: 8px;
+}
+
+.main-content .action-group,
+.main-content .inventory-header-actions,
+.main-content .record-actions,
+.main-content .button-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.main-content .permissions-page .action-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.main-content .action-group form,
+.main-content .action-cell form {
+    margin: 0;
+}
+
+.main-content :focus-visible {
+    outline: 3px solid rgba(49, 100, 177, .4);
+    outline-offset: 2px;
+}
+
+body.theme-dark .main-content .tab {
+    border-color: #7aa2e3;
+    color: #bfdbfe;
+}
+
+body.theme-dark .main-content .tab.active {
+    border-color: #315fa8;
+    background: #315fa8;
+    color: #fff;
+}
+
+body.theme-dark .main-content .page-title-group h1 {
+    color: #f3f4f6;
+}
+
+body.theme-dark .main-content .page-title-group p {
+    color: #a1a1aa;
+}
+
+@media (max-width: 768px) {
+    .main-content .action-group,
+    .main-content .inventory-header-actions,
+    .main-content .record-actions,
+    .main-content .button-group {
+        width: 100%;
+    }
+
+    .main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row) {
+        min-height: 42px;
+    }
+
+    .main-content .page-top {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 520px) {
+    .main-content {
+        padding: 14px 10px 20px;
+    }
+
+    .main-content .summary-card,
+    .main-content .admin-metric-card,
+    .main-content .admin-chart-card,
+    .main-content .admin-logs-card,
+    .main-content .report-card,
+    .main-content .report-panel,
+    .main-content .inventory-summary-card,
+    .main-content .inventory-container,
+    .main-content .demographics-card {
+        padding: 13px;
+    }
+
+    .main-content .action-group > *,
+    .main-content .action-group form,
+    .main-content .inventory-header-actions > *,
+    .main-content .record-actions > *,
+    .main-content .button-group > * {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+    }
+
+    .main-content .action-group form button,
+    .main-content .action-group > button,
+    .main-content .inventory-header-actions > button,
+    .main-content .record-actions > button,
+    .main-content .button-group > button {
+        width: 100%;
+    }
+}

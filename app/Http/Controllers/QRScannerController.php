@@ -6,8 +6,8 @@ use App\Models\citizens;
 use App\Models\CitizenActivityLog;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
-use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
+use App\Services\BhwCitizenAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
@@ -150,7 +150,7 @@ class QRScannerController extends Controller
             return true;
         }
 
-        $assignedSubgroupIds = PurokSubgroup::where('user_id', $user->id)->pluck('id');
+        $assignedSubgroupIds = app(BhwCitizenAccess::class)->assignedSubgroupIds($user);
         $familySubgroupId = $citizen->family?->subgroup_id;
 
         return $assignedSubgroupIds->contains($citizen->subgroup_id)

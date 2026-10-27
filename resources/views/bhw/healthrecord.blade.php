@@ -3,14 +3,6 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/healthrecord.css') }}">
-
-<script>
-    window.__healthRecordMapsReady = false;
-    window.initMap = function () {
-        window.__healthRecordMapsReady = true;
-    };
-</script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initMap" async defer></script>
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
@@ -319,24 +311,15 @@
         <div class="right-panel">
 
 
-            <!-- GOOGLE MAPS HEATMAP -->
+            <!-- DISEASE MONITORING LINK -->
             <div class="recent-tab">
-
-                <h3>
-                    Geographic Zone Heatmap
-                </h3>
-
-
-                <p>
-                    Patient Density Concentration (Brgy. Amuyong)
-                </p>
-
-
-                <div
-                    id="purokGoogleMap"
-                    style="width: 100%; height: 260px; border-radius: 6px;"
-                ></div>
-
+                <h3>Disease Monitoring</h3>
+                <p>View diagnosis-record trends and aggregated illness distribution by reporting period, Purok, and subgroup.</p>
+                @if($canViewDiseaseAnalytics)
+                    <a class="btn btn-primary" href="{{ route('bhw.analytics') }}">Open disease monitoring</a>
+                @else
+                    <p>Reports access is required to view aggregate disease analytics.</p>
+                @endif
             </div>
 
 
@@ -560,145 +543,5 @@ document.addEventListener('DOMContentLoaded', function () {
     applyButton.addEventListener('click', applyFilters);
 });
 </script>
-
-<!-- GOOGLE MAPS SCRIPT -->
-<script>
-
-    function initMap() {
-
-        const amuyongCenter = {
-            lat: 14.0668,
-            lng: 120.8531
-        };
-
-
-        const map = new google.maps.Map(
-
-            document.getElementById("purokGoogleMap"),
-
-            {
-
-                zoom: 15,
-
-                center: amuyongCenter,
-
-                mapTypeId: "roadmap",
-
-                disableDefaultUI: true,
-
-                zoomControl: true
-
-            }
-
-        );
-
-
-        const rawZoneData = @json($heatmapData ?? []);
-
-        const infowindow = new google.maps.InfoWindow();
-
-
-        rawZoneData.forEach(item => {
-
-            const actualCount = item.records_count || 1;
-
-            const weight = item.weight || 1;
-
-
-            let fillColor = "#ffcc00";
-
-            let strokeColor = "#ff9900";
-
-            let baseRadius = 75;
-
-
-            if (actualCount >= 10) {
-
-                fillColor = "#b30000";
-
-                strokeColor = "#800000";
-
-                baseRadius = 150;
-
-            }
-
-            else if (actualCount >= 3) {
-
-                fillColor = "#ff4d4d";
-
-                strokeColor = "#cc0000";
-
-                baseRadius = 110;
-
-            }
-
-
-            const circle = new google.maps.Circle({
-
-                strokeColor: strokeColor,
-
-                strokeOpacity: 0.9,
-
-                strokeWeight: 2,
-
-                fillColor: fillColor,
-
-                fillOpacity: 0.5,
-
-                map: map,
-
-                center: new google.maps.LatLng(
-
-                    item.location.lat,
-
-                    item.location.lng
-
-                ),
-
-                radius: Math.max(
-
-                    baseRadius,
-
-                    weight * 20
-
-                )
-
-            });
-
-
-            circle.addListener("click", () => {
-
-                infowindow.setContent(
-
-                    `<div style="color: #000; padding: 5px;">
-
-                        <strong>Purok ${item.purok}</strong><br>
-
-                        Registered Citizens: ${item.citizens_count}<br>
-
-                        Health Cases: ${actualCount}
-
-                    </div>`
-
-                );
-
-
-                infowindow.setPosition(circle.getCenter());
-
-                infowindow.open(map);
-
-            });
-
-        });
-
-    }
-
-    window.initMap = initMap;
-    if (window.__healthRecordMapsReady) {
-        initMap();
-    }
-
-</script>
-
 
 @endsection

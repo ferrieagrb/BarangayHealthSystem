@@ -35,6 +35,7 @@ use Carbon\Carbon;
 use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
 use App\Models\SystemSetting;
+use App\Services\BhwCitizenAccess;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -55,26 +56,11 @@ class CitizenController extends Controller
     private function canEditCitizen(citizens $citizen): bool
     {
         $user = auth()->user();
-        $citizen->loadMissing('family');
-
-            // Check if citizen belongs to one of the BHW's assigned purok subgroups
-            $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-            $family = $citizen->getAttribute('family');
-            $belongsToAssignedSubgroup = $family
-                && $assignedSubgroupIDs->contains($family->getAttribute('subgroup_id'));
-
-            if ($belongsToAssignedSubgroup) {
-                return true;
-            }
         if (!$user || $user->role !== 'bhw') {
             return true;
         }
 
-        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-        return $assignedSubgroupIDs->contains($citizen->subgroup_id)
-            || ($citizen->family && $assignedSubgroupIDs->contains($citizen->family->subgroup_id));
+        return app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
     }
 
     private function restrictToAssignedCitizens($query)
@@ -85,23 +71,7 @@ class CitizenController extends Controller
             return $query;
         }
 
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
-
-        if ($canViewAll) {
-            return $query;
-        }
-
-        $assignedSubgroupIDs = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-
-        return $query->where(function ($citizenQuery) use ($assignedSubgroupIDs) {
-            $citizenQuery->whereIn('subgroup_id', $assignedSubgroupIDs)
-                ->orWhereHas('family', function ($familyQuery) use ($assignedSubgroupIDs) {
-                    $familyQuery->whereIn('subgroup_id', $assignedSubgroupIDs);
-                });
-        });
+        return app(BhwCitizenAccess::class)->scopeCitizens($query, $user);
     }
 
     private function filterByAgeRange(Builder $query, int $minimumAge, ?int $maximumAge = null): void
