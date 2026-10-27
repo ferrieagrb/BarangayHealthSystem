@@ -3,7 +3,6 @@
 
 /* =========================================================
    SUPERADMIN — USER MANAGEMENT
-   Consistent with Citizen Management styling
    ========================================================= */
 
 :root {
@@ -38,7 +37,9 @@
     color: var(--users-text);
 }
 
-/* Page header */
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
 
 .user-management-page .page-top {
     display: flex;
@@ -59,7 +60,7 @@
     margin: 0;
     color: var(--users-heading);
     font-size: 30px;
-    font-weight: 700;
+    
     line-height: 1.35;
     overflow-wrap: anywhere;
 }
@@ -88,30 +89,45 @@
     font-size: 27px;
 }
 
-/* Alerts */
+/* =========================================================
+   ALERTS
+   ========================================================= */
 
-.user-management-page .alert-success {
+.user-management-page .alert-success,
+.user-management-page .alert-error {
     display: flex;
     align-items: flex-start;
     gap: 10px;
     width: 100%;
     margin-bottom: 18px;
     padding: 13px 16px;
-    border: 1px solid #a7f3d0;
     border-radius: 10px;
-    background: #ecfdf5;
-    color: #047857;
     font-size: 13px;
     line-height: 1.6;
     overflow-wrap: anywhere;
 }
 
-.user-management-page .alert-success i {
+.user-management-page .alert-success {
+    border: 1px solid #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.user-management-page .alert-error {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.user-management-page .alert-success > i,
+.user-management-page .alert-error > i {
     flex: 0 0 auto;
     margin-top: 3px;
 }
 
-/* Main card */
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
 
 .user-management-page .card {
     width: 100%;
@@ -142,7 +158,9 @@
     overflow-wrap: anywhere;
 }
 
-/* Buttons */
+/* =========================================================
+   GENERAL BUTTONS
+   ========================================================= */
 
 .user-management-page button,
 .user-management-modals button {
@@ -167,14 +185,16 @@
     line-height: 1.4;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.18s ease, border-color 0.18s ease,
-        color 0.18s ease, box-shadow 0.18s ease;
+    transition: background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .user-management-page .primary-btn,
 .user-management-modals .primary-btn {
     background: var(--users-primary);
-    color: #fff;
+    color: #ffffff;
 }
 
 .user-management-page .primary-btn:hover,
@@ -207,7 +227,9 @@
     opacity: 0.65;
 }
 
-/* Table */
+/* =========================================================
+   TABLE
+   ========================================================= */
 
 .user-management-page .table-responsive {
     width: 100%;
@@ -275,7 +297,9 @@
     overflow-wrap: anywhere;
 }
 
-/* Role and status badges */
+/* =========================================================
+   ROLE AND STATUS BADGES
+   ========================================================= */
 
 .user-management-page .badge {
     display: inline-flex;
@@ -325,19 +349,149 @@
     color: #047857;
 }
 
-/* Action buttons */
+/* =========================================================
+   ACTION BUTTONS — EDIT AND DELETE
+   Compatible with:
+   .btn-action.btn-edit.js-edit-user
+   .btn-action.btn-delete
+   ========================================================= */
 
 .user-management-page .action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
     white-space: nowrap;
 }
 
 .user-management-page .action-buttons form {
     display: inline-flex !important;
-    margin: 0;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
+
+/* Shared action button styles */
+
+.user-management-page .action-buttons button.btn-action {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 82px !important;
+    max-width: none !important;
+    min-height: 34px !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 8px 11px !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+
+    box-shadow: none;
+    white-space: nowrap !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+
+    transition: background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease !important;
+}
+
+/* Ensure icon is visible */
+
+.user-management-page .action-buttons button.btn-action i {
+    display: inline-block !important;
+    visibility: visible !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+}
+
+/* Ensure label is visible */
+
+.user-management-page .action-buttons button.btn-action span {
+    display: inline-block !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-indent: 0 !important;
+    text-transform: none !important;
+    opacity: 1 !important;
+}
+
+/* Edit button */
+
+.user-management-page .action-buttons button.btn-action.btn-edit {
+    border-color: #bfdbfe !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+}
+
+.user-management-page .action-buttons button.btn-action.btn-edit:hover {
+    border-color: #93c5fd !important;
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    box-shadow: 0 2px 5px rgba(29, 78, 216, 0.10);
+}
+
+/* Delete button */
+
+.user-management-page .action-buttons button.btn-action.btn-delete {
+    border-color: #fecaca !important;
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+}
+
+.user-management-page .action-buttons button.btn-action.btn-delete:hover {
+    border-color: #fca5a5 !important;
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 2px 5px rgba(220, 38, 38, 0.10);
+}
+
+.user-management-page .action-buttons button.btn-action:focus-visible {
+    outline: 3px solid rgba(14, 66, 177, 0.2) !important;
+    outline-offset: 2px !important;
+}
+
+.user-management-page .action-buttons button.btn-action:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.65 !important;
+}
+
+/* Backward compatibility with the previous icon-only classes */
 
 .user-management-page .btn-icon {
     display: inline-flex;
@@ -350,7 +504,8 @@
     border: 1px solid transparent;
     border-radius: 8px;
     font-size: 13px;
-    transition: background-color 0.18s ease, color 0.18s ease,
+    transition: background-color 0.18s ease,
+        color 0.18s ease,
         border-color 0.18s ease;
 }
 
@@ -376,36 +531,63 @@
     background: #fee2e2;
 }
 
-/* Modal overlay */
+/* =========================================================
+   MODAL OVERLAY
+   ========================================================= */
 
-.user-management-modals .modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    overflow-y: auto;
-    padding: 20px;
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+.user-management-modals.modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100dvh !important;
+    z-index: 999999 !important;
+
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 20px !important;
+
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
 }
 
-.user-management-modals .modal-overlay.is-open {
-    display: flex;
+.user-management-modals.modal-overlay.is-open {
+    display: flex !important;
 }
+
+/* Modal card */
 
 .user-management-modals .modal-card {
+    position: relative;
     width: 100%;
     max-width: 500px;
-    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-x: hidden;
     overflow-y: auto;
+    margin: auto;
     border: 1px solid var(--users-border);
     border-radius: 14px;
-    background: #fff;
+    background: #ffffff;
     box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
     animation: usersModalIn 0.2s ease-out;
+}
+
+.user-management-modals.modal-overlay > .modal-card {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    max-height: calc(100dvh - 40px) !important;
+    margin: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    flex: 0 1 auto !important;
+    align-self: center !important;
 }
 
 @keyframes usersModalIn {
@@ -419,6 +601,8 @@
         opacity: 1;
     }
 }
+
+/* Modal header */
 
 .user-management-modals .modal-header {
     display: flex;
@@ -447,7 +631,7 @@
     padding: 0;
     border: 1px solid var(--users-border);
     border-radius: 8px;
-    background: #fff;
+    background: #ffffff;
     color: var(--users-muted);
     font-size: 22px;
     line-height: 1;
@@ -457,6 +641,8 @@
     background: var(--users-page);
     color: var(--users-heading);
 }
+
+/* Modal body */
 
 .user-management-modals .modal-body {
     display: flex;
@@ -488,10 +674,11 @@
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     outline: none;
-    background: #fff;
+    background: #ffffff;
     color: var(--users-text);
     font-size: 13px;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .user-management-modals .input-group input::placeholder {
@@ -504,6 +691,8 @@
     box-shadow: 0 0 0 3px rgba(14, 66, 177, 0.1);
 }
 
+/* Modal footer */
+
 .user-management-modals .modal-footer {
     display: flex;
     align-items: center;
@@ -515,7 +704,9 @@
     background: #f8fafc;
 }
 
-/* Responsive layout */
+/* =========================================================
+   RESPONSIVE LAYOUT
+   ========================================================= */
 
 @media (max-width: 768px) {
     .user-management-page .page-top {
@@ -543,14 +734,21 @@
         overflow-x: auto;
     }
 
-    .user-management-modals .modal-overlay {
-        align-items: flex-start;
-        padding: 14px;
+    .user-management-page .action-buttons {
+        gap: 6px !important;
     }
 
-    .user-management-modals .modal-card {
-        max-height: calc(100vh - 28px);
-        margin: auto 0;
+    .user-management-page .action-buttons button.btn-action {
+        min-width: 76px !important;
+        padding: 8px 9px !important;
+    }
+
+    .user-management-modals.modal-overlay {
+        padding: 14px !important;
+    }
+
+    .user-management-modals.modal-overlay > .modal-card {
+        max-height: calc(100dvh - 28px) !important;
     }
 
     .user-management-modals .modal-header,
@@ -570,6 +768,29 @@
         font-size: 12px;
     }
 
+    .user-management-page .action-buttons {
+        gap: 5px !important;
+    }
+
+    .user-management-page .action-buttons button.btn-action {
+        min-width: 70px !important;
+        gap: 5px !important;
+        padding: 7px 8px !important;
+        font-size: 10px !important;
+    }
+
+    .user-management-page .action-buttons button.btn-action span {
+        font-size: 10px !important;
+    }
+
+    .user-management-modals.modal-overlay {
+        padding: 12px !important;
+    }
+
+    .user-management-modals.modal-overlay > .modal-card {
+        max-height: calc(100dvh - 24px) !important;
+    }
+
     .user-management-modals .modal-footer {
         flex-direction: column-reverse;
         align-items: stretch;
@@ -579,6 +800,8 @@
         width: 100%;
     }
 }
+
+/* Reduced motion */
 
 @media (prefers-reduced-motion: reduce) {
     .user-management-page *,

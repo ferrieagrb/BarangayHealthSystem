@@ -104,4 +104,10 @@ public function assignedSubgroup()
     
 }
 
+public function assignedSubgroups()
+{
+    return $this->belongsToMany(PurokSubgroup::class, 'purok_subgroup_user')
+        ->withTimestamps();
+}
+
 }

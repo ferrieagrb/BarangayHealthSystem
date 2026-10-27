@@ -9,6 +9,7 @@ use App\Models\PurokSubgroup;
 use App\Models\Referral;
 use App\Models\Supply;
 use App\Models\UserPermission;
+use App\Models\VaccinationRecord;
 use App\Models\citizens;
 use Illuminate\Http\Request;
 
@@ -17,16 +18,16 @@ class BhwReportController extends Controller
     public function index(Request $request)
     {
         $availableSections = [
-            'citizens' => 'Citizen profiles',
-            'health_records' => 'Health records',
-            'supplies' => 'Supply inventory',
-            'events' => 'Events and schedules',
+            'citizens' => 'Citizen Profiles',
+            'health_records' => 'Health Records',
+            'supplies' => 'Supply Inventory',
+            'events' => 'Events and Schedules',
             'referrals' => 'Referrals',
-            'age_by_purok' => 'Age-bracket breakdown per Purok',
-            'immunization' => 'Immunization and vaccination coverage',
-            'sex_by_purok' => 'Male and female counts by Purok',
-            'pregnancy_by_purok' => 'Recorded pregnancy by Purok',
-            'diagnosis_summary' => 'Diagnosis summary',
+            'age_by_purok' => 'Age-Bracket Breakdown per Purok',
+            'immunization' => 'Immunization and Vaccination Coverage',
+            'sex_by_purok' => 'Male and Female Counts by Purok',
+            'pregnancy_by_purok' => 'Recorded Pregnancy by Purok',
+            'diagnosis_summary' => 'Diagnosis Summary',
             'diagnosis_by_purok' => 'Diagnoses by Purok',
         ];
 
@@ -52,10 +53,13 @@ class BhwReportController extends Controller
             $availableSections = array_intersect_key($availableSections, array_flip($allowedSections));
         }
 
-        $selectedSections = array_values(array_intersect(
-            (array) $request->input('sections', ['citizens']),
-            array_keys($availableSections)
-        ));
+        $requestedReport = $request->input('report_type');
+        $selectedSections = $requestedReport && array_key_exists($requestedReport, $availableSections)
+            ? [$requestedReport]
+            : array_values(array_intersect(
+                (array) $request->input('sections', ['citizens']),
+                array_keys($availableSections)
+            ));
         if (!$selectedSections) {
             $selectedSections = [array_key_first($availableSections) ?: 'citizens'];
         }
@@ -75,6 +79,31 @@ class BhwReportController extends Controller
             });
         }
 
+        if ($request->filled('purok') && $request->purok !== 'all') {
+            $purokValue = $request->purok;
+            $purokRecord = Purok::find($purokValue);
+
+            if ($purokRecord) {
+                $citizenQuery->where(function ($query) use ($purokRecord, $purokValue) {
+                    $query->where('Citizen_Purok', $purokRecord->name)
+                        ->orWhere('Citizen_Purok', $purokValue);
+                });
+            } else {
+                $citizenQuery->where('Citizen_Purok', $purokValue);
+            }
+        }
+
+        if ($request->filled('subgroup') && $request->subgroup !== 'all') {
+            $subgroupId = $request->subgroup;
+
+            $citizenQuery->where(function ($query) use ($subgroupId) {
+                $query->where('subgroup_id', $subgroupId)
+                    ->orWhereHas('family', function ($familyQuery) use ($subgroupId) {
+                        $familyQuery->where('subgroup_id', $subgroupId);
+                    });
+            });
+        }
+
         if ($request->filled('search')) {
             $search = trim($request->input('search'));
             $citizenQuery->where(function ($query) use ($search) {
@@ -84,11 +113,21 @@ class BhwReportController extends Controller
             });
         }
 
-        if ($request->filled('purok')) {
-            $citizenQuery->where('Citizen_Purok', $request->input('purok'));
-        }
+        $citizenQuery
+            ->when($request->filled('age_min'), fn ($query) => $query->where('Citizen_Age', '>=', $request->integer('age_min')))
+            ->when($request->filled('age_max'), fn ($query) => $query->where('Citizen_Age', '<=', $request->integer('age_max')))
+            ->when($request->input('citizen_status') === 'living', fn ($query) => $query->where('Citizen_IsDeceased', false))
+            ->when($request->input('citizen_status') === 'deceased', fn ($query) => $query->where('Citizen_IsDeceased', true))
+            ->when($request->filled('sex'), fn ($query) => $query->where('Citizen_Sex', $request->input('sex')));
 
-        $citizensReport = (clone $citizenQuery)->with(['family.subgroup', 'subgroup', 'vaccinations'])->get();
+        $citizensReport = (clone $citizenQuery)->with([
+            'family.subgroup',
+            'subgroup',
+            'vaccinations' => fn ($query) => $query
+                ->when($request->filled('start_date'), fn ($vaccinations) => $vaccinations->whereDate('date_administered', '>=', $request->input('start_date')))
+                ->when($request->filled('end_date'), fn ($vaccinations) => $vaccinations->whereDate('date_administered', '<=', $request->input('end_date')))
+                ->when($request->filled('vaccine_type'), fn ($vaccinations) => $vaccinations->where('vaccine_name', $request->input('vaccine_type'))),
+        ])->get();
         $citizenIds = $citizensReport->pluck('id');
 
         $ageByPurok = $citizensReport->groupBy('Citizen_Purok')->map(function ($group) {
@@ -102,7 +141,7 @@ class BhwReportController extends Controller
             ];
         });
 
-        $immunization = $citizensReport->filter(fn ($citizen) => (int) $citizen->Citizen_Age <= 5)->map(function ($citizen) {
+        $immunization = $citizensReport->filter(fn ($citizen) => (int) $citizen->Citizen_Age <= 5)->map(function ($citizen) use ($request) {
             $vaccines = $citizen->vaccinations->pluck('vaccine_name')->map(fn ($name) => strtolower((string) $name));
             $has = fn ($terms) => $vaccines->contains(fn ($name) => collect($terms)->contains(fn ($term) => str_contains($name, $term)));
             return [
@@ -110,12 +149,19 @@ class BhwReportController extends Controller
                 'bcg' => $has(['bcg']),
                 'polio' => $has(['polio']),
                 'measles' => $has(['measles', 'mmr']),
+                'selected_vaccine' => $request->filled('vaccine_type')
+                    ? $vaccines->contains(strtolower($request->input('vaccine_type')))
+                    : false,
             ];
         });
         $immunizationSummary = [
             'total' => $immunization->count(),
-            'fully_immunized' => $immunization->filter(fn ($row) => $row['bcg'] && $row['polio'] && $row['measles'])->count(),
-            'missing_milestones' => $immunization->filter(fn ($row) => !$row['bcg'] || !$row['polio'] || !$row['measles'])->count(),
+            'fully_immunized' => $request->filled('vaccine_type')
+                ? $immunization->where('selected_vaccine', true)->count()
+                : $immunization->filter(fn ($row) => $row['bcg'] && $row['polio'] && $row['measles'])->count(),
+            'missing_milestones' => $request->filled('vaccine_type')
+                ? $immunization->where('selected_vaccine', false)->count()
+                : $immunization->filter(fn ($row) => !$row['bcg'] || !$row['polio'] || !$row['measles'])->count(),
         ];
 
         $sexByPurok = $citizensReport->groupBy('Citizen_Purok')->map(function ($group) {
@@ -134,6 +180,7 @@ class BhwReportController extends Controller
                 ->whereIn('citizen_id', $citizenIds)
                 ->when($request->filled('start_date'), fn ($query) => $query->whereDate('created_at', '>=', $request->input('start_date')))
                 ->when($request->filled('end_date'), fn ($query) => $query->whereDate('created_at', '<=', $request->input('end_date')))
+                ->when($request->filled('diagnosis'), fn ($query) => $query->where('diagnosis', $request->input('diagnosis')))
                 ->latest()
                 ->get();
         }
@@ -145,6 +192,7 @@ class BhwReportController extends Controller
                 ->whereIn('citizen_id', $citizenIds)
                 ->when($request->filled('start_date'), fn ($query) => $query->whereDate('created_at', '>=', $request->input('start_date')))
                 ->when($request->filled('end_date'), fn ($query) => $query->whereDate('created_at', '<=', $request->input('end_date')))
+                ->when($request->filled('diagnosis'), fn ($query) => $query->where('diagnosis', $request->input('diagnosis')))
                 ->get();
             $diagnosisSummary = $diagnosisRecords->groupBy(fn ($record) => $record->diagnosis ?: 'Unspecified')->map->count()->sortDesc();
             $diagnosisByPurok = $diagnosisRecords->groupBy(function ($record) {
@@ -156,6 +204,9 @@ class BhwReportController extends Controller
         if (in_array('supplies', $selectedSections)) {
             $supplies = Supply::when($request->filled('category'), fn ($query) => $query->where('category', $request->input('category')))
                 ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%' . $request->input('search') . '%'))
+                ->when($request->input('stock_status') === 'out', fn ($query) => $query->where('quantity', '<=', 0))
+                ->when($request->input('stock_status') === 'low', fn ($query) => $query->where('quantity', '>', 0)->whereColumn('quantity', '<=', 'min_stock'))
+                ->when($request->input('stock_status') === 'available', fn ($query) => $query->whereColumn('quantity', '>', 'min_stock'))
                 ->orderBy('name')->get();
         }
 
@@ -163,6 +214,8 @@ class BhwReportController extends Controller
         if (in_array('events', $selectedSections)) {
             $events = Event::when($request->filled('start_date'), fn ($query) => $query->whereDate('start', '>=', $request->input('start_date')))
                 ->when($request->filled('end_date'), fn ($query) => $query->whereDate('start', '<=', $request->input('end_date')))
+                ->when($request->input('event_status') === 'upcoming', fn ($query) => $query->whereDate('start', '>=', today()))
+                ->when($request->input('event_status') === 'past', fn ($query) => $query->whereDate('start', '<', today()))
                 ->orderBy('start')->get();
         }
 
@@ -170,14 +223,30 @@ class BhwReportController extends Controller
         if (in_array('referrals', $selectedSections)) {
             $referrals = Referral::when($request->filled('start_date'), fn ($query) => $query->whereDate('date_of_referral', '>=', $request->input('start_date')))
                 ->when($request->filled('end_date'), fn ($query) => $query->whereDate('date_of_referral', '<=', $request->input('end_date')))
+                ->when($request->filled('referral_status'), fn ($query) => $query->where('status', $request->input('referral_status')))
+                ->when($request->filled('purok'), fn ($query) => $query->where('address', 'like', '%' . $request->input('purok') . '%'))
                 ->latest('date_of_referral')->get();
         }
 
-        $puroks = Purok::orderBy('name')->get();
+        $puroks = Purok::with('subgroups')->orderBy('name')->get();
         $categories = Supply::query()->select('category')->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
+        $diagnoses = HealthRecord::query()
+            ->whereIn('citizen_id', $citizenIds)
+            ->select('diagnosis')
+            ->whereNotNull('diagnosis')
+            ->distinct()
+            ->orderBy('diagnosis')
+            ->pluck('diagnosis');
+        $vaccineTypes = VaccinationRecord::query()
+            ->whereIn('citizen_id', $citizenIds)
+            ->select('vaccine_name')
+            ->whereNotNull('vaccine_name')
+            ->distinct()
+            ->orderBy('vaccine_name')
+            ->pluck('vaccine_name');
 
         return view('bhw.reports', compact(
-            'availableSections', 'selectedSections', 'citizensReport', 'healthRecords',
+            'availableSections', 'selectedSections', 'citizensReport', 'healthRecords', 'diagnoses', 'vaccineTypes',
             'supplies', 'events', 'referrals', 'puroks', 'categories', 'ageByPurok',
             'immunization', 'immunizationSummary', 'sexByPurok', 'pregnancyByPurok',
             'includeGraphics',

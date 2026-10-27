@@ -1,8 +1,10 @@
 @extends('templates.admin')
 
-@section('content')
+@section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/admin/permissions.css') }}">
+@endsection
 
+@section('content')
 <div class="permissions-page">
 
     <div class="page-top">

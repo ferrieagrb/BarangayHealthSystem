@@ -39,8 +39,10 @@
     @if ($errors->any())
         <div class="alert-error" role="alert">
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+
             <div>
                 <strong>Please check the following:</strong>
+
                 <ul style="margin: 6px 0 0 18px;">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -55,6 +57,7 @@
         <div class="card-header">
             <div>
                 <h3>Registered System Users</h3>
+
                 <p style="margin: 4px 0 0; color: #64748b; font-size: 12px;">
                     View and manage registered accounts and their assigned roles.
                 </p>
@@ -112,39 +115,42 @@
                             </td>
 
                             <td>
-                                <div class="action-buttons">
-                                    <button
-                                        type="button"
-                                        class="btn-icon edit js-edit-user"
-                                        title="Edit User"
-                                        aria-label="Edit {{ $user->name }}"
-                                        data-id="{{ $user->id }}"
-                                        data-name="{{ $user->name }}"
-                                        data-email="{{ $user->email }}"
-                                        data-username="{{ $user->username }}"
-                                        data-role="{{ $user->role }}"
-                                    >
-                                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                    </button>
-
-                                    <form
-                                        action="{{ route('superadmin.users.delete', $user->id) }}"
-                                        method="POST"
-                                        class="delete-user-form"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-
+                                    <div class="action-buttons">
                                         <button
-                                            type="submit"
-                                            class="btn-icon delete"
-                                            title="Delete User"
-                                            aria-label="Delete {{ $user->name }}"
+                                            type="button"
+                                            class="btn-action btn-edit js-edit-user"
+                                            title="Edit User"
+                                            aria-label="Edit User"
+                                            data-id="{{ $user->id }}"
+                                            data-name="{{ $user->name }}"
+                                            data-email="{{ $user->email }}"
+                                            data-username="{{ $user->username }}"
+                                            data-role="{{ $user->role }}"
                                         >
-                                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                                            <span>Edit</span>
                                         </button>
-                                    </form>
-                                </div>
+
+                                        <form
+                                            action="{{ route('superadmin.users.delete', $user->id) }}"
+                                            method="POST"
+                                            class="delete-user-form"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                class="btn-action btn-delete"
+                                                title="Delete User"
+                                                aria-label="Delete User"
+                                            >
+                                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                                <span>Delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+
                             </td>
                         </tr>
                     @empty
@@ -204,6 +210,7 @@
             <div class="modal-body">
                 <div class="input-group">
                     <label for="edit_name">Full Name</label>
+
                     <input
                         type="text"
                         id="edit_name"
@@ -216,6 +223,7 @@
 
                 <div class="input-group">
                     <label for="edit_email">Email Address</label>
+
                     <input
                         type="email"
                         id="edit_email"
@@ -228,6 +236,7 @@
 
                 <div class="input-group">
                     <label for="edit_username">Username</label>
+
                     <input
                         type="text"
                         id="edit_username"
@@ -240,6 +249,7 @@
 
                 <div class="input-group">
                     <label for="edit_role">User Role</label>
+
                     <select id="edit_role" name="role" required>
                         <option value="superadmin">Super Admin</option>
                         <option value="admin">Admin</option>
@@ -258,7 +268,11 @@
                     Cancel
                 </button>
 
-                <button type="submit" class="primary-btn" id="saveEditUserButton">
+                <button
+                    type="submit"
+                    class="primary-btn"
+                    id="saveEditUserButton"
+                >
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                     Save Changes
                 </button>
@@ -302,6 +316,7 @@
             <div class="modal-body">
                 <div class="input-group">
                     <label for="add_name">Full Name</label>
+
                     <input
                         type="text"
                         id="add_name"
@@ -314,6 +329,7 @@
 
                 <div class="input-group">
                     <label for="add_email">Email Address</label>
+
                     <input
                         type="email"
                         id="add_email"
@@ -326,6 +342,7 @@
 
                 <div class="input-group">
                     <label for="add_username">Username</label>
+
                     <input
                         type="text"
                         id="add_username"
@@ -338,6 +355,7 @@
 
                 <div class="input-group">
                     <label for="add_password">Password</label>
+
                     <input
                         type="password"
                         id="add_password"
@@ -349,6 +367,7 @@
 
                 <div class="input-group">
                     <label for="add_role">User Role</label>
+
                     <select id="add_role" name="role" required>
                         <option value="superadmin">Super Admin</option>
                         <option value="admin">Admin</option>
@@ -367,7 +386,11 @@
                     Cancel
                 </button>
 
-                <button type="submit" class="primary-btn" id="createUserButton">
+                <button
+                    type="submit"
+                    class="primary-btn"
+                    id="createUserButton"
+                >
                     <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                     Create User
                 </button>
@@ -382,6 +405,21 @@
 document.addEventListener('DOMContentLoaded', function () {
     const addModal = document.getElementById('addModal');
     const editModal = document.getElementById('editModal');
+
+    /*
+     * IMPORTANT FIX:
+     * Move both modal overlays directly under <body>.
+     * This prevents transformed or positioned parent containers
+     * from affecting the fixed modal's viewport positioning.
+     */
+    if (editModal) {
+        document.body.appendChild(editModal);
+    }
+
+    if (addModal) {
+        document.body.appendChild(addModal);
+    }
+
     const editForm = document.getElementById('editUserForm');
     const addForm = document.getElementById('addUserForm');
     const openAddButton = document.getElementById('openAddUserModal');
@@ -453,8 +491,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Preserve the existing Superadmin update URL pattern.
-        editForm.action = `/superadmin/users/${encodeURIComponent(userId)}`;
+        editForm.action =
+            `/superadmin/users/${encodeURIComponent(userId)}`;
 
         document.getElementById('edit_name').value =
             button.dataset.name || '';
@@ -471,16 +509,19 @@ document.addEventListener('DOMContentLoaded', function () {
         openModal(editModal);
     }
 
+    // Open Add User modal.
     if (openAddButton) {
         openAddButton.addEventListener('click', openAddModal);
     }
 
+    // Open Edit User modal and populate its fields.
     document.querySelectorAll('.js-edit-user').forEach(function (button) {
         button.addEventListener('click', function () {
             openEditModal(button);
         });
     });
 
+    // Close modal using its Close or Cancel button.
     document.querySelectorAll('[data-close-modal]').forEach(function (button) {
         button.addEventListener('click', function () {
             const modalId = button.dataset.closeModal;
@@ -488,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Close a modal when the user clicks its backdrop.
+    // Close modal by clicking the backdrop.
     [addModal, editModal].forEach(function (modal) {
         if (!modal) {
             return;
@@ -527,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Prevent accidental repeated submissions.
+    // Prevent repeated Add User submissions.
     if (addForm) {
         addForm.addEventListener('submit', function () {
             const button = document.getElementById('createUserButton');
@@ -540,6 +581,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Prevent repeated Edit User submissions.
     if (editForm) {
         editForm.addEventListener('submit', function () {
             const button = document.getElementById('saveEditUserButton');

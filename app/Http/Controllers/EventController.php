@@ -71,29 +71,49 @@ class EventController extends Controller
      */
     public function storeEvent(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'start' => 'required|date',
+            'description' => 'nullable|string|max:2000',
         ]);
 
         $event = Event::create([
-            'title' => $request->title,
-            'start' => $request->start,
+            'title' => $validated['title'],
+            'start' => $validated['start'],
+            'description' => $validated['description'] ?? null,
             'user_id' => Auth::id(),
         ]);
 
         return response()->json($event);
     }
 
-    public function destroy($id)
-{
-    $event = Event::findOrFail($id);
-    $event->delete();
+    public function updateEvent(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'start' => 'required|date',
+            'description' => 'nullable|string|max:2000',
+        ]);
 
-    return response()->json([
-        'message' => 'Event deleted successfully'
-    ]);
-}
+        $event = Event::findOrFail($id);
+        $event->update([
+            'title' => $validated['title'],
+            'start' => $validated['start'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return response()->json($event);
+    }
+
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+        $event->delete();
+
+        return response()->json([
+            'message' => 'Event deleted successfully'
+        ]);
+    }
 
 
 }

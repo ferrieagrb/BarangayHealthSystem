@@ -180,6 +180,7 @@
             </tbody>
 
         </table>
+        {{ $referrals->links('pagination::bootstrap-5') }}
 
     </div>
 
