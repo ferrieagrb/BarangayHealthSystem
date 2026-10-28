@@ -138,9 +138,8 @@ function initBhwHomeMap() {
             const polygon = new google.maps.Polygon({
                 paths: path,
                 map,
-                strokeColor: area.type === 'purok' ? '#1e3a8a' : '#334155',
-                strokeOpacity: .8,
-                strokeWeight: area.type === 'purok' ? 2 : 1.5,
+                strokeWeight: 0,
+                strokeOpacity: 0,
                 fillColor: '#000',
                 fillOpacity: 0.001,
                 zIndex: area.type === 'purok' ? 1 : 2
@@ -199,47 +198,53 @@ function initBhwHomeMap() {
             this.canvas.width = width;
             this.canvas.height = height;
 
+            const out = this.canvas.getContext('2d');
+            out.clearRect(0, 0, width, height);
+            const mpp = 156543.03392 * Math.cos(map.getCenter().lat() * Math.PI / 180) / Math.pow(2, map.getZoom());
+
             const shade = document.createElement('canvas');
             shade.width = width; shade.height = height;
             const sg = shade.getContext('2d');
-            const mpp = 156543.03392 * Math.cos(map.getCenter().lat() * Math.PI / 180) / Math.pow(2, map.getZoom());
 
+            // Each area is coloured on its own, feathered at the edges, then layered so
+            // neighbouring areas melt into one another while keeping their own colours.
             heatPoints.forEach(function (p) {
-                const pt = projection.fromLatLngToDivPixel(new google.maps.LatLng(p.lat, p.lng));
-                const x = pt.x - sw.x;
-                const y = pt.y - ne.y;
-                const r = Math.max(30, p.radius / mpp);
-                const alpha = Math.min(1, p.weight / maxWeight);
-                const rg = sg.createRadialGradient(x, y, 0, x, y, r);
-                rg.addColorStop(0, 'rgba(0,0,0,' + alpha + ')');
-                rg.addColorStop(0.7, 'rgba(0,0,0,' + (alpha * 0.85) + ')');
-                rg.addColorStop(1, 'rgba(0,0,0,0)');
-                sg.save();
+                const t = Math.min(1, p.weight / maxWeight);
+                const o = Math.round(70 + t * 185) * 4;
+                const color = 'rgb(' + ramp[o] + ',' + ramp[o + 1] + ',' + ramp[o + 2] + ')';
+
+                sg.clearRect(0, 0, width, height);
+                sg.fillStyle = color;
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
                 if (p.path) {
-                    // Keep the colour strictly inside this area's own boundary.
                     sg.beginPath();
                     p.path.forEach(function (v, i) {
                         const vp = projection.fromLatLngToDivPixel(new google.maps.LatLng(v.lat, v.lng));
-                        if (i === 0) sg.moveTo(vp.x - sw.x, vp.y - ne.y); else sg.lineTo(vp.x - sw.x, vp.y - ne.y);
+                        const vx = vp.x - sw.x, vy = vp.y - ne.y;
+                        minX = Math.min(minX, vx); maxX = Math.max(maxX, vx);
+                        minY = Math.min(minY, vy); maxY = Math.max(maxY, vy);
+                        if (i === 0) sg.moveTo(vx, vy); else sg.lineTo(vx, vy);
                     });
                     sg.closePath();
-                    sg.clip();
+                    sg.fill();
+                } else {
+                    const pt = projection.fromLatLngToDivPixel(new google.maps.LatLng(p.lat, p.lng));
+                    const r = Math.max(30, p.radius / mpp);
+                    minX = pt.x - sw.x - r; maxX = pt.x - sw.x + r;
+                    minY = pt.y - ne.y - r; maxY = pt.y - ne.y + r;
+                    sg.beginPath();
+                    sg.arc(pt.x - sw.x, pt.y - ne.y, r * 0.6, 0, Math.PI * 2);
+                    sg.fill();
                 }
-                sg.fillStyle = rg;
-                sg.fillRect(x - r, y - r, r * 2, r * 2);
-                sg.restore();
-            });
 
-            const img = sg.getImageData(0, 0, width, height);
-            const d = img.data;
-            for (let i = 0; i < d.length; i += 4) {
-                const a = d[i + 3];
-                if (!a) continue;
-                const o = a * 4;
-                d[i] = ramp[o]; d[i + 1] = ramp[o + 1]; d[i + 2] = ramp[o + 2];
-                d[i + 3] = Math.min(255, ramp[o + 3] * 0.85);
-            }
-            this.canvas.getContext('2d').putImageData(img, 0, 0);
+                const blur = Math.max(8, Math.min(45, Math.min(maxX - minX, maxY - minY) * 0.22));
+                out.save();
+                out.globalAlpha = 0.8;
+                out.filter = 'blur(' + blur + 'px)';
+                out.drawImage(shade, 0, 0);
+                out.restore();
+            });
         }
     }
 
