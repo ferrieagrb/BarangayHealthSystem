@@ -15,6 +15,13 @@ class VaccinationRecord extends Model
         'dose_number',
         'date_administered',
         'administered_by',
+        'catch_up_reviewed',
+    ];
+
+    protected $casts = [
+        'date_administered' => 'date',
+        'eligibility_review_required' => 'boolean',
+        'catch_up_reviewed' => 'boolean',
     ];
 
     public function citizen()

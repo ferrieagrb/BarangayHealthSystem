@@ -36,6 +36,7 @@ use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
 use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
+use App\Services\VaccinationEligibility;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -400,7 +401,9 @@ class CitizenController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'Citizen_Sex' => 'required|string|max:255',
+            'Citizen_Sex' => 'required|in:Male,Female',
+            'Citizen_Pregnant' => 'nullable|boolean',
+            'Citizen_InPills' => 'nullable|boolean',
         ]);
 
         $family = null;
@@ -437,6 +440,8 @@ class CitizenController extends Controller
                     'qr_token' => (string) Str::uuid(),
                     'photo_path' => $photoPath,
                     'Citizen_Sex' => $validated['Citizen_Sex'] ?? null,
+                    'Citizen_Pregnant' => $validated['Citizen_Pregnant'] ?? false,
+                    'Citizen_InPills' => $validated['Citizen_InPills'] ?? false,
                 ]);
 
                 $password = $request->filled('password') 
@@ -761,12 +766,19 @@ class CitizenController extends Controller
         ])->findOrFail($id);
 
         $this->authorizeCitizenEdit($citizen);
+        $canEdit = $this->canEditCitizen($citizen);
+        $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
+        $puroks = Purok::with('subgroups')->get();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
             ->distinct()
             ->orderBy('name')
             ->paginate(10, ['*'], 'medicine_page');
+
+        $citizen->loadMissing(['vaccinations', 'vaccinationSchedules']);
+        $vaccinationEligibilityOptions = app(VaccinationEligibility::class)->optionsFor($citizen);
+        $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen health record');
 
@@ -777,7 +789,15 @@ class CitizenController extends Controller
             'description' => 'Viewed health records of citizen ID ' . $citizen->id,
         ]);
 
-        return view('bhw.citizen_show', compact('citizen', 'availableMedicines'));
+        return view('bhw.citizen_show', compact(
+            'citizen',
+            'availableMedicines',
+            'vaccinationEligibilityOptions',
+            'canEdit',
+            'families',
+            'puroks',
+            'vaccinationSchedulingEnabled'
+        ));
     }
 
     /*
@@ -818,6 +838,7 @@ class CitizenController extends Controller
         );
 
         $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
+        $vaccinationEligibilityOptions = app(VaccinationEligibility::class)->optionsFor($citizen);
 
         return view('bhw.citizendetails', compact(
             'citizen',
@@ -825,11 +846,12 @@ class CitizenController extends Controller
             'puroks',
             'availableMedicines',
             'canEdit',
-            'vaccinationSchedulingEnabled'
+            'vaccinationSchedulingEnabled',
+            'vaccinationEligibilityOptions'
         ));
     }
 
-    public function administerVaccinationSchedule(Request $request, $id, $scheduleId)
+    public function administerVaccinationSchedule(Request $request, VaccinationEligibility $eligibility, $id, $scheduleId)
     {
         abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
 
@@ -850,12 +872,31 @@ class CitizenController extends Controller
             'date_administered' => 'required|date|before_or_equal:today',
         ]);
 
+        $eligibilityResult = $eligibility->evaluate(
+            $citizen,
+            $schedule->vaccine_name,
+            $schedule->dose_number ?: 'Single Dose',
+            $validated['date_administered'],
+            allowCatchUp: true
+        );
+        if (!$eligibilityResult['eligible']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'date_administered' => $eligibilityResult['reason'],
+            ]);
+        }
+        if ($eligibilityResult['review_required'] && !$schedule->catch_up_reviewed) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'date_administered' => 'Health-center confirmation is required before administering this catch-up dose.',
+            ]);
+        }
+
         VaccinationRecord::create([
             'citizen_id' => $citizen->id,
             'vaccine_name' => $schedule->vaccine_name,
             'dose_number' => $schedule->dose_number ?: 'Scheduled dose',
             'date_administered' => $validated['date_administered'],
             'administered_by' => $user->name,
+            'catch_up_reviewed' => (bool) $schedule->catch_up_reviewed,
         ]);
 
         $schedule->update(['status' => 'completed']);
@@ -942,7 +983,7 @@ class CitizenController extends Controller
             'subgroup_id' => 'nullable|exists:purok_subgroups,id|required_without:family_id',
             'Citizen_Height' => 'nullable|numeric|min:0',
             'Citizen_Weight' => 'nullable|numeric|min:0',
-            'Citizen_Sex' => 'nullable|string|in:Male,Female',
+            'Citizen_Sex' => 'nullable|in:Male,Female',
             'Citizen_HousingStatus' => 'nullable|string|max:255',
             'Citizen_Pregnant' => 'nullable|boolean',
             'Citizen_InPills' => 'nullable|boolean',
@@ -1277,7 +1318,7 @@ class CitizenController extends Controller
         ]);
     }
 
-    public function scheduleVaccination(Request $request)
+    public function scheduleVaccination(Request $request, VaccinationEligibility $eligibility)
     {
         abort_unless(SystemSetting::boolean('vaccination_scheduling_enabled', true), 404);
 
@@ -1289,16 +1330,37 @@ class CitizenController extends Controller
         $validated = $request->validate([
             'schedules' => 'required|array|min:1',
             'schedules.*.citizen_id' => 'required|exists:citizens,id',
-            'schedules.*.vaccine_name' => 'required|string|max:255',
-            'schedules.*.dose_number' => 'nullable|string|max:100',
+            'schedules.*.vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in(array_column($eligibility->vaccines(), 'label'))],
+            'schedules.*.dose_number' => 'required|string|max:100',
             'schedules.*.scheduled_date' => 'required|date|after_or_equal:today',
             'schedules.*.notes' => 'nullable|string|max:2000',
+            'schedules.*.catch_up_reviewed' => 'nullable|accepted',
         ]);
 
-        DB::transaction(function () use ($validated, $user) {
+        DB::transaction(function () use ($validated, $user, $eligibility) {
             foreach ($validated['schedules'] as $scheduleData) {
                 $citizen = citizens::findOrFail($scheduleData['citizen_id']);
                 $this->authorizeCitizenEdit($citizen);
+
+                $eligibilityResult = $eligibility->evaluate(
+                    $citizen,
+                    $scheduleData['vaccine_name'],
+                    $scheduleData['dose_number'],
+                    $scheduleData['scheduled_date'],
+                    includeSchedules: true,
+                    allowFutureDate: true,
+                    allowCatchUp: true
+                );
+                if (!$eligibilityResult['eligible']) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'schedules' => $eligibilityResult['reason'],
+                    ]);
+                }
+                if ($eligibilityResult['review_required'] && empty($scheduleData['catch_up_reviewed'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'schedules' => 'Health-center confirmation is required before scheduling this catch-up dose.',
+                    ]);
+                }
 
                 VaccinationSchedule::create([
                     'citizen_id' => $citizen->id,
@@ -1308,6 +1370,7 @@ class CitizenController extends Controller
                     'notes' => $scheduleData['notes'] ?? null,
                     'status' => 'scheduled',
                     'scheduled_by' => $user->id,
+                    'catch_up_reviewed' => (bool) ($scheduleData['catch_up_reviewed'] ?? false),
                 ]);
 
                 $this->logActivity('create', 'vaccination_schedule', $citizen->id, 'Scheduled ' . $scheduleData['vaccine_name'] . ' vaccination');
@@ -1369,31 +1432,59 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function storeVaccinationRecord(Request $request)
+    public function storeVaccinationRecord(Request $request, VaccinationEligibility $eligibility)
     {
         $user = Auth::user();
         if (!$user || $user->role !== 'bhw') abort(403);
 
+        $allowedVaccineNames = array_column($eligibility->vaccines(), 'label');
         $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
-            'vaccine_name' => 'required|string|max:255',
-            'date_administered' => 'required|date',
-            'notes' => 'nullable|string',
+            'vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedVaccineNames)],
+            'dose_number' => 'required|string|max:100',
+            'date_administered' => 'required|date|before_or_equal:today',
+            'notes' => 'nullable|string|max:2000',
+            'catch_up_reviewed' => 'nullable|accepted',
         ]);
+
+        $citizen = citizens::findOrFail($validated['citizen_id']);
+        if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to update this citizen vaccination record.');
+        }
+
+        $eligibilityResult = $eligibility->evaluate(
+            $citizen,
+            $validated['vaccine_name'],
+            $validated['dose_number'],
+            $validated['date_administered'],
+            includeSchedules: true,
+            allowCatchUp: true
+        );
+        if (!$eligibilityResult['eligible']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => $eligibilityResult['reason'],
+            ]);
+        }
+        if ($eligibilityResult['review_required'] && empty($validated['catch_up_reviewed'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => 'Health-center confirmation is required before recording this catch-up dose.',
+            ]);
+        }
 
         VaccinationRecord::create([
             'citizen_id' => $validated['citizen_id'],
             'vaccine_name' => $validated['vaccine_name'],
-            'dose_number' => $validated['notes'] ?: 'Recorded dose',
+            'dose_number' => $validated['dose_number'],
             'date_administered' => $validated['date_administered'],
             'administered_by' => Auth::user()->name,
+            'catch_up_reviewed' => (bool) ($validated['catch_up_reviewed'] ?? false),
         ]);
         $this->logActivity('create', 'vaccination', $validated['citizen_id'], 'Added vaccination: ' . $validated['vaccine_name']);
 
         return back()->with('success', 'Vaccination added successfully.');
     }
 
-    public function storeVaccination(Request $request, $id = null)
+    public function storeVaccination(Request $request, VaccinationEligibility $eligibility, $id = null)
     {
         $user = Auth::user();
         if (!$user || $user->role !== 'bhw') abort(403);
@@ -1403,14 +1494,36 @@ class CitizenController extends Controller
         if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
             abort(403, 'You are not authorized to update this citizen vaccination record.');
         }
+        $allowedVaccineNames = array_column($eligibility->vaccines(), 'label');
         $validated = $request->validate([
-            'vaccine_name' => 'required|string|max:255',
+            'vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedVaccineNames)],
             'dose_number' => 'required|string|max:100',
-            'date_administered' => 'required|date',
-            'administered_by' => 'required|string|max:255',
+            'date_administered' => 'required|date|before_or_equal:today',
+            'catch_up_reviewed' => 'nullable|accepted',
         ]);
 
+        $eligibilityResult = $eligibility->evaluate(
+            $citizen,
+            $validated['vaccine_name'],
+            $validated['dose_number'],
+            $validated['date_administered'],
+            includeSchedules: true,
+            allowCatchUp: true
+        );
+        if (!$eligibilityResult['eligible']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => $eligibilityResult['reason'],
+            ]);
+        }
+        if ($eligibilityResult['review_required'] && empty($validated['catch_up_reviewed'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => 'Health-center confirmation is required before recording this catch-up dose.',
+            ]);
+        }
+
         $validated['citizen_id'] = $citizenId;
+        $validated['administered_by'] = $user->name;
+        $validated['catch_up_reviewed'] = (bool) ($validated['catch_up_reviewed'] ?? false);
 
         VaccinationRecord::create($validated);
 

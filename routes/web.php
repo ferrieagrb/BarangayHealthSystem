@@ -241,7 +241,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     // Electronic Health & Vaccination Card Routes (NEW)
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
-    Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::post('/citizen/{id}/vaccination', fn ($id) => app(CitizenController::class)->storeVaccination(
+        request(),
+        app(\App\Services\VaccinationEligibility::class),
+        $id
+    ))->name('citizen.vaccination.store');
     Route::delete('/citizen/{citizenId}/vaccination-record/{recordId}', [CitizenController::class, 'deleteVaccinationRecord'])->name('citizen.vaccination.delete');
     Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
     Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');
@@ -460,4 +464,3 @@ Route::middleware(['auth'])->group(function () {
         return back()->with('success', 'A verification link has been sent to your email address.');
     })->middleware('throttle:6,1')->name('verification.send');
 });
-
