@@ -47,6 +47,16 @@
         <div style="width:58px;height:58px;margin:0 auto 15px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;">✓</div>
         <h2 style="color:#166534;font-size:22px;font-weight:bold;margin-bottom:10px;">Success!</h2>
         <p style="color:#4b5563;margin-bottom:22px;">{{ session('success') }}</p>
+        @if(session('import_issues'))
+            <div style="text-align:left;max-height:180px;overflow:auto;margin:-8px 0 20px;padding:10px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:12px;line-height:1.5;">
+                <strong>Some data was not accepted because of wrong format:</strong>
+                <ul style="margin:6px 0 0;padding-left:18px;">
+                    @foreach(session('import_issues') as $issue)
+                        <li>{{ $issue }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <button type="button" onclick="closeCitizenSuccessPopup()"
                 style="background:#1646bd;color:#fff;border:none;border-radius:7px;padding:10px 30px;cursor:pointer;font-weight:bold;">OK</button>
     </div>
@@ -179,7 +189,7 @@
     </div>
 
     <div class="toolbar-actions">
-        <button type="button" id="openCitizenExportModal" class="btn-secondary">Export List</button>
+        {{-- <button type="button" id="openCitizenExportModal" class="btn-secondary">Export List</button> --}}
 
         <form action="{{ route('citizen.import') }}" method="POST"
               enctype="multipart/form-data" id="importForm" style="display:none;">
