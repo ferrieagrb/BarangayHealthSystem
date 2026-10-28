@@ -1281,10 +1281,17 @@ class CitizenController extends Controller
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
             $this->logAdminActivity('citizens.imported', 'Imported citizen records from Excel.', 'data');
 
-            return redirect()->route('citizenlist')->with(
-                'success',
-                "Citizens imported successfully. {$import->createdAccounts} citizen accounts were created with the default temporary password."
-            );
+            $message = "Import finished. {$import->createdAccounts} citizen accounts were created with the default temporary password.";
+            if ($import->skippedRows > 0) {
+                $message .= " {$import->skippedRows} row(s) were skipped.";
+            }
+            if ($import->ignoredValues > 0) {
+                $message .= " {$import->ignoredValues} wrongly formatted value(s) were left blank.";
+            }
+
+            return redirect()->route('citizenlist')
+                ->with('success', $message)
+                ->with('import_issues', $import->issues);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Citizen Import Error: ' . $e->getMessage() . ' on line ' . $e->getLine());
             $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());
