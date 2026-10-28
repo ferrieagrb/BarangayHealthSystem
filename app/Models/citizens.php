@@ -12,11 +12,33 @@ use App\Models\VaccinationRecord;
 use App\Models\MedicationRecord;
 use App\Models\MaintenanceRecord;
 use App\Models\PurokSubgroup;
+use Carbon\Carbon;
 
 class citizens extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $citizen): void {
+            if ($citizen->Citizen_Sex !== 'Female') {
+                $citizen->Citizen_Pregnant = false;
+                $citizen->Citizen_InPills = false;
+            } elseif (($age = $citizen->ageForEligibility()) === null || $age < 16) {
+                $citizen->Citizen_InPills = false;
+            }
+        });
+    }
+
+    public function ageForEligibility(): ?int
+    {
+        if ($this->Citizen_BirthDate) {
+            return Carbon::parse($this->Citizen_BirthDate)->age;
+        }
+
+        return is_numeric($this->Citizen_Age) ? (int) $this->Citizen_Age : null;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -140,4 +162,3 @@ public function subgroup()
 }
 
 }
-

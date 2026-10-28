@@ -17,10 +17,12 @@ class VaccinationSchedule extends Model
         'notes',
         'status',
         'scheduled_by',
+        'catch_up_reviewed',
     ];
 
     protected $casts = [
         'scheduled_date' => 'date',
+        'catch_up_reviewed' => 'boolean',
     ];
 
     public function citizen()

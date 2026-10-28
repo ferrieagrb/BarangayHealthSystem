@@ -75,6 +75,9 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('Citizen_ContactNo');
             $table->integer('Citizen_Age');
             $table->string('Citizen_Purok')->nullable();
+            $table->string('Citizen_Sex')->nullable();
+            $table->boolean('Citizen_Pregnant')->nullable();
+            $table->boolean('Citizen_InPills')->nullable();
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->unsignedBigInteger('family_id')->nullable();
             $table->timestamps();
