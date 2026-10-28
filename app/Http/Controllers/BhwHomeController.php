@@ -9,6 +9,7 @@ use App\Models\Supply;
 use App\Models\Referral;
 use App\Models\Announcement;
 use App\Models\Purok;
+use App\Models\PurokSubgroup;
 use Illuminate\Support\Facades\DB;
 
 class BhwHomeController extends Controller
@@ -90,25 +91,53 @@ class BhwHomeController extends Controller
             ),
         ];
 
-        $citizensByPurok = citizens::select('Citizen_Purok')->get()
-            ->groupBy(function ($citizen) {
-                return preg_replace('/[^0-9]/', '', (string) $citizen->Citizen_Purok);
-            })
-            ->map->count();
-        $purokHeatmapData = Purok::whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get()
-            ->map(function ($purok) use ($citizensByPurok) {
-            $purokKey = preg_replace('/[^0-9]/', '', (string) $purok->name);
-            $count = (int) $citizensByPurok->get($purokKey, 0);
-            return [
-                'lat' => (float) $purok->latitude,
-                'lng' => (float) $purok->longitude,
-                'weight' => max(.25, min(1, $count / 10)),
-                'label' => $purok->name,
-                'count' => $count,
-            ];
-        })->values();
+        // Heatmap: diagnoses recorded in the last 7 days, grouped by the
+        // citizen's subgroup (falling back to their family's subgroup / Purok).
+        $recentRecords = HealthRecord::with('citizen.family')
+            ->where('created_at', '>=', now()->subDays(7)->startOfDay())
+            ->get();
+        $subgroupCounts = [];
+        $purokCounts = [];
+        $purokIdByName = Purok::pluck('id', 'name');
+        $subgroupPurokIds = PurokSubgroup::pluck('purok_id', 'id');
+
+        foreach ($recentRecords as $record) {
+            $citizen = $record->citizen;
+            if (!$citizen) {
+                continue;
+            }
+
+            $subgroupId = $citizen->subgroup_id ?? $citizen->family?->subgroup_id;
+            $purokId = $subgroupId
+                ? ($subgroupPurokIds[$subgroupId] ?? null)
+                : ($citizen->family?->purok_id ?? $purokIdByName[$citizen->Citizen_Purok] ?? null);
+
+            if ($subgroupId) {
+                $subgroupCounts[$subgroupId] = ($subgroupCounts[$subgroupId] ?? 0) + 1;
+            }
+            if ($purokId) {
+                $purokCounts[$purokId] = ($purokCounts[$purokId] ?? 0) + 1;
+            }
+        }
+
+        $purokHeatmapData = Purok::all()->map(fn ($purok) => [
+            'type' => 'purok',
+            'label' => $purok->name,
+            'lat' => $purok->latitude,
+            'lng' => $purok->longitude,
+            'boundary' => $purok->boundary,
+            'count' => (int) ($purokCounts[$purok->id] ?? 0),
+        ])->concat(
+            PurokSubgroup::with('purok')->get()->map(fn ($subgroup) => [
+                'type' => 'subgroup',
+                'label' => trim(($subgroup->purok->name ?? '') . ' / ' . $subgroup->name, ' /'),
+                'lat' => $subgroup->latitude,
+                'lng' => $subgroup->longitude,
+                'boundary' => $subgroup->boundary,
+                'count' => (int) ($subgroupCounts[$subgroup->id] ?? 0),
+            ])
+        )->filter(fn ($area) => $area['boundary'] || ($area['lat'] !== null && $area['lng'] !== null))
+            ->values();
 
         return view('bhw.home', compact(
             'totalCitizens',
