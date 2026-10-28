@@ -18,6 +18,16 @@
     .announcement-modal-description { margin-top:20px; color:#334155; line-height:1.7; white-space:pre-wrap; }
     .announcement-modal-images { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:20px; }
     .announcement-modal-images img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:9px; border:1px solid #e2e8f0; }
+    .announcement-image-item { display:flex; flex-direction:column; gap:8px; }
+    .announcement-image-change { border:1px solid #cbd5e1; background:#f8fafc; color:#334155; border-radius:8px; padding:7px 10px; font-size:13px; cursor:pointer; }
+    .announcement-image-change:hover { background:#e2e8f0; }
+    .picture-confirm-dialog { width:min(720px,100%); max-height:90vh; overflow:auto; padding:24px; border-radius:14px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.3); }
+    .picture-confirm-dialog h3 { margin:0 0 6px; color:#172033; }
+    .picture-confirm-compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:16px 0; }
+    .picture-confirm-compare figure { margin:0; }
+    .picture-confirm-compare figcaption { margin-bottom:6px; color:#64748b; font-size:13px; font-weight:600; }
+    .picture-confirm-compare img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:9px; border:1px solid #e2e8f0; }
+    .picture-confirm-actions { display:flex; justify-content:flex-end; gap:10px; }
 </style>
 @endsection
 
@@ -70,7 +80,7 @@
 
 @foreach($announcements as $a)
 
-    <div class="announcement-card" data-announcement-title="{{ $a->title }}" data-announcement-category="{{ $a->category }}" data-announcement-date="{{ $a->created_at->format('M d, Y') }}" data-announcement-description="{{ $a->description }}" data-announcement-images='@json($a->images->map(fn ($image) => route("announcement.image", ["path" => $image->path]))->values())'>
+    <div class="announcement-card" data-announcement-title="{{ $a->title }}" data-announcement-category="{{ $a->category }}" data-announcement-date="{{ $a->created_at->format('M d, Y') }}" data-announcement-description="{{ $a->description }}" data-announcement-id="{{ $a->id }}" data-announcement-images='@json($a->images->map(fn ($image) => ["id" => $image->id, "url" => $image->url])->values())'>
 
         <div class="announcement-content">
 
@@ -122,6 +132,25 @@
     </div>
 </div>
 
+<div id="pictureConfirmModal" class="announcement-modal" role="dialog" aria-modal="true" aria-labelledby="pictureConfirmTitle" style="z-index:10001;">
+    <form id="pictureConfirmForm" class="picture-confirm-dialog" method="POST" enctype="multipart/form-data">
+        @csrf
+        <h3 id="pictureConfirmTitle">Change this picture?</h3>
+        <p class="announcement-modal-meta">Review the new picture before saving. The current picture will be replaced.</p>
+        <div class="picture-confirm-compare">
+            <figure><figcaption>Current</figcaption><img id="pictureConfirmCurrent" alt="Current picture"></figure>
+            <figure><figcaption>New</figcaption><img id="pictureConfirmNew" alt="New picture preview"></figure>
+        </div>
+        <p id="pictureConfirmError" class="announcement-modal-meta" style="color:#b91c1c;" hidden></p>
+        <input type="file" name="image" id="pictureConfirmFile" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+        <div class="picture-confirm-actions">
+            <button type="button" class="btn-secondary" id="pictureConfirmCancel">Cancel</button>
+            <button type="submit" class="btn-primary" id="pictureConfirmSubmit">Confirm change</button>
+        </div>
+    </form>
+</div>
+<input type="file" id="pictureChooser" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('announcementDetailModal');
@@ -160,19 +189,86 @@ document.addEventListener('DOMContentLoaded', function () {
             meta.textContent = `${card.dataset.announcementCategory} · Posted ${card.dataset.announcementDate}`;
             description.textContent = card.dataset.announcementDescription;
             images.innerHTML = '';
-            JSON.parse(card.dataset.announcementImages || '[]').forEach(url => {
+            JSON.parse(card.dataset.announcementImages || '[]').forEach(item => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'announcement-image-item';
                 const image = document.createElement('img');
-                image.src = url;
+                image.src = item.url;
                 image.alt = card.dataset.announcementTitle;
-                images.appendChild(image);
+                const change = document.createElement('button');
+                change.type = 'button';
+                change.className = 'announcement-image-change';
+                change.textContent = 'Change picture';
+                change.addEventListener('click', () => startPictureChange(card.dataset.announcementId, item));
+                wrapper.append(image, change);
+                images.appendChild(wrapper);
             });
             modal.classList.add('open');
         });
     });
 
+    const confirmModal = document.getElementById('pictureConfirmModal');
+    const confirmForm = document.getElementById('pictureConfirmForm');
+    const chooser = document.getElementById('pictureChooser');
+    const confirmFile = document.getElementById('pictureConfirmFile');
+    const confirmCurrent = document.getElementById('pictureConfirmCurrent');
+    const confirmNew = document.getElementById('pictureConfirmNew');
+    const confirmError = document.getElementById('pictureConfirmError');
+    const confirmSubmit = document.getElementById('pictureConfirmSubmit');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const updateUrlTemplate = @json(route('announcements.images.update', ['announcement' => '__A__', 'image' => '__I__']));
+    let pendingItem = null;
+    let pendingAnnouncementId = null;
+    let previewUrl = null;
+
+    function startPictureChange(announcementId, item) {
+        pendingAnnouncementId = announcementId;
+        pendingItem = item;
+        chooser.value = '';
+        chooser.click();
+    }
+
+    function closeConfirm() {
+        confirmModal.classList.remove('open');
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+        confirmNew.removeAttribute('src');
+        chooser.value = '';
+    }
+
+    chooser.addEventListener('change', function () {
+        const file = chooser.files[0];
+        if (!file) return;
+
+        let error = '';
+        if (!allowedTypes.includes(file.type)) error = 'Please choose a JPG, PNG, GIF or WEBP image.';
+        else if (file.size > 5 * 1024 * 1024) error = 'The image must be 5 MB or smaller.';
+
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        confirmFile.files = transfer.files;
+
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(file);
+        confirmNew.src = previewUrl;
+        confirmCurrent.src = pendingItem.url;
+        confirmError.textContent = error;
+        confirmError.hidden = !error;
+        confirmSubmit.disabled = !!error;
+        confirmForm.action = updateUrlTemplate.replace('__A__', pendingAnnouncementId).replace('__I__', pendingItem.id);
+        confirmModal.classList.add('open');
+    });
+
+    document.getElementById('pictureConfirmCancel').addEventListener('click', closeConfirm);
+    confirmModal.addEventListener('click', event => { if (event.target === confirmModal) closeConfirm(); });
+    confirmForm.addEventListener('submit', () => { confirmSubmit.disabled = true; });
+
     modal.querySelector('.announcement-modal-close').addEventListener('click', closeModal);
     modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
-    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        if (confirmModal.classList.contains('open')) closeConfirm(); else closeModal();
+    });
     filterAnnouncements();
 });
 </script>

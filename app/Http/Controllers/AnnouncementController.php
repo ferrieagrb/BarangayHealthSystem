@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Announcement;
+use App\Models\AnnouncementImage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -156,6 +157,26 @@ class AnnouncementController extends Controller
             Log::error('Facebook API Exception: ' . $e->getMessage());
             $this->logAdminActivity('facebook.post_failed', 'Facebook announcement posting threw an exception: ' . $e->getMessage(), 'integration');
         }
+    }
+
+    public function updateImage(Request $request, Announcement $announcement, AnnouncementImage $image)
+    {
+        abort_unless($image->announcement_id === $announcement->id, 404);
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        $oldPath = $image->path;
+        $image->update(['path' => $request->file('image')->store('announcements', 'public')]);
+
+        if ($oldPath && $oldPath !== $image->path) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $this->logAdminActivity('announcement.image_changed', "Picture changed for announcement \"{$announcement->title}\".");
+
+        return redirect()->route('announcements')->with('success', 'Announcement picture updated.');
     }
 
     public function destroy(Announcement $announcement)
