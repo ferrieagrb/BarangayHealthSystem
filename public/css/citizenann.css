@@ -47,6 +47,12 @@
     border-radius: 6px;
 }
 
+.announcement-gallery img.is-logo {
+    object-fit: contain;
+    padding: 12px;
+    background: #f1f5f9;
+}
+
 .announcement-header {
     display: flex;
     justify-content: space-between;
