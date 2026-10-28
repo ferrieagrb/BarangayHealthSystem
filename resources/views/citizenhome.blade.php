@@ -106,7 +106,7 @@
             <div class="announcements-list">
                 @forelse($recentAnnouncements as $announcement)
                     <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-item announcement-link">
-                        @php $logoUrl = asset('images/amuyong.png'); @endphp
+                        @php $logoUrl = \App\Models\SystemSetting::logoUrl(); @endphp
                         <img src="{{ $announcement->images->isNotEmpty() ? asset('storage/' . $announcement->images->first()->path) : $logoUrl }}" alt="{{ $announcement->title }}" class="announcement-image" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
                         <div class="announcement-icon">
                             <i class="fa-solid fa-bullhorn"></i>
