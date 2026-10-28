@@ -80,7 +80,7 @@
                         <div class="announcement-gallery">
                             @php $logoUrl = \App\Models\SystemSetting::logoUrl(); @endphp
                             @forelse($announcement->images as $image)
-                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
+                                <img src="{{ $image->url }}" alt="{{ $announcement->title }}" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
                             @empty
                                 <img src="{{ $logoUrl }}" alt="{{ $announcement->title }}" class="is-logo">
                             @endforelse

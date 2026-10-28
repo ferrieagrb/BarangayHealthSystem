@@ -195,7 +195,7 @@
         <div class="announcement-detail-gallery">
             @foreach($announcement->images as $index => $image)
                 <button type="button" class="gallery-trigger" data-index="{{ $index }}" aria-label="Open image {{ $index + 1 }}">
-                    <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }} image {{ $index + 1 }}">
+                    <img src="{{ $image->url }}" alt="{{ $announcement->title }} image {{ $index + 1 }}">
                 </button>
             @endforeach
         </div>
@@ -218,7 +218,7 @@
     </div>
 
     <script>
-        const imageSources = @json($announcement->images->map(fn ($image) => asset('storage/' . $image->path))->values());
+        const imageSources = @json($announcement->images->map(fn ($image) => $image->url)->values());
         const lightbox = document.getElementById('announcementLightbox');
         const lightboxImage = document.getElementById('lightboxImage');
         let currentIndex = 0;
