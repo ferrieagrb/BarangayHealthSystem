@@ -9,11 +9,12 @@ class Purok extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'user_id', 'latitude', 'longitude'];
+    protected $fillable = ['name', 'description', 'user_id', 'latitude', 'longitude', 'boundary'];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
+        'boundary' => 'array',
     ];
 
     public function bhw()
@@ -21,13 +22,13 @@ class Purok extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function subgroups()
-{
-    return $this->hasMany(PurokSubgroup::class);
-}
+        public function subgroups()
+        {
+            return $this->hasMany(PurokSubgroup::class);
+        }
 
-public function families()
-{
-    return $this->hasMany(Family::class);
-}
+        public function families()
+        {
+            return $this->hasMany(Family::class);
+        }
 }

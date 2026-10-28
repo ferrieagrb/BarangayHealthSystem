@@ -5,7 +5,9 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <style>
     .announcement-card { cursor: pointer; }
+    .announcement-card[hidden] { display: none !important; }
     .announcement-card-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+    #announcementSearchEmpty { padding: 20px; color: #64748b; text-align: center; }
     .announcement-modal { position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.62); }
     .announcement-modal.open { display:flex; }
     .announcement-modal-dialog { width:min(820px,100%); max-height:90vh; overflow:auto; padding:26px; border-radius:14px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.3); }
@@ -55,12 +57,12 @@
 </div>
 
     <div class="toolbar">
-        <input type="text" placeholder="Search announcement title">
-        <select>
-            <option>All Categories</option>
-            <option>Health Advisory</option>
-            <option>Urgent Alert</option>
-            <option>Community Program</option>
+        <input type="search" id="announcementSearch" placeholder="Search announcement title" aria-label="Search announcement titles">
+        <select id="announcementCategoryFilter" aria-label="Filter announcements by category">
+            <option value="">All Categories</option>
+            @foreach($announcements->pluck('category')->filter()->unique()->sort() as $category)
+                <option value="{{ $category }}">{{ $category }}</option>
+            @endforeach
         </select>
     </div>
 
@@ -104,6 +106,7 @@
 @endforeach
 
 </div>
+<p id="announcementSearchEmpty" hidden>No announcements match these filters.</p>
 
 <div id="announcementDetailModal" class="announcement-modal" role="dialog" aria-modal="true" aria-labelledby="announcementModalTitle">
     <div class="announcement-modal-dialog">
@@ -122,6 +125,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('announcementDetailModal');
+    const searchInput = document.getElementById('announcementSearch');
+    const categoryFilter = document.getElementById('announcementCategoryFilter');
+    const emptyMessage = document.getElementById('announcementSearchEmpty');
+    const cards = Array.from(document.querySelectorAll('.announcement-card'));
     const title = document.getElementById('announcementModalTitle');
     const meta = document.getElementById('announcementModalMeta');
     const description = document.getElementById('announcementModalDescription');
@@ -129,7 +136,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function closeModal() { modal.classList.remove('open'); }
 
-    document.querySelectorAll('.announcement-card').forEach(card => {
+    function filterAnnouncements() {
+        const search = searchInput.value.trim().toLocaleLowerCase();
+        const category = categoryFilter.value.toLocaleLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const matchesSearch = card.dataset.announcementTitle.toLocaleLowerCase().includes(search);
+            const matchesCategory = !category || card.dataset.announcementCategory.toLocaleLowerCase() === category;
+            card.hidden = !(matchesSearch && matchesCategory);
+            if (!card.hidden) visibleCount++;
+        });
+
+        emptyMessage.hidden = visibleCount > 0;
+    }
+
+    searchInput.addEventListener('input', filterAnnouncements);
+    categoryFilter.addEventListener('change', filterAnnouncements);
+
+    cards.forEach(card => {
         card.addEventListener('click', function () {
             title.textContent = card.dataset.announcementTitle;
             meta.textContent = `${card.dataset.announcementCategory} · Posted ${card.dataset.announcementDate}`;
@@ -148,6 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
     modal.querySelector('.announcement-modal-close').addEventListener('click', closeModal);
     modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+    filterAnnouncements();
 });
 </script>
 

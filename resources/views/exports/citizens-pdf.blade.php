@@ -30,7 +30,11 @@
             @forelse($citizens as $citizen)
                 <tr>
                     @foreach($selectedFields as $field)
-                        <td>{{ in_array($field, ['Citizen_Pregnant', 'Citizen_InPills', 'Citizen_IsDeceased'], true) ? ($citizen->{$field} ? 'Yes' : 'No') : ($citizen->{$field} ?? '') }}</td>
+                        <td>{{ str_starts_with($field, 'immunization_')
+                            ? ($citizen->hasImmunization(substr($field, strlen('immunization_'))) ? 'Yes' : 'No')
+                            : (in_array($field, ['Citizen_Pregnant', 'Citizen_InPills', 'Citizen_IsDeceased'], true)
+                                ? ($citizen->{$field} ? 'Yes' : 'No')
+                                : ($citizen->{$field} ?? '')) }}</td>
                     @endforeach
                 </tr>
             @empty

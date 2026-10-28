@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\citizens;
+use App\Models\CitizenActivityLog;
 use App\Models\HealthRecord;
+use App\Models\HealthRecordActivityLog;
+use App\Models\UserPermission;
+use App\Services\BhwCitizenAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
@@ -27,16 +31,21 @@ class QRScannerController extends Controller
      */
     public function lookup(string $token): JsonResponse
     {
-        $citizen = citizens::query()
-            ->with(['vaccinations', 'medications', 'healthRecords'])
-            ->where('qr_token', $token)
-            ->first();
+        $query = citizens::query()->with(['vaccinations', 'medications', 'healthRecords', 'family']);
+        if (preg_match('/^legacy-id-(\d+)$/', $token, $matches)) {
+            $query->whereKey($matches[1]);
+        } else {
+            $query->where('qr_token', $token);
+        }
+        $citizen = $query->first();
 
         if (!$citizen) {
             return response()->json([
                 'message' => 'No citizen record matches this QR code.',
             ], 404);
         }
+
+        abort_unless($this->canAccessCitizen($citizen), 403, 'You are not assigned to this citizen record.');
 
         return response()->json([
             'citizen' => [
@@ -78,6 +87,74 @@ class QRScannerController extends Controller
                 'comments' => $record->comments,
             ])->values(),
         ]);
+    }
+
+    /**
+     * Save a diagnosis submitted from the QR checker.
+     */
+    public function storeDiagnosis(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'citizen_id' => 'required|integer|exists:citizens,id',
+            'diagnosis' => 'required|string|max:255',
+            'record_date' => 'required|date',
+            'comments' => 'nullable|string|max:2000',
+        ]);
+
+        $citizen = citizens::with('family')->findOrFail($validated['citizen_id']);
+        abort_unless($this->canAccessCitizen($citizen), 403, 'You are not assigned to this citizen record.');
+        abort_if((int) $citizen->Citizen_IsDeceased === 1, 403, 'Cannot add a diagnosis to a deceased citizen record.');
+
+        $record = HealthRecord::create([
+            'citizen_id' => $citizen->id,
+            'diagnosis' => trim($validated['diagnosis']),
+            'record_date' => $validated['record_date'],
+            'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
+        ]);
+
+        HealthRecordActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'create',
+            'citizen_id' => $citizen->id,
+            'health_record_id' => $record->id,
+            'description' => 'Added health record: ' . $record->diagnosis,
+        ]);
+
+        CitizenActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'create',
+            'module' => 'health_record',
+            'citizen_id' => $citizen->id,
+            'description' => 'Added health record: ' . $record->diagnosis,
+        ]);
+
+        return response()->json([
+            'message' => 'Diagnosis added successfully.',
+            'record_id' => $record->id,
+        ], 201);
+    }
+
+    private function canAccessCitizen(citizens $citizen): bool
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'bhw') {
+            return false;
+        }
+
+        $canViewAll = UserPermission::where('user_id', $user->id)
+            ->where('feature', 'view_all_citizens')
+            ->where('access', '!=', 'none')
+            ->exists();
+
+        if ($canViewAll) {
+            return true;
+        }
+
+        $assignedSubgroupIds = app(BhwCitizenAccess::class)->assignedSubgroupIds($user);
+        $familySubgroupId = $citizen->family?->subgroup_id;
+
+        return $assignedSubgroupIds->contains($citizen->subgroup_id)
+            || $assignedSubgroupIds->contains($familySubgroupId);
     }
 
     /**

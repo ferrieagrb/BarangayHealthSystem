@@ -11,6 +11,17 @@ use Illuminate\Support\Facades\Auth;
 
 class FamilyController extends Controller
 {
+    private function authorizeFamilyWrite(): void
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $user && $user->role === 'bhw' && $user->hasWriteAccess('family'),
+            403,
+            'You do not have permission to manage family records.'
+        );
+    }
+
     private function authorizeSubgroup(PurokSubgroup $subgroup): void
     {
         $user = Auth::user();
@@ -61,6 +72,8 @@ class FamilyController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizeFamilyWrite();
+
         $request->validate([
             'family_name' => 'required|string|max:255',
             'subgroup_id' => 'required|exists:purok_subgroups,id',
@@ -80,6 +93,8 @@ class FamilyController extends Controller
 
     public function storeQuick(Request $request)
     {
+        $this->authorizeFamilyWrite();
+
         $validated = $request->validate([
             'family_name' => 'required|string|max:255',
             'subgroup_id' => 'required|exists:purok_subgroups,id',
@@ -108,6 +123,8 @@ class FamilyController extends Controller
 
     public function addMember(Request $request, Family $family)
     {
+        $this->authorizeFamilyWrite();
+
         $request->validate(['citizen_id' => 'required|exists:citizens,id']);
 
         $this->authorizeFamily($family);
@@ -124,6 +141,8 @@ class FamilyController extends Controller
 
     public function removeMember($citizenId)
     {
+        $this->authorizeFamilyWrite();
+
         $citizen = citizens::with('family.subgroup')->findOrFail($citizenId);
 
         if ($citizen->family) {
@@ -137,6 +156,7 @@ class FamilyController extends Controller
 
     public function update(Request $request, Family $family)
     {
+        $this->authorizeFamilyWrite();
         $this->authorizeFamily($family);
         $request->validate([
             'family_name' => 'required|string|max:255',

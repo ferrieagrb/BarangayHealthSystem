@@ -1,0 +1,200 @@
+@media (max-width: 768px) {
+    .sidebar,
+    .sidebar.collapsed {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 54px;
+        min-width: 54px;
+        max-width: 54px;
+        height: 100vh;
+        height: 100dvh;
+        padding: 4px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        transition: width 0.24s ease;
+    }
+
+    .sidebar.collapsed {
+        width: min(280px, 85vw);
+        min-width: 0;
+        max-width: 85vw;
+        box-shadow: 10px 0 30px rgba(15, 23, 42, 0.2);
+    }
+
+    .sidebar .top,
+    .sidebar ul {
+        margin-top: 8px;
+    }
+
+    .sidebar .top {
+        flex-shrink: 0;
+    }
+
+    .sidebar ul li {
+        height: 48px;
+    }
+
+    .sidebar ul li a {
+        justify-content: center;
+        gap: 0;
+        padding-left: 0;
+    }
+
+    .sidebar ul li a span {
+        display: none;
+    }
+
+    .sidebar ul li a i {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .sidebar .sidebar-bottom {
+        flex-shrink: 0;
+    }
+
+    .sidebar.collapsed .top {
+        justify-content: flex-end;
+        padding-right: 4px;
+    }
+
+    .sidebar.collapsed ul li a {
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 0 12px;
+    }
+
+    .sidebar.collapsed ul li a span {
+        display: inline-block;
+        position: static;
+        overflow: visible;
+        opacity: 1;
+        transform: none;
+    }
+
+    .sidebar.collapsed ul li a i {
+        width: 32px;
+        min-width: 32px;
+    }
+
+    .sidebar.collapsed ul li .logout-form button {
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 0 12px;
+    }
+
+    .sidebar.collapsed ul li .logout-form button span {
+        display: inline-block;
+        position: static;
+        overflow: visible;
+        opacity: 1;
+        transform: none;
+    }
+
+    .sidebar.collapsed ul li .logout-form button i {
+        width: 32px;
+        min-width: 32px;
+    }
+
+    .main-content,
+    .sidebar.collapsed ~ .main-content {
+        width: calc(100% - 54px);
+        min-width: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin-left: 54px;
+        padding: 16px 12px 24px;
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+
+    .main-content > .top-bar {
+        gap: 8px;
+    }
+
+    .main-content > .top-bar > div {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        text-align: right;
+    }
+
+    .main-content [class*="grid"] > *,
+    .main-content [class*="row"] > * {
+        min-width: 0;
+    }
+
+    .main-content [class*="grid"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .main-content [class*="row"],
+    .main-content [class*="actions"],
+    .main-content [class*="toolbar"],
+    .main-content [class*="header"] {
+        flex-wrap: wrap;
+    }
+
+    .main-content .table-container,
+    .main-content .table-responsive,
+    .main-content [class*="table-wrapper"],
+    .main-content [class*="table-wrap"],
+    .main-content [class*="table-responsive"] {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-content table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    .main-content select,
+    .main-content textarea {
+        max-width: 100%;
+    }
+
+    .main-content button,
+    .main-content .btn,
+    .main-content [class^="btn-"] {
+        min-height: 42px;
+    }
+
+    .main-content .modal,
+    .main-content [role="dialog"],
+    #session-timeout-modal > div {
+        max-width: calc(100vw - 20px);
+        max-height: calc(100dvh - 20px);
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 380px) {
+    .sidebar,
+    .sidebar.collapsed {
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+    }
+
+    .sidebar.collapsed {
+        width: min(272px, 85vw);
+        min-width: 0;
+        max-width: 85vw;
+    }
+
+    .main-content,
+    .sidebar.collapsed ~ .main-content {
+        width: calc(100% - 48px);
+        margin-left: 48px;
+        padding: 12px 9px 20px;
+    }
+}

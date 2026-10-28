@@ -2,19 +2,25 @@
 
 @section('CSSown')
 <style>
-    .reports-page { padding: 24px; color: #172033; }
-    .reports-grid { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 2fr); gap: 18px; align-items: start; }
-    .report-panel { padding: 22px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(15,23,42,.06); }
+    .reports-page { padding: 24px; color: #172033; font-family: Poppins, sans-serif; }
+    .reports-grid { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+    .report-panel { padding: 22px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 3px 12px rgba(15,23,42,.06); }
     .report-panel h2 { margin: 0 0 6px; color: #173b82; font-size: 20px; }
     .report-panel > p { margin: 0 0 18px; color: #64748b; font-size: 13px; }
-    .report-options { display: grid; gap: 9px; margin-bottom: 20px; }
-    .report-option { display: flex; align-items: center; gap: 9px; padding: 10px; border: 1px solid #dbe3ef; border-radius: 7px; cursor: pointer; }
-    .report-option:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
-    .report-field { display: grid; gap: 6px; margin-bottom: 13px; }
+    .report-config-row { display: grid; grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(150px, 1fr)); gap: 14px; align-items: end; }
+    .report-fields { display: contents; }
+    .report-field { display: grid; gap: 6px; min-width: 0; }
+    .report-field[hidden] { display: none; }
     .report-field label { color: #334155; font-size: 12px; font-weight: 700; }
-    .report-field input, .report-field select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-    .report-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    .report-field input, .report-field select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 7px; box-sizing: border-box; background: #fff; color: #172033; font: inherit; }
+    .report-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e8edf4; }
     .report-actions button { border: 0; cursor: pointer; }
+    .report-actions .btn-primary, .report-actions .btn-secondary { min-height: 40px; padding: 10px 16px; border-radius: 7px; font: inherit; font-weight: 600; }
+    .report-actions .btn-primary { background: #2563eb; color: #fff; }
+    .report-actions .btn-secondary { background: #f1f5f9; color: #334155; }
+    .report-actions .btn-secondary:hover { background: #e2e8f0; }
+    .report-graphics-toggle { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; color: #475569; font-size: 13px; font-weight: 500; }
+    .report-graphics-toggle[hidden] { display: none; }
     .report-preview { min-width: 0; }
     .report-meta { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 18px; }
     .report-meta h1 { margin: 0; color: #173b82; font-size: 25px; }
@@ -33,7 +39,15 @@
     .graphic-fill.orange { background: #f97316; }
     .graphic-fill.red { background: #dc2626; }
     .print-only { display: none; }
-    @media (max-width: 900px) { .reports-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1000px) { .report-config-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) {
+        .reports-page { padding: 14px; }
+        .report-panel { padding: 16px; }
+        .report-config-row { grid-template-columns: 1fr; }
+        .report-actions { align-items: stretch; }
+        .report-actions button { width: 100%; }
+        .report-meta { flex-direction: column; }
+    }
     @media print {
         .sidebar, .page-top, .report-builder, .no-print { display: none !important; }
         .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
@@ -46,6 +60,47 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
+@section('script')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const purokFilter = document.getElementById('reportPurok');
+    const purokValue = document.getElementById('reportPurokValue');
+    const subgroupValue = document.getElementById('reportSubgroupValue');
+
+    if (!purokFilter || !purokValue || !subgroupValue) return;
+
+    purokFilter.addEventListener('change', function () {
+        const value = this.value;
+
+        purokValue.value = '';
+        subgroupValue.value = '';
+
+        if (value.startsWith('purok:')) {
+            purokValue.value = value.slice('purok:'.length);
+        } else if (value.startsWith('subgroup:')) {
+            subgroupValue.value = value.slice('subgroup:'.length);
+        }
+
+        const url = new URL(window.location.href);
+
+        url.searchParams.delete('purok');
+        url.searchParams.delete('subgroup');
+        url.searchParams.delete('page');
+
+        if (purokValue.value) {
+            url.searchParams.set('purok', purokValue.value);
+        }
+
+        if (subgroupValue.value) {
+            url.searchParams.set('subgroup', subgroupValue.value);
+        }
+
+        window.location.href = url.toString();
+    });
+});
+</script>
+@endsection
+
 @section('content')
 <div class="reports-page">
     <div class="page-top no-print">
@@ -56,57 +111,178 @@
     </div>
 
     <div class="reports-grid">
-        <form class="report-panel report-builder no-print" method="GET" action="{{ route('bhw.reports') }}">
+        @php
+            $selectedReport = in_array(request('report_type'), array_keys($availableSections), true)
+                ? request('report_type')
+                : ($selectedSections[0] ?? array_key_first($availableSections));
+            $reportGroups = [
+                'General Reports' => ['citizens', 'health_records', 'supplies', 'events', 'referrals'],
+                'Demographic Reports' => ['age_by_purok', 'sex_by_purok', 'pregnancy_by_purok'],
+                'Health Reports' => ['immunization', 'diagnosis_summary', 'diagnosis_by_purok'],
+            ];
+        @endphp
+        <form class="report-panel report-builder no-print" method="GET" action="{{ route('bhw.reports') }}" id="reportBuilder">
             <h2>Report Builder</h2>
-            <p>Choose one or more sections, then refine the report.</p>
+            <p>Select a report and adjust only the filters that apply to it.</p>
 
-            <div class="report-options">
-                @foreach($availableSections as $key => $label)
-                    <label class="report-option">
-                        <input type="checkbox" name="sections[]" value="{{ $key }}" {{ in_array($key, $selectedSections) ? 'checked' : '' }}>
-                        <span>{{ $label }}</span>
-                    </label>
-                @endforeach
-            </div>
+            <div class="report-config-row">
+                <div class="report-field">
+                    <label for="reportType">Select Report Type</label>
+                    <select id="reportType" name="report_type" required>
+                        @foreach($reportGroups as $groupLabel => $sectionKeys)
+                            @php $groupSections = array_intersect_key(array_flip($sectionKeys), $availableSections); @endphp
+                            @if($groupSections)
+                                <optgroup label="{{ $groupLabel }}">
+                                    @foreach(array_keys($groupSections) as $key)
+                                        <option value="{{ $key }}" {{ $selectedReport === $key ? 'selected' : '' }}>{{ $availableSections[$key] }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
 
-            <label class="report-option">
-                <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
-                <span>Include graphic summaries</span>
-            </label>
+                <div class="report-fields">
+                    <div class="report-field" data-reports="citizens,health_records,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization,diagnosis_summary,diagnosis_by_purok,referrals">
+                        <label for="reportPurok">Purok</label>
+                        <select id="reportPurok" aria-label="Filter by Purok or Subgroup">
+                            <option value="">All Puroks</option>
 
-            <div class="report-field">
-                <label for="reportSearch">Citizen or supply search</label>
-                <input id="reportSearch" type="search" name="search" value="{{ request('search') }}" placeholder="Name, ID, or supply name">
-            </div>
-            <div class="report-field">
-                <label for="reportPurok">Purok</label>
-                <select id="reportPurok" name="purok">
-                    <option value="">All Puroks</option>
-                    @foreach($puroks as $purok)
-                        <option value="{{ $purok->name }}" {{ request('purok') === $purok->name ? 'selected' : '' }}>{{ $purok->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="report-field">
-                <label for="reportCategory">Supply category</label>
-                <select id="reportCategory" name="category">
-                    <option value="">All categories</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category }}" {{ request('category') === $category ? 'selected' : '' }}>{{ $category }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="report-field">
-                <label for="reportStart">Start date</label>
-                <input id="reportStart" type="date" name="start_date" value="{{ request('start_date') }}">
-            </div>
-            <div class="report-field">
-                <label for="reportEnd">End date</label>
-                <input id="reportEnd" type="date" name="end_date" value="{{ request('end_date') }}">
+                            @foreach($puroks as $purok)
+                                @php
+                                    $subgroupCount = $purok->subgroups->count();
+                                @endphp
+
+                                <optgroup label="{{ $purok->name }}">
+                                    @if($subgroupCount === 0)
+                                        <option value="purok:{{ $purok->id }}"
+                                            {{ (string) request('purok') === (string) $purok->id && !request()->filled('subgroup') ? 'selected' : '' }}>
+                                            All of {{ $purok->name }}
+                                        </option>
+                                    @elseif($subgroupCount === 1)
+                                        @php $subgroup = $purok->subgroups->first(); @endphp
+                                        <option value="subgroup:{{ $subgroup->id }}"
+                                            {{ (string) request('subgroup') === (string) $subgroup->id ? 'selected' : '' }}>
+                                            {{ $subgroup->name }}
+                                        </option>
+                                    @else
+                                        @foreach($purok->subgroups as $subgroup)
+                                            <option value="subgroup:{{ $subgroup->id }}"
+                                                {{ (string) request('subgroup') === (string) $subgroup->id ? 'selected' : '' }}>
+                                                {{ $subgroup->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </optgroup>
+                            @endforeach
+                        </select>
+
+                        <input type="hidden" name="purok" id="reportPurokValue" value="{{ request('purok') }}">
+                        <input type="hidden" name="subgroup" id="reportSubgroupValue" value="{{ request('subgroup') }}">
+                    </div>
+                    <div class="report-field" data-reports="citizens">
+                        <label for="reportSearch">Search citizens</label>
+                        <input id="reportSearch" type="search" name="search" value="{{ request('search') }}" placeholder="Name or citizen ID">
+                    </div>
+                    <div class="report-field" data-reports="citizens">
+                        <label for="citizenStatus">Citizen status</label>
+                        <select id="citizenStatus" name="citizen_status">
+                            <option value="">All statuses</option>
+                            <option value="living" {{ request('citizen_status') === 'living' ? 'selected' : '' }}>Living</option>
+                            <option value="deceased" {{ request('citizen_status') === 'deceased' ? 'selected' : '' }}>Deceased</option>
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="citizens,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization">
+                        <label for="reportAgeMin">Minimum age</label>
+                        <input id="reportAgeMin" type="number" name="age_min" min="0" max="120" value="{{ request('age_min') }}" placeholder="Any">
+                    </div>
+                    <div class="report-field" data-reports="citizens,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization">
+                        <label for="reportAgeMax">Maximum age</label>
+                        <input id="reportAgeMax" type="number" name="age_max" min="0" max="120" value="{{ request('age_max') }}" placeholder="Any">
+                    </div>
+                    <div class="report-field" data-reports="citizens,sex_by_purok">
+                        <label for="reportSex">Sex</label>
+                        <select id="reportSex" name="sex">
+                            <option value="">All</option>
+                            <option value="Male" {{ request('sex') === 'Male' ? 'selected' : '' }}>Male</option>
+                            <option value="Female" {{ request('sex') === 'Female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="health_records,events,referrals,diagnosis_summary,diagnosis_by_purok,immunization">
+                        <label for="reportStart">Start date</label>
+                        <input id="reportStart" type="date" name="start_date" value="{{ request('start_date') }}">
+                    </div>
+                    <div class="report-field" data-reports="health_records,events,referrals,diagnosis_summary,diagnosis_by_purok,immunization">
+                        <label for="reportEnd">End date</label>
+                        <input id="reportEnd" type="date" name="end_date" value="{{ request('end_date') }}">
+                    </div>
+                    <div class="report-field" data-reports="health_records,diagnosis_summary,diagnosis_by_purok">
+                        <label for="reportDiagnosis">Diagnosis</label>
+                        <select id="reportDiagnosis" name="diagnosis">
+                            <option value="">All diagnoses</option>
+                            @foreach($diagnoses as $diagnosis)
+                                <option value="{{ $diagnosis }}" {{ request('diagnosis') === $diagnosis ? 'selected' : '' }}>{{ $diagnosis }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="supplies">
+                        <label for="reportSearch">Search supplies</label>
+                        <input id="reportSupplySearch" type="search" name="search" value="{{ request('search') }}" placeholder="Supply name">
+                    </div>
+                    <div class="report-field" data-reports="supplies">
+                        <label for="reportCategory">Item category</label>
+                        <select id="reportCategory" name="category">
+                            <option value="">All categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category }}" {{ request('category') === $category ? 'selected' : '' }}>{{ $category }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="supplies">
+                        <label for="stockStatus">Stock status</label>
+                        <select id="stockStatus" name="stock_status">
+                            <option value="">All stock</option>
+                            <option value="out" {{ request('stock_status') === 'out' ? 'selected' : '' }}>Out of stock</option>
+                            <option value="low" {{ request('stock_status') === 'low' ? 'selected' : '' }}>Low stock</option>
+                            <option value="available" {{ request('stock_status') === 'available' ? 'selected' : '' }}>Available</option>
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="events">
+                        <label for="eventStatus">Event status</label>
+                        <select id="eventStatus" name="event_status">
+                            <option value="">All events</option>
+                            <option value="upcoming" {{ request('event_status') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                            <option value="past" {{ request('event_status') === 'past' ? 'selected' : '' }}>Past</option>
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="referrals">
+                        <label for="referralStatus">Referral status</label>
+                        <select id="referralStatus" name="referral_status">
+                            <option value="">All statuses</option>
+                            @foreach(['approved', 'released', 'returned'] as $status)
+                                <option value="{{ $status }}" {{ request('referral_status') === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="immunization">
+                        <label for="vaccineType">Vaccine type</label>
+                        <select id="vaccineType" name="vaccine_type">
+                            <option value="">All vaccine types</option>
+                            @foreach($vaccineTypes as $vaccineType)
+                                <option value="{{ $vaccineType }}" {{ request('vaccine_type') === $vaccineType ? 'selected' : '' }}>{{ $vaccineType }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
             <div class="report-actions">
-                <button type="submit" class="btn-primary">Generate Preview</button>
-                <button type="button" class="btn-secondary" onclick="window.print()">Print Report</button>
+                <label class="report-graphics-toggle" data-reports="age_by_purok,immunization,sex_by_purok,pregnancy_by_purok,diagnosis_summary">
+                    <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
+                    Include graphic summaries
+                </label>
+                <button type="submit" class="btn-primary">Generate Report</button>
+                <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}">Reset Filters</a>
+                <button type="button" class="btn-secondary" onclick="window.print()">Export / Print Report</button>
             </div>
         </form>
 
@@ -136,7 +312,7 @@
             @endif
 
             @if(in_array('immunization', $selectedSections))
-                <section class="report-section"><h3>Immunization and Vaccination Coverage</h3><table class="report-table"><thead><tr><th>Children age 0-5</th><th>Fully immunized</th><th>Missing milestones</th></tr></thead><tbody><tr><td>{{ $immunizationSummary['total'] }}</td><td>{{ $immunizationSummary['fully_immunized'] }}</td><td>{{ $immunizationSummary['missing_milestones'] }}</td></tr></tbody></table>@if($includeGraphics)<div class="report-graphic"><div class="graphic-row"><span>Coverage</span><div class="graphic-track"><div class="graphic-fill green" style="width:{{ $immunizationSummary['total'] ? ($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100 : 0 }}%"></div></div><strong>{{ $immunizationSummary['total'] ? round(($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100) : 0 }}%</strong></div></div>@endif<p style="margin-top:8px;color:#64748b;font-size:12px;">Milestones checked: BCG, oral polio/polio, and measles/MMR records.</p></section>
+                <section class="report-section"><h3>Immunization and Vaccination Coverage</h3><table class="report-table"><thead><tr><th>Children age 0-5</th><th>{{ request('vaccine_type') ? 'Received selected vaccine' : 'Fully immunized' }}</th><th>{{ request('vaccine_type') ? 'Not recorded for selected vaccine' : 'Missing milestones' }}</th></tr></thead><tbody><tr><td>{{ $immunizationSummary['total'] }}</td><td>{{ $immunizationSummary['fully_immunized'] }}</td><td>{{ $immunizationSummary['missing_milestones'] }}</td></tr></tbody></table>@if($includeGraphics)<div class="report-graphic"><div class="graphic-row"><span>Coverage</span><div class="graphic-track"><div class="graphic-fill green" style="width:{{ $immunizationSummary['total'] ? ($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100 : 0 }}%"></div></div><strong>{{ $immunizationSummary['total'] ? round(($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100) : 0 }}%</strong></div></div>@endif<p style="margin-top:8px;color:#64748b;font-size:12px;">{{ request('vaccine_type') ? 'Coverage is based on the selected vaccine and coverage period.' : 'Milestones checked: BCG, oral polio/polio, and measles/MMR records.' }}</p></section>
             @endif
 
             @if(in_array('sex_by_purok', $selectedSections))
@@ -175,4 +351,27 @@
         </main>
     </div>
 </div>
+<script>
+    (() => {
+        const reportType = document.getElementById('reportType');
+        const filterFields = document.querySelectorAll('.report-field[data-reports]');
+        const graphicsToggle = document.querySelector('.report-graphics-toggle');
+
+        const updateReportFields = () => {
+            filterFields.forEach((field) => {
+                const isRelevant = field.dataset.reports.split(',').includes(reportType.value);
+                field.hidden = !isRelevant;
+                field.querySelectorAll('input, select').forEach((input) => {
+                    input.disabled = !isRelevant;
+                });
+            });
+            const graphicsRelevant = graphicsToggle.dataset.reports.split(',').includes(reportType.value);
+            graphicsToggle.hidden = !graphicsRelevant;
+            graphicsToggle.querySelector('input').disabled = !graphicsRelevant;
+        };
+
+        reportType.addEventListener('change', updateReportFields);
+        updateReportFields();
+    })();
+</script>
 @endsection

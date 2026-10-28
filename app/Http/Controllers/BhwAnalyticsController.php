@@ -5,40 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\HealthRecord;
 use App\Models\CitizenActivityLog;
 use App\Models\MaintenanceRecord;
-use App\Models\PurokSubgroup;
 use App\Models\Supply;
 use App\Models\SupplyLog;
 use App\Models\UserPermission;
 use App\Models\VaccinationRecord;
 use App\Models\citizens;
+use App\Services\BhwDiseaseMonitoringService;
+use App\Services\BhwCitizenAccess;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 
 class BhwAnalyticsController extends Controller
 {
-    public function index(Request $request)
+    public function index(
+        Request $request,
+        BhwDiseaseMonitoringService $diseaseMonitoring,
+        BhwCitizenAccess $citizenAccess
+    )
     {
         $user = auth()->user();
+        abort_unless($user && $user->role === 'bhw', 403);
         $hasReportAccess = UserPermission::where('user_id', $user->id)
             ->where('feature', 'reports')
             ->where('access', '!=', 'none')
             ->exists();
         abort_unless($hasReportAccess, 403, 'Reports access has not been granted to this BHW.');
 
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
-        $citizenQuery = citizens::query();
+        $citizenQuery = $citizenAccess->scopeCitizens(citizens::query(), $user);
 
-        if (!$canViewAll) {
-            $assignedSubgroups = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-            $citizenQuery->where(function ($query) use ($assignedSubgroups) {
-                $query->whereIn('subgroup_id', $assignedSubgroups)
-                    ->orWhereHas('family', fn ($family) => $family->whereIn('subgroup_id', $assignedSubgroups));
-            });
-        }
-
-        $citizenIds = (clone $citizenQuery)->pluck('id');
+        $citizenIds = (clone $citizenQuery)->select('id');
         $today = now()->startOfDay();
         $currentStart = $today->copy()->subDays(13);
         $previousStart = $today->copy()->subDays(27);
@@ -75,19 +70,6 @@ class BhwAnalyticsController extends Controller
             ->whereBetween('created_at', [$currentStart, now()]);
         $citizenAdditions = (clone $citizenActivity)->whereIn('action', ['create', 'import'])->count();
         $citizenDetailEdits = (clone $citizenActivity)->where('action', 'update')->count();
-
-        $diagnosisByPurok = (clone $currentDiagnosisRecords)
-            ->with('citizen')
-            ->get()
-            ->groupBy(fn ($record) => $record->citizen?->Citizen_Purok ?: 'Unassigned')
-            ->map(fn ($records, $purok) => [
-                'purok' => $purok,
-                'records' => $records->count(),
-                'top_diagnosis' => $records->groupBy(fn ($record) => $record->diagnosis ?: 'Unspecified')->map->count()->sortDesc()->keys()->first() ?: 'Unspecified',
-            ])
-            ->sortByDesc('records')
-            ->values()
-            ->take(5);
 
         $children = (clone $citizenQuery)->where('Citizen_Age', '<=', 5)->with('vaccinations')->get();
         $immunizationRisk = $children->filter(function ($citizen) {
@@ -134,6 +116,45 @@ class BhwAnalyticsController extends Controller
             return $supply['days_remaining'] ?? 999999;
         })->take(8)->values();
 
+        $filters = $request->validate([
+            'disease_period' => ['nullable', Rule::in(['today', 'last7', 'last30', 'this_month', 'previous_month', 'this_year', 'custom'])],
+            'disease_start' => ['required_if:disease_period,custom', 'nullable', 'date'],
+            'disease_end' => ['required_if:disease_period,custom', 'nullable', 'date', 'after_or_equal:disease_start'],
+            'disease_name' => ['nullable', 'string', 'max:255'],
+            'disease_purok' => ['nullable', 'integer', 'exists:puroks,id'],
+            'disease_subgroup' => ['nullable', 'integer', 'exists:purok_subgroups,id'],
+        ]);
+        $period = $filters['disease_period'] ?? 'last30';
+        $today = now()->startOfDay();
+        [$periodStart, $periodEnd] = match ($period) {
+            'today' => [$today->copy(), $today->copy()->endOfDay()],
+            'last7' => [$today->copy()->subDays(6), now()->endOfDay()],
+            'last30' => [$today->copy()->subDays(29), now()->endOfDay()],
+            'this_month' => [$today->copy()->startOfMonth(), now()->endOfDay()],
+            'previous_month' => [$today->copy()->subMonthNoOverflow()->startOfMonth(), $today->copy()->startOfMonth()->subSecond()],
+            'this_year' => [$today->copy()->startOfYear(), now()->endOfDay()],
+            'custom' => [\Illuminate\Support\Carbon::parse($filters['disease_start'])->startOfDay(), \Illuminate\Support\Carbon::parse($filters['disease_end'])->endOfDay()],
+        };
+        $periodLabel = match ($period) {
+            'today' => 'Today',
+            'last7' => 'Last 7 days',
+            'last30' => 'Last 30 days',
+            'this_month' => 'This month',
+            'previous_month' => 'Previous month',
+            'this_year' => 'This year',
+            default => $periodStart->format('M j, Y') . ' – ' . $periodEnd->format('M j, Y'),
+        };
+        $diseaseMonitoringData = $diseaseMonitoring->build(
+            $user,
+            $periodStart,
+            $periodEnd,
+            isset($filters['disease_name']) && $filters['disease_name'] !== ''
+                ? mb_strtolower(trim($filters['disease_name']))
+                : null,
+            isset($filters['disease_purok']) ? (int) $filters['disease_purok'] : null,
+            isset($filters['disease_subgroup']) ? (int) $filters['disease_subgroup'] : null,
+        );
+
         return view('bhw.analytics', compact(
             'currentCount',
             'previousCount',
@@ -144,10 +165,15 @@ class BhwAnalyticsController extends Controller
             'currentVaccinationCount',
             'citizenAdditions',
             'citizenDetailEdits',
-            'diagnosisByPurok',
             'immunizationRisk',
             'children',
-            'supplyRecommendations'
+            'supplyRecommendations',
+            'diseaseMonitoringData',
+            'period',
+            'periodStart',
+            'periodEnd',
+            'periodLabel',
+            'filters'
         ));
     }
 }

@@ -167,7 +167,7 @@
 
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label for="citizenFamilyDisplay">Family</label>
-                <input type="hidden" name="family_id" id="citizenFamilyId" value="{{ old('family_id') }}" required>
+                <input type="hidden" name="family_id" id="citizenFamilyId" value="{{ old('family_id') }}">
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <input type="text" id="citizenFamilyDisplay" class="form-control" value="" placeholder="Select a family or use manual assignment" readonly>
                     <button type="button" class="btn-secondary" id="openFamilyPicker">Select Family</button>
@@ -461,8 +461,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function useFamilyAssignment() {
-        familyIdInput.required = true;
-        manualAssignmentButton.disabled = true;
+        familyIdInput.removeAttribute('required');
+        manualAssignmentButton.disabled = false;
         assignmentStatus.textContent = 'The citizen\'s Purok and subgroup will come from the selected family.';
     }
 
@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('openNewFamilyModal').addEventListener('click', () => { closeModal(familyPickerModal); openModal(newFamilyModal); });
     document.querySelectorAll('.close-new-family').forEach(button => button.addEventListener('click', () => closeModal(newFamilyModal)));
 
-    document.querySelectorAll('.family-option').forEach(option => option.addEventListener('click', () => {
+    document.querySelectorAll('#familyPickerList .family-option').forEach(option => option.addEventListener('click', () => {
         familyIdInput.value = option.dataset.familyId;
         familyDisplay.value = option.dataset.familyLabel;
         purokInput.value = option.dataset.purok;
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('familySearch').addEventListener('input', function () {
         const term = this.value.toLowerCase();
-        document.querySelectorAll('.family-option').forEach(option => {
+        document.querySelectorAll('#familyPickerList .family-option').forEach(option => {
             option.hidden = !option.textContent.toLowerCase().includes(term);
         });
     });
@@ -640,7 +640,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            modalMessage.innerText = `Are you sure you want to save the record for ${firstName} ${lastName} under ${family}?`;
+            modalMessage.innerText = family
+                ? `Are you sure you want to save the record for ${firstName} ${lastName} under ${family}?`
+                : `Are you sure you want to save the record for ${firstName} ${lastName} in ${purokInput.value} / ${document.getElementById('citizenSubgroupDisplay').value} (no family assigned)?`;
             modal.style.display = 'flex';
         }
     });
@@ -649,6 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmBtn.addEventListener('click', function() {
         isFormVerified = true;
         modal.style.display = 'none';
+        if (window.showLoader) showLoader();
         citizenForm.submit();
     });
 

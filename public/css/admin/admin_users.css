@@ -371,6 +371,32 @@ table tbody tr:hover td {
     background: #f8fafc;
 }
 
+/* Users table: equal-width, centered columns */
+table.users-table {
+    table-layout: fixed;
+}
+
+table.users-table th,
+table.users-table td {
+    width: 20%;
+    text-align: center;
+}
+
+table.users-table .action-group {
+    justify-content: center;
+}
+
+table.users-table th:first-child,
+table.users-table td:first-child {
+    text-align: left;
+    padding-left: 28px;
+}
+
+table.users-table th:last-child,
+table.users-table td:last-child {
+    padding-right: 28px;
+}
+
 /* =========================
    CITIZEN INFORMATION
 ========================= */
@@ -407,6 +433,18 @@ table tbody tr:hover td {
 .action-group button,
 .action-group a {
     flex-shrink: 0;
+}
+
+.main-content .action-group button.btn-danger:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row) {
+    border-color: #dc2626;
+    background: transparent;
+    color: #b91c1c;
+}
+
+.main-content .action-group button.btn-danger:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):hover:not(:disabled) {
+    border-color: #b91c1c;
+    background: #dc2626;
+    color: #fff;
 }
 
 /* =========================

@@ -10,11 +10,18 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReferralController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
 
-        $referrals = Referral::latest()->get();
+        $referrals = Referral::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->input('search'));
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('bhw.referrals.index', compact('referrals'));
     }
