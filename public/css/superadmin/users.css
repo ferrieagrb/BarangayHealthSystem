@@ -349,6 +349,12 @@
     color: #047857;
 }
 
+.user-management-page .badge-inactive {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
+}
+
 /* =========================================================
    ACTION BUTTONS — EDIT AND DELETE
    Compatible with:

@@ -7,6 +7,8 @@ use App\Models\citizens;
 
 class HealthRecord extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = [
         'citizen_id',
         'diagnosis',
@@ -22,6 +24,6 @@ class HealthRecord extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id', 'id');
+        return $this->belongsTo(citizens::class, 'citizen_id', 'id')->withTrashed();
     }
 }

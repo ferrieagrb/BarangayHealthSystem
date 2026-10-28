@@ -30,21 +30,21 @@ class SupplyRelease extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function supply()
     {
-        return $this->belongsTo(Supply::class, 'supply_id');
+        return $this->belongsTo(Supply::class, 'supply_id')->withTrashed();
     }
 
     public function event()
     {
-        return $this->belongsTo(Event::class, 'event_id');
+        return $this->belongsTo(Event::class, 'event_id')->withTrashed();
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 }

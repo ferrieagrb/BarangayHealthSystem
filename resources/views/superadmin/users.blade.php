@@ -63,6 +63,18 @@
                 </p>
             </div>
 
+            <div style="display:flex; gap:10px; align-items:center;">
+            @if($showArchived)
+                <a href="{{ route('superadmin.users') }}" class="primary-btn" style="text-decoration:none;">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    Active Users
+                </a>
+            @else
+                <a href="{{ route('superadmin.users', ['archived' => 1]) }}" class="primary-btn" style="text-decoration:none;">
+                    <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                    Archive ({{ $archivedCount }})
+                </a>
+            @endif
             <button
                 type="button"
                 class="primary-btn"
@@ -71,6 +83,7 @@
                 <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                 Add New User
             </button>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -111,11 +124,29 @@
                             </td>
 
                             <td>
-                                <span class="badge badge-active">Active</span>
+                                @if($showArchived)
+                                    <span class="badge badge-inactive">Inactive</span>
+                                @else
+                                    <span class="badge badge-active">Active</span>
+                                @endif
                             </td>
 
                             <td>
                                     <div class="action-buttons">
+                                        @if($showArchived)
+                                        <form
+                                            action="{{ route('superadmin.users.restore', $user->id) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Reactivate this user? They will be required to change their password at next login.')"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn-action btn-edit" title="Set Active" aria-label="Set Active">
+                                                <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                                                <span>Set Active</span>
+                                            </button>
+                                        </form>
+                                        @else
                                         <button
                                             type="button"
                                             class="btn-action btn-edit js-edit-user"
@@ -142,13 +173,14 @@
                                             <button
                                                 type="submit"
                                                 class="btn-action btn-delete"
-                                                title="Delete User"
-                                                aria-label="Delete User"
+                                                title="Set Inactive"
+                                                aria-label="Set Inactive"
                                             >
-                                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                                                <span>Delete</span>
+                                                <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
+                                                <span>Set Inactive</span>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
 
                             </td>
@@ -555,11 +587,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Confirm before deleting a user.
+    // Confirm before marking a user inactive.
     document.querySelectorAll('.delete-user-form').forEach(function (form) {
         form.addEventListener('submit', function (event) {
             const confirmed = window.confirm(
-                'Are you sure you want to delete this user? This action cannot be undone.'
+                'Mark this user as inactive? The account will be archived and cannot sign in until reactivated.'
             );
 
             if (!confirmed) {

@@ -125,7 +125,7 @@ class AdminSettings extends Controller
 
         if ($purok->families()->exists() || $purok->subgroups()->exists() || $hasCitizens) {
             return back()->withErrors([
-                'purok' => 'This Purok cannot be deleted while it has families, subgroups, or assigned citizens. Move those records first.',
+                'purok' => 'This Purok cannot be archived while it has families, subgroups, or assigned citizens. Move those records first.',
             ]);
         }
 
@@ -135,7 +135,7 @@ class AdminSettings extends Controller
 
         $purok->delete();
 
-        return back()->with('success', 'Purok deleted successfully!');
+        return back()->with('success', 'Purok archived successfully!');
     }
 
     public function permanentlyDeletePurokCitizens(Request $request, $id)
@@ -159,7 +159,7 @@ class AdminSettings extends Controller
         });
 
         if ($citizenCount > 0) {
-            Log::notice('Admin permanently deleted citizens in a Purok.', [
+            Log::notice('Admin archived citizens in a Purok.', [
                 'admin_id' => $request->user()->id,
                 'purok_id' => $purok->id,
                 'purok_name' => $purok->name,
@@ -169,8 +169,8 @@ class AdminSettings extends Controller
         }
 
         $message = $citizenCount > 0
-            ? "{$citizenCount} citizens and {$accountCount} linked citizen accounts were permanently deleted from {$purok->name}. Family records and BHW accounts were not deleted."
-            : "No citizens were found in {$purok->name}; nothing was deleted.";
+            ? "{$citizenCount} citizens and {$accountCount} linked citizen accounts were archived from {$purok->name}. They can be restored from the archive. Family records and BHW accounts were not changed."
+            : "No citizens were found in {$purok->name}; nothing was archived.";
 
         return back()->with('success', $message)->with('demographics_tab', 'puroks');
     }
@@ -248,7 +248,7 @@ class AdminSettings extends Controller
 
         if ($subgroup->families()->whereHas('members')->exists() || $subgroup->citizens()->exists()) {
             return back()->withErrors([
-                'subgroup' => 'This subgroup cannot be deleted while it has citizens. Move or remove those records first.',
+                'subgroup' => 'This subgroup cannot be archived while it has citizens. Move those records first.',
             ]);
         }
 
@@ -261,7 +261,7 @@ class AdminSettings extends Controller
             $subgroup->delete();
         });
 
-        return back()->with('success', 'Purok subgroup deleted successfully!');
+        return back()->with('success', 'Purok subgroup archived successfully!');
     }
 
     public function permanentlyDeleteSubgroupCitizens(Request $request, $id)
@@ -287,7 +287,7 @@ class AdminSettings extends Controller
         });
 
         if ($citizenCount > 0) {
-            Log::notice('Admin permanently deleted citizens in a subgroup.', [
+            Log::notice('Admin archived citizens in a subgroup.', [
                 'admin_id' => $request->user()->id,
                 'purok_subgroup_id' => $subgroup->id,
                 'subgroup_name' => $subgroup->name,
@@ -298,8 +298,8 @@ class AdminSettings extends Controller
         }
 
         $message = $citizenCount > 0
-            ? "{$citizenCount} citizens and {$accountCount} linked citizen accounts were permanently deleted from {$confirmationName}. Family records and BHW accounts were not deleted."
-            : "No citizens were found in {$confirmationName}; nothing was deleted.";
+            ? "{$citizenCount} citizens and {$accountCount} linked citizen accounts were archived from {$confirmationName}. They can be restored from the archive. Family records and BHW accounts were not changed."
+            : "No citizens were found in {$confirmationName}; nothing was archived.";
 
         return back()->with('success', $message)->with('demographics_tab', 'subgroups');
     }
@@ -449,7 +449,7 @@ class AdminSettings extends Controller
 
         if (!hash_equals($targetName, $request->string('confirmation')->toString())) {
             throw ValidationException::withMessages([
-                'confirmation' => "Type {$targetName} exactly to confirm permanent deletion.",
+                'confirmation' => "Type {$targetName} exactly to confirm archiving.",
             ]);
         }
     }

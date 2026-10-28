@@ -17,7 +17,7 @@ use Carbon\Carbon;
 class citizens extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected static function booted(): void
     {
@@ -153,12 +153,12 @@ class citizens extends Authenticatable
 
 public function family()
 {
-    return $this->belongsTo(Family::class, 'family_id');
+    return $this->belongsTo(Family::class, 'family_id')->withTrashed();
 }
 
 public function subgroup()
 {
-    return $this->belongsTo(PurokSubgroup::class, 'subgroup_id');
+    return $this->belongsTo(PurokSubgroup::class, 'subgroup_id')->withTrashed();
 }
 
 }

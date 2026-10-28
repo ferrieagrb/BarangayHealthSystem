@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MaintenanceRecord extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $fillable = [
         'citizen_id',
@@ -28,11 +28,11 @@ class MaintenanceRecord extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 }
