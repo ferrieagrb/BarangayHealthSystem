@@ -129,6 +129,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             User::create([
                 'name'                 => trim($firstName . ' ' . ($middleName ? $middleName . ' ' : '') . $lastName),
                 'email'                => $email,
+                'username'             => User::citizenUsername($lastName, $birthDate),
                 'password'             => $this->hashedPassword,
                 'role'                 => 'citizen',
                 'citizen_id'           => $citizen->id,
