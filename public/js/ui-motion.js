@@ -53,7 +53,7 @@
         }, { threshold: 0.08 });
 
         revealTargets.forEach(function (element, index) {
-            if (element.closest('[role="dialog"], .modal-overlay, .supplies-modal-overlay')) return;
+            if (element.closest('[role="dialog"], .modal-overlay, .supplies-modal-overlay, [data-no-motion]')) return;
             element.classList.add('motion-reveal');
             element.style.setProperty('--motion-delay', `${Math.min(index * 45, 360)}ms`);
             observer.observe(element);
