@@ -99,8 +99,8 @@
 
 <div class="announcement-detail-page">
     <a class="announcement-detail-back"
-       href="{{ url()->previous() !== url()->current() ? url()->previous() : url('/citizen/dashboard') }}">
-        ← Back to Dashboard
+       href="{{ route('citizen.announcements') }}">
+        ← Back to Announcements
     </a>
 
     <article class="announcement-detail-card">

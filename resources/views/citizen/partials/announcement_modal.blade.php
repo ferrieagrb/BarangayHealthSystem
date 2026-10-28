@@ -56,7 +56,7 @@
     @media (max-width: 600px) { .citizen-announcement-modal { padding: 12px; } .citizen-announcement-dialog { max-height: 94vh; } }
 </style>
 
-<div class="citizen-announcement-modal" id="citizenAnnouncementModal" hidden role="dialog" aria-modal="true" aria-label="Announcement details">
+<div class="citizen-announcement-modal" id="citizenAnnouncementModal" hidden role="dialog" aria-modal="true" aria-labelledby="citizenAnnouncementTitle">
     <article class="citizen-announcement-dialog">
         <header class="citizen-announcement-dialog-header">
             <div>
@@ -111,6 +111,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let panY = 0;
     let dragStartX = 0;
     let dragStartY = 0;
+    let activeTrigger = null;
+    let viewerReturnFocus = null;
+    let previousBodyOverflow = '';
 
     function updateImageTransform() {
         viewerImage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
@@ -119,6 +122,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function openAnnouncement(id) {
         const announcement = announcements[id];
         if (!announcement) return;
+        activeTrigger = document.activeElement;
+        previousBodyOverflow = document.body.style.overflow;
         document.getElementById('citizenAnnouncementTitle').textContent = announcement.title;
         document.getElementById('citizenAnnouncementCategory').textContent = announcement.category;
         document.getElementById('citizenAnnouncementDate').textContent = `Posted ${announcement.date}`;
@@ -129,17 +134,25 @@ document.addEventListener('DOMContentLoaded', function () {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = index === 0 ? 'active' : '';
-            button.innerHTML = `<img src="${src}" alt="${announcement.title} image ${index + 1}">`;
+            const image = document.createElement('img');
+            image.src = src;
+            image.alt = `${announcement.title} image ${index + 1}`;
+            button.appendChild(image);
             button.addEventListener('click', () => openViewer(index));
             gallery.appendChild(button);
         });
         modal.hidden = false;
         document.body.style.overflow = 'hidden';
+        document.getElementById('citizenAnnouncementClose').focus();
     }
 
     function openViewer(index) {
         if (!currentImages[index]) return;
+        viewerReturnFocus = document.activeElement;
         currentImageIndex = index;
+        gallery.querySelectorAll('button').forEach((button, buttonIndex) => {
+            button.classList.toggle('active', buttonIndex === index);
+        });
         viewerImage.src = currentImages[index];
         zoom = 1;
         panX = 0;
@@ -148,9 +161,15 @@ document.addEventListener('DOMContentLoaded', function () {
         viewer.hidden = false;
         document.getElementById('citizenAnnouncementPrevious').classList.toggle('is-hidden', currentImages.length < 2);
         document.getElementById('citizenAnnouncementNext').classList.toggle('is-hidden', currentImages.length < 2);
+        document.getElementById('citizenAnnouncementViewerClose').focus();
     }
 
-    function closeViewer() { viewer.hidden = true; }
+    function closeViewer() {
+        if (viewer.hidden) return;
+        viewer.hidden = true;
+        if (viewerReturnFocus instanceof HTMLElement) viewerReturnFocus.focus();
+        viewerReturnFocus = null;
+    }
     function setZoom(nextZoom) {
         zoom = Math.min(Math.max(nextZoom, .5), 3);
         if (zoom <= 1) {
@@ -162,7 +181,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function closeAnnouncement() {
         closeViewer();
         modal.hidden = true;
-        document.body.style.overflow = '';
+        document.body.style.overflow = previousBodyOverflow;
+        if (activeTrigger instanceof HTMLElement) activeTrigger.focus();
+        activeTrigger = null;
     }
 
     document.querySelectorAll('.announcement-modal-trigger').forEach((card) => {
@@ -211,6 +232,27 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.key === 'Escape') {
             if (!viewer.hidden) closeViewer();
             else if (!modal.hidden) closeAnnouncement();
+        }
+        if (event.key === 'Tab' && (!viewer.hidden || !modal.hidden)) {
+            const dialog = !viewer.hidden ? viewer : modal;
+            const focusable = [...dialog.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )].filter(element => element.getClientRects().length);
+
+            if (!focusable.length) {
+                event.preventDefault();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
         }
         if (!viewer.hidden && event.key === 'ArrowLeft') {
             openViewer((currentImageIndex - 1 + currentImages.length) % currentImages.length);

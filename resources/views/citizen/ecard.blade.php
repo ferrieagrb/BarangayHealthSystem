@@ -15,6 +15,7 @@
         <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')">Print Health Information Only</button>
     </div>
     <div class="ecard-content-stack">
+<div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="ecard-id-scroll-hint" tabindex="0">
 <section class="bheams-id-card">
 
     {{-- DECORATIVE BACKGROUND --}}
@@ -138,6 +139,8 @@
     </div>
 
 </section>
+</div>
+<p class="ecard-id-scroll-hint" id="ecard-id-scroll-hint">Swipe horizontally to view the full card.</p>
 <section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
 
             <div class="mb-5 border-b-2 border-gray-800 pb-3">
@@ -378,6 +381,8 @@
 .ecard-button{display:inline-flex;align-items:center;justify-content:center;padding:10px 15px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;border:0;cursor:pointer}.ecard-button-secondary{background:#64748b;color:#fff}
 .ecard-actions-top{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:12px;max-width:1000px;margin:0 auto 18px}.ecard-print-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border:0;border-radius:7px;background:#1d4ed8;color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.12)}.ecard-print-record{background:#166534}
 .ecard-content-stack{display:grid;grid-template-columns:1fr;gap:24px;max-width:1000px;margin:0 auto}
+.ecard-id-card-scroll{width:100%;max-width:1000px;margin:0 auto}
+.ecard-id-scroll-hint{display:none}
 .bheams-id-card{position:relative;isolation:isolate;overflow:hidden;width:100%;max-width:1000px;margin:0 auto;border:1px solid #d1d5db;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.12);color:#1f2937}
 .bheams-id-decoration{position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,rgba(29,78,216,.06),transparent 45%,rgba(22,101,52,.05))}
 .bheams-id-header{display:flex;align-items:center;gap:18px;padding:20px 26px;background:linear-gradient(110deg,#102b78,#17469a);color:#fff;border-bottom:4px solid #bfdbfe}.bheams-seal{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:72px;height:72px;overflow:hidden;border:2px solid #fff;border-radius:50%;background:#fff}.bheams-logo{width:100%;height:100%;object-fit:contain}.bheams-brand{min-width:0;flex:1}.bheams-brand h2{margin:0;color:#fff;font-size:29px;font-weight:900;letter-spacing:1px}.bheams-brand p{margin:4px 0;color:#fff;font-size:16px;font-weight:800}.bheams-brand span{display:block;color:#dbeafe;font-size:9px;font-weight:700;letter-spacing:.5px}
@@ -406,6 +411,7 @@
 @media(max-width:700px){.print-health-record > div.grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:12px}.print-health-record{padding:14px}}
 
 @media(max-width:700px){.bhw-ecard-page{padding:20px 12px}.ecard-page-header{align-items:flex-start;flex-direction:column}.ecard-actions-top{justify-content:stretch}.ecard-actions-top button{flex:1 1 220px}.bheams-id-header{flex-wrap:wrap;padding:18px}.bheams-id-body{grid-template-columns:1fr;padding:18px}.bheams-photo{margin:0 auto}.bheams-id-secondary-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bheams-id-secondary-details .bheams-id-field{margin-bottom:8px}.bheams-id-qr-centered{grid-column:1/-1}.bheams-id-two-columns{grid-template-columns:1fr}.print-health-record{padding:14px}}
+@media(max-width:700px){.ecard-id-card-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}.ecard-id-card-scroll .bheams-id-card{width:760px;max-width:none}.ecard-id-card-scroll .bheams-id-header{flex-wrap:nowrap;gap:18px;padding:20px 26px}.ecard-id-card-scroll .bheams-id-body{grid-template-columns:125px minmax(0,1.25fr) minmax(0,.8fr) 125px;align-items:center;gap:22px;padding:24px}.ecard-id-card-scroll .bheams-photo{margin:0}.ecard-id-card-scroll .bheams-id-secondary-details{display:block}.ecard-id-card-scroll .bheams-id-secondary-details .bheams-id-field{margin-bottom:18px}.ecard-id-card-scroll .bheams-id-qr-centered{grid-column:auto}.ecard-id-card-scroll .bheams-id-two-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.ecard-id-scroll-hint{display:block;margin:6px 0 0;color:#52657e;font-size:12px;text-align:center}}
 @media print{@page{size:A4 landscape;margin:8mm}html,body,.dashboard,.main-content{background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important}body *{visibility:hidden!important}body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{visibility:visible!important}body.print-record-only .print-health-record,body.print-record-only .print-health-record *{visibility:visible!important}body.print-id-only .print-health-record,body.print-record-only .bheams-id-card{display:none!important}.top-bar,.sidebar,.sidebar-backdrop,.ecard-page-header,.ecard-actions-top{display:none!important}.main-content{margin:0!important;padding:0!important;width:100%!important}.bhw-ecard-page{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}.ecard-content-stack{max-width:none!important;width:100%!important;margin:0!important;gap:0!important}.bheams-id-card,.print-health-record{width:100%!important;max-width:100%!important;margin:0!important;box-shadow:none!important;break-inside:avoid}.bheams-id-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}.bheams-id-body{grid-template-columns:125px minmax(0,1fr) 125px!important;padding:24px!important}.print-health-record{border:1px solid #9ca3af!important;padding:14px!important}.print-health-record table{font-size:9px}.print-health-record th,.print-health-record td{padding:5px!important}
 body.print-id-only .bhw-ecard-page,body.print-id-only .ecard-content-stack{width:3.375in!important;max-width:3.375in!important;height:2.125in!important;max-height:2.125in!important;margin:0!important;padding:0!important;overflow:hidden!important}
 body.print-id-only .bheams-id-card{display:flex!important;flex-direction:column!important;width:3.375in!important;height:2.125in!important;min-height:2.125in!important;max-width:3.375in!important;max-height:2.125in!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
