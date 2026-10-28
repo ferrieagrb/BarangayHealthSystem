@@ -13,6 +13,7 @@
     
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/citizencontactdirectory.css') }}">
+@include('partials.favicon')
 </head>
 <body>
 

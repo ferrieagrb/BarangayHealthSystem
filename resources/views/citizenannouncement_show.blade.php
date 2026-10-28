@@ -161,6 +161,7 @@
             .lightbox-next { right: 8px; }
         }
     </style>
+@include('partials.favicon')
 </head>
 <body>
     <header class="main-header">

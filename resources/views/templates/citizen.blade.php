@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+        @include('partials.favicon')
         @yield('CSSown')<style>
 html { scroll-behavior: smooth; scroll-padding-top: 165px; }
 .c-header-section-nav a { font-size: 14px; min-height: 44px; }

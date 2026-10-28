@@ -252,7 +252,7 @@ class CitizenController extends Controller
             }
         }
 
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -768,7 +768,7 @@ class CitizenController extends Controller
         $this->authorizeCitizenEdit($citizen);
         $canEdit = $this->canEditCitizen($citizen);
         $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -822,7 +822,7 @@ class CitizenController extends Controller
         $families = Family::with(['purok', 'subgroup'])
             ->orderBy('family_name')
             ->get();
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
