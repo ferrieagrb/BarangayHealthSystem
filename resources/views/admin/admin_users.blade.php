@@ -76,11 +76,16 @@
 
 <div class="table-container">
 
-    <div class="table-header">
+    <div class="table-header" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-            <h2>User Accounts</h2>
-            <p>Manage all registered system users and their roles.</p>
+            <h2>{{ $showArchived ? 'Archived (Inactive) Users' : 'User Accounts' }}</h2>
+            <p>{{ $showArchived ? 'Inactive users cannot sign in. Reactivating requires them to change their password.' : 'Manage all registered system users and their roles.' }}</p>
         </div>
+        @if($showArchived)
+            <a href="{{ route('admin.users') }}" class="btn-primary" style="text-decoration:none;">&larr; Active Users</a>
+        @else
+            <a href="{{ route('admin.users', ['archived' => 1]) }}" class="btn-primary" style="text-decoration:none;">Archive ({{ $archivedCount }})</a>
+        @endif
     </div>
 
     <table class="users-table">
@@ -88,7 +93,7 @@
             <tr>
                 <th>Name / Email</th>
                 <th>Role</th>
-                <th>Created At</th>
+                <th>{{ $showArchived ? 'Archived On' : 'Created At' }}</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -103,9 +108,11 @@
 
                 <td>{{ ucfirst($user->role ?? 'user') }}</td>
 
-                <td>{{ $user->created_at->format('M d, Y') }}</td>
+                <td>{{ ($showArchived ? $user->deleted_at : $user->created_at)->format('M d, Y') }}</td>
 
-                <td>@if($user->is_locked)
+                <td>@if($showArchived)
+                    <span class="badge bg-secondary">Inactive</span>
+                @elseif($user->is_locked)
                     <form action="{{ route('admin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -117,22 +124,35 @@
 
                 <td>
                     <div class="action-group">
+                        @if($showArchived)
+                        <form action="{{ route('admin.users.restore', $user->id) }}"
+                            method="POST"
+                            onsubmit="return confirm('Reactivate this user? They will be required to change their password at next login.')" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn-primary">Set Active</button>
+                        </form>
+                        @else
                         <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')">
                             Edit
                         </button>
 
                         <form action="{{ route('admin.users.delete', $user->id) }}"
                             method="POST"
-                            onsubmit="return confirm('Delete this user?')" style="display:inline;">
+                            onsubmit="return confirm('Mark this user as inactive? The account will be archived and cannot sign in until reactivated.')" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-danger">Delete</button>
+                            <button type="submit" class="btn-danger">Set Inactive</button>
                         </form>
+                        @endif
                     </div>
                 </td>
 
             </tr>
             @endforeach
+            @if($users->isEmpty())
+            <tr><td colspan="5" style="text-align:center; padding:24px;">{{ $showArchived ? 'No archived users.' : 'No users found.' }}</td></tr>
+            @endif
         </tbody>
     </table>
 

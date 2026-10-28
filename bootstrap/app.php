@@ -30,5 +30,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, \Illuminate\Http\Request $request) {
+            if (in_array($response->getStatusCode(), [401, 419], true) && ! $request->expectsJson()) {
+                return redirect()->route('login');
+            }
+
+            if ($response->getStatusCode() === 403 && ! $request->expectsJson()) {
+                return redirect()->route('landing');
+            }
+
+            return $response;
+        });
     })->create();

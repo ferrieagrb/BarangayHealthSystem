@@ -17,16 +17,16 @@ class SupplyLog extends Model
 
     public function supply()
     {
-        return $this->belongsTo(Supply::class, 'supply_id');
+        return $this->belongsTo(Supply::class, 'supply_id')->withTrashed();
     }
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 }

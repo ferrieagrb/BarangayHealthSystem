@@ -550,10 +550,10 @@
                                         <form method="POST"
                                               action="{{ route('citizen.vaccination.delete', [$citizen->id, $vaccination->id]) }}"
                                               style="margin:0; flex-shrink:0;"
-                                              onsubmit="return confirm('Delete this vaccination record? This action cannot be undone.');">
+                                              onsubmit="return confirm('Archive this vaccination record? You can restore it from the archive.');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Delete</button>
+                                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button>
                                         </form>
                                     @endif
                                 </div>
@@ -624,10 +624,10 @@
                         <form method="POST"
                               action="{{ route('health.maintenance.delete', $maintenance->id) }}"
                               style="margin:0; flex-shrink:0;"
-                              onsubmit="return confirm('Delete this maintenance medicine record? This action cannot be undone.');">
+                              onsubmit="return confirm('Archive this maintenance medicine record? You can restore it from the archive.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Delete</button>
+                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button>
                         </form>
                     @endif
                 </div>
@@ -782,7 +782,7 @@
  @forelse($citizen->healthRecords->sortByDesc('record_date') as $record)
  <article class="diagnosis-history-card"><div class="diagnosis-history-inner"><div class="diagnosis-history-top"><div><div class="diagnosis-history-title">{{ $record->diagnosis }} <span class="diagnosis-pill">{{ $record->severity ?: 'Low / Mild' }}</span></div><div class="diagnosis-meta">Assessment Date: {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : $record->created_at?->format('M d, Y') }}</div></div>
 @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-<form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to delete this diagnosis record? This action cannot be undone.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Delete</button></form>
+<form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to archive this diagnosis record? You can restore it from the archive.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button></form>
 @endif
 </div>
  <div class="diagnosis-vitals"><div><span>BMI</span><strong>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1).' kg/m²' : '—' }}</strong></div><div><span>Weight / Height</span><strong>{{ $record->weight !== null ? rtrim(rtrim(number_format((float)$record->weight,1,'.',''),'0'),'.').'kg' : '—' }} / {{ $record->height !== null ? rtrim(rtrim(number_format((float)$record->height,1,'.',''),'0'),'.').'cm' : '—' }}</strong></div><div><span>Temp</span><strong>{{ $record->temperature !== null ? number_format((float)$record->temperature,1).' °C' : '—' }}</strong></div><div><span>BP</span><strong>{{ $record->blood_pressure ?: '—' }}</strong></div></div>

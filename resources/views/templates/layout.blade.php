@@ -234,6 +234,12 @@
                     <span class="nav-item">QR Checker</span>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('archive.index') }}">
+                    <i class="bx bx-archive"></i>
+                    <span class="nav-item">Archive</span>
+                </a>
+            </li>
         </ul>
 
         <!-- SEPARATE BOTTOM SETTINGS SECTION -->

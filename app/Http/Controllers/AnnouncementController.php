@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Announcement;
+use App\Models\AnnouncementImage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -158,43 +159,31 @@ class AnnouncementController extends Controller
         }
     }
 
+    public function updateImage(Request $request, Announcement $announcement, AnnouncementImage $image)
+    {
+        abort_unless($image->announcement_id === $announcement->id, 404);
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        $oldPath = $image->path;
+        $image->update(['path' => $request->file('image')->store('announcements', 'public')]);
+
+        if ($oldPath && $oldPath !== $image->path) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $this->logAdminActivity('announcement.image_changed', "Picture changed for announcement \"{$announcement->title}\".");
+
+        return redirect()->route('announcements')->with('success', 'Announcement picture updated.');
+    }
+
     public function destroy(Announcement $announcement)
     {
-        $pageId = config('services.facebook.page_id');
-        $accessToken = config('services.facebook.access_token');
-        $facebookDeleteFailed = false;
-
-        if ($announcement->facebook_post_id && $pageId && $accessToken) {
-            try {
-                $response = Http::timeout(15)->delete(
-                    'https://graph.facebook.com/' . $announcement->facebook_post_id,
-                    ['access_token' => $accessToken]
-                );
-
-                if ($response->failed()) {
-                    $facebookDeleteFailed = true;
-                    Log::warning('Facebook announcement deletion failed: ' . $response->body());
-                    $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed.', 'integration');
-                }
-            } catch (\Throwable $exception) {
-                $facebookDeleteFailed = true;
-                report($exception);
-                $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception.', 'integration');
-            }
-        }
-
-        foreach ($announcement->images as $image) {
-            Storage::disk('public')->delete($image->path);
-        }
-
+        // Archiving keeps the announcement, its images and any Facebook post so it can be restored.
         $announcement->delete();
 
-        $message = $facebookDeleteFailed
-            ? 'Announcement deleted locally, but Facebook deletion failed. Check the Facebook access token and permissions.'
-            : ($announcement->facebook_post_id
-                ? 'Announcement deleted from the system and Facebook.'
-                : 'Announcement deleted locally. It has no tracked Facebook post ID.');
-
-        return redirect()->route('announcements')->with($facebookDeleteFailed ? 'error' : 'success', $message);
+        return redirect()->route('announcements')->with('success', 'Announcement archived. You can restore it from the archive.');
     }
 }

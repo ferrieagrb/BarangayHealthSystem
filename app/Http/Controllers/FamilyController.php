@@ -154,6 +154,17 @@ class FamilyController extends Controller
         return back()->with('success', 'Citizen removed from family.');
     }
 
+    public function archive(Family $family)
+    {
+        $this->authorizeFamilyWrite();
+        $this->authorizeFamily($family);
+
+        $name = $family->family_name;
+        $family->delete();
+
+        return redirect()->route('bhw.families.index')->with('success', "Family {$name} archived. You can restore it from the archive.");
+    }
+
     public function update(Request $request, Family $family)
     {
         $this->authorizeFamilyWrite();
