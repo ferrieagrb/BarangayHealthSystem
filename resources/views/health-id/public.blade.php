@@ -43,6 +43,7 @@
             .brand-mark { width:36px;height:36px; }
         }
     </style>
+@include('partials.favicon')
 </head>
 <body>
     @if(!$citizen)
