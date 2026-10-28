@@ -78,7 +78,7 @@
                 @foreach($announcements as $announcement)
                     <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-card">
                         <div class="announcement-gallery">
-                            @php $logoUrl = asset('images/amuyong.png'); @endphp
+                            @php $logoUrl = \App\Models\SystemSetting::logoUrl(); @endphp
                             @forelse($announcement->images as $image)
                                 <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
                             @empty
