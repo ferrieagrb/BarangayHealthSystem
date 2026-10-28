@@ -151,7 +151,7 @@ function initBhwHomeMap() {
         }
 
         if (center && area.weight > 0) {
-            heatPoints.push({ lat: center.lat, lng: center.lng, weight: area.weight, radius: radius });
+            heatPoints.push({ lat: center.lat, lng: center.lng, weight: area.weight, radius: radius, path: ring ? path : null });
         }
     });
 
@@ -211,9 +211,22 @@ function initBhwHomeMap() {
                 const alpha = Math.min(1, p.weight / maxWeight);
                 const rg = sg.createRadialGradient(x, y, 0, x, y, r);
                 rg.addColorStop(0, 'rgba(0,0,0,' + alpha + ')');
+                rg.addColorStop(0.7, 'rgba(0,0,0,' + (alpha * 0.85) + ')');
                 rg.addColorStop(1, 'rgba(0,0,0,0)');
+                sg.save();
+                if (p.path) {
+                    // Keep the colour strictly inside this area's own boundary.
+                    sg.beginPath();
+                    p.path.forEach(function (v, i) {
+                        const vp = projection.fromLatLngToDivPixel(new google.maps.LatLng(v.lat, v.lng));
+                        if (i === 0) sg.moveTo(vp.x - sw.x, vp.y - ne.y); else sg.lineTo(vp.x - sw.x, vp.y - ne.y);
+                    });
+                    sg.closePath();
+                    sg.clip();
+                }
                 sg.fillStyle = rg;
                 sg.fillRect(x - r, y - r, r * 2, r * 2);
+                sg.restore();
             });
 
             const img = sg.getImageData(0, 0, width, height);
