@@ -123,10 +123,11 @@ function initBhwHomeMap() {
     areas.forEach(function (area) {
         const ring = area.boundary && area.boundary.coordinates ? area.boundary.coordinates[0] : null;
         let center = null;
+        let path = null;
         let radius = 150;
 
         if (ring && ring.length >= 3) {
-            const path = ring.map(function (p) { return { lat: p[1], lng: p[0] }; });
+            path = ring.map(function (p) { return { lat: p[1], lng: p[0] }; });
             const ab = new google.maps.LatLngBounds();
             path.forEach(function (p) { ab.extend(p); bounds.extend(p); });
             center = ab.getCenter().toJSON();
@@ -151,7 +152,7 @@ function initBhwHomeMap() {
         }
 
         if (center && area.weight > 0) {
-            heatPoints.push({ lat: center.lat, lng: center.lng, weight: area.weight, radius: radius, path: ring ? path : null });
+            heatPoints.push({ lat: center.lat, lng: center.lng, weight: area.weight, radius: radius, path: path });
         }
     });
 
