@@ -451,7 +451,7 @@ class CitizenController extends Controller
                 User::create([
                     'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
                     'email' => $validated['email'],
-                    'username' => User::usernameFromContact($validated['Citizen_ContactNo'] ?? null),
+                    'username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate']),
                     'password' => $password,
                     'role' => 'citizen',
                     'citizen_id' => $citizen->id,
@@ -1008,8 +1008,8 @@ class CitizenController extends Controller
         $citizen->update($validated);
 
         $citizenUser = User::where('citizen_id', $citizen->id)->first();
-        if ($citizenUser && $request->has('Citizen_ContactNo')) {
-            $citizenUser->update(['username' => User::usernameFromContact($validated['Citizen_ContactNo'] ?? null, $citizenUser->id)]);
+        if ($citizenUser) {
+            $citizenUser->update(['username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate'], $citizenUser->id)]);
         }
 
         $this->logActivity('update', 'citizen', $citizen->id, 'Updated citizen details');
