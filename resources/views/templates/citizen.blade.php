@@ -6,7 +6,7 @@
     $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
 @endphp
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
+<html lang="en" class="theme-{{ $currentTheme }}" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
     <head>
         <meta charset="UTF-8">
         <title>Citizen Dashboard</title>
@@ -405,28 +405,27 @@ body {
     .c-header-section-nav {
         grid-column: 1 / -1;
         grid-row: 2;
-        display: flex;
-        justify-content: flex-start;
-        gap: 5px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        justify-content: stretch;
+        gap: 3px;
         width: 100%;
         min-width: 0;
         padding: 3px 0 2px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-    }
-
-    .c-header-section-nav::-webkit-scrollbar {
-        display: none;
+        overflow: visible;
     }
 
     .c-header-section-nav a {
-        flex: 0 0 auto;
+        min-width: 0;
         min-height: 38px;
-        padding: 0 13px;
+        padding: 2px 1px;
         border-radius: 9px;
-        font-size: 12px;
+        font-size: clamp(8px, 2.5vw, 10px);
+        line-height: 1.15;
+        text-align: center;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
     }
 
     .top-bar .citizen-menu-button {
@@ -590,25 +589,40 @@ body,
     .c-header-section-nav {
         grid-column: 1 / -1;
         grid-row: 2;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
         gap: 2px;
         width: 100%;
         min-width: 0;
-        padding: 3px 0 1px;
+        box-sizing: border-box;
+        padding: 3px 0 2px;
         overflow: visible;
     }
 
     .c-header-section-nav a {
-        flex: 0 1 auto;
+        display: flex;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
-        min-height: 35px;
-        padding: 0 5px;
+        min-height: 38px;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 3px 0;
+        position: relative;
+        transform: none;
         border-radius: 8px;
-        font-size: clamp(9px, 2.6vw, 11px);
-        letter-spacing: -0.15px;
+        font-size: clamp(7px, 2.3vw, 10px);
+        line-height: 1.1;
+        letter-spacing: -.2px;
+        text-align: center;
         white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
+    .c-header-section-nav a.active {
+        box-shadow: none;
     }
 }
 
@@ -635,9 +649,23 @@ body,
         font-size: 10px !important;
     }
 
+    .c-header-section-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
     .c-header-section-nav a {
-        padding: 0 3px;
-        font-size: 9px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 38px;
+        padding: 3px 0;
+        font-size: 7px;
+        letter-spacing: -.2px;
+        white-space: nowrap;
+    }
+
+    .c-header-section-nav a.active {
+        box-shadow: none;
     }
 }
 /* FIX BLUE TOP BAR */
@@ -662,8 +690,8 @@ body,
     position: static;
 }
 
-/* MOBILE: keep the complete citizen header fixed while scrolling */
-@media (max-width: 600px) {
+/* Keep the complete Citizen header fixed while scrolling on mobile and tablet. */
+@media (max-width: 900px) {
     .top-bar {
         position: fixed !important;
         top: 0;
@@ -675,27 +703,22 @@ body,
     }
 
     .main-content {
-        padding-top: 0 !important;
+        padding-top: var(--citizen-header-height, 150px) !important;
     }
 
-    /* Keep page content below the fixed header */
     .c-home {
-        padding-top: 125px !important;
-    }
-
-    /* If the navigation is in the header, don't add another nav row */
-    .c-header-section-nav {
-        min-width: 0;
+        padding-top: 16px !important;
     }
 
     .c-section {
-        scroll-margin-top: 150px !important;
+        scroll-margin-top: calc(var(--citizen-header-height, 150px) + 12px) !important;
     }
 }
 
 </style>
+        <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
 </head>
-<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
     @yield('scripts')
 
     <div class="dashboard">
@@ -713,15 +736,20 @@ body,
     (function() {
             const loader = document.getElementById('global-loader');
             if (!loader) return;
+            let loaderTimeout = null;
 
             // Function to show loader
             window.showLoader = function() {
                 loader.classList.add('active');
+                window.clearTimeout(loaderTimeout);
+                loaderTimeout = window.setTimeout(window.hideLoader, 12000);
             };
 
             // Function to hide loader
             window.hideLoader = function() {
                 loader.classList.remove('active');
+                window.clearTimeout(loaderTimeout);
+                loaderTimeout = null;
             };
 
             // Trigger on any form submission across the site
@@ -772,53 +800,42 @@ body,
         </button>
     </div>
     <ul>
-        <!-- Dashboard / Home -->
+        <!-- Dashboard announcement section -->
         <li>
-            <a href="{{ route('citizen.dashboard') }}">
-                <i class="bx bx-home">
-                </i>
-                <span class="nav-item">Home</span>
+            <a href="{{ request()->routeIs('citizen.dashboard') ? '#announcements' : route('citizen.dashboard') . '#announcements' }}" class="@if(request()->routeIs('citizen.dashboard')) active @endif" @if(request()->routeIs('citizen.dashboard')) aria-current="page" @endif>
+                <svg class="citizen-announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M3 10v4h4l5 4V6l-5 4H3Z"></path>
+                    <path d="M16 9a5 5 0 0 1 0 6"></path>
+                    <path d="M18 5a9 9 0 0 1 0 14"></path>
+                    <path d="m7 14 1.5 6H5l-1.5-6"></path>
+                </svg>
+                <span class="nav-item">Announcement</span>
             </a>
         </li>
-        <!-- Supplies -->
         <li>
-            <a href="{{ route('citizen.supplies') }}">
-                <i class="bx bx-package">
-                </i>
-                <span class="nav-item">Supplies</span>
+            <a href="{{ request()->routeIs('citizen.dashboard') ? '#citizen-card' : route('citizen.dashboard') . '#citizen-card' }}">
+                <i class="bx bx-id-card" aria-hidden="true"></i>
+                <span class="nav-item">Healthcard</span>
             </a>
         </li>
-        <!-- Calendar -->
         <li>
-            <a href="{{ route('citizen.calendar') }}">
-                <i class="bx bx-calendar">
-                </i>
-                <span class="nav-item">Calendar</span>
+            <a href="{{ request()->routeIs('citizen.dashboard') ? '#health-information' : route('citizen.dashboard') . '#health-information' }}">
+                <i class="bx bx-heart" aria-hidden="true"></i>
+                <span class="nav-item">Health Information</span>
             </a>
         </li>
-        <!-- Health Card -->
         <li>
-            <a href="{{ route('citizen.ecard') }}">
-                <i class="bx bx-id-card">
-                </i>
-                <span class="nav-item">Health Card</span>
-            </a>
-        </li>
-        <!-- Announcements -->
-        <li>
-            <a href="{{ route('citizen.announcements') }}">
-                <i class="bx bx-bell">
-                </i>
-                <span class="nav-item">Announcements</span>
+            <a href="{{ request()->routeIs('citizen.dashboard') ? '#request-referral' : route('citizen.dashboard') . '#request-referral' }}">
+                <i class="bx bx-share-alt" aria-hidden="true"></i>
+                <span class="nav-item">Referral</span>
             </a>
         </li>
     </ul>
     <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
         <ul style="list-style: none; padding: 0; margin: 0;">
             <li>
-                <a href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">
-                    <i class="bx bx-cog">
-                    </i>
+                <a href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}" class="@if(request()->routeIs('citizen.settings')) active @endif" @if(request()->routeIs('citizen.settings')) aria-current="page" @endif>
+                    <i class="bx bx-cog" aria-hidden="true"></i>
                     <span class="nav-item">Settings</span>
                 </a>
             </li>
@@ -843,7 +860,7 @@ body,
                 <a href="#request-referral">Referral</a>
             </nav>
         @else
-            <div></div>
+            <div class="c-header-page-spacer" aria-hidden="true"></div>
         @endif
 
         <div class="c-header-actions">
@@ -880,36 +897,121 @@ body,
         const backdrop = document.getElementById('citizenSidebarBackdrop');
         const openButton = document.getElementById('citizenMenuOpen');
         const closeButton = document.getElementById('citizenMenuClose');
+        const topBar = document.querySelector('.top-bar');
         if (!sidebar || !backdrop || !openButton || !closeButton) return;
+        const homeLink = sidebar.querySelector('ul > li > a');
+        const dashboardHome = document.getElementById('announcements');
+        const sidebarSections = [...sidebar.querySelectorAll('a[href*="#"]')]
+            .map(link => {
+                const targetId = new URL(link.href, window.location.href).hash.slice(1);
+                return { link, target: document.getElementById(targetId) };
+            })
+            .filter(section => section.target);
+
+        let previousBodyOverflow = '';
+        let previousHtmlOverflow = '';
+
+        function updateHeaderHeight() {
+            if (!topBar) return;
+            document.documentElement.style.setProperty(
+                '--citizen-header-height',
+                `${Math.ceil(topBar.getBoundingClientRect().height)}px`
+            );
+        }
+
+        function updateActiveSidebarLink() {
+            if (!homeLink || !dashboardHome || !sidebarSections.length) return;
+
+            const sections = [{ link: homeLink, target: dashboardHome }, ...sidebarSections];
+            const activationPoint = (topBar ? topBar.offsetHeight : 0) + 25;
+            let current = sections[0];
+
+            sections.forEach(section => {
+                if (section.target.getBoundingClientRect().top <= activationPoint) {
+                    current = section;
+                }
+            });
+
+            sections.forEach(section => {
+                const active = section.link === current.link;
+                section.link.classList.toggle('active', active);
+                if (active) {
+                    section.link.setAttribute(
+                        'aria-current',
+                        section.link === homeLink ? 'page' : 'location'
+                    );
+                } else {
+                    section.link.removeAttribute('aria-current');
+                }
+            });
+        }
 
         function openMenu() {
+            updateHeaderHeight();
+            previousBodyOverflow = document.body.style.overflow;
+            previousHtmlOverflow = document.documentElement.style.overflow;
             sidebar.classList.add('menu-open');
             backdrop.classList.add('visible');
             sidebar.setAttribute('aria-hidden', 'false');
             backdrop.setAttribute('aria-hidden', 'false');
             openButton.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('citizen-sidebar-open');
             closeButton.focus();
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
         }
-        function closeMenu() {
+
+        function closeMenu(restoreFocus = false) {
             sidebar.classList.remove('menu-open');
             backdrop.classList.remove('visible');
             sidebar.setAttribute('aria-hidden', 'true');
             backdrop.setAttribute('aria-hidden', 'true');
             openButton.setAttribute('aria-expanded', 'false');
-            document.body.style.overflow = '';
+            document.body.classList.remove('citizen-sidebar-open');
+            document.body.style.overflow = previousBodyOverflow;
+            document.documentElement.style.overflow = previousHtmlOverflow;
+            if (restoreFocus) openButton.focus();
         }
-        openButton.addEventListener('click', openMenu);
-        closeButton.addEventListener('click', closeMenu);
-        backdrop.addEventListener('click', closeMenu);
+
+        updateHeaderHeight();
+        updateActiveSidebarLink();
+        window.addEventListener('resize', updateHeaderHeight, { passive: true });
+        window.addEventListener('load', updateHeaderHeight, { once: true });
+        window.addEventListener('scroll', updateActiveSidebarLink, { passive: true });
+        window.addEventListener('hashchange', updateActiveSidebarLink);
+
+        openButton.addEventListener('click', function () {
+            if (sidebar.classList.contains('menu-open')) {
+                closeMenu(true);
+            } else {
+                openMenu();
+            }
+        });
+        closeButton.addEventListener('click', function () {
+            closeMenu(true);
+        });
+        backdrop.addEventListener('click', function () {
+            closeMenu(true);
+        });
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && sidebar.classList.contains('menu-open')) {
-                closeMenu();
-                openButton.focus();
+                closeMenu(true);
             }
         });
         sidebar.querySelectorAll('a').forEach(function (link) {
-            link.addEventListener('click', closeMenu);
+            link.addEventListener('click', function (event) {
+                const destination = new URL(link.href, window.location.href);
+                const sectionId = destination.hash.slice(1);
+                const navbarLink = sectionId
+                    ? document.querySelector('#citizenSectionNav a[href="#' + CSS.escape(sectionId) + '"]')
+                    : null;
+
+                if (navbarLink && destination.pathname === window.location.pathname) {
+                    event.preventDefault();
+                    navbarLink.click();
+                }
+                closeMenu(false);
+            });
         });
     });
 </script>@auth<script>
@@ -937,5 +1039,59 @@ body,
             window.addEventListener('scroll', resetTimer);
         });
 </script>@endauth
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fontScaleByPreference = {
+            normal: 0.9,
+            large: 1,
+            xl: 1.1
+        };
+        const originalFontSizes = new WeakMap();
+        const textNodeSelector = 'body *:not(script):not(style)';
+
+        function applyCitizenFontSize(preference) {
+            const scale = fontScaleByPreference[preference] || fontScaleByPreference.normal;
+            const textElements = Array.from(document.querySelectorAll(textNodeSelector)).filter(function (element) {
+                return Array.from(element.childNodes).some(function (node) {
+                    return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
+                }) && !element.closest('.bx, svg');
+            });
+
+            textElements.forEach(function (element) {
+                if (!originalFontSizes.has(element)) {
+                    const computedSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
+                    if (!Number.isFinite(computedSize)) return;
+                    originalFontSizes.set(element, {
+                        computed: computedSize,
+                        inline: element.style.fontSize
+                    });
+                }
+            });
+
+            textElements.forEach(function (element) {
+                if (!originalFontSizes.has(element)) return;
+                const original = originalFontSizes.get(element);
+                element.style.fontSize = scale === 1
+                    ? original.inline
+                    : `${original.computed * scale}px`;
+            });
+
+            document.documentElement.dataset.font = preference;
+            document.body.dataset.font = preference;
+            document.body.classList.remove('font-normal', 'font-large', 'font-xl');
+            document.body.classList.add(`font-${preference}`);
+        }
+
+        const initialPreference = document.body.dataset.font || 'normal';
+        applyCitizenFontSize(initialPreference);
+
+        const fontSizeSelect = document.getElementById('font_size');
+        if (fontSizeSelect) {
+            fontSizeSelect.addEventListener('change', function () {
+                applyCitizenFontSize(this.value);
+            });
+        }
+    });
+</script>
 </body>
 </html>

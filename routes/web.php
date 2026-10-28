@@ -197,7 +197,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         return view('citizen.calendar');
     })->name('calendar');
 
-    // Citizen Vaccination Route
+    // Keep the legacy vaccination page route pointed at the existing health records section.
     Route::get('/vaccination', function () {
         $user = auth()->user();
 
@@ -205,7 +205,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        return view('citizen.vaccination');
+        return redirect()->to(route('citizen.dashboard') . '#health-information');
     })->name('vaccination');
 
     // Citizen Announcements Route
