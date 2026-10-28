@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initBhwHomeMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&libraries=geometry&callback=initBhwHomeMap" async defer></script>
 <style>
     .bhw-home { padding-bottom: 28px; }
     .home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
@@ -110,57 +110,127 @@ function initBhwHomeMap() {
     const infoWindow = new google.maps.InfoWindow();
     const bounds = new google.maps.LatLngBounds();
 
-    function colorsFor(count) {
-        if (count >= 10) return { fill: '#b30000', stroke: '#800000', opacity: .55 };
-        if (count >= 3) return { fill: '#ff4d4d', stroke: '#cc0000', opacity: .5 };
-        if (count >= 1) return { fill: '#ffcc00', stroke: '#ff9900', opacity: .45 };
-        return { fill: '#94a3b8', stroke: '#64748b', opacity: .12 };
-    }
-
     function showInfo(area, position) {
         infoWindow.setContent(`<div style="color:#000;padding:5px;"><strong>${area.label}</strong><br>Diagnoses (last 7 days): ${area.count}</div>`);
         infoWindow.setPosition(position);
         infoWindow.open(map);
     }
 
-    // Puroks first so subgroup shapes are drawn on top of them.
+    // Build heat points (centre + radius in metres) and thin clickable outlines.
+    const heatPoints = [];
     areas.sort((a, b) => (a.type === b.type ? 0 : a.type === 'purok' ? -1 : 1));
 
     areas.forEach(function (area) {
-        const count = area.count || 0;
-        const color = colorsFor(count);
         const ring = area.boundary && area.boundary.coordinates ? area.boundary.coordinates[0] : null;
+        let center = null;
+        let radius = 150;
 
         if (ring && ring.length >= 3) {
-            const path = ring.map(function (point) { return { lat: point[1], lng: point[0] }; });
-            path.forEach(function (point) { bounds.extend(point); });
+            const path = ring.map(function (p) { return { lat: p[1], lng: p[0] }; });
+            const ab = new google.maps.LatLngBounds();
+            path.forEach(function (p) { ab.extend(p); bounds.extend(p); });
+            center = ab.getCenter().toJSON();
+            const span = google.maps.geometry && google.maps.geometry.spherical
+                ? google.maps.geometry.spherical.computeDistanceBetween(ab.getSouthWest(), ab.getNorthEast())
+                : 300;
+            radius = Math.max(80, span * 0.6);
             const polygon = new google.maps.Polygon({
                 paths: path,
                 map,
-                strokeColor: color.stroke,
-                strokeOpacity: .9,
-                strokeWeight: area.type === 'purok' ? 3 : 2,
-                fillColor: color.fill,
-                fillOpacity: area.type === 'purok' ? color.opacity * .6 : color.opacity,
+                strokeColor: area.type === 'purok' ? '#1e3a8a' : '#334155',
+                strokeOpacity: .8,
+                strokeWeight: area.type === 'purok' ? 2 : 1.5,
+                fillColor: '#000',
+                fillOpacity: 0.001,
                 zIndex: area.type === 'purok' ? 1 : 2
             });
             polygon.addListener('click', function (event) { showInfo(area, event.latLng); });
         } else if (area.lat !== null && area.lng !== null) {
-            const center = { lat: Number(area.lat), lng: Number(area.lng) };
+            center = { lat: Number(area.lat), lng: Number(area.lng) };
             bounds.extend(center);
-            const circle = new google.maps.Circle({
-                strokeColor: color.stroke,
-                strokeOpacity: .9,
-                strokeWeight: 2,
-                fillColor: color.fill,
-                fillOpacity: Math.max(color.opacity, .3),
-                map,
-                center,
-                radius: count >= 10 ? 150 : (count >= 3 ? 110 : 75)
-            });
-            circle.addListener('click', function () { showInfo(area, center); });
+        }
+
+        if (center && area.weight > 0) {
+            heatPoints.push({ lat: center.lat, lng: center.lng, weight: area.weight, radius: radius });
         }
     });
+
+    const maxWeight = Math.max(5, ...heatPoints.map(function (p) { return p.weight; }));
+
+    // Colour ramp: transparent -> blue -> green -> yellow -> red.
+    const ramp = (function () {
+        const c = document.createElement('canvas');
+        c.width = 1; c.height = 256;
+        const g = c.getContext('2d');
+        const grad = g.createLinearGradient(0, 0, 0, 256);
+        grad.addColorStop(0.0, 'rgba(0,0,255,0)');
+        grad.addColorStop(0.2, 'rgba(0,0,255,0.6)');
+        grad.addColorStop(0.4, 'rgba(0,200,255,0.8)');
+        grad.addColorStop(0.55, 'rgba(0,220,60,0.85)');
+        grad.addColorStop(0.75, 'rgba(255,230,0,0.9)');
+        grad.addColorStop(1.0, 'rgba(255,0,0,0.95)');
+        g.fillStyle = grad;
+        g.fillRect(0, 0, 1, 256);
+        return g.getImageData(0, 0, 1, 256).data;
+    })();
+
+    class HeatOverlay extends google.maps.OverlayView {
+        constructor() {
+            super();
+            this.canvas = document.createElement('canvas');
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.pointerEvents = 'none';
+        }
+        onAdd() { this.getPanes().overlayLayer.appendChild(this.canvas); }
+        onRemove() { this.canvas.remove(); }
+        draw() {
+            const projection = this.getProjection();
+            const mapBounds = map.getBounds();
+            if (!projection || !mapBounds) return;
+            const sw = projection.fromLatLngToDivPixel(mapBounds.getSouthWest());
+            const ne = projection.fromLatLngToDivPixel(mapBounds.getNorthEast());
+            const width = Math.round(ne.x - sw.x);
+            const height = Math.round(sw.y - ne.y);
+            if (width <= 0 || height <= 0) return;
+
+            this.canvas.style.left = sw.x + 'px';
+            this.canvas.style.top = ne.y + 'px';
+            this.canvas.width = width;
+            this.canvas.height = height;
+
+            const shade = document.createElement('canvas');
+            shade.width = width; shade.height = height;
+            const sg = shade.getContext('2d');
+            const mpp = 156543.03392 * Math.cos(map.getCenter().lat() * Math.PI / 180) / Math.pow(2, map.getZoom());
+
+            heatPoints.forEach(function (p) {
+                const pt = projection.fromLatLngToDivPixel(new google.maps.LatLng(p.lat, p.lng));
+                const x = pt.x - sw.x;
+                const y = pt.y - ne.y;
+                const r = Math.max(30, p.radius / mpp);
+                const alpha = Math.min(1, p.weight / maxWeight);
+                const rg = sg.createRadialGradient(x, y, 0, x, y, r);
+                rg.addColorStop(0, 'rgba(0,0,0,' + alpha + ')');
+                rg.addColorStop(1, 'rgba(0,0,0,0)');
+                sg.fillStyle = rg;
+                sg.fillRect(x - r, y - r, r * 2, r * 2);
+            });
+
+            const img = sg.getImageData(0, 0, width, height);
+            const d = img.data;
+            for (let i = 0; i < d.length; i += 4) {
+                const a = d[i + 3];
+                if (!a) continue;
+                const o = a * 4;
+                d[i] = ramp[o]; d[i + 1] = ramp[o + 1]; d[i + 2] = ramp[o + 2];
+                d[i + 3] = Math.min(255, ramp[o + 3] * 0.85);
+            }
+            this.canvas.getContext('2d').putImageData(img, 0, 0);
+        }
+    }
+
+    const overlay = new HeatOverlay();
+    overlay.setMap(map);
 
     if (!bounds.isEmpty()) map.fitBounds(bounds, 40);
 }
