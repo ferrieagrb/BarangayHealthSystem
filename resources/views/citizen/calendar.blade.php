@@ -2,22 +2,20 @@
 
 @section('content')
 
-<div style="max-width: 1000px; margin: 30px auto; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<main class="citizen-calendar-page">
 
-    <div style="margin-bottom: 20px;">
-        <h2>📅 Health Center Event Calendar</h2>
+    <header class="citizen-calendar-heading">
+        <h1>Health Center Event Calendar</h1>
 
-        <p style="color: #666; font-size: 14px;">
+        <p>
             Check out upcoming community health programs, checkups, and schedules.
         </p>
-    </div>
+    </header>
 
-    <!-- Calendar Container Element -->
     <div id="calendar"></div>
 
-</div>
+</main>
 
-<!-- FullCalendar JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
 <script>
@@ -40,11 +38,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         eventClick: function(info) {
 
-            alert(
-                'Event: ' + info.event.title + '\n' +
-                'Time: ' + (info.event.extendedProps.time || 'All Day') + '\n' +
+            const details = [
+                'Event: ' + info.event.title,
+                'Time: ' + (info.event.extendedProps.time || 'All Day'),
                 'Description: ' + (info.event.extendedProps.description || 'No description provided.')
-            );
+            ].join('\n');
+            window.alert(details);
 
         }
 
