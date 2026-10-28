@@ -1735,5 +1735,5 @@ document.addEventListener("DOMContentLoaded", function () {
     if (document.readyState !== 'loading') updateDiagnosisBMI();
 })();
 </script>
-@endif
+
 @endsection

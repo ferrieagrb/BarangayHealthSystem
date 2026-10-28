@@ -40,6 +40,7 @@
     .disease-map-legend i { width: 12px; height: 12px; border: 2px solid #1d4ed8; border-radius: 50%; background: rgba(37,99,235,.25); }
     .disease-map-legend i.boundary { border-radius: 2px; background: rgba(37,99,235,.12); }
     .disease-empty { display: grid; min-height: 140px; place-items: center; padding: 20px; color: #64748b; text-align: center; }
+    .disease-chart { min-height: 280px; width: 100%; }
     .disease-note { margin: 12px 0 0; padding: 11px 12px; border-left: 3px solid #2563eb; background: #eff6ff; color: #334155; font-size: 12px; line-height: 1.5; }
     .disease-suppressed { color: #64748b; font-style: italic; }
     .leaflet-popup-content { margin: 10px 12px; }
@@ -55,11 +56,9 @@
     <div class="page-top">
         <div class="page-title-group">
             <h1>BHW Analytics</h1>
-            <p>Predictive indicators and recommended actions based on recent barangay records.</p>
+            <p>Explore recorded diagnoses across your authorized areas and reporting periods.</p>
         </div>
     </div>
-
-    <h2 class="analytics-type-heading">Predictive Analytics</h2>
 
     <h2 class="analytics-type-heading">Disease Monitoring</h2>
     <section class="analytics-panel" aria-labelledby="diseaseMonitoringHeading">
@@ -126,6 +125,18 @@
     </section>
 
     <div class="analytics-layout">
+        <section class="analytics-panel analytics-demand-panel">
+            <h2>Diagnosis records over time</h2>
+            <p>Counts follow the selected date, diagnosis, Purok, and subgroup filters. Records and distinct citizens are separate measures; buckets with fewer than three citizens are hidden.</p>
+            @if($diseaseMonitoringData['privacySuppressed'])
+                <div class="disease-empty">Trend details are withheld because fewer than three distinct citizens match these filters.</div>
+            @elseif(!collect($diseaseMonitoringData['trend']['recordCounts'])->contains(fn ($count) => $count > 0))
+                <div class="disease-empty">No dated diagnosis records match these filters.</div>
+            @else
+                <div id="diagnosisTrendChart" class="disease-chart" role="img" aria-label="Diagnosis records and distinct citizens by {{ $diseaseMonitoringData['trend']['granularity'] }}"></div>
+            @endif
+        </section>
+
         <section class="analytics-panel">
             <h2>Most recorded diagnoses</h2>
             <p>Diagnosis names are grouped by case and outer-whitespace normalization only; clinically distinct terms are not automatically merged.</p>
@@ -155,6 +166,11 @@
             @else
                 <div class="disease-empty">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Map details are withheld because fewer than three distinct citizens match these filters.' : 'No mapped areas match these filters. Check saved Purok/subgroup locations and the selected period.' }}</div>
             @endif
+            @if($diseaseMonitoringData['areaRankings']->isNotEmpty())
+                <div id="diagnosisAreaChart" class="disease-chart" role="img" aria-label="Diagnosis record counts by area"></div>
+            @else
+                <div class="disease-empty">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Area comparison is withheld because fewer than three distinct citizens match these filters.' : 'No area totals are available for this selection.' }}</div>
+            @endif
             <table class="analytics-table">
                 <thead><tr><th>Area</th><th>Records</th><th>Most recorded diagnosis</th></tr></thead>
                 <tbody>
@@ -181,21 +197,21 @@
         </section>
     </div>
 
-    <h2 class="analytics-type-heading">Predictive Analytics</h2>
+    <h2 class="analytics-type-heading">Operational Planning</h2>
 
     <div class="analytics-grid">
-        <div class="analytics-card"><span>Next 14-day health-record forecast</span><strong>{{ number_format($forecast) }}</strong><small>Based on the latest 14 days of records</small></div>
-        <div class="analytics-card"><span>New citizen registration forecast</span><strong>{{ number_format($citizenAdditions) }}</strong><small>New citizens added or imported in the previous 14 days</small></div>
-        <div class="analytics-card"><span>Citizen detail-edit forecast</span><strong>{{ number_format($citizenDetailEdits) }}</strong><small>Citizen information updates in the previous 14 days</small></div>
+        <div class="analytics-card"><span>Projected health-service activity · next 14 days</span><strong>{{ number_format($forecast) }}</strong><small>Simple extrapolation across diagnoses, maintenance, and vaccinations; not a disease forecast.</small></div>
+        <div class="analytics-card"><span>New citizen records · last 14 days</span><strong>{{ number_format($citizenAdditions) }}</strong><small>Observed registrations and imports</small></div>
+        <div class="analytics-card"><span>Citizen detail updates · last 14 days</span><strong>{{ number_format($citizenDetailEdits) }}</strong><small>Observed profile edits</small></div>
     </div>
 
     <div class="analytics-layout">
         <section class="analytics-panel analytics-demand-panel">
-            <h2>Predicted Health Demand</h2>
-            <p>The next 14-day estimate uses all diagnosis, maintenance, and immunization/vaccine activity from the latest two 14-day periods. It projects the current change forward and cannot fall below zero.</p>
+            <h2>Recent service activity and simple projection</h2>
+            <p>The projection carries the difference between the previous and current 14-day totals forward once. It combines different activity types and should not be interpreted as disease incidence or a validated forecast.</p>
             <div id="healthDemandChart" class="analytics-chart"></div>
             <table class="analytics-table">
-                <thead><tr><th>Current activity type</th><th>Records in previous 14 days</th></tr></thead>
+                <thead><tr><th>Activity type</th><th>Records in current 14 days</th></tr></thead>
                 <tbody>
                     <tr><td>Diagnosis</td><td>{{ number_format($currentDiagnosisCount) }}</td></tr>
                     <tr><td>Maintenance</td><td>{{ number_format($currentMaintenanceCount) }}</td></tr>
@@ -316,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const diagnosisChart = document.querySelector('#diagnosisRankingChart');
     const diagnosisRows = @json($diseaseMonitoringData['diagnosisRankings']);
     if (diagnosisChart && diagnosisRows.length) {
-        new ApexCharts(diagnosisChart, {
+        new ApexCharts(diagnosisChart, 
             series: [{ name: 'Diagnosis records', data: diagnosisRows.map((row) => Number(row.record_count)) }],
             chart: {
                 type: 'bar',
@@ -336,6 +352,58 @@ document.addEventListener('DOMContentLoaded', function () {
             colors: ['#2563eb'],
             plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
             dataLabels: { enabled: true },
+            grid: { borderColor: '#e2e8f0' }
+        }).render();
+    }
+
+    const trendElement = document.querySelector('#diagnosisTrendChart');
+    const trendData = @json($diseaseMonitoringData['trend']);
+    if (trendElement) {
+        new ApexCharts(trendElement, {
+            series: [
+                { name: 'Diagnosis records', data: trendData.recordCounts },
+                { name: 'Distinct citizens', data: trendData.citizenCounts }
+            ],
+            chart: { type: 'line', height: 300, toolbar: { show: false } },
+            colors: ['#2563eb', '#0f766e'],
+            stroke: { curve: 'straight', width: 3 },
+            markers: { size: 3, hover: { size: 5 } },
+            xaxis: { categories: trendData.labels, tickAmount: 8, labels: { rotate: -35 } },
+            yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0 },
+            dataLabels: { enabled: false },
+            tooltip: { shared: true, intersect: false },
+            legend: { position: 'top', horizontalAlign: 'right' },
+            grid: { borderColor: '#e2e8f0' },
+            noData: { text: 'No dated records for this selection' }
+        }).render();
+    }
+
+    const areaChart = document.querySelector('#diagnosisAreaChart');
+    const areaRows = @json($diseaseMonitoringData['areaRankings']);
+    if (areaChart && areaRows.length) {
+        new ApexCharts(areaChart, {
+            series: [{ name: 'Diagnosis records', data: areaRows.map((row) => Number(row.records_count)) }],
+            chart: {
+                type: 'bar',
+                height: Math.max(260, areaRows.length * 38),
+                toolbar: { show: false },
+                events: {
+                    dataPointSelection: (_event, _chart, options) => {
+                        const selected = areaRows[options.dataPointIndex];
+                        if (!selected) return;
+                        const form = document.getElementById('diseaseFilters');
+                        const params = new URLSearchParams(new FormData(form));
+                        params.set('disease_purok', selected.purok_id || '');
+                        params.set('disease_subgroup', selected.area_type === 'subgroup' ? selected.area_id : '');
+                        window.location.href = `${form.action}?${params.toString()}`;
+                    }
+                }
+            },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            xaxis: { categories: areaRows.map((row) => row.area), min: 0, forceNiceScale: true },
+            colors: ['#0f766e'],
+            dataLabels: { enabled: true },
+            tooltip: { y: { formatter: (value) => `${value} diagnosis records` } },
             grid: { borderColor: '#e2e8f0' }
         }).render();
     }

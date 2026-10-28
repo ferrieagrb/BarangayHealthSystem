@@ -334,7 +334,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name
 
 Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/home',[AdminSettings::class,'dashboard'])->name('home');
-    Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
+    Route::get('/analytics', [AdminAnalytics::class, 'index'])->name('analytics');
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies');

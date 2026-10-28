@@ -245,11 +245,7 @@
                     </a>
                 </li>
                 <li>
-<<<<<<< HEAD
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-=======
                     <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                         @csrf
                         <button type="submit">
                             <i class="bx bx-log-out"></i>
