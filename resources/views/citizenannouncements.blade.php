@@ -78,9 +78,12 @@
                 @foreach($announcements as $announcement)
                     <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-card">
                         <div class="announcement-gallery">
-                            @foreach($announcement->images as $image)
-                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}">
-                            @endforeach
+                            @php $logoUrl = asset('images/amuyong.png'); @endphp
+                            @forelse($announcement->images as $image)
+                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
+                            @empty
+                                <img src="{{ $logoUrl }}" alt="{{ $announcement->title }}" class="is-logo">
+                            @endforelse
                         </div>
                         <div class="announcement-header">
                             <span class="category-badge">{{ $announcement->category ?? 'General' }}</span>
