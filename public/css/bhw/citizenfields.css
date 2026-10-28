@@ -1083,6 +1083,7 @@ body:has(.maintenance-section) .health-alert-error {
 }
 }
 
+
 /* Immunization and Maintenance Medicines — align with Diagnosis panels */
 .immunization-section.diagnosis-panel,
 .maintenance-container-box.diagnosis-panel {

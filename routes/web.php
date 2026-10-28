@@ -12,6 +12,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\QRScannerController;
+use App\Http\Controllers\CitizenHealthShareController;
 use App\Http\Controllers\AdminAnalytics;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AdminSettings;
@@ -55,7 +56,14 @@ use App\Http\Controllers\PublicAssetController;
 // Public QR landing page. It never exposes private medical records.
 Route::get('/health-id/{token}', [QRScannerController::class, 'publicHealthId'])
     ->whereUuid('token')
+    ->middleware('throttle:60,1')
     ->name('health-id.public');
+Route::get('/health-id/{token}/summary', [QRScannerController::class, 'publicHealthSummary'])
+    ->whereUuid('token')
+    ->middleware('throttle:60,1')
+    ->name('health-id.summary');
+Route::view('/public/qr-scanner', 'public.qr-scanner')
+    ->name('public.qr-scanner');
 
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
@@ -130,6 +138,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
         $maintenanceRecords = collect();
+        $healthShare = null;
 
         if ($user->citizen_id) {
             $citizen = citizens::with([
@@ -146,6 +155,11 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
                 $maintenanceRecords = MaintenanceRecord::where('citizen_id', $citizen->id)
                     ->latest()
                     ->get();
+                $healthShare = \App\Models\CitizenHealthShare::query()
+                    ->active()
+                    ->where('citizen_id', $citizen->id)
+                    ->latest('granted_at')
+                    ->first();
             }
         }
 
@@ -160,9 +174,14 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             'citizen',
             'maintenanceRecords',
             'qrImage',
-            'vaccinationSchedulingEnabled'
+            'vaccinationSchedulingEnabled',
+            'healthShare'
         ));
     })->name('dashboard');
+    Route::post('/health-sharing', [CitizenHealthShareController::class, 'grant'])
+        ->name('health-sharing.grant');
+    Route::delete('/health-sharing', [CitizenHealthShareController::class, 'revoke'])
+        ->name('health-sharing.revoke');
 
     // Citizen Supplies Overview
     Route::get('/supplies', [CitizenSupplyController::class, 'index'])->name('supplies');

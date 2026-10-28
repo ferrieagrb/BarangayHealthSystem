@@ -110,6 +110,7 @@
         document.addEventListener('submit', function(e) {
             if (e.defaultPrevented) return;
             if (e.target.closest('[data-no-loader="true"], .logout-form, .citizen-sidebar-logout')) return;
+            if (e.submitter && e.submitter.closest('[data-no-loader="true"]')) return;
             showLoader();
         });
 

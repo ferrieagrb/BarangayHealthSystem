@@ -45,6 +45,7 @@
                     <li><a href="{{ url('/') }}" class="active">Home</a></li>
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
+                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
                     <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
@@ -67,7 +68,7 @@
 
     <!-- Main Content Area -->
     <main class="container main-content">
-        
+
         <!-- Recent Events Section -->
         <section class="content-section">
             <div class="section-header">
