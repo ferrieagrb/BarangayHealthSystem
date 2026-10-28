@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'citizen_id',
         'name',
         'email',
+        'username',
         'password',
         'role',
         'citizen_id',
@@ -41,6 +42,22 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public static function usernameFromContact($contact, $ignoreUserId = null): ?string
+    {
+        $username = preg_replace('/[\s\-().]/', '', trim((string) $contact));
+
+        if ($username === '' || strlen($username) > 50 || !preg_match('/^[A-Za-z0-9._+-]+$/', $username)) {
+            return null;
+        }
+
+        $taken = static::withTrashed()
+            ->where('username', $username)
+            ->when($ignoreUserId, fn ($q) => $q->where('id', '!=', $ignoreUserId))
+            ->exists();
+
+        return $taken ? null : $username;
     }
 
     public function isSuperAdmin()

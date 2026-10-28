@@ -48,7 +48,7 @@ class UserController extends Controller
         }
 
         // 2. Find user by email/username
-        $user = User::where('email', $username)->first();
+        $user = User::where('email', $username)->orWhere('username', $username)->first();
 
         if (!$user) {
             RateLimiter::hit($throttleKey, 60); // Count failed attempt against the rate limiter

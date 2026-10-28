@@ -103,6 +103,7 @@ public function store(Request $request)
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
+        'username' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', 'unique:users,username'],
         'role' => 'required'
     ]);
 
@@ -112,6 +113,7 @@ public function store(Request $request)
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
+        'username' => $request->filled('username') ? trim($request->username) : null,
         'password' => Hash::make($defaultPassword),
         'role' => $request->role,
         'must_change_password' => true,
@@ -120,6 +122,29 @@ public function store(Request $request)
     $this->logAdminActivity('user.created', "Created user {$user->name} with role {$user->role}.", 'governance', $user, null, ['role' => $user->role]);
 
     return redirect()->route(auth()->user()->isSuperAdmin() ? 'superadmin.users' : 'admin.users')->with('success', 'User created successfully. Default temporary password is: ' . $defaultPassword);
+}
+
+public function update(Request $request, $id)
+{
+    $user = User::findOrFail($id);
+
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => ['required', 'email', 'unique:users,email,' . $user->id],
+        'username' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', 'unique:users,username,' . $user->id],
+        'role' => 'required',
+    ]);
+
+    $user->update([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'username' => !empty($data['username']) ? trim($data['username']) : null,
+        'role' => $data['role'],
+    ]);
+
+    $this->logAdminActivity('user.updated', "Updated user {$user->name}.", 'governance', $user);
+
+    return back()->with('success', 'User updated successfully.');
 }
 
 public function unlockAccount($id)
