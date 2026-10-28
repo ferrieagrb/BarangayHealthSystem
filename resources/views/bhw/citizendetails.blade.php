@@ -145,27 +145,17 @@
             <label for="Citizen_Purok">Purok</label>
 
             <input type="text"
-
                    id="Citizen_Purok"
-
                    name="Citizen_Purok"
-
                    value="{{ old('Citizen_Purok', $citizen->Citizen_Purok) }}"
-
-                     disabled
-
-                     readonly>
+                   disabled
+                   readonly>
 
                  <label for="Citizen_Subgroup">Purok Subgroup</label>
-
                  <input type="text"
-
                      id="Citizen_Subgroup"
-
                      value="{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}"
-
                      readonly>
-
                  <button type="button" class="btn-secondary" id="openEditManualPicker" style="display:none;">Assign without family</button>
 
             <hr class="citizen-section-divider">
@@ -307,92 +297,9 @@
 
             <hr class="citizen-section-divider">
 
-<<<<<<< HEAD
-            <!-- IMMUNIZATION / VACCINATION -->
-            <section class="immunization-section" aria-labelledby="immunizationTitle">
-                <div class="immunization-heading">
-                    <div>
-                        <h3 id="immunizationTitle">Immunization / Vaccination</h3>
-                        <p>Select a vaccine, record the dose/booster, date and save it to this citizen's history.</p>
-                    </div>
-                </div>
+            <section id="familyPlanningFields"
+                     @if($citizen->Citizen_Sex !== 'Female') hidden @endif>
 
-                @php
-                    $vaccines = [
-                        'BCG' => 'BCG',
-                        'HepB' => 'Hepatitis B (HepB)',
-                        'Penta' => 'Pentavalent (Penta)',
-                        'OPV' => 'Oral Polio Vaccine (OPV)',
-                        'IPV' => 'Inactivated Polio Vaccine (IPV)',
-                        'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
-                        'MMR' => 'Measles, Mumps, Rubella (MMR)',
-                        'MR' => 'Measles-Rubella (MR)',
-                        'Td' => 'Tetanus-Diphtheria (Td)',
-                        'HPV' => 'Human Papillomavirus (HPV)',
-                    ];
-                @endphp
-
-                @if($canEdit && (int)$citizen->Citizen_IsDeceased !== 1)
-                    <div class="immunization-form-grid">
-                        <div class="immunization-field">
-                            <label for="vaccine_name">Vaccine Name</label>
-                            <select id="vaccine_name" name="vaccine_name" form="vaccinationForm" required>
-                                <option value="" disabled selected>-- Select Vaccine --</option>
-                                @foreach ($vaccines as $vaccineKey => $vaccineLabel)
-                                    <option value="{{ $vaccineLabel }}" {{ old('vaccine_name') === $vaccineLabel ? 'selected' : '' }}>
-                                        {{ $vaccineLabel }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="immunization-field">
-                            <label for="dose_number">Dose / Booster</label>
-                            <select id="dose_number" name="dose_number" form="vaccinationForm" required>
-                                <option value="" disabled selected>-- Select Dose/Booster --</option>
-                                <option value="Single Dose">Single Dose</option>
-                                <option value="Dose 1">Dose 1</option>
-                                <option value="Dose 2">Dose 2</option>
-                                <option value="Dose 3">Dose 3</option>
-                                <option value="Booster 1">Booster 1</option>
-                                <option value="Booster 2">Booster 2</option>
-                            </select>
-                        </div>
-
-                        <div class="immunization-field">
-                            <label for="date_administered">Date Administered</label>
-                            <input type="date" id="date_administered" name="date_administered" value="{{ old('date_administered', now()->format('Y-m-d')) }}" form="vaccinationForm" required>
-                        </div>
-
-                        <input type="hidden" id="administered_by" name="administered_by" value="{{ auth()->user()->name ?? 'BHW' }}" form="vaccinationForm">
-
-                        <div class="immunization-action-wrapper">
-                            <button type="submit" class="btn-primary" form="vaccinationForm">Add Vaccination</button>
-                        </div>
-                    </div>
-                @elseif((int) $citizen->Citizen_IsDeceased === 1)
-                    <p class="immunization-preview-note">This record is deceased and locked for updates.</p>
-                @else
-                    <p class="immunization-preview-note">Read-only: this citizen is not assigned to your subgroup.</p>
-                @endif
-
-                <div class="immunization-history">
-                    <h4>Immunization History</h4>
-                    @forelse ($citizen->vaccinations as $vaccination)
-                        <div class="immunization-history-item">
-                            <strong>{{ $vaccination->vaccine_name }}</strong>
-                            <span>{{ $vaccination->dose_number }} · {{ $vaccination->date_administered }}</span>
-                            <small>Administered by {{ $vaccination->administered_by }}</small>
-                        </div>
-                    @empty
-                        <p>No immunization records yet.</p>
-                    @endforelse
-                </div>
-            </section>
-
-=======
-
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             {{-- HEALTH & FAMILY PLANNING --}}
 
             <h3 class="citizen-section-title">Health &amp; Family Planning</h3>
@@ -448,6 +355,8 @@
                 </select>
 
             </div>
+
+            </section>
 
             <hr class="citizen-section-divider">
 
@@ -527,18 +436,10 @@
                 @endif
 
                 @php
-                    $vaccines = [
-                        'BCG' => 'BCG',
-                        'HepB' => 'Hepatitis B (HepB)',
-                        'Penta' => 'Pentavalent (Penta)',
-                        'OPV' => 'Oral Polio Vaccine (OPV)',
-                        'IPV' => 'Inactivated Polio Vaccine (IPV)',
-                        'PCV' => 'Pneumococcal Conjugate Vaccine (PCV)',
-                        'MMR' => 'Measles, Mumps, Rubella (MMR)',
-                        'MR' => 'Measles-Rubella (MR)',
-                        'Td' => 'Tetanus-Diphtheria (Td)',
-                        'HPV' => 'Human Papillomavirus (HPV)',
-                    ];
+                    $vaccineDoseOptions = collect($vaccinationEligibilityOptions)
+                        ->flatMap(fn ($vaccine) => collect($vaccine['doses'])->pluck('name'))
+                        ->unique()
+                        ->values();
                 @endphp
 
                 @if($canEdit && (int)$citizen->Citizen_IsDeceased !== 1)
@@ -547,9 +448,18 @@
                             <label for="vaccine_name">Vaccine Name</label>
                             <select id="vaccine_name" name="vaccine_name" form="vaccinationForm" required>
                                 <option value="" disabled selected>-- Select Vaccine --</option>
-                                @foreach ($vaccines as $vaccineKey => $vaccineLabel)
-                                    <option value="{{ $vaccineLabel }}" {{ old('vaccine_name') === $vaccineLabel ? 'selected' : '' }}>
-                                        {{ $vaccineLabel }}
+                                @foreach ($vaccinationEligibilityOptions as $vaccineCode => $vaccine)
+                                    <option value="{{ $vaccine['label'] }}"
+                                            data-code="{{ $vaccineCode }}"
+                                            data-doses='@json($vaccine["doses"])'
+                                            data-next-dose="{{ $vaccine['next_dose'] }}"
+                                            data-guideline="{{ $vaccine['guideline'] }}"
+                                            data-reason="{{ $vaccine['reason'] }}"
+                                            data-review-required="{{ $vaccine['review_required'] ? '1' : '0' }}"
+                                            title="{{ $vaccine['eligible'] ? $vaccine['guideline'] : $vaccine['reason'] }}"
+                                            @disabled(!$vaccine['eligible'])
+                                            @selected(old('vaccine_name') === $vaccine['label'] && $vaccine['eligible'])>
+                                        {{ $vaccine['label'] }}{{ $vaccine['review_required'] ? ' — catch-up review required' : ($vaccine['eligible'] ? '' : ' — unavailable') }}
                                     </option>
                                 @endforeach
                             </select>
@@ -559,12 +469,9 @@
                             <label for="dose_number">Dose / Booster</label>
                             <select id="dose_number" name="dose_number" form="vaccinationForm" required>
                                 <option value="" disabled selected>-- Select Dose/Booster --</option>
-                                <option value="Single Dose">Single Dose</option>
-                                <option value="Dose 1">Dose 1</option>
-                                <option value="Dose 2">Dose 2</option>
-                                <option value="Dose 3">Dose 3</option>
-                                <option value="Booster 1">Booster 1</option>
-                                <option value="Booster 2">Booster 2</option>
+                                @foreach($vaccineDoseOptions as $doseName)
+                                    <option value="{{ $doseName }}">{{ $doseName }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -573,6 +480,11 @@
                             <input type="date" id="date_administered" name="date_administered" value="{{ old('date_administered', now()->format('Y-m-d')) }}" form="vaccinationForm" required>
                         </div>
 
+                        <label id="catchUpReviewField" hidden>
+                            <input type="checkbox" id="catch_up_reviewed" name="catch_up_reviewed" value="1" form="vaccinationForm">
+                            Health center confirmed this catch-up vaccine and dose schedule
+                        </label>
+
                         <input type="hidden" id="administered_by" name="administered_by" value="{{ auth()->user()->name ?? 'BHW' }}" form="vaccinationForm">
 
                         <div class="immunization-action-wrapper diagnosis-actions record-form-actions">
@@ -580,6 +492,9 @@
                             <button type="submit" class="btn-primary" form="vaccinationForm">Add Vaccination</button>
                         </div>
                     </div>
+                    <p id="vaccinationEligibilityMessage" class="immunization-preview-note" role="status" aria-live="polite">
+                        Vaccine options are limited to the configured Philippine routine schedule. Out-of-window doses require health-center review.
+                    </p>
                 @elseif((int) $citizen->Citizen_IsDeceased === 1)
                     <p class="immunization-preview-note">This record is deceased and locked for updates.</p>
                 @else
@@ -625,6 +540,11 @@
                                             Administered Date: {{ $vaccination->date_administered ? \Carbon\Carbon::parse($vaccination->date_administered)->format('M d, Y') : '—' }}
                                             · Administered by {{ $vaccination->administered_by ?: '—' }}
                                         </div>
+                                        @if($vaccination->eligibility_review_required)
+                                            <p class="health-alert health-alert-error" role="status">
+                                                Historical record retained for review: {{ $vaccination->eligibility_review_reason }}
+                                            </p>
+                                        @endif
                                     </div>
                                     @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
                                         <form method="POST"
@@ -660,14 +580,7 @@
         <span class="diagnosis-count">{{ $citizen->maintenanceRecords->count() }} {{ $citizen->maintenanceRecords->count() === 1 ? 'Record' : 'Records' }}</span>
     </div>
 
-<<<<<<< HEAD
-<div class="maintenance-container-box">
-    <h3>Maintenance Medicines</h3>
-
-    @if(session('success'))
-=======
     @if(session('success') === 'Maintenance medicine added successfully.')
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
         <p class="health-alert health-alert-success">
 
@@ -726,15 +639,9 @@
                     <div><span>Duration</span><strong>{{ $maintenance->end_date ? $maintenance->start_date?->diffInDays($maintenance->end_date) + 1 . ' days' : 'Ongoing' }}</strong></div>
                 </div>
 
-<<<<<<< HEAD
-            <p><strong>Quantity:</strong> {{ $maintenance->quantity_dispensed ?? 1 }}</p>
-
-            <p><strong>Dosage:</strong> {{ $maintenance->dosage }}</p>
-=======
                 @if($maintenance->notes)
                     <div class="diagnosis-notes"><strong>Notes:</strong> {{ $maintenance->notes }}</div>
                 @endif
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
             </div>
         </article>
@@ -801,14 +708,10 @@
                 <textarea name="notes" id="maintenance_notes" class="maintenance-field" maxlength="2000" placeholder="Additional instructions or notes...">{{ old('notes') }}</textarea>
             </div>
         </div>
-<<<<<<< HEAD
-        <button type="submit" class="btn-primary">Add Maintenance</button>
-=======
         <div class="diagnosis-actions record-form-actions">
             <button type="button" class="diagnosis-clear" id="clearMaintenanceBtn">Clear</button>
             <button type="submit" class="btn-primary">Add Maintenance</button>
         </div>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
     </form>
 
     <div id="medicinePickerModal" class="medicine-picker-modal" role="dialog" aria-modal="true" aria-labelledby="medicinePickerTitle" aria-hidden="true">
@@ -882,7 +785,7 @@
 <form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to delete this diagnosis record? This action cannot be undone.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Delete</button></form>
 @endif
 </div>
-<<<<<<< HEAD
+{{--
 
 <!-- ================================================================
 
@@ -1139,7 +1042,7 @@
 
     </div>
 
-=======
+--}}
  <div class="diagnosis-vitals"><div><span>BMI</span><strong>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1).' kg/m²' : '—' }}</strong></div><div><span>Weight / Height</span><strong>{{ $record->weight !== null ? rtrim(rtrim(number_format((float)$record->weight,1,'.',''),'0'),'.').'kg' : '—' }} / {{ $record->height !== null ? rtrim(rtrim(number_format((float)$record->height,1,'.',''),'0'),'.').'cm' : '—' }}</strong></div><div><span>Temp</span><strong>{{ $record->temperature !== null ? number_format((float)$record->temperature,1).' °C' : '—' }}</strong></div><div><span>BP</span><strong>{{ $record->blood_pressure ?: '—' }}</strong></div></div>
  <div class="diagnosis-notes"><strong>Notes:</strong> {{ $record->comments ?: 'No notes recorded.' }}</div></div></article>
  @empty <div class="diagnosis-empty"><strong style="display:block;color:#334155">No Diagnosis History Recorded</strong><span>Add a new record using the entry form below.</span></div> @endforelse
@@ -1164,7 +1067,6 @@
  <div class="diagnosis-actions"><button type="button" class="diagnosis-clear" id="clearDiagnosisBtn">Clear</button><button type="submit" class="diagnosis-save" id="saveDiagnosisBtn">Save Record</button></div>
 </form></div>
 @else <div class="diagnosis-add-section"><p class="diagnosis-subtitle">This citizen record is read-only. A diagnosis cannot be added from this account.</p></div> @endif
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 </div>
 </section>
 
@@ -1222,35 +1124,20 @@
 </div>
 
 <div class="edit-assignment-modal" id="editManualPicker" aria-hidden="true">
-
     <div class="edit-assignment-box">
-
         <div style="display:flex; justify-content:space-between; align-items:center;">
-
             <h2 style="margin:0;">Select Purok / Subgroup</h2>
-
             <button type="button" class="family-picker-close" data-close-edit-modal>&times;</button>
-
         </div>
-
         <div class="edit-assignment-list" style="margin-top:16px;">
-
             @foreach ($puroks as $purok)
-
                 <strong style="color:#173b82;">{{ $purok->name }}</strong>
-
                 @foreach ($purok->subgroups as $subgroup)
-
                     <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}"><span>{{ $purok->name }} / {{$subgroup->name }}</span><span>Select</span></button>
-
                 @endforeach
-
             @endforeach
-
         </div>
-
     </div>
-
 </div>
 
 <div class="citizen-form-actions" style="display:flex; justify-content:flex-end; gap:10px; margin:24px 0;">
@@ -1351,6 +1238,8 @@ function enableEdit() {
 
     document.getElementById('editBtn').style.display = 'none';
     setEditGatedState(true);
+    if (window.updateFamilyPlanningEligibility) window.updateFamilyPlanningEligibility();
+    if (window.updateVaccinationEligibility) window.updateVaccinationEligibility();
 
 
     const vaccinationEntryForm = document.getElementById('vaccinationEntryForm');
@@ -1399,6 +1288,8 @@ function disableEdit() {
 
     document.getElementById('editBtn').style.display = 'inline-block';
     setEditGatedState(false);
+    if (window.updateFamilyPlanningEligibility) window.updateFamilyPlanningEligibility();
+    if (window.updateVaccinationEligibility) window.updateVaccinationEligibility();
 
 }
 
@@ -1538,9 +1429,171 @@ setEditGatedState(false);
 
 </script>
 
+<script>
+window.updateFamilyPlanningEligibility = function () {
+    const sex = document.getElementById('Citizen_Sex');
+    const birthDate = document.getElementById('Citizen_BirthDate');
+    const familyPlanningFields = document.getElementById('familyPlanningFields');
+    const pregnant = document.getElementById('Citizen_Pregnant');
+    const pills = document.getElementById('Citizen_InPills');
+
+    if (!sex || !birthDate || !familyPlanningFields || !pregnant) return;
+
+    const isFemale = sex.value === 'Female';
+    const isEditing = !sex.disabled;
+    const dateOfBirth = birthDate.value ? new Date(`${birthDate.value}T00:00:00`) : null;
+    let age = isEditing ? null : @json($citizen->ageForEligibility());
+
+    if (dateOfBirth && !Number.isNaN(dateOfBirth.getTime())) {
+        const today = new Date();
+        age = today.getFullYear() - dateOfBirth.getFullYear();
+        if (today.getMonth() < dateOfBirth.getMonth()
+            || (today.getMonth() === dateOfBirth.getMonth() && today.getDate() < dateOfBirth.getDate())) {
+            age--;
+        }
+    }
+
+    familyPlanningFields.hidden = !isFemale;
+    pregnant.disabled = !isEditing || !isFemale;
+
+    if (!isFemale) {
+        pregnant.value = '0';
+    }
+
+    if (pills) {
+        const pillsEligible = isFemale && age !== null && age >= 16;
+        pills.disabled = !isEditing || !pillsEligible;
+        if (!pillsEligible) pills.value = '0';
+    }
+};
+
+function initializeFamilyPlanningEligibility() {
+    const sex = document.getElementById('Citizen_Sex');
+    const birthDate = document.getElementById('Citizen_BirthDate');
+
+    if (sex) sex.addEventListener('change', window.updateFamilyPlanningEligibility);
+    if (birthDate) birthDate.addEventListener('change', window.updateFamilyPlanningEligibility);
+    window.updateFamilyPlanningEligibility();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFamilyPlanningEligibility);
+} else {
+    initializeFamilyPlanningEligibility();
+}
+</script>
+
 @endsection
 
 @section('scripts')
+
+<script>
+window.updateVaccinationEligibility = (function () {
+    const vaccineSelect = document.getElementById('vaccine_name');
+    const doseSelect = document.getElementById('dose_number');
+    const administeredDate = document.getElementById('date_administered');
+    const birthDate = document.getElementById('Citizen_BirthDate');
+    const message = document.getElementById('vaccinationEligibilityMessage');
+    if (!vaccineSelect || !doseSelect || !administeredDate || !birthDate || !message) return null;
+
+    function ageAt(birth, date) {
+        const birthParts = birth.split('-').map(Number);
+        const dateParts = date.split('-').map(Number);
+        const birthValue = new Date(birthParts[0], birthParts[1] - 1, birthParts[2]);
+        const dateValue = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        if (Number.isNaN(birthValue.getTime()) || Number.isNaN(dateValue.getTime()) || dateValue < birthValue) return null;
+
+        const days = Math.floor((dateValue - birthValue) / 86400000);
+        let months = (dateParts[0] - birthParts[0]) * 12 + dateParts[1] - birthParts[1];
+        if (dateParts[2] < birthParts[2]) months--;
+        let years = dateParts[0] - birthParts[0];
+        if (dateParts[1] < birthParts[1] || (dateParts[1] === birthParts[1] && dateParts[2] < birthParts[2])) years--;
+        return { days: days, months: months, years: years };
+    }
+
+    function doseMatches(dose, age) {
+        if (!age) return false;
+        for (const unit of ['days', 'months', 'years']) {
+            const min = dose['min_' + unit];
+            const max = dose['max_' + unit];
+            if (min !== undefined && age[unit] < min) return false;
+            if (max !== undefined && age[unit] > max) return false;
+        }
+        return true;
+    }
+
+    function doseMeetsMinimumAge(dose, age) {
+        if (!age) return false;
+        return ['days', 'months', 'years'].every(function (unit) {
+            const minimum = dose['min_' + unit];
+            return minimum === undefined || age[unit] >= minimum;
+        });
+    }
+
+    function updateEligibility() {
+        const age = birthDate.value && administeredDate.value ? ageAt(birthDate.value, administeredDate.value) : null;
+        for (const option of vaccineSelect.options) {
+            if (!option.dataset.code) continue;
+            const doses = JSON.parse(option.dataset.doses);
+            const dose = doses.find(function (item) { return item.name === option.dataset.nextDose; });
+            const routineEligible = Boolean(dose && doseMatches(dose, age));
+            const catchUpCandidate = Boolean(dose && !routineEligible && doseMeetsMinimumAge(dose, age));
+            const eligible = routineEligible || catchUpCandidate;
+            option.disabled = !eligible;
+            option.dataset.reviewRequired = catchUpCandidate ? '1' : '0';
+            option.textContent = option.dataset.label + (catchUpCandidate ? ' — catch-up review required' : (eligible ? '' : ' — unavailable'));
+            option.title = catchUpCandidate
+                ? 'Catch-up candidate only. Health-center confirmation is required before recording.'
+                : (eligible ? option.dataset.guideline : (age ? 'Below the minimum age for this dose.' : 'Enter a valid date of birth and administration date.'));
+        }
+
+        const selectedOption = vaccineSelect.selectedOptions[0];
+        const reviewField = document.getElementById('catchUpReviewField');
+        const reviewCheckbox = document.getElementById('catch_up_reviewed');
+        if (!selectedOption || !selectedOption.dataset.code || selectedOption.disabled) {
+            vaccineSelect.value = '';
+            doseSelect.value = '';
+            reviewField.hidden = true;
+            reviewCheckbox.required = false;
+            reviewCheckbox.checked = false;
+            message.textContent = age
+                ? 'No routine or catch-up candidate is available for this age and dose sequence.'
+                : 'Enter a valid date of birth and administration date.';
+            return;
+        }
+
+        doseSelect.value = selectedOption.dataset.nextDose;
+        reviewField.hidden = selectedOption.dataset.reviewRequired !== '1';
+        reviewCheckbox.required = selectedOption.dataset.reviewRequired === '1';
+        if (!reviewCheckbox.required) reviewCheckbox.checked = false;
+        for (const doseOption of doseSelect.options) {
+            doseOption.disabled = doseOption.value !== '' && doseOption.value !== selectedOption.dataset.nextDose;
+        }
+        message.textContent = reviewCheckbox.required
+            ? 'Catch-up candidate only. Health-center confirmation is required before recording this dose.'
+            : selectedOption.dataset.guideline;
+    }
+
+    for (const option of vaccineSelect.options) {
+        if (option.dataset.code) option.dataset.label = option.textContent.trim().replace(/ — (catch-up review required|unavailable)$/, '');
+    }
+    vaccineSelect.addEventListener('change', function () {
+        document.getElementById('catch_up_reviewed').checked = false;
+        updateEligibility();
+    });
+    administeredDate.addEventListener('change', function () {
+        document.getElementById('catch_up_reviewed').checked = false;
+        updateEligibility();
+    });
+    birthDate.addEventListener('change', function () {
+        document.getElementById('catch_up_reviewed').checked = false;
+        updateEligibility();
+    });
+    return updateEligibility;
+})();
+
+if (window.updateVaccinationEligibility) window.updateVaccinationEligibility();
+</script>
 
 <script>
 
@@ -1663,7 +1716,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("saveDiagnosisBtn");
 
 
-<<<<<<< HEAD
        CONFIRMATION MODAL ELEMENTS
 
        ============================================================ */
@@ -1836,12 +1888,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-=======
-
-});
-
-</script>
-
 <script>
 (function () {
     function updateDiagnosisBMI() {
@@ -1948,5 +1994,4 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @endsection

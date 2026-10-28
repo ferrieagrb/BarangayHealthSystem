@@ -203,14 +203,11 @@
                 </div>
 
                 <div>
-<<<<<<< HEAD
-=======
                     <span class="block text-xs text-gray-500">Sex</span>
                     <span class="font-semibold">{{ $citizen->Citizen_Sex ?: 'N/A' }}</span>
                 </div>
 
                 <div>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                     <span class="block text-xs text-gray-500">Patient Contact Number</span>
                     <span class="font-semibold">
                         {{ $citizen->Citizen_ContactNo ?: 'N/A' }}
@@ -219,20 +216,20 @@
 
             </div>
 
-<<<<<<< HEAD
-=======
-
+            @php($citizenAge = $citizen->ageForEligibility())
             <div class="mb-6 grid grid-cols-1 gap-4 border-b border-gray-300 pb-4 text-sm sm:grid-cols-2">
                 <div><span class="block text-xs text-gray-500">Housing Status</span><span class="font-semibold">{{ $citizen->Citizen_HousingStatus ?: 'N/A' }}</span></div>
-                <div><span class="block text-xs text-gray-500">Pregnancy Status</span><span class="font-semibold">{{ !empty($citizen->Citizen_Pregnant) ? 'Yes' : 'No' }}</span></div>
-                <div><span class="block text-xs text-gray-500">Taking Pills</span><span class="font-semibold">{{ !empty($citizen->Citizen_InPills) ? 'Yes' : 'No' }}</span></div>
+                @if($citizen->Citizen_Sex === 'Female')
+                    <div><span class="block text-xs text-gray-500">Pregnancy Status</span><span class="font-semibold">{{ (bool) $citizen->Citizen_Pregnant ? 'Yes' : 'No' }}</span></div>
+                    @if($citizenAge !== null && $citizenAge >= 16)
+                        <div><span class="block text-xs text-gray-500">Taking Pills</span><span class="font-semibold">{{ (bool) $citizen->Citizen_InPills ? 'Yes' : 'No' }}</span></div>
+                    @endif
+                @endif
                 <div><span class="block text-xs text-gray-500">Deceased Status</span><span class="font-semibold">{{ !empty($citizen->Citizen_IsDeceased) ? 'Deceased' : 'Living' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Family ID</span><span class="font-semibold">{{ $citizen->family?->id ?? 'None' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Family Name</span><span class="font-semibold">{{ $citizen->family?->family_name ?: 'No family assigned' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Subgroup</span><span class="font-semibold">{{ $citizen->subgroup?->name ?: ($citizen->family?->subgroup?->name ?: 'Not assigned') }}</span></div>
             </div>
-
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             {{-- DIAGNOSIS / HEALTH RECORDS --}}
             <div class="mb-6">
                 <h3 class="mb-2 border border-gray-300 bg-gray-100 p-2 text-sm font-bold uppercase text-gray-700">
@@ -244,13 +241,10 @@
                             <tr class="bg-gray-200 text-gray-800">
                                 <th class="border border-gray-400 p-2">Date Recorded</th>
                                 <th class="border border-gray-400 p-2">Diagnosis</th>
-<<<<<<< HEAD
-=======
                                 <th class="border border-gray-400 p-2">BMI</th>
                                 <th class="border border-gray-400 p-2">Weight / Height</th>
                                 <th class="border border-gray-400 p-2">Temperature</th>
                                 <th class="border border-gray-400 p-2">BP</th>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                 <th class="border border-gray-400 p-2">Comments / Notes</th>
                             </tr>
                         </thead>
@@ -261,22 +255,15 @@
                                         {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : 'N/A' }}
                                     </td>
                                     <td class="border border-gray-400 p-2 font-semibold">{{ $record->diagnosis ?: 'N/A' }}</td>
-<<<<<<< HEAD
-=======
                                     <td class="border border-gray-400 p-2">{{ $record->bmi !== null ? number_format((float)$record->bmi, 1) . ' kg/m²' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->weight !== null ? $record->weight . ' kg' : '—' }} / {{ $record->height !== null ? $record->height . ' cm' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->temperature !== null ? number_format((float)$record->temperature, 1) . ' °C' : '—' }}</td>
                                     <td class="border border-gray-400 p-2">{{ $record->blood_pressure ?: '—' }}</td>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                     <td class="border border-gray-400 p-2">{{ $record->comments ?: '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-<<<<<<< HEAD
-                                    <td colspan="3" class="border border-gray-400 p-3 text-center italic text-gray-500">
-=======
                                     <td colspan="7" class="border border-gray-400 p-3 text-center italic text-gray-500">
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                                         No diagnosis or health records found.
                                     </td>
                                 </tr>
@@ -308,6 +295,12 @@
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
                                         {{ $vax->vaccine_name }}
+                                        @if($vax->eligibility_review_required)
+                                            <div class="mt-1 text-xs font-normal text-amber-700">Review required: {{ $vax->eligibility_review_reason }}</div>
+                                        @endif
+                                        @if($vax->catch_up_reviewed)
+                                            <div class="mt-1 text-xs font-normal text-blue-700">Catch-up schedule confirmed by health center.</div>
+                                        @endif
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}
@@ -376,14 +369,6 @@
                     </table>
                 </div>
             </div>
-<<<<<<< HEAD
-
-</section>
-=======
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
-
-
-
 </section>
     </div>
 </div>

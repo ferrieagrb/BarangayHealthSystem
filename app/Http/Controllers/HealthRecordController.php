@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\HealthRecord;
-use App\Models\Vaccination;
+use App\Models\VaccinationRecord;
 use App\Models\citizens;
+use App\Models\Family;
 use App\Models\MaintenanceRecord;
 use App\Models\Supply;
 use App\Models\Purok;
+use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
+use App\Services\VaccinationEligibility;
 use Illuminate\Support\Facades\Auth;
 
 class HealthRecordController extends Controller
@@ -139,14 +142,11 @@ class HealthRecordController extends Controller
             'diagnosis' => 'required|string|max:2000',
             'record_date' => 'required|date',
             'comments' => 'nullable|string|max:2000',
-<<<<<<< HEAD
-=======
             'severity' => 'nullable|in:Low / Mild,Moderate,High / Severe,Critical,Resolved',
             'weight' => 'nullable|numeric|min:1|max:500',
             'height' => 'nullable|numeric|min:1|max:300',
             'temperature' => 'nullable|numeric|min:25|max:45',
             'blood_pressure' => 'nullable|string|max:20',
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         ]);
 
         $citizenId = $id ?: $request->input('citizen_id');
@@ -157,22 +157,15 @@ class HealthRecordController extends Controller
             abort(422, 'Citizen ID mismatch.');
         }
 
-<<<<<<< HEAD
-=======
         $weight = $validated['weight'] ?? null;
         $height = $validated['height'] ?? null;
         $bmi = ($weight && $height) ? round($weight / (($height / 100) ** 2), 1) : null;
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         HealthRecord::create([
             'citizen_id' => $citizen->id,
             'diagnosis' => trim($validated['diagnosis']),
             'record_date' => $validated['record_date'],
             'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
-<<<<<<< HEAD
-        ]);
-
-=======
             'severity' => $validated['severity'] ?? 'Low / Mild',
             'weight' => $weight,
             'height' => $height,
@@ -187,7 +180,6 @@ class HealthRecordController extends Controller
         if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
         if ($profileUpdates) $citizen->forceFill($profileUpdates)->save();
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         return redirect()->back()->with('success', 'Diagnosis added successfully.');
     }
 
@@ -196,7 +188,7 @@ class HealthRecordController extends Controller
     | SHOW CITIZEN HEALTH RECORDS
     |--------------------------------------------------------------------------
     */
-    public function show($id)
+    public function show($id, BhwCitizenAccess $citizenAccess, VaccinationEligibility $eligibility)
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') {
             abort(403);
@@ -208,6 +200,10 @@ class HealthRecordController extends Controller
             'vaccinations' => fn($q) => $q->latest(),
             'maintenanceRecords' => fn($q) => $q->latest()
         ])->findOrFail($id);
+        $canEdit = $citizenAccess->canAccessCitizen(Auth::user(), $citizen);
+        abort_unless($canEdit || $citizenAccess->canViewAll(Auth::user()), 403);
+        $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
+        $puroks = Purok::with('subgroups')->get();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -215,7 +211,18 @@ class HealthRecordController extends Controller
             ->orderBy('name')
             ->paginate(10, ['*'], 'medicine_page');
 
-        return view('bhw.citizen_show', compact('citizen', 'availableMedicines'));
+        $vaccinationEligibilityOptions = $eligibility->optionsFor($citizen);
+        $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
+
+        return view('bhw.citizen_show', compact(
+            'citizen',
+            'availableMedicines',
+            'vaccinationEligibilityOptions',
+            'canEdit',
+            'vaccinationSchedulingEnabled',
+            'families',
+            'puroks'
+        ));
     }
 
     public function storeMaintenance(Request $request)
@@ -250,20 +257,57 @@ class HealthRecordController extends Controller
     | STORE VACCINATION
     |--------------------------------------------------------------------------
     */
-    public function storeVaccination(Request $request)
+    public function storeVaccination(
+        Request $request,
+        BhwCitizenAccess $citizenAccess,
+        VaccinationEligibility $eligibility
+    )
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') {
             abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
-            'vaccine_name' => 'required|string|max:255',
-            'date_administered' => 'required|date',
-            'notes' => 'nullable|string',
+            'vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in(array_column($eligibility->vaccines(), 'label'))],
+            'dose_number' => 'required|string|max:100',
+            'date_administered' => 'required|date|before_or_equal:today',
+            'notes' => 'nullable|string|max:2000',
+            'catch_up_reviewed' => 'nullable|accepted',
         ]);
 
-        Vaccination::create($request->all());
+        $citizen = citizens::findOrFail($validated['citizen_id']);
+        if (!$citizenAccess->canAccessCitizen(Auth::user(), $citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
+            abort(403, 'You are not authorized to update this citizen vaccination record.');
+        }
+
+        $eligibilityResult = $eligibility->evaluate(
+            $citizen,
+            $validated['vaccine_name'],
+            $validated['dose_number'],
+            $validated['date_administered'],
+            includeSchedules: true,
+            allowCatchUp: true
+        );
+        if (!$eligibilityResult['eligible']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => $eligibilityResult['reason'],
+            ]);
+        }
+        if ($eligibilityResult['review_required'] && empty($validated['catch_up_reviewed'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'vaccine_name' => 'Health-center confirmation is required before recording this catch-up dose.',
+            ]);
+        }
+
+        VaccinationRecord::create([
+            'citizen_id' => $citizen->id,
+            'vaccine_name' => $validated['vaccine_name'],
+            'dose_number' => $validated['dose_number'],
+            'date_administered' => $validated['date_administered'],
+            'administered_by' => Auth::user()->name,
+            'catch_up_reviewed' => (bool) ($validated['catch_up_reviewed'] ?? false),
+        ]);
 
         return redirect()->back()->with('success', 'Vaccination added successfully.');
     }
