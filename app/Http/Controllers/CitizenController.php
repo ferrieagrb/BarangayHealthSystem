@@ -616,16 +616,16 @@ class CitizenController extends Controller
 
         HealthRecordActivityLog::create([
             'user_id' => Auth::id(),
-            'action' => 'delete',
+            'action' => 'archive',
             'citizen_id' => $citizenId,
             'health_record_id' => $recordId,
-            'description' => 'Deleted health record: ' . $diagnosis,
+            'description' => 'Archived health record: ' . $diagnosis,
         ]);
 
         $record->delete();
-        $this->logActivity('delete', 'health_record', $citizenId, 'Deleted health record: ' . $diagnosis);
+        $this->logActivity('archive', 'health_record', $citizenId, 'Archived health record: ' . $diagnosis);
 
-        return back()->with('success', 'Diagnosis record deleted successfully.');
+        return back()->with('success', 'Diagnosis record archived successfully.');
     }
 
     public function deleteVaccinationRecord($citizenId, $recordId)
@@ -643,13 +643,13 @@ class CitizenController extends Controller
         $record = VaccinationRecord::where('citizen_id', $citizen->id)
             ->findOrFail($recordId);
 
-        $description = 'Deleted vaccination: ' . $record->vaccine_name
+        $description = 'Archived vaccination: ' . $record->vaccine_name
             . ' (' . $record->dose_number . ')';
         $record->delete();
 
-        $this->logActivity('delete', 'vaccination', $citizen->id, $description);
+        $this->logActivity('archive', 'vaccination', $citizen->id, $description);
 
-        return back()->with('success', 'Vaccination record deleted successfully.');
+        return back()->with('success', 'Vaccination record archived successfully.');
     }
 
     public function deleteMaintenanceRecord($id)
@@ -670,9 +670,9 @@ class CitizenController extends Controller
         $medicineName = $record->medicine_name;
         $record->delete();
 
-        $this->logActivity('delete', 'maintenance', $citizenId, 'Deleted maintenance medicine: ' . $medicineName);
+        $this->logActivity('archive', 'maintenance', $citizenId, 'Archived maintenance medicine: ' . $medicineName);
 
-        return back()->with('success', 'Maintenance medicine deleted successfully.');
+        return back()->with('success', 'Maintenance medicine archived successfully.');
     }
 
     public function storeMaintenance(Request $request)
@@ -955,10 +955,10 @@ class CitizenController extends Controller
 
         $this->authorizeCitizenEdit($citizen);
 
-        $this->logActivity('delete', 'citizen', $citizen->id, 'Deleted citizen');
+        $this->logActivity('archive', 'citizen', $citizen->id, 'Archived citizen');
         $citizen->delete();
 
-        return redirect()->route('citizenlist')->with('success', 'Citizen deleted successfully.');
+        return redirect()->route('citizenlist')->with('success', 'Citizen archived successfully. You can restore them from the archive.');
     }
 
     /*

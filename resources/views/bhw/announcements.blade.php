@@ -92,10 +92,10 @@
 
             <div class="announcement-card-actions">
                 <button type="button" class="btn-secondary announcement-view-button">View Details</button>
-                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Delete this announcement from the system and Facebook?');">
+                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Archive this announcement? You can restore it from the archive.');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-danger">Delete</button>
+                    <button type="submit" class="btn-danger">Archive</button>
                 </form>
             </div>
 

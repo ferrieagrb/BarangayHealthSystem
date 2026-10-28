@@ -160,41 +160,9 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
-        $pageId = config('services.facebook.page_id');
-        $accessToken = config('services.facebook.access_token');
-        $facebookDeleteFailed = false;
-
-        if ($announcement->facebook_post_id && $pageId && $accessToken) {
-            try {
-                $response = Http::timeout(15)->delete(
-                    'https://graph.facebook.com/' . $announcement->facebook_post_id,
-                    ['access_token' => $accessToken]
-                );
-
-                if ($response->failed()) {
-                    $facebookDeleteFailed = true;
-                    Log::warning('Facebook announcement deletion failed: ' . $response->body());
-                    $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed.', 'integration');
-                }
-            } catch (\Throwable $exception) {
-                $facebookDeleteFailed = true;
-                report($exception);
-                $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception.', 'integration');
-            }
-        }
-
-        foreach ($announcement->images as $image) {
-            Storage::disk('public')->delete($image->path);
-        }
-
+        // Archiving keeps the announcement, its images and any Facebook post so it can be restored.
         $announcement->delete();
 
-        $message = $facebookDeleteFailed
-            ? 'Announcement deleted locally, but Facebook deletion failed. Check the Facebook access token and permissions.'
-            : ($announcement->facebook_post_id
-                ? 'Announcement deleted from the system and Facebook.'
-                : 'Announcement deleted locally. It has no tracked Facebook post ID.');
-
-        return redirect()->route('announcements')->with($facebookDeleteFailed ? 'error' : 'success', $message);
+        return redirect()->route('announcements')->with('success', 'Announcement archived. You can restore it from the archive.');
     }
 }

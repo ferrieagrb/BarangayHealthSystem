@@ -27,11 +27,11 @@ class VaccinationSchedule extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function scheduler()
     {
-        return $this->belongsTo(User::class, 'scheduled_by');
+        return $this->belongsTo(User::class, 'scheduled_by')->withTrashed();
     }
 }

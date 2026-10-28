@@ -7,6 +7,8 @@ use App\Models\citizens;
 
 class PurokSubgroup extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = [
         'purok_id',
         'name',
@@ -25,7 +27,7 @@ class PurokSubgroup extends Model
 
     public function purok()
     {
-        return $this->belongsTo(Purok::class, 'purok_id');
+        return $this->belongsTo(Purok::class, 'purok_id')->withTrashed();
     }
 
     public function families()
@@ -40,7 +42,7 @@ class PurokSubgroup extends Model
 
     public function bhw()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
     public function bhws()

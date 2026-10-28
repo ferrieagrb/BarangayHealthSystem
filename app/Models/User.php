@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes;
 
     public const ROLE_SUPERADMIN = 'superadmin';
     public const ROLE_ADMIN = 'admin';
@@ -66,7 +66,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function citizen() 
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function permissions()

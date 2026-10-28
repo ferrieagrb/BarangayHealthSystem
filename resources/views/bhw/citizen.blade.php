@@ -464,7 +464,7 @@
                                           data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-danger">Delete</button>
+                                        <button type="submit" class="btn-danger">Archive</button>
                                     </form>
                                 @else
                                     <span class="text-muted" style="font-size:11px;">View Only (Unassigned)</span>
@@ -488,17 +488,17 @@
     </div>
 </div>
 
-{{-- DELETE CONFIRMATION MODAL --}}
+{{-- ARCHIVE CONFIRMATION MODAL --}}
 <div id="citizenDeleteConfirmModal" class="citizen-delete-confirm-overlay">
     <div class="citizen-delete-confirm-modal">
-        <h2>Delete Citizen?</h2>
+        <h2>Archive Citizen?</h2>
         <p>
-            Are you sure you want to delete <strong id="confirmCitizenName"></strong>?
-            <br>This action cannot be undone.
+            Are you sure you want to archive <strong id="confirmCitizenName"></strong>?
+            <br>You can restore them later from the archive.
         </p>
         <div class="citizen-delete-confirm-buttons">
             <button type="button" id="cancelCitizenDelete" class="citizen-delete-cancel">Cancel</button>
-            <button type="button" id="confirmCitizenDelete" class="citizen-delete-save">Yes, Delete</button>
+            <button type="button" id="confirmCitizenDelete" class="citizen-delete-save">Yes, Archive</button>
         </div>
     </div>
 </div>

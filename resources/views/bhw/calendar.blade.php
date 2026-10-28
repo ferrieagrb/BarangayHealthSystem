@@ -719,7 +719,7 @@ EDIT MODAL
                 id="deleteBtn"
                 class="btn-danger"
             >
-                Delete
+                Archive
             </button>
 
             <button
@@ -847,11 +847,11 @@ DELETE EVENT CONFIRMATION MODAL
     <div class="event-confirm-modal">
 
         <h2>
-            Confirm Delete
+            Confirm Archive
         </h2>
 
         <p>
-            Are you sure you want to delete
+            Are you sure you want to archive
             <strong id="confirmDeleteEventTitle">
                 this event
             </strong>?
@@ -872,7 +872,7 @@ DELETE EVENT CONFIRMATION MODAL
                 id="confirmDeleteSubmission"
                 class="event-confirm-save"
             >
-                Yes, Delete
+                Yes, Archive
             </button>
 
         </div>
