@@ -46,6 +46,7 @@
                     <li><a href="{{ url('/') }}">Home</a></li>
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}" class="active">Announcements</a></li>
+                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
                     <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
@@ -77,9 +78,12 @@
                 @foreach($announcements as $announcement)
                     <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-card">
                         <div class="announcement-gallery">
-                            @foreach($announcement->images as $image)
-                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }}">
-                            @endforeach
+                            @php $logoUrl = \App\Models\SystemSetting::logoUrl(); @endphp
+                            @forelse($announcement->images as $image)
+                                <img src="{{ $image->url }}" alt="{{ $announcement->title }}" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
+                            @empty
+                                <img src="{{ $logoUrl }}" alt="{{ $announcement->title }}" class="is-logo">
+                            @endforelse
                         </div>
                         <div class="announcement-header">
                             <span class="category-badge">{{ $announcement->category ?? 'General' }}</span>

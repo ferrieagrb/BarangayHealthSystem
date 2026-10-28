@@ -16,7 +16,7 @@ class Vaccination extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function vaccinations()

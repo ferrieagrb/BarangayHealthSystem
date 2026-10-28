@@ -12,6 +12,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\QRScannerController;
+use App\Http\Controllers\CitizenHealthShareController;
 use App\Http\Controllers\AdminAnalytics;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AdminSettings;
@@ -24,6 +25,7 @@ use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\BhwHomeController;
 use App\Http\Controllers\BhwReportController;
 use App\Http\Controllers\BhwAnalyticsController;
+use App\Http\Controllers\ArchiveController;
 
 use App\Models\citizens;
 use App\Models\HealthRecord;
@@ -54,7 +56,14 @@ use App\Http\Controllers\PublicAssetController;
 // Public QR landing page. It never exposes private medical records.
 Route::get('/health-id/{token}', [QRScannerController::class, 'publicHealthId'])
     ->whereUuid('token')
+    ->middleware('throttle:60,1')
     ->name('health-id.public');
+Route::get('/health-id/{token}/summary', [QRScannerController::class, 'publicHealthSummary'])
+    ->whereUuid('token')
+    ->middleware('throttle:60,1')
+    ->name('health-id.summary');
+Route::view('/public/qr-scanner', 'public.qr-scanner')
+    ->name('public.qr-scanner');
 
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
@@ -129,6 +138,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
         $maintenanceRecords = collect();
+        $healthShare = null;
 
         if ($user->citizen_id) {
             $citizen = citizens::with([
@@ -145,6 +155,11 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
                 $maintenanceRecords = MaintenanceRecord::where('citizen_id', $citizen->id)
                     ->latest()
                     ->get();
+                $healthShare = \App\Models\CitizenHealthShare::query()
+                    ->active()
+                    ->where('citizen_id', $citizen->id)
+                    ->latest('granted_at')
+                    ->first();
             }
         }
 
@@ -159,9 +174,14 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             'citizen',
             'maintenanceRecords',
             'qrImage',
-            'vaccinationSchedulingEnabled'
+            'vaccinationSchedulingEnabled',
+            'healthShare'
         ));
     })->name('dashboard');
+    Route::post('/health-sharing', [CitizenHealthShareController::class, 'grant'])
+        ->name('health-sharing.grant');
+    Route::delete('/health-sharing', [CitizenHealthShareController::class, 'revoke'])
+        ->name('health-sharing.revoke');
 
     // Citizen Supplies Overview
     Route::get('/supplies', [CitizenSupplyController::class, 'index'])->name('supplies');
@@ -241,7 +261,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     // Electronic Health & Vaccination Card Routes (NEW)
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
-    Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::post('/citizen/{id}/vaccination', fn ($id) => app(CitizenController::class)->storeVaccination(
+        request(),
+        app(\App\Services\VaccinationEligibility::class),
+        $id
+    ))->name('citizen.vaccination.store');
     Route::delete('/citizen/{citizenId}/vaccination-record/{recordId}', [CitizenController::class, 'deleteVaccinationRecord'])->name('citizen.vaccination.delete');
     Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
     Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');
@@ -278,10 +302,15 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/announcements', fn () => app(AnnouncementController::class)->index())->name('announcements');
     Route::post('/announcements/store', fn () => app(AnnouncementController::class)->store(request()))->name('announcements.store');
     Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    Route::post('/announcements/{announcement}/images/{image}', [AnnouncementController::class, 'updateImage'])->name('announcements.images.update');
     Route::get('/announcements/create', fn () => view('bhw.announcement_create'))->name('announcements.create');
 
     // Logs
     Route::get('/logs', fn () => app(LogController::class)->index())->name('logs.index');
+
+    // Archive (nothing is permanently deleted)
+    Route::get('/archive', [ArchiveController::class, 'index'])->name('archive.index');
+    Route::post('/archive/{type}/{id}/restore', [ArchiveController::class, 'restore'])->name('archive.restore');
 
     // Calendar / Events
     Route::get('/calendar', fn () => app(EventController::class)->index());
@@ -317,6 +346,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name
     Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
     Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
+    Route::delete('/families/{family}', [FamilyController::class, 'archive'])->name('families.archive');
     Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');
 
 });
@@ -340,6 +370,10 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(),$id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
+    Route::patch('/users/{id}/restore', fn ($id) => app(AdminUserManagementController::class)->restore($id))->name('users.restore');
+
+    Route::get('/archive', [ArchiveController::class, 'index'])->name('archive.index');
+    Route::post('/archive/{type}/{id}/restore', [ArchiveController::class, 'restore'])->name('archive.restore');
 
     Route::get('/demographics',[AdminSettings::class,'demographicsIndex'])->name('demographics');
     Route::post('/demographics/purok',[AdminSettings::class,'storePurok'])->name('puroks.store');
@@ -402,6 +436,7 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
     Route::post('/users', fn () => app(AdminUserManagementController::class)->store(request()))->name('users.store');
     Route::put('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->update(request(), $id))->name('users.update');
     Route::delete('/users/{id}', fn ($id) => app(AdminUserManagementController::class)->destroy($id))->name('users.delete');
+    Route::patch('/users/{id}/restore', fn ($id) => app(AdminUserManagementController::class)->restore($id))->name('users.restore');
 
     Route::get('/user-analytics', [UserAnalyticsController::class, 'index']);
     Route::get('/website-performance', [WebsitePerformanceController::class, 'getPerformanceData']);
@@ -460,4 +495,3 @@ Route::middleware(['auth'])->group(function () {
         return back()->with('success', 'A verification link has been sent to your email address.');
     })->middleware('throttle:6,1')->name('verification.send');
 });
-

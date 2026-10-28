@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MedicationRecord extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $fillable = [
         'citizen_id',
@@ -19,6 +19,6 @@ class MedicationRecord extends Model
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 }

@@ -86,6 +86,13 @@
                 </a>
             </li>    
 
+            <li>
+                <a href="{{ route('admin.archive.index') }}">
+                    <i class="bx bx-archive"></i>
+                    <span class="nav-item">Archive</span>
+                </a>
+            </li>
+
         </ul>
 
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">

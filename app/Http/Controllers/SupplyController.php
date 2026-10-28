@@ -252,17 +252,17 @@ class SupplyController extends Controller
         $supply = Supply::findOrFail($id);
 
         SupplyLog::create([
-            'action' => 'delete',
+            'action' => 'archive',
             'supply_id' => $supply->id,
             'quantity' => $supply->quantity,
             'user_id' => Auth::id(),
             'citizen_id' => null,
-            'notes' => 'Removed expired batch',
+            'notes' => 'Archived supply batch',
         ]);
 
         $supply->delete();
 
-        return back()->with('success', 'Expired batch successfully removed.');
+        return back()->with('success', 'Supply archived. You can restore it from the archive.');
     }
 
     public function storeCategory(Request $request)
@@ -284,6 +284,6 @@ class SupplyController extends Controller
     {
         $category = Category::findOrFail($id);
         $category->delete();
-        return redirect()->back()->with('success', 'Category deleted successfully.');
+        return redirect()->back()->with('success', 'Category archived successfully.');
     }
 }

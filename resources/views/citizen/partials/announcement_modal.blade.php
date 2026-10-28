@@ -92,7 +92,7 @@
             'category' => $announcement->category ?? 'General',
             'date' => optional($announcement->created_at)->format('F d, Y'),
             'description' => $announcement->content ?? $announcement->description ?? '',
-            'images' => $announcement->images->map(fn ($image) => asset('storage/' . $image->path))->values(),
+            'images' => $announcement->images->map(fn ($image) => $image->url)->values(),
         ]];
     })->toArray();
 @endphp

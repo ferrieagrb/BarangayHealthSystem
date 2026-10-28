@@ -177,6 +177,7 @@
                     <li><a href="{{ url('/') }}">Home</a></li>
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}" class="active">Announcements</a></li>
+                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
                     <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
@@ -194,7 +195,7 @@
         <div class="announcement-detail-gallery">
             @foreach($announcement->images as $index => $image)
                 <button type="button" class="gallery-trigger" data-index="{{ $index }}" aria-label="Open image {{ $index + 1 }}">
-                    <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $announcement->title }} image {{ $index + 1 }}">
+                    <img src="{{ $image->url }}" alt="{{ $announcement->title }} image {{ $index + 1 }}">
                 </button>
             @endforeach
         </div>
@@ -217,7 +218,7 @@
     </div>
 
     <script>
-        const imageSources = @json($announcement->images->map(fn ($image) => asset('storage/' . $image->path))->values());
+        const imageSources = @json($announcement->images->map(fn ($image) => $image->url)->values());
         const lightbox = document.getElementById('announcementLightbox');
         const lightboxImage = document.getElementById('lightboxImage');
         let currentIndex = 0;

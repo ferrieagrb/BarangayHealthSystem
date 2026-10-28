@@ -17,19 +17,21 @@ class VaccinationSchedule extends Model
         'notes',
         'status',
         'scheduled_by',
+        'catch_up_reviewed',
     ];
 
     protected $casts = [
         'scheduled_date' => 'date',
+        'catch_up_reviewed' => 'boolean',
     ];
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 
     public function scheduler()
     {
-        return $this->belongsTo(User::class, 'scheduled_by');
+        return $this->belongsTo(User::class, 'scheduled_by')->withTrashed();
     }
 }

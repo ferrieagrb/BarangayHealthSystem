@@ -7,6 +7,8 @@ use App\Models\AnnouncementImage;
 
 class Announcement extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = [
         'title',
         'description',
@@ -17,7 +19,7 @@ class Announcement extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function images()

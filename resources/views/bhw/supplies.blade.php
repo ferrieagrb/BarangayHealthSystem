@@ -554,34 +554,9 @@
                                                         @if(auth()->user()->hasWriteAccess('supplies'))
 
                                                             @if(
-                                                                $supply->expiration_date &&
-                                                                \Carbon\Carbon::parse($supply->expiration_date)->isPast()
+                                                                !($supply->expiration_date &&
+                                                                \Carbon\Carbon::parse($supply->expiration_date)->isPast())
                                                             )
-
-                                                                <!-- DELETE EXPIRED PACK -->
-
-                                                                <form
-                                                                    action="{{ route('supplies.destroy', $supply->id) }}"
-                                                                    method="POST"
-                                                                    onsubmit="return confirm('Remove this expired pack entirely?');"
-                                                                    style="display:inline;"
-                                                                >
-
-                                                                    @csrf
-                                                                    @method('DELETE')
-
-                                                                    <button
-                                                                        type="submit"
-                                                                        class="btn-secondary"
-                                                                        style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;"
-                                                                        title="Delete Expired Pack"
-                                                                    >
-                                                                        🗑️ Delete
-                                                                    </button>
-
-                                                                </form>
-
-                                                            @else
 
                                                                 <!-- WITHDRAW SPECIFIC PACK -->
 
@@ -597,6 +572,29 @@
                                                                 </button>
 
                                                             @endif
+
+                                                            <!-- ARCHIVE PACK (any supply can be archived) -->
+
+                                                            <form
+                                                                action="{{ route('supplies.destroy', $supply->id) }}"
+                                                                method="POST"
+                                                                onsubmit="return confirm('Archive this supply pack? You can restore it from the archive.');"
+                                                                style="display:inline;"
+                                                            >
+
+                                                                @csrf
+                                                                @method('DELETE')
+
+                                                                <button
+                                                                    type="submit"
+                                                                    class="btn-secondary"
+                                                                    style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;"
+                                                                    title="Archive Pack"
+                                                                >
+                                                                    🗄️ Archive
+                                                                </button>
+
+                                                            </form>
 
                                                         @else
 

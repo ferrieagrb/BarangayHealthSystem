@@ -31,7 +31,12 @@
     .report-table th, .report-table td { padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
     .report-table th { color: #64748b; background: #f8fafc; font-size: 10px; text-transform: uppercase; }
     .report-empty { padding: 18px; color: #64748b; text-align: center; }
+    .report-validation-errors { margin-bottom: 14px; padding: 12px 14px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #991b1b; }
+    .report-export-feedback { flex-basis: 100%; margin: 0; color: #991b1b; font-size: 13px; }
+    .report-export-feedback[hidden] { display: none; }
     .report-graphic { display: grid; gap: 8px; margin: 12px 0 4px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+    .report-table-scroll { width: 100%; overflow-x: auto; }
+    .report-details-table { min-width: 1500px; }
     .graphic-row { display: grid; grid-template-columns: minmax(90px, .35fr) 1fr auto; gap: 8px; align-items: center; color: #475569; font-size: 11px; }
     .graphic-track { height: 9px; overflow: hidden; border-radius: 99px; background: #dbeafe; }
     .graphic-fill { height: 100%; min-width: 2px; border-radius: inherit; background: #2563eb; }
@@ -49,11 +54,23 @@
         .report-meta { flex-direction: column; }
     }
     @media print {
+        @page { size: landscape; margin: 14mm; }
+        html, body, .dashboard, .main-content { height: auto !important; min-height: 0 !important; overflow: visible !important; }
+        .dashboard { display: block !important; }
         .sidebar, .page-top, .report-builder, .no-print { display: none !important; }
-        .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; max-height: none !important; }
+        .reports-page, .reports-grid, #printableReport, .report-section { height: auto !important; max-height: none !important; overflow: visible !important; }
         .reports-page { padding: 0; }
+        .reports-grid { display: block !important; }
         .report-panel { border: 0; box-shadow: none; padding: 0; }
         .report-preview { display: block !important; }
+        .report-table { width: 100%; page-break-inside: auto; }
+        .report-table-scroll { width: 100%; overflow: visible !important; }
+        .report-details-table { min-width: 0; font-size: 8px; }
+        .report-table thead { display: table-header-group; }
+        .report-table tr { break-inside: avoid; page-break-inside: avoid; }
+        .report-section { break-inside: auto; page-break-inside: auto; }
+        .report-graphic { break-inside: avoid; page-break-inside: avoid; }
         .print-only { display: block; }
     }
 </style>
@@ -63,6 +80,66 @@
 @section('script')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const reportForm = document.getElementById('reportBuilder');
+    const excelButton = reportForm?.querySelector('button[name="export_format"][value="xlsx"]');
+    const exportFeedback = document.getElementById('reportExportFeedback');
+    let exportInProgress = false;
+
+    reportForm?.addEventListener('submit', async function (event) {
+        if (event.submitter !== excelButton || !excelButton || exportInProgress) return;
+
+        event.preventDefault();
+        exportInProgress = true;
+        exportFeedback.hidden = true;
+        exportFeedback.textContent = '';
+        excelButton.disabled = true;
+        excelButton.setAttribute('aria-busy', 'true');
+        const originalLabel = excelButton.textContent;
+        excelButton.textContent = 'Preparing Excel...';
+
+        try {
+            const requestUrl = new URL(reportForm.action, window.location.href);
+            const query = new URLSearchParams(new FormData(reportForm));
+            query.set('export_format', 'xlsx');
+            requestUrl.search = query.toString();
+
+            const response = await fetch(requestUrl, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+            });
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!response.ok || !contentType.includes('spreadsheetml')) {
+                const responseText = await response.text();
+                const errorDocument = new DOMParser().parseFromString(responseText, 'text/html');
+                const validationMessage = errorDocument.querySelector('.report-validation-errors, .alert-danger, .errors')?.textContent.trim();
+                throw new Error(response.redirected
+                    ? 'Your session may have expired. Reload the page and sign in before exporting.'
+                    : validationMessage || 'The server did not return an Excel workbook. Check the report filters and try again.');
+            }
+
+            const filenameMatch = response.headers.get('Content-Disposition')?.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+            const filename = filenameMatch
+                ? decodeURIComponent(filenameMatch[1] || filenameMatch[2])
+                : 'custom-report.xlsx';
+            const fileUrl = URL.createObjectURL(await response.blob());
+            const downloadLink = document.createElement('a');
+            downloadLink.href = fileUrl;
+            downloadLink.download = filename;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+        } catch (error) {
+            exportFeedback.textContent = error instanceof Error ? error.message : 'Excel export failed. Please try again.';
+            exportFeedback.hidden = false;
+        } finally {
+            exportInProgress = false;
+            excelButton.disabled = false;
+            excelButton.removeAttribute('aria-busy');
+            excelButton.textContent = originalLabel;
+        }
+    });
+
     const purokFilter = document.getElementById('reportPurok');
     const purokValue = document.getElementById('reportPurokValue');
     const subgroupValue = document.getElementById('reportSubgroupValue');
@@ -80,22 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (value.startsWith('subgroup:')) {
             subgroupValue.value = value.slice('subgroup:'.length);
         }
-
-        const url = new URL(window.location.href);
-
-        url.searchParams.delete('purok');
-        url.searchParams.delete('subgroup');
-        url.searchParams.delete('page');
-
-        if (purokValue.value) {
-            url.searchParams.set('purok', purokValue.value);
-        }
-
-        if (subgroupValue.value) {
-            url.searchParams.set('subgroup', subgroupValue.value);
-        }
-
-        window.location.href = url.toString();
     });
 });
 </script>
@@ -124,6 +185,16 @@ document.addEventListener('DOMContentLoaded', function () {
         <form class="report-panel report-builder no-print" method="GET" action="{{ route('bhw.reports') }}" id="reportBuilder">
             <h2>Report Builder</h2>
             <p>Select a report and adjust only the filters that apply to it.</p>
+            @if($errors->any())
+                <div class="report-validation-errors" role="alert">
+                    <strong>Please correct the report filters:</strong>
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="report-config-row">
                 <div class="report-field">
@@ -149,30 +220,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             <option value="">All Puroks</option>
 
                             @foreach($puroks as $purok)
-                                @php
-                                    $subgroupCount = $purok->subgroups->count();
-                                @endphp
-
                                 <optgroup label="{{ $purok->name }}">
-                                    @if($subgroupCount === 0)
-                                        <option value="purok:{{ $purok->id }}"
-                                            {{ (string) request('purok') === (string) $purok->id && !request()->filled('subgroup') ? 'selected' : '' }}>
-                                            All of {{ $purok->name }}
-                                        </option>
-                                    @elseif($subgroupCount === 1)
-                                        @php $subgroup = $purok->subgroups->first(); @endphp
+                                    <option value="purok:{{ $purok->id }}"
+                                        {{ (string) request('purok') === (string) $purok->id && !request()->filled('subgroup') ? 'selected' : '' }}>
+                                        All of {{ $purok->name }}
+                                    </option>
+                                    @foreach($purok->subgroups as $subgroup)
                                         <option value="subgroup:{{ $subgroup->id }}"
                                             {{ (string) request('subgroup') === (string) $subgroup->id ? 'selected' : '' }}>
                                             {{ $subgroup->name }}
                                         </option>
-                                    @else
-                                        @foreach($purok->subgroups as $subgroup)
-                                            <option value="subgroup:{{ $subgroup->id }}"
-                                                {{ (string) request('subgroup') === (string) $subgroup->id ? 'selected' : '' }}>
-                                                {{ $subgroup->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                    @endforeach
                                 </optgroup>
                             @endforeach
                         </select>
@@ -180,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <input type="hidden" name="purok" id="reportPurokValue" value="{{ request('purok') }}">
                         <input type="hidden" name="subgroup" id="reportSubgroupValue" value="{{ request('subgroup') }}">
                     </div>
-                    <div class="report-field" data-reports="citizens">
+                    <div class="report-field" data-reports="citizens,health_records,immunization,diagnosis_summary,diagnosis_by_purok">
                         <label for="reportSearch">Search citizens</label>
                         <input id="reportSearch" type="search" name="search" value="{{ request('search') }}" placeholder="Name or citizen ID">
                     </div>
@@ -200,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <label for="reportAgeMax">Maximum age</label>
                         <input id="reportAgeMax" type="number" name="age_max" min="0" max="120" value="{{ request('age_max') }}" placeholder="Any">
                     </div>
-                    <div class="report-field" data-reports="citizens,sex_by_purok">
+                    <div class="report-field" data-reports="citizens">
                         <label for="reportSex">Sex</label>
                         <select id="reportSex" name="sex">
                             <option value="">All</option>
@@ -226,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </select>
                     </div>
                     <div class="report-field" data-reports="supplies">
-                        <label for="reportSearch">Search supplies</label>
+                        <label for="reportSupplySearch">Search supplies</label>
                         <input id="reportSupplySearch" type="search" name="search" value="{{ request('search') }}" placeholder="Supply name">
                     </div>
                     <div class="report-field" data-reports="supplies">
@@ -282,15 +340,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 </label>
                 <button type="submit" class="btn-primary">Generate Report</button>
                 <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}">Reset Filters</a>
-                <button type="button" class="btn-secondary" onclick="window.print()">Export / Print Report</button>
+                <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true">Export to Excel</button>
+                <button type="button" class="btn-secondary" onclick="window.print()">Export / Print PDF</button>
+                <p id="reportExportFeedback" class="report-export-feedback" role="alert" hidden></p>
             </div>
         </form>
 
-        <main class="report-panel report-preview" id="printableReport">
+        <main class="report-panel report-preview" id="printableReport" data-no-motion>
             <div class="report-meta">
                 <div>
                     <h1>Barangay Health Report</h1>
                     <p>Generated {{ now()->format('F d, Y h:i A') }}</p>
+                    <p>Filters: {{ $reportFilterSummary ?: 'None' }}</p>
                 </div>
                 <span class="print-only">BHW Operations Report</span>
             </div>
@@ -299,28 +360,133 @@ document.addEventListener('DOMContentLoaded', function () {
                 <section class="report-section">
                     <h3>Citizen Profiles ({{ $citizensReport->count() }})</h3>
                     @if($citizensReport->isEmpty()) <div class="report-empty">No citizens match the selected filters.</div>
-                    @else <table class="report-table"><thead><tr><th>Name</th><th>Age</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
+                    @else <table class="report-table"><thead><tr><th>Name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
                         @foreach($citizensReport as $citizen)
-                            <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->Citizen_Age }}</td><td>{{ $citizen->Citizen_Purok }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
+                            <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->Citizen_Age }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
                         @endforeach
                     </tbody></table>@endif
                 </section>
             @endif
 
             @if(in_array('age_by_purok', $selectedSections))
-                <section class="report-section"><h3>Age-Bracket Breakdown per Purok</h3><table class="report-table"><thead><tr><th>Purok</th><th>Infants</th><th>Toddlers</th><th>Children</th><th>Teenagers</th><th>Working adults</th><th>Seniors</th></tr></thead><tbody>@forelse($ageByPurok as $purok => $ages)<tr><td>{{ $purok ?: 'Unassigned' }}</td><td>{{ $ages['infants'] }}</td><td>{{ $ages['toddlers'] }}</td><td>{{ $ages['children'] }}</td><td>{{ $ages['teenagers'] }}</td><td>{{ $ages['working_adults'] }}</td><td>{{ $ages['seniors'] }}</td></tr>@empty<tr><td colspan="7" class="report-empty">No age data matches the selected filters.</td></tr>@endforelse</tbody></table>@if($includeGraphics)<div class="report-graphic">@foreach($ageByPurok as $purok => $ages) @php $total = array_sum($ages); $max = max(1, max($ageByPurok->map(fn ($row) => array_sum($row))->all())); @endphp<div class="graphic-row"><span>{{ $purok ?: 'Unassigned' }}</span><div class="graphic-track"><div class="graphic-fill" style="width:{{ ($total / $max) * 100 }}%"></div></div><strong>{{ $total }}</strong></div>@endforeach</div>@endif</section>
+                <section class="report-section">
+                    <h3>Age-Bracket Breakdown per Purok</h3>
+                    <table class="report-table">
+                        <thead><tr><th>Purok</th><th>Infants</th><th>Toddlers</th><th>Children</th><th>Teenagers</th><th>Working adults</th><th>Seniors</th><th>Unknown age</th></tr></thead>
+                        <tbody>
+                            @forelse($ageByPurok as $purok => $ages)
+                                <tr><td>{{ $purok }}</td><td>{{ $ages['infants'] }}</td><td>{{ $ages['toddlers'] }}</td><td>{{ $ages['children'] }}</td><td>{{ $ages['teenagers'] }}</td><td>{{ $ages['working_adults'] }}</td><td>{{ $ages['seniors'] }}</td><td>{{ $ages['unknown_age'] }}</td></tr>
+                            @empty
+                                <tr><td colspan="8" class="report-empty">No age data matches the selected filters.</td></tr>
+                            @endforelse
+                            <tr><th>Total</th><th>{{ $ageTotals['infants'] }}</th><th>{{ $ageTotals['toddlers'] }}</th><th>{{ $ageTotals['children'] }}</th><th>{{ $ageTotals['teenagers'] }}</th><th>{{ $ageTotals['working_adults'] }}</th><th>{{ $ageTotals['seniors'] }}</th><th>{{ $ageTotals['unknown_age'] }}</th></tr>
+                        </tbody>
+                    </table>
+                    @if($includeGraphics && $ageByPurok->isNotEmpty())
+                        <div class="report-graphic">
+                            @php $maxAgeTotal = max(1, $ageByPurok->map(fn ($row) => array_sum($row))->max()); @endphp
+                            @foreach($ageByPurok as $purok => $ages)
+                                @php $total = array_sum($ages); @endphp
+                                <div class="graphic-row"><span>{{ $purok }}</span><div class="graphic-track"><div class="graphic-fill" style="width:{{ ($total / $maxAgeTotal) * 100 }}%"></div></div><strong>{{ $total }}</strong></div>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
             @endif
 
             @if(in_array('immunization', $selectedSections))
-                <section class="report-section"><h3>Immunization and Vaccination Coverage</h3><table class="report-table"><thead><tr><th>Children age 0-5</th><th>{{ request('vaccine_type') ? 'Received selected vaccine' : 'Fully immunized' }}</th><th>{{ request('vaccine_type') ? 'Not recorded for selected vaccine' : 'Missing milestones' }}</th></tr></thead><tbody><tr><td>{{ $immunizationSummary['total'] }}</td><td>{{ $immunizationSummary['fully_immunized'] }}</td><td>{{ $immunizationSummary['missing_milestones'] }}</td></tr></tbody></table>@if($includeGraphics)<div class="report-graphic"><div class="graphic-row"><span>Coverage</span><div class="graphic-track"><div class="graphic-fill green" style="width:{{ $immunizationSummary['total'] ? ($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100 : 0 }}%"></div></div><strong>{{ $immunizationSummary['total'] ? round(($immunizationSummary['fully_immunized'] / $immunizationSummary['total']) * 100) : 0 }}%</strong></div></div>@endif<p style="margin-top:8px;color:#64748b;font-size:12px;">{{ request('vaccine_type') ? 'Coverage is based on the selected vaccine and coverage period.' : 'Milestones checked: BCG, oral polio/polio, and measles/MMR records.' }}</p></section>
+                <section class="report-section">
+                    <h3>Immunization and Vaccination Coverage</h3>
+                    <table class="report-table">
+                        <thead><tr><th>Eligible children age 0-5</th><th>{{ request('vaccine_type') ? 'Children with selected vaccine recorded' : 'Children with BCG, polio, and measles groups recorded' }}</th><th>{{ request('vaccine_type') ? 'No selected vaccine record' : 'Missing one or more core vaccine groups' }}</th></tr></thead>
+                        <tbody><tr><td>{{ $immunizationSummary['total'] }}</td><td>{{ $immunizationSummary['vaccinated'] }}</td><td>{{ $immunizationSummary['missing'] }}</td></tr></tbody>
+                    </table>
+                    @if($includeGraphics)
+                        <div class="report-graphic"><div class="graphic-row"><span>Coverage</span><div class="graphic-track"><div class="graphic-fill green" style="width:{{ $immunizationSummary['total'] ? ($immunizationSummary['vaccinated'] / $immunizationSummary['total']) * 100 : 0 }}%"></div></div><strong>{{ $immunizationSummary['total'] ? round(($immunizationSummary['vaccinated'] / $immunizationSummary['total']) * 100) : 0 }}%</strong></div></div>
+                    @endif
+                    <p style="margin-top:8px;color:#64748b;font-size:12px;">{{ request('vaccine_type') ? 'Counts eligible children with a matching administered record within the selected date range. Vaccination details below include all ages in the selected citizen scope.' : 'This is a count of the three named vaccine groups recorded in the selected date range; it does not determine completion of a vaccine-specific dose schedule.' }}</p>
+
+                    <h3>Vaccination details ({{ $vaccinationDoseSummary->count() }} citizen/vaccine records)</h3>
+                    @if($vaccinationDoseSummary->isEmpty())
+                        <div class="report-empty">No vaccination records or scheduled doses match the selected filters.</div>
+                    @else
+                        <div class="report-table-scroll">
+                            <table class="report-table report-details-table">
+                            <thead><tr><th>Citizen ID</th><th>Citizen name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Subgroup</th><th>Vaccine</th><th>Dose number(s)</th><th>Total administered doses</th><th>Latest vaccination date</th><th>Vaccination status</th><th>Next dose due date</th></tr></thead>
+                            <tbody>
+                                @foreach($vaccinationDoseSummary as $record)
+                                    <tr>
+                                        <td>{{ $record['citizen_id_label'] }}</td>
+                                        <td>{{ $record['citizen_name'] }}</td>
+                                        <td>{{ $record['age'] }}</td>
+                                        <td>{{ $record['sex'] }}</td>
+                                        <td>{{ $record['purok'] }}</td>
+                                        <td>{{ $record['subgroup'] }}</td>
+                                        <td>{{ $record['vaccine_name'] }}</td>
+                                        <td>{{ $record['dose_numbers'] ?: 'Not recorded' }}</td>
+                                        <td>{{ $record['administered_doses'] }}</td>
+                                        <td>{{ $record['latest_vaccination_date'] ? \Illuminate\Support\Carbon::parse($record['latest_vaccination_date'])->format('M d, Y') : 'Not recorded' }}</td>
+                                        <td>{{ $record['vaccination_status'] }}</td>
+                                        <td>{{ $record['next_dose_due_date'] ? \Illuminate\Support\Carbon::parse($record['next_dose_due_date'])->format('M d, Y') : 'Not recorded' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        </div>
+                        <p style="margin-top:8px;color:#64748b;font-size:12px;">Status reflects recorded vaccination entries and active schedules. No active scheduled dose does not establish completion of a vaccine series.</p>
+                    @endif
+                </section>
             @endif
 
             @if(in_array('sex_by_purok', $selectedSections))
-                <section class="report-section"><h3>Male and Female Counts by Purok</h3><table class="report-table"><thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Other / not recorded</th></tr></thead><tbody>@forelse($sexByPurok as $purok => $counts)<tr><td>{{ $purok ?: 'Unassigned' }}</td><td>{{ $counts['male'] }}</td><td>{{ $counts['female'] }}</td><td>{{ $counts['other'] }}</td></tr>@empty<tr><td colspan="4" class="report-empty">No sex-by-Purok data matches the selected filters.</td></tr>@endforelse</tbody></table>@if($includeGraphics)<div class="report-graphic">@foreach($sexByPurok as $purok => $counts) @php $max = max(1, max($counts)); @endphp<div class="graphic-row"><span>{{ $purok ?: 'Unassigned' }} male</span><div class="graphic-track"><div class="graphic-fill" style="width:{{ ($counts['male'] / $max) * 100 }}%"></div></div><strong>{{ $counts['male'] }}</strong></div><div class="graphic-row"><span>{{ $purok ?: 'Unassigned' }} female</span><div class="graphic-track"><div class="graphic-fill orange" style="width:{{ ($counts['female'] / $max) * 100 }}%"></div></div><strong>{{ $counts['female'] }}</strong></div>@endforeach</div>@endif</section>
+                <section class="report-section">
+                    <h3>Male and Female Counts by Purok</h3>
+                    <table class="report-table">
+                        <thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Other / not recorded</th></tr></thead>
+                        <tbody>
+                            @forelse($sexByPurok as $purok => $counts)
+                                <tr><td>{{ $purok }}</td><td>{{ $counts['male'] }}</td><td>{{ $counts['female'] }}</td><td>{{ $counts['other'] }}</td></tr>
+                            @empty
+                                <tr><td colspan="4" class="report-empty">No sex-by-Purok data matches the selected filters.</td></tr>
+                            @endforelse
+                            <tr><th>Total</th><th>{{ $sexTotals['male'] }}</th><th>{{ $sexTotals['female'] }}</th><th>{{ $sexTotals['other'] }}</th></tr>
+                        </tbody>
+                    </table>
+                    @if($includeGraphics && $sexByPurok->isNotEmpty())
+                        <div class="report-graphic">
+                            @foreach($sexByPurok as $purok => $counts)
+                                @php $max = max(1, max($counts)); @endphp
+                                <div class="graphic-row"><span>{{ $purok }} male</span><div class="graphic-track"><div class="graphic-fill" style="width:{{ ($counts['male'] / $max) * 100 }}%"></div></div><strong>{{ $counts['male'] }}</strong></div>
+                                <div class="graphic-row"><span>{{ $purok }} female</span><div class="graphic-track"><div class="graphic-fill orange" style="width:{{ ($counts['female'] / $max) * 100 }}%"></div></div><strong>{{ $counts['female'] }}</strong></div>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
             @endif
 
             @if(in_array('pregnancy_by_purok', $selectedSections))
-                <section class="report-section"><h3>Recorded Pregnancy by Purok</h3><table class="report-table"><thead><tr><th>Purok</th><th>Recorded pregnant residents</th></tr></thead><tbody>@forelse($pregnancyByPurok as $purok => $count)<tr><td>{{ $purok ?: 'Unassigned' }}</td><td>{{ $count }}</td></tr>@empty<tr><td colspan="2" class="report-empty">No pregnancy data matches the selected filters.</td></tr>@endforelse</tbody></table>@if($includeGraphics) @php $maxPregnancy = max(1, $pregnancyByPurok->max()); @endphp<div class="report-graphic">@foreach($pregnancyByPurok as $purok => $count)<div class="graphic-row"><span>{{ $purok ?: 'Unassigned' }}</span><div class="graphic-track"><div class="graphic-fill red" style="width:{{ ($count / $maxPregnancy) * 100 }}%"></div></div><strong>{{ $count }}</strong></div>@endforeach</div>@endif</section>
+                <section class="report-section">
+                    <h3>Recorded Pregnancy by Purok</h3>
+                    <table class="report-table">
+                        <thead><tr><th>Purok</th><th>Recorded pregnant residents</th></tr></thead>
+                        <tbody>
+                            @forelse($pregnancyByPurok as $purok => $count)
+                                <tr><td>{{ $purok }}</td><td>{{ $count }}</td></tr>
+                            @empty
+                                <tr><td colspan="2" class="report-empty">No pregnancy data matches the selected filters.</td></tr>
+                            @endforelse
+                            <tr><th>Total</th><th>{{ $pregnancyTotal }}</th></tr>
+                        </tbody>
+                    </table>
+                    @if($includeGraphics && $pregnancyByPurok->isNotEmpty())
+                        @php $maxPregnancy = max(1, $pregnancyByPurok->max()); @endphp
+                        <div class="report-graphic">
+                            @foreach($pregnancyByPurok as $purok => $count)
+                                <div class="graphic-row"><span>{{ $purok }}</span><div class="graphic-track"><div class="graphic-fill red" style="width:{{ ($count / $maxPregnancy) * 100 }}%"></div></div><strong>{{ $count }}</strong></div>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
             @endif
 
             @if(in_array('diagnosis_summary', $selectedSections))
@@ -331,10 +497,55 @@ document.addEventListener('DOMContentLoaded', function () {
                 <section class="report-section"><h3>Diagnoses by Purok</h3><table class="report-table"><thead><tr><th>Purok</th><th>Diagnosis</th><th>Cases</th></tr></thead><tbody>@forelse($diagnosisByPurok as $key => $count) @php [$purok, $diagnosis] = explode('|', $key, 2); @endphp<tr><td>{{ $purok }}</td><td>{{ $diagnosis }}</td><td>{{ $count }}</td></tr>@empty<tr><td colspan="3" class="report-empty">No diagnosis-by-Purok data matches the selected dates and citizens.</td></tr>@endforelse</tbody></table></section>
             @endif
 
+            @if(in_array('health_records', $selectedSections) || in_array('diagnosis_summary', $selectedSections) || in_array('diagnosis_by_purok', $selectedSections))
+                <section class="report-section">
+                        <h3>{{ in_array('health_records', $selectedSections) ? 'Health Record Details' : 'Diagnosis History Details' }} ({{ $healthRecordDetails->count() }} records)</h3>
+                        @if($healthRecordDetails->isEmpty())
+                            <div class="report-empty">No health records match the selected citizens, diagnosis, and date range.</div>
+                        @else
+                            <div class="report-table-scroll">
+                                <table class="report-table report-details-table">
+                                    <thead><tr><th>Citizen name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Diagnosis</th><th>Consultation date</th><th>Blood pressure</th><th>Weight kg</th><th>Height cm</th><th>BMI</th><th>Temperature °C</th></tr></thead>
+                                    <tbody>
+                                        @foreach($healthRecordDetails as $record)
+                                            <tr>
+                                                <td>{{ $record['citizen_name'] }}</td>
+                                                <td>{{ $record['age'] }}</td>
+                                                <td>{{ $record['sex'] }}</td>
+                                                <td>{{ $record['purok'] }}</td>
+                                                <td>{{ $record['diagnosis'] }}</td>
+                                                <td>{{ $record['date'] !== 'Not recorded' ? \Illuminate\Support\Carbon::parse($record['date'])->format('M d, Y') : $record['date'] }}</td>
+                                                <td>{{ $record['blood_pressure'] }}</td>
+                                                <td>{{ $record['weight'] }}</td>
+                                                <td>{{ $record['height'] }}</td>
+                                                <td>{{ $record['bmi'] }}</td>
+                                                <td>{{ $record['temperature'] }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                </section>
+            @endif
+
             @if(in_array('health_records', $selectedSections))
-                <section class="report-section"><h3>Health Records ({{ $healthRecords->count() }})</h3>
-                    @if($healthRecords->isEmpty()) <div class="report-empty">No health records match the selected filters.</div>
-                    @else <table class="report-table"><thead><tr><th>Date</th><th>Citizen</th><th>Diagnosis</th><th>Notes</th></tr></thead><tbody>@foreach($healthRecords as $record)<tr><td>{{ optional($record->created_at)->format('M d, Y') }}</td><td>{{ $record->citizen->Citizen_FName ?? '' }} {{ $record->citizen->Citizen_LName ?? '' }}</td><td>{{ $record->diagnosis }}</td><td>{{ $record->notes ?? '—' }}</td></tr>@endforeach</tbody></table>@endif
+                <section class="report-section">
+                    <h3>Medication and Maintenance History ({{ $medicationHistory->count() }} records)</h3>
+                    @if($medicationHistory->isEmpty())
+                        <div class="report-empty">No medication or maintenance medicine records match the selected citizens and date range.</div>
+                    @else
+                        <div class="report-table-scroll">
+                            <table class="report-table report-details-table">
+                                <thead><tr><th>Citizen ID</th><th>Citizen</th><th>Date</th><th>Medicine</th><th>Dosage</th><th>Quantity</th><th>Frequency</th><th>End date</th><th>Recorded by</th><th>Record type</th></tr></thead>
+                                <tbody>
+                                    @foreach($medicationHistory as $record)
+                                        <tr><td>C-{{ str_pad($record['citizen_id'], 4, '0', STR_PAD_LEFT) }}</td><td>{{ $record['citizen_name'] }}</td><td>{{ $record['date'] }}</td><td>{{ $record['medicine'] }}</td><td>{{ $record['dosage'] }}</td><td>{{ $record['quantity'] }}</td><td>{{ $record['frequency'] }}</td><td>{{ $record['end_date'] }}</td><td>{{ $record['recorded_by'] }}</td><td>{{ $record['source'] }}</td></tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </section>
             @endif
 
@@ -370,7 +581,17 @@ document.addEventListener('DOMContentLoaded', function () {
             graphicsToggle.querySelector('input').disabled = !graphicsRelevant;
         };
 
-        reportType.addEventListener('change', updateReportFields);
+        reportType.addEventListener('change', () => {
+            updateReportFields();
+            document.querySelectorAll('.report-field[data-reports][hidden] input, .report-field[data-reports][hidden] select')
+                .forEach((input) => {
+                    if (input.type === 'checkbox') input.checked = false;
+                    else input.value = '';
+                });
+            document.querySelectorAll('input[name="search"]').forEach((input) => {
+                input.value = '';
+            });
+        });
         updateReportFields();
     })();
 </script>

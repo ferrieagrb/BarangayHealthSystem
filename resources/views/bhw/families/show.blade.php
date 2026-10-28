@@ -215,6 +215,13 @@
         </section>
     </div>
     <div class="modal-footer family-management-footer">
+        @if(auth()->user()->hasWriteAccess('family'))
+        <form id="archiveFamilyForm" method="POST" onsubmit="return confirm('Archive this family? Its members are kept, and you can restore the family from the archive.')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">Archive family</button>
+        </form>
+        @endif
         <button type="button" class="btn btn-secondary" onclick="closeFamilyModal()">Close</button>
     </div>
 </dialog>
@@ -318,6 +325,8 @@
         document.getElementById('selectedCitizenDisplay').value = '';
 
         document.getElementById('editFamilyForm').action = `/bhw/families/${family.id}`;
+        const archiveFamilyForm = document.getElementById('archiveFamilyForm');
+        if (archiveFamilyForm) archiveFamilyForm.action = `/bhw/families/${family.id}`;
         document.getElementById('addMemberForm').action = `/bhw/families/${family.id}/members`;
 
         const membersListContainer = document.getElementById('modalMembersList');

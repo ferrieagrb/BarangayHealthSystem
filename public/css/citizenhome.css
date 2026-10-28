@@ -437,6 +437,12 @@ ul {
     flex-shrink: 0;
 }
 
+.announcement-image.is-logo {
+    object-fit: contain;
+    padding: 6px;
+    background: #f1f5f9;
+}
+
 .announcement-details {
     flex: 1;
     min-width: 0;

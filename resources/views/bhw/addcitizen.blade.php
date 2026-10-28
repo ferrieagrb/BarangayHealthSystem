@@ -22,6 +22,8 @@
     .photo-crop-stage { height: min(58vh, 480px); margin-top: 16px; overflow: hidden; background: #0f172a; }
     .photo-crop-stage img { display: block; max-width: 100%; }
     .photo-crop-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    #familyPlanningSection { display: contents; }
+    #familyPlanningSection[hidden], #pillsField[hidden] { display: none !important; }
 </style>
 
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
@@ -241,7 +243,6 @@
                 </select>
             </div>
 
-
             {{-- =====================================================
                  HOUSING STATUS
                  ===================================================== --}}
@@ -257,25 +258,24 @@
             </div>
 
 
-            {{-- =====================================================
-                 HEALTH & FAMILY PLANNING
-                 ===================================================== --}}
-            <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Health &amp; Family Planning</h3>
+            <div id="familyPlanningSection" hidden>
+                <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Health &amp; Family Planning</h3>
 
-            <div class="form-group">
-                <label for="Citizen_Pregnant">Pregnant</label>
-                <select id="Citizen_Pregnant" name="Citizen_Pregnant">
-                    <option value="0" {{ old('Citizen_Pregnant') === '0' ? 'selected' : '' }}>No</option>
-                    <option value="1" {{ old('Citizen_Pregnant') === '1' ? 'selected' : '' }}>Yes</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="Citizen_Pregnant">Pregnant</label>
+                    <select id="Citizen_Pregnant" name="Citizen_Pregnant">
+                        <option value="0" {{ old('Citizen_Pregnant', '0') === '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('Citizen_Pregnant') === '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="Citizen_InPills">Using Birth Control Pills</label>
-                <select id="Citizen_InPills" name="Citizen_InPills">
-                    <option value="0" {{ old('Citizen_InPills') === '0' ? 'selected' : '' }}>No</option>
-                    <option value="1" {{ old('Citizen_InPills') === '1' ? 'selected' : '' }}>Yes</option>
-                </select>
+                <div class="form-group" id="pillsField">
+                    <label for="Citizen_InPills">Using Birth Control Pills</label>
+                    <select id="Citizen_InPills" name="Citizen_InPills">
+                        <option value="0" {{ old('Citizen_InPills', '0') === '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('Citizen_InPills') === '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
             </div>
 
 
@@ -545,6 +545,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const ageInput = document.getElementById('age');
     const birthdateInput = document.getElementById('birthdate');
+    const sexInput = document.getElementById('Citizen_Sex');
+    const familyPlanningSection = document.getElementById('familyPlanningSection');
+    const pregnancyInput = document.getElementById('Citizen_Pregnant');
+    const pillsField = document.getElementById('pillsField');
+    const pillsInput = document.getElementById('Citizen_InPills');
     const citizenForm = document.getElementById('citizen-form');
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photoPreview');
@@ -554,6 +559,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelPhotoCrop = document.getElementById('cancelPhotoCrop');
     const confirmPhotoCrop = document.getElementById('confirmPhotoCrop');
     let photoCropper = null;
+
+    function updateFamilyPlanningEligibility() {
+        const female = sexInput.value === 'Female';
+        const birthDate = birthdateInput.value ? new Date(`${birthdateInput.value}T00:00:00`) : null;
+        const today = new Date();
+        let age = null;
+
+        if (birthDate && !Number.isNaN(birthDate.getTime())) {
+            age = today.getFullYear() - birthDate.getFullYear();
+            if (today.getMonth() < birthDate.getMonth()
+                || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            ageInput.value = age;
+        }
+
+        const pillsEligible = female && Number.isFinite(age) && age >= 16;
+
+        familyPlanningSection.hidden = !female;
+        pregnancyInput.disabled = !female;
+        pillsField.hidden = !pillsEligible;
+        pillsInput.disabled = !pillsEligible;
+
+        if (!female) pregnancyInput.value = '0';
+        if (!pillsEligible) pillsInput.value = '0';
+    }
+
+    sexInput.addEventListener('change', updateFamilyPlanningEligibility);
+    birthdateInput.addEventListener('input', updateFamilyPlanningEligibility);
+    updateFamilyPlanningEligibility();
 
     photoInput.addEventListener('change', function () {
         const file = this.files?.[0];
@@ -621,6 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 age--;
             }
             ageInput.value = age;
+            updateFamilyPlanningEligibility();
             return true;
         }
     });

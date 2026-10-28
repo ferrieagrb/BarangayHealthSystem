@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purok extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $fillable = ['name', 'description', 'user_id', 'latitude', 'longitude', 'boundary'];
 
@@ -19,7 +19,7 @@ class Purok extends Model
 
     public function bhw()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
         public function subgroups()

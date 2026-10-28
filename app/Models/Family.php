@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Family extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = ['family_name', 'purok_id', 'subgroup_id'];
 
     protected static function booted(): void
@@ -23,12 +25,12 @@ class Family extends Model
 
     public function purok()
     {
-        return $this->belongsTo(Purok::class);
+        return $this->belongsTo(Purok::class)->withTrashed();
     }
 
     public function subgroup()
     {
-        return $this->belongsTo(PurokSubgroup::class, 'subgroup_id');
+        return $this->belongsTo(PurokSubgroup::class, 'subgroup_id')->withTrashed();
     }
 
     public function members()

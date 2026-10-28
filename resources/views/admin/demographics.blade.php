@@ -90,21 +90,21 @@
                             <div class="record-meta"><span>{{ $purok->families_count }} families</span><span>{{ $purok->subgroups_count }} subgroups</span><span>{{ $purok->purge_citizens_count }} citizens</span></div>
                             <div class="record-actions"><button type="submit" class="btn btn-secondary">Save changes</button></div>
                         </form>
-                        <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this Purok? It can only be deleted after its families, subgroups, and citizen references have been moved or removed.')">
+                        <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this Purok? It can only be archived after its families, subgroups, and citizen references have been moved. You can restore it later from the archive.')">
                             @csrf
                             @method('DELETE')
                             <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled($purok->families_count || $purok->subgroups_count) title="Move dependent records before deleting">Delete</button>
+                            <button type="submit" class="btn btn-danger" @disabled($purok->families_count || $purok->subgroups_count) title="Move dependent records before archiving">Archive</button>
                         </form>
-                        <form action="{{ route('admin.puroks.citizens.destroy', $purok->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Permanently delete all {{ $purok->purge_citizens_count }} citizen records in {{ $purok->name }}? This cannot be undone.">
+                        <form action="{{ route('admin.puroks.citizens.destroy', $purok->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Archive all {{ $purok->purge_citizens_count }} citizen records in {{ $purok->name }}? They can be restored from the archive.">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="demographics_tab" value="puroks">
-                            <div class="purge-heading"><strong>Permanent citizen deletion</strong><span>{{ $purok->purge_citizens_count }} citizens</span></div>
-                            <p>Deletes citizen profiles and linked citizen login accounts. Related health, vaccination, medication, maintenance, and supply-release records may also be deleted. Families and BHW accounts are kept.</p>
+                            <div class="purge-heading"><strong>Archive citizens</strong><span>{{ $purok->purge_citizens_count }} citizens</span></div>
+                            <p>Archives citizen profiles and linked citizen login accounts. Nothing is permanently deleted and they can be restored from the archive. Families and BHW accounts are kept.</p>
                             <label class="field"><span>Type <strong>{{ $purok->name }}</strong> to confirm</span><input type="text" name="confirmation" maxlength="255" autocomplete="off" required></label>
                             <label class="field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled(!$purok->purge_citizens_count)>Permanently delete citizens</button>
+                            <button type="submit" class="btn btn-danger" @disabled(!$purok->purge_citizens_count)>Archive citizens</button>
                         </form>
                     </article>
                 @empty
@@ -165,21 +165,21 @@
                                 <div class="record-actions"><button type="submit" class="btn btn-secondary">Save subgroup</button></div>
                             </div>
                         </form>
-                        <form action="{{ route('admin.subgroups.destroy', $subgroup->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this subgroup? Any empty family records will also be removed. Move or remove its citizens first.')">
+                        <form action="{{ route('admin.subgroups.destroy', $subgroup->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this subgroup? Any empty family records will also be archived. Move its citizens first. You can restore it later from the archive.')">
                             @csrf
                             @method('DELETE')
                             <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled($subgroup->purge_citizens_count) title="Move or remove citizens before deleting; empty family records will be removed">Delete</button>
+                            <button type="submit" class="btn btn-danger" @disabled($subgroup->purge_citizens_count) title="Move citizens before archiving; empty family records will be archived">Archive</button>
                         </form>
-                        <form action="{{ route('admin.subgroups.citizens.destroy', $subgroup->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Permanently delete all {{ $subgroup->purge_citizens_count }} citizen records in {{ $subgroup->name }} - {{ $subgroup->purok->name }}? This cannot be undone.">
+                        <form action="{{ route('admin.subgroups.citizens.destroy', $subgroup->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Archive all {{ $subgroup->purge_citizens_count }} citizen records in {{ $subgroup->name }} - {{ $subgroup->purok->name }}? They can be restored from the archive.">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="demographics_tab" value="subgroups">
-                            <div class="purge-heading"><strong>Permanent citizen deletion</strong><span>{{ $subgroup->purge_citizens_count }} citizens</span></div>
-                            <p>Deletes citizen profiles and linked citizen login accounts. Related health, vaccination, medication, maintenance, and supply-release records may also be deleted. Families and BHW accounts are kept.</p>
+                            <div class="purge-heading"><strong>Archive citizens</strong><span>{{ $subgroup->purge_citizens_count }} citizens</span></div>
+                            <p>Archives citizen profiles and linked citizen login accounts. Nothing is permanently deleted and they can be restored from the archive. Families and BHW accounts are kept.</p>
                             <label class="field"><span>Type <strong>{{ $subgroup->name }} - {{ $subgroup->purok->name }}</strong> to confirm</span><input type="text" name="confirmation" maxlength="513" autocomplete="off" required></label>
                             <label class="field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled(!$subgroup->purge_citizens_count)>Permanently delete citizens</button>
+                            <button type="submit" class="btn btn-danger" @disabled(!$subgroup->purge_citizens_count)>Archive citizens</button>
                         </form>
                     </article>
                 @empty

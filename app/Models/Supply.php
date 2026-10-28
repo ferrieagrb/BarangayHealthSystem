@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Supply extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = [
         'name',
         'item_number',

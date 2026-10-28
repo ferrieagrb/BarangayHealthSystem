@@ -337,7 +337,7 @@
                                     <form
                                         action="{{ route('admin.categories.destroy', $cat->id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this category?')"
+                                        onsubmit="return confirm('Archive this category? You can restore it from the archive.')"
                                     >
                                         @csrf
                                         @method('DELETE')
@@ -346,7 +346,7 @@
                                             type="submit"
                                             class="inventory-link-button inventory-link-danger"
                                         >
-                                            Delete
+                                            Archive
                                         </button>
                                     </form>
 

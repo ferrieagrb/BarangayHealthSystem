@@ -50,6 +50,7 @@
                     <li><a href="{{ url('/') }}">Home</a></li>
                     <li><a href="{{ route('publiccalendar') }}" class="active">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
+                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
                     <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>

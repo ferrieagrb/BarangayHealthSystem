@@ -45,6 +45,7 @@
                     <li><a href="{{ url('/') }}" class="active">Home</a></li>
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
+                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
                     <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
@@ -67,7 +68,7 @@
 
     <!-- Main Content Area -->
     <main class="container main-content">
-        
+
         <!-- Recent Events Section -->
         <section class="content-section">
             <div class="section-header">
@@ -105,9 +106,8 @@
             <div class="announcements-list">
                 @forelse($recentAnnouncements as $announcement)
                     <a href="{{ route('public.announcements.show', $announcement) }}" class="announcement-item announcement-link">
-                        @if($announcement->images->isNotEmpty())
-                            <img src="{{ asset('storage/' . $announcement->images->first()->path) }}" alt="{{ $announcement->title }}" class="announcement-image">
-                        @endif
+                        @php $logoUrl = \App\Models\SystemSetting::logoUrl(); @endphp
+                        <img src="{{ $announcement->images->isNotEmpty() ? $announcement->images->first()->url : $logoUrl }}" alt="{{ $announcement->title }}" class="announcement-image" onerror="this.onerror=null;this.src='{{ $logoUrl }}';this.classList.add('is-logo');">
                         <div class="announcement-icon">
                             <i class="fa-solid fa-bullhorn"></i>
                         </div>

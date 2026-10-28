@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class VaccinationRecord extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $fillable = [
         'citizen_id',
@@ -15,10 +15,17 @@ class VaccinationRecord extends Model
         'dose_number',
         'date_administered',
         'administered_by',
+        'catch_up_reviewed',
+    ];
+
+    protected $casts = [
+        'date_administered' => 'date',
+        'eligibility_review_required' => 'boolean',
+        'catch_up_reviewed' => 'boolean',
     ];
 
     public function citizen()
     {
-        return $this->belongsTo(citizens::class, 'citizen_id');
+        return $this->belongsTo(citizens::class, 'citizen_id')->withTrashed();
     }
 }
