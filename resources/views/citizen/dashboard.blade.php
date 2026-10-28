@@ -27,6 +27,24 @@
     scroll-margin-top: 165px;
 }
 
+/* Adjust only the announcement card/slider width, not its heading or View All link. */
+.c-home #announcements > .c-ann-slider,
+.c-home #announcements > .c-panel.c-empty {
+    box-sizing: border-box;
+    width: calc(100% - clamp(96px, 28vw, 440px));
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Use the available width on smaller screens. */
+@media (max-width: 760px) {
+    .c-home #announcements > .c-ann-slider,
+    .c-home #announcements > .c-panel.c-empty {
+        width: 100%;
+    }
+}
+
 /* Give Health Information enough space so its tab remains active while reading. */
 #health-information { min-height: 72vh; }
 #health-information .c-health { padding: clamp(22px, 3vw, 42px); }
@@ -450,10 +468,6 @@
         font-size: 18px;
     }
 
-    .c-ann-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
 
     .c-ann-cover {
         min-height: 125px;
@@ -756,12 +770,23 @@
     font-size: 16px;
 }
 
-/* Announcement cards */
-.c-home .c-ann-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+/* Announcement slider */
+.c-home .c-ann-slider { position: relative; overflow: hidden; padding: 4px 2px 12px; }
+.c-home .c-ann-track { display: flex; align-items: stretch; gap: 18px; transition: transform .65s cubic-bezier(.22,.61,.36,1); will-change: transform; }
+.c-home .c-ann-slide { flex: 0 0 100%; min-width: 0; }
+.c-home .c-ann-link {
+    display: block;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 15px;
 }
+.c-home .c-ann-link:focus-visible {
+    outline: 3px solid #d9a441;
+    outline-offset: 4px;
+}
+.c-home .c-ann-link .c-ann-card { height: 100%; }
+
 .c-home .c-ann-card {
     min-width: 0;
     overflow: hidden;
@@ -820,6 +845,13 @@
     font-size: 13px;
     font-weight: 650;
 }
+.c-home .c-ann-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.c-home .c-ann-control-buttons { display: flex; gap: 8px; }
+.c-home .c-ann-arrow { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border: 1px solid #c9d8ed; border-radius: 10px; background: #fff; color: #173b82; font-size: 22px; cursor: pointer; }
+.c-home .c-ann-arrow:hover { background: #edf4ff; }
+.c-home .c-ann-arrow:disabled { opacity: .4; cursor: not-allowed; }
+.c-home .c-ann-indicator { color: #53657c; font-size: 13px; font-weight: 700; }
+.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 800; vertical-align: middle; }
 .c-home .c-heading a {
     display: inline-flex;
     align-items: center;
@@ -967,7 +999,7 @@
 .c-home .c-green:focus-visible { background: #14532d; }
 
 @media (max-width: 760px) {
-    .c-home .c-ann-grid { grid-template-columns: 1fr; }
+    .c-home .c-ann-track { gap: 12px; }
     .c-home .c-section { scroll-margin-top: 125px; }
     .c-home .c-heading { align-items: flex-start; }
     .c-home .c-heading h2 { font-size: 22px; }
@@ -1055,10 +1087,6 @@
         line-height: 1.5;
     }
 
-    .c-home .c-ann-grid {
-        grid-template-columns: 1fr;
-        gap: 13px;
-    }
 
     .c-home .c-ann-cover {
         min-height: 0;
@@ -1433,11 +1461,45 @@
     }
 }
 
+.c-home .c-ann-cover {
+    min-height: 260px;
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.c-home .c-ann-cover h3 {
+    margin-top: 32px;
+}
+.c-home .c-ann-body {
+    min-height: 190px;
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+@media (max-width: 760px) {
+    .c-home .c-ann-cover {
+        min-height: 230px;
+        padding: 26px 20px;
+    }
+    .c-home .c-ann-body {
+        min-height: 175px;
+        padding: 24px 20px;
+    }
+}
+@media (max-width: 600px) {
+    .c-home .c-ann-cover {
+        min-height: 215px;
+        padding: 24px 18px;
+    }
+    .c-home .c-ann-body {
+        min-height: 165px;
+        padding: 22px 18px;
+    }
+}
 
-
-
-<style>
-
+</style>
 
 @endsection
 @section('content')
@@ -1455,31 +1517,121 @@
                 </a>
             </div>
             @if(isset($announcements) && $announcements->count())
-                <div class="c-ann-grid">
-                    @foreach($announcements as $announcement)
-                        <article class="c-ann-card">
-                            <div class="c-ann-cover">
-                                <span class="c-ann-label">📢 Health Advisory</span>
-                                <h3>{{ $announcement->title }}</h3>
+                @php
+                    /*
+                     * Upcoming events are sorted by date, with the nearest event first.
+                     * Past events follow upcoming events, and announcements without
+                     * an event date appear last. Urgency is based on date proximity.
+                     */
+                    $today = \Carbon\Carbon::today();
+                    $sortedAnnouncements = collect($announcements)->sortBy(function ($announcement) use ($today) {
+                        $attributes = $announcement->getAttributes();
+
+                        $eventDateValue = $attributes['event_date']
+                            ?? $attributes['event_start_date']
+                            ?? $attributes['schedule_date']
+                            ?? $attributes['date_of_event']
+                            ?? $attributes['start_date']
+                            ?? $attributes['event_datetime']
+                            ?? $attributes['date']
+                            ?? null;
+
+                        try {
+                            $eventDate = $eventDateValue
+                                ? \Carbon\Carbon::parse($eventDateValue)->startOfDay()
+                                : null;
+                        } catch (\Throwable $e) {
+                            $eventDate = null;
+                        }
+
+                        if ($eventDate === null) {
+                            $group = 3;
+                            $dateKey = 0;
+                        } elseif ($eventDate->greaterThanOrEqualTo($today)) {
+                            $group = 0;
+                            $dateKey = $eventDate->timestamp;
+                        } else {
+                            $group = 1;
+                            $dateKey = $eventDate->timestamp;
+                        }
+
+                        return sprintf('%d-%012d-%012d', $group, $dateKey, -(optional($announcement->created_at)->timestamp ?? 0));
+                    })->values();
+                @endphp
+
+                <div class="c-ann-slider" id="citizenAnnouncementSlider" aria-label="Health announcements carousel">
+                    <div class="c-ann-track" id="citizenAnnouncementTrack">
+                        @foreach($sortedAnnouncements as $announcement)
+                            @php
+                                $announcementAttributes = $announcement->getAttributes();
+                                $eventDateValue = $announcementAttributes['event_date']
+                                    ?? $announcementAttributes['event_start_date']
+                                    ?? $announcementAttributes['schedule_date']
+                                    ?? $announcementAttributes['date_of_event']
+                                    ?? $announcementAttributes['start_date']
+                                    ?? $announcementAttributes['event_datetime']
+                                    ?? $announcementAttributes['date']
+                                    ?? null;
+
+                                try {
+                                    $parsedEventDate = $eventDateValue
+                                        ? \Carbon\Carbon::parse($eventDateValue)->startOfDay()
+                                        : null;
+                                    $displayEventDate = $parsedEventDate ? $parsedEventDate->format('M d, Y') : null;
+                                    $isUrgentAnnouncement = $parsedEventDate !== null
+                                        && $parsedEventDate->greaterThanOrEqualTo(\Carbon\Carbon::today())
+                                        && $parsedEventDate->lessThanOrEqualTo(\Carbon\Carbon::today()->addDays(7));
+                                } catch (\Throwable $e) {
+                                    $displayEventDate = null;
+                                    $isUrgentAnnouncement = false;
+                                }
+                            @endphp
+                            <div class="c-ann-slide">
+                                <a class="c-ann-link"
+                                   href="{{ route('citizen.announcements.show', $announcement->id) }}"
+                                   aria-label="Read full announcement: {{ $announcement->title }}">
+                                    <article class="c-ann-card">
+                                    <div class="c-ann-cover">
+                                        <span class="c-ann-label">📢 Health Advisory</span>
+                                        @if($isUrgentAnnouncement)
+                                            <span class="c-ann-priority">URGENT</span>
+                                        @endif
+                                        <h3>{{ $announcement->title }}</h3>
+                                    </div>
+                                    <div class="c-ann-body">
+                                        <p>
+                                            {{ \Illuminate\Support\Str::limit(
+                                                $announcement->content
+                                                ?? $announcement->description
+                                                ?? 'Please contact the Barangay Health Center for more information.',
+                                                180
+                                            ) }}
+                                        </p>
+                                        <div class="c-ann-footer">
+                                            <span>
+                                                @if($displayEventDate)
+                                                    Event date: {{ $displayEventDate }}
+                                                @else
+                                                    Posted: {{ optional($announcement->created_at)->format('M d, Y') }}
+                                                @endif
+                                            </span>
+                                            <span>Barangay Amuyong</span>
+                                        </div>
+                                    </div>
+                                    </article>
+                                </a>
                             </div>
-                            <div class="c-ann-body">
-                                <p>
-                                    {{ \Illuminate\Support\Str::limit(
-                                    $announcement->content
-                                    ?? $announcement->description
-                                    ?? 'Please contact the Barangay Health Center for more information.',
-                                    180
-                                    ) }}
-                                </p>
-                                <div class="c-ann-footer">
-                                    <span>
-                                        {{ optional($announcement->created_at)->format('M d, Y') }}
-                                    </span>
-                                    <span>Barangay Amuyong</span>
-                                </div>
+                        @endforeach
+                    </div>
+                    @if($sortedAnnouncements->count() > 1)
+                        <div class="c-ann-controls">
+                            <span class="c-ann-indicator" id="citizenAnnouncementIndicator">Announcement 1 of {{ $sortedAnnouncements->count() }}</span>
+                            <div class="c-ann-control-buttons">
+                                <button type="button" class="c-ann-arrow" id="citizenAnnouncementPrev" aria-label="Previous announcement">‹</button>
+                                <button type="button" class="c-ann-arrow" id="citizenAnnouncementNext" aria-label="Next announcement">›</button>
                             </div>
-                        </article>
-                    @endforeach
+                        </div>
+                    @endif
                 </div>
             @else
                 <div class="c-panel c-empty">
@@ -1850,6 +2002,136 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Announcement slider: seamless infinite loop, with manual controls and a 5-second delay.
+    const announcementSlider = document.getElementById('citizenAnnouncementSlider');
+    const announcementTrack = document.getElementById('citizenAnnouncementTrack');
+    const announcementOriginalSlides = announcementTrack
+        ? Array.from(announcementTrack.querySelectorAll('.c-ann-slide'))
+        : [];
+    const announcementPrev = document.getElementById('citizenAnnouncementPrev');
+    const announcementNext = document.getElementById('citizenAnnouncementNext');
+    const announcementIndicator = document.getElementById('citizenAnnouncementIndicator');
+    const announcementSlideDelay = 5000;
+    const announcementTransitionMs = 650;
+    let announcementAutoTimer = null;
+    let announcementIndex = 0;
+    let announcementPosition = 0;
+    let announcementIsAnimating = false;
+    let announcementRealSlides = announcementOriginalSlides.slice();
+
+    function announcementMeasureStep() {
+        if (!announcementTrack || !announcementRealSlides.length) return 0;
+        const slideWidth = announcementRealSlides[0].getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(announcementTrack).gap) || 0;
+        return slideWidth + gap;
+    }
+
+    function announcementSetPosition(animate = true) {
+        if (!announcementTrack || !announcementRealSlides.length) return;
+        announcementTrack.style.transition = animate
+            ? 'transform .65s cubic-bezier(.22,.61,.36,1)'
+            : 'none';
+        announcementTrack.style.transform =
+            `translateX(-${announcementPosition * announcementMeasureStep()}px)`;
+    }
+
+    function announcementUpdateIndicator() {
+        if (announcementIndicator && announcementRealSlides.length) {
+            announcementIndicator.textContent =
+                `Announcement ${announcementIndex + 1} of ${announcementRealSlides.length}`;
+        }
+        if (announcementPrev) announcementPrev.disabled = announcementRealSlides.length < 2;
+        if (announcementNext) announcementNext.disabled = announcementRealSlides.length < 2;
+    }
+
+    function announcementMove(direction) {
+        if (announcementRealSlides.length < 2 || announcementIsAnimating) return;
+        announcementIsAnimating = true;
+        announcementPosition += direction;
+        announcementIndex = (announcementIndex + direction + announcementRealSlides.length)
+            % announcementRealSlides.length;
+        announcementSetPosition(true);
+        announcementUpdateIndicator();
+    }
+
+    function stopAnnouncementAutoSlide() {
+        if (announcementAutoTimer !== null) {
+            window.clearTimeout(announcementAutoTimer);
+            announcementAutoTimer = null;
+        }
+    }
+
+    function startAnnouncementAutoSlide() {
+        stopAnnouncementAutoSlide();
+        if (announcementRealSlides.length < 2) return;
+        announcementAutoTimer = window.setTimeout(function advanceAnnouncement() {
+            announcementMove(1);
+            // The next timeout is scheduled after the current slide transition completes.
+        }, announcementSlideDelay);
+    }
+
+    if (announcementTrack && announcementOriginalSlides.length > 1) {
+        // Add one clone at each end so both forward and backward wrapping are seamless.
+        const firstClone = announcementOriginalSlides[0].cloneNode(true);
+        const lastClone = announcementOriginalSlides[announcementOriginalSlides.length - 1].cloneNode(true);
+
+        [firstClone, lastClone].forEach(function (clone) {
+            clone.setAttribute('aria-hidden', 'true');
+            clone.querySelectorAll('a, button, input, select, textarea, [tabindex]').forEach(function (el) {
+                el.setAttribute('tabindex', '-1');
+            });
+        });
+
+        announcementTrack.appendChild(firstClone);
+        announcementTrack.insertBefore(lastClone, announcementTrack.firstChild);
+        announcementPosition = 1;
+        announcementSetPosition(false);
+        announcementUpdateIndicator();
+
+        // Force the initial no-transition position to be applied before enabling animation.
+        requestAnimationFrame(function () {
+            announcementTrack.style.transition = 'transform .65s cubic-bezier(.22,.61,.36,1)';
+        });
+
+        announcementTrack.addEventListener('transitionend', function (event) {
+            if (event.propertyName !== 'transform') return;
+
+            // If we land on either clone, silently reset to the matching real slide.
+            if (announcementPosition === announcementRealSlides.length + 1) {
+                announcementPosition = 1;
+                announcementSetPosition(false);
+            } else if (announcementPosition === 0) {
+                announcementPosition = announcementRealSlides.length;
+                announcementSetPosition(false);
+            }
+
+            announcementIsAnimating = false;
+            startAnnouncementAutoSlide();
+        });
+
+        announcementPrev?.addEventListener('click', function () {
+            stopAnnouncementAutoSlide();
+            announcementMove(-1);
+        });
+        announcementNext?.addEventListener('click', function () {
+            stopAnnouncementAutoSlide();
+            announcementMove(1);
+        });
+
+        // Pause autoplay while hovered or focused; resume with a fresh 5-second wait.
+        announcementSlider?.addEventListener('mouseenter', stopAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('mouseleave', startAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('focusin', stopAnnouncementAutoSlide);
+        announcementSlider?.addEventListener('focusout', startAnnouncementAutoSlide);
+
+        window.addEventListener('resize', function () {
+            announcementSetPosition(false);
+        });
+        startAnnouncementAutoSlide();
+    } else {
+        announcementUpdateIndicator();
+    }
+
     const nav = document.getElementById('citizenSectionNav');
     if (!nav) return;
 
@@ -1936,8 +2218,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateActiveTab();
 });
 </script>
-
-
 
 
 

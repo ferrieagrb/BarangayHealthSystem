@@ -726,7 +726,8 @@ body,
 
             // Trigger on any form submission across the site
             document.addEventListener('submit', function(e) {
-                // Optional: check if form is valid before showing loader
+                if (e.defaultPrevented) return;
+                if (e.target.closest('[data-no-loader="true"], .logout-form, .citizen-sidebar-logout')) return;
                 showLoader();
             });
 

@@ -34,6 +34,14 @@
             min-width: 25px;
             text-align: center;
         }
+        .sidebar ul li .logout-form button {
+            gap: 12px;
+        }
+        .sidebar ul li .logout-form button i {
+            font-size: 20px;
+            width: 40px;
+            min-width: 25px;
+        }
         .sidebar .nav-dropdown-toggle {
             position: relative;
             display: flex;
@@ -241,7 +249,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
                         @csrf
                         <button type="submit">
-                            <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
+                            <i class="bx bx-log-out"></i>
                             <span class="nav-item">Logout</span>
                         </button>
                     </form>

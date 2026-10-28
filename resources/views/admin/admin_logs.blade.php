@@ -37,7 +37,8 @@
     .tab-content.active { display: block; }
     .admin-log-table { width: 100%; border-collapse: collapse; background: #fff; }
     .admin-log-table th, .admin-log-table td { padding: 11px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
-    .admin-log-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
+    .admin-log-table th, .admin-log-table td { text-align: center; }
+.admin-log-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
     .tag { display: inline-block; padding: 4px 8px; border-radius: 6px; background: #0e42b1; color: #fff; font-size: 12px; }
     .pagination-container { margin-top: 18px; }
     .pagination-container nav > div:first-child { display: none; }

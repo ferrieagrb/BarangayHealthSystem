@@ -290,11 +290,8 @@
 }
 
 .main-content .permissions-page .action-cell {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: table-cell;
+    text-align: center;
 }
 
 .main-content .action-group form,

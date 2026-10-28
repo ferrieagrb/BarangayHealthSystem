@@ -1,3 +1,9 @@
+// Called by the Google Maps script once it has loaded.
+window.initDemographicsMap = () => {
+    window.demographicsGoogleReady = true;
+    if (window.startDemographicsMap) window.startDemographicsMap();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const root = document.getElementById('demographicsApp');
     if (!root || !window.demographicsMapData) return;
@@ -21,11 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelChangesButton = document.getElementById('cancelMapChanges');
     const boundaryVisibilityOptions = document.getElementById('boundaryVisibilityOptions');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    const pinLayers = L.layerGroup();
-    const savedBoundaryLayers = L.layerGroup();
-    const savedLayerByKey = new Map();
-    const markerByKey = new Map();
+    const savedPolygons = new Map();
+    const savedMarkers = new Map();
     const boundaryVisibility = new Map();
+    const defaultCenter = { lat: 14.0668, lng: 120.8531 };
 
     let map;
     let mode = 'pin';
@@ -84,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (name === 'map' && map) {
             window.setTimeout(() => {
-                map.invalidateSize();
+                google.maps.event.trigger(map, 'resize');
                 if (!currentTarget()) fitVisibleLayers();
             }, 80);
         }
@@ -110,35 +115,47 @@ document.addEventListener('DOMContentLoaded', () => {
             : ['#ea580c', '#a21caf', '#ca8a04', '#0d9488', '#e11d48', '#9333ea', '#c2410c', '#0284c7'];
         const id = Number(target?.id);
         const index = Number.isFinite(id) && id > 0 ? (id - 1) % colors.length : 0;
-        const color = colors[index];
+        return colors[index];
+    }
 
+    function polygonOptions(type, target, extra = {}) {
+        const color = colorFor(type, target);
         return {
-            color,
+            strokeColor: color,
             fillColor: color,
-            ...(type === 'subgroup' ? { dashArray: '6 5' } : {}),
+            strokeOpacity: type === 'subgroup' ? 0.75 : 1,
+            strokeWeight: type === 'subgroup' ? 2 : 3,
+            fillOpacity: type === 'subgroup' ? 0.12 : 0.08,
+            clickable: false,
+            ...extra,
         };
     }
 
-    function addTooltip(layer, text) {
-        const label = document.createElement('span');
-        label.textContent = text;
-        layer.bindTooltip(label);
+    function pinIcon(type) {
+        return {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: type === 'purok' ? '#2563eb' : '#ea580c',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2,
+        };
     }
 
-    function createPinIcon(type) {
-        return L.divIcon({
-            className: 'demographics-pin-icon',
-            html: `<span class="demographics-pin ${type === 'purok' ? 'purok-pin' : 'subgroup-pin'}"></span>`,
-            iconSize: [20, 24],
-            iconAnchor: [10, 22],
-        });
+    function ringFromGeoJson(geometry) {
+        const ring = geometry?.coordinates?.[0] || [];
+        return ring.map(([lng, lat]) => ({ lat, lng }));
+    }
+
+    function pathFromPolygon(polygon) {
+        return polygon.getPath().getArray().map((point) => [point.lng(), point.lat()]);
     }
 
     function clearSavedLayers() {
-        savedBoundaryLayers.clearLayers();
-        pinLayers.clearLayers();
-        savedLayerByKey.clear();
-        markerByKey.clear();
+        savedPolygons.forEach((polygon) => polygon.setMap(null));
+        savedMarkers.forEach((marker) => marker.setMap(null));
+        savedPolygons.clear();
+        savedMarkers.clear();
     }
 
     function renderBoundaryVisibilityOptions() {
@@ -148,13 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 key: entityKey('purok', purok.id),
                 name: `${purok.name} boundary`,
                 hasBoundary: Boolean(purok.boundary),
-                color: colorFor('purok', purok).color,
+                color: colorFor('purok', purok),
             })),
             ...data.subgroups.map((subgroup) => ({
                 key: entityKey('subgroup', subgroup.id),
                 name: `${subgroup.name} subgroup`,
                 hasBoundary: Boolean(subgroup.boundary),
-                color: colorFor('subgroup', subgroup).color,
+                color: colorFor('subgroup', subgroup),
             })),
         ].filter((entry) => entry.hasBoundary);
 
@@ -187,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function hasCoordinates(target) {
+        return target?.latitude !== null && target?.latitude !== undefined
+            && target?.longitude !== null && target?.longitude !== undefined;
+    }
+
     function renderSavedLayers() {
         if (!map) return;
         clearSavedLayers();
@@ -199,57 +221,31 @@ document.addEventListener('DOMContentLoaded', () => {
             ? data.subgroups.filter((subgroup) => String(subgroup.purok_id) === selectedPurokId)
             : data.subgroups;
 
-        visiblePuroks.forEach((purok) => {
-            const key = entityKey('purok', purok.id);
-            if (purok.boundary) {
-                const layer = L.geoJSON(purok.boundary, {
-                    style: { ...colorFor('purok', purok), weight: 3, fillOpacity: 0.08 },
-                });
-                if (boundaryVisibility.get(key) !== false) layer.addTo(savedBoundaryLayers);
-                addTooltip(layer, `${purok.name} boundary`);
-                savedLayerByKey.set(key, layer);
-            }
-            if (purok.latitude !== null && purok.longitude !== null) {
-                const marker = L.marker([purok.latitude, purok.longitude], {
-                    icon: createPinIcon('purok'),
-                }).addTo(pinLayers);
-                addTooltip(marker, `${purok.name} pin`);
-                markerByKey.set(key, marker);
-            }
+        [['purok', visiblePuroks, 'boundary'], ['subgroup', visibleSubgroups, 'subgroup boundary']].forEach(([type, items, label]) => {
+            items.forEach((item) => {
+                const key = entityKey(type, item.id);
+                if (item.boundary) {
+                    savedPolygons.set(key, new google.maps.Polygon({
+                        ...polygonOptions(type, item),
+                        paths: ringFromGeoJson(item.boundary),
+                        map: boundaryVisibility.get(key) === false ? null : map,
+                    }));
+                }
+                if (hasCoordinates(item)) {
+                    savedMarkers.set(key, new google.maps.Marker({
+                        position: { lat: Number(item.latitude), lng: Number(item.longitude) },
+                        map,
+                        icon: pinIcon(type),
+                        title: `${item.name} ${type === 'purok' ? 'pin' : 'subgroup pin'}`,
+                    }));
+                }
+            });
         });
-
-        visibleSubgroups.forEach((subgroup) => {
-            const key = entityKey('subgroup', subgroup.id);
-            if (subgroup.boundary) {
-                const layer = L.geoJSON(subgroup.boundary, {
-                    style: { ...colorFor('subgroup', subgroup), weight: 2, fillOpacity: 0.12 },
-                });
-                if (boundaryVisibility.get(key) !== false) layer.addTo(savedBoundaryLayers);
-                addTooltip(layer, `${subgroup.name} subgroup boundary`);
-                savedLayerByKey.set(key, layer);
-            }
-            if (subgroup.latitude !== null && subgroup.longitude !== null) {
-                const marker = L.marker([subgroup.latitude, subgroup.longitude], {
-                    icon: createPinIcon('subgroup'),
-                }).addTo(pinLayers);
-                addTooltip(marker, `${subgroup.name} subgroup pin`);
-                markerByKey.set(key, marker);
-            }
-        });
-    }
-
-    function selectedBoundary() {
-        const target = currentTarget();
-        if (!target?.boundary) return null;
-        const featureLayer = L.geoJSON(target.boundary);
-        let layer = null;
-        featureLayer.eachLayer((child) => { layer = child; });
-        return layer;
     }
 
     function clearDraftLayer() {
-        if (drawingLine) map.removeLayer(drawingLine);
-        if (draftLayer) map.removeLayer(draftLayer);
+        if (drawingLine) drawingLine.setMap(null);
+        if (draftLayer) draftLayer.setMap(null);
         drawingLine = null;
         draftLayer = null;
         drawingPoints = [];
@@ -263,30 +259,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function removeTargetPin() {
-        if (targetPin) map.removeLayer(targetPin);
+        if (targetPin) targetPin.setMap(null);
         targetPin = null;
+    }
+
+    function createTargetPin(position, type) {
+        const pin = new google.maps.Marker({
+            position,
+            map,
+            icon: pinIcon(type),
+            draggable: true,
+            zIndex: 10,
+        });
+        pin.addListener('dragend', () => {
+            targetPinDirty = true;
+            savePinButton.disabled = false;
+            cancelChangesButton.disabled = false;
+            const moved = pin.getPosition();
+            setStatus(`Pin for ${currentTargetName()} moved to ${moved.lat().toFixed(6)}, ${moved.lng().toFixed(6)}. Save to keep it.`);
+        });
+        return pin;
     }
 
     function resetTargetPin() {
         removeTargetPin();
         const target = currentTarget();
-        const key = target ? entityKey(currentTargetType(), target.id) : null;
-        const savedMarker = key ? markerByKey.get(key) : null;
-        if (savedMarker) map.removeLayer(savedMarker);
-        if (target?.latitude !== null && target?.latitude !== undefined
-            && target?.longitude !== null && target?.longitude !== undefined) {
-            targetPin = L.marker([target.latitude, target.longitude], {
-                icon: createPinIcon(currentTargetType()),
-                draggable: true,
-            }).addTo(map);
-            targetPin.on('dragend', () => {
-                targetPinDirty = true;
-                savePinButton.disabled = false;
-                cancelChangesButton.disabled = false;
-                const position = targetPin.getLatLng();
-                setStatus(`Pin for ${currentTargetName()} moved to ${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}. Save to keep it.`);
-            });
-            addTooltip(targetPin, `${target.name} selected pin`);
+        if (hasCoordinates(target)) {
+            targetPin = createTargetPin({ lat: Number(target.latitude), lng: Number(target.longitude) }, currentTargetType());
         }
         targetPinDirty = false;
         savePinButton.disabled = true;
@@ -305,12 +304,19 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelChangesButton.disabled = !boundaryDirty && !targetPinDirty;
     }
 
-    function fitVisibleLayers() {
-        const visibleLayers = [...savedLayerByKey.values(), ...markerByKey.values()];
-        if (!visibleLayers.length) return;
+    function extendWithPolygon(bounds, polygon) {
+        polygon.getPath().forEach((point) => bounds.extend(point));
+    }
 
-        const bounds = L.featureGroup(visibleLayers).getBounds();
-        if (bounds.isValid()) map.fitBounds(bounds.pad(0.12), { maxZoom: 16 });
+    function fitVisibleLayers() {
+        if (!savedPolygons.size && !savedMarkers.size) return;
+        const bounds = new google.maps.LatLngBounds();
+        savedPolygons.forEach((polygon) => extendWithPolygon(bounds, polygon));
+        savedMarkers.forEach((marker) => bounds.extend(marker.getPosition()));
+        map.fitBounds(bounds, 40);
+        google.maps.event.addListenerOnce(map, 'idle', () => {
+            if (map.getZoom() > 16) map.setZoom(16);
+        });
     }
 
     function refreshTarget() {
@@ -346,22 +352,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         resetTargetPin();
-        const pinKey = entityKey(currentTargetType(), target.id);
-        const savedBoundary = savedLayerByKey.get(pinKey);
-        const savedMarker = markerByKey.get(pinKey);
-        const boundsLayer = savedBoundary && map.hasLayer(savedBoundary)
-            ? savedBoundary
-            : savedMarker && map.hasLayer(savedMarker)
-                ? savedMarker
-                : null;
-        if (boundsLayer) {
-            const bounds = boundsLayer.getBounds?.();
-            if (bounds?.isValid()) map.fitBounds(bounds.pad(0.18), { maxZoom: 17 });
-            else map.setView(boundsLayer.getLatLng(), 16);
-        } else if (target.latitude !== null && target.longitude !== null) {
-            map.setView([target.latitude, target.longitude], 16);
+        const key = entityKey(currentTargetType(), target.id);
+        const polygon = savedPolygons.get(key);
+        if (polygon && polygon.getMap()) {
+            const bounds = new google.maps.LatLngBounds();
+            extendWithPolygon(bounds, polygon);
+            map.fitBounds(bounds, 40);
+        } else if (hasCoordinates(target)) {
+            map.setCenter({ lat: Number(target.latitude), lng: Number(target.longitude) });
+            map.setZoom(16);
         }
-        setStatus(`${target.name} selected. ${target.boundary ? 'Saved boundary is shown.' : 'No boundary saved yet.'} ${target.latitude !== null ? 'Pin is saved.' : 'No pin saved yet.'}`);
+        setStatus(`${target.name} selected. ${target.boundary ? 'Saved boundary is shown.' : 'No boundary saved yet.'} ${hasCoordinates(target) ? 'Pin is saved.' : 'No pin saved yet.'}`);
         updateBoundaryButtons();
     }
 
@@ -394,21 +395,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function geometryFromDraft() {
         if (!draftLayer) return null;
-        const feature = draftLayer.toGeoJSON();
-        const geometry = feature.type === 'Feature' ? feature.geometry : feature;
-        if (geometry?.type !== 'Polygon' || !Array.isArray(geometry.coordinates?.[0])) return null;
-        const ring = geometry.coordinates[0];
-        if (ring.length < 4) return null;
-        const first = ring[0];
-        const last = ring[ring.length - 1];
-        if (first[0] !== last[0] || first[1] !== last[1]) ring.push([...first]);
+        const ring = pathFromPolygon(draftLayer);
+        if (ring.length < 3) return null;
+        ring.push([...ring[0]]);
         const area = ring.reduce((sum, point, index) => {
             if (index === 0) return sum;
             const previous = ring[index - 1];
             return sum + previous[0] * point[1] - point[0] * previous[1];
         }, 0);
         if (Math.abs(area) < 1e-10) return null;
-        return geometry;
+        return { type: 'Polygon', coordinates: [ring] };
     }
 
     function pointInRing(point, ring) {
@@ -445,76 +441,81 @@ document.addEventListener('DOMContentLoaded', () => {
         return warnings;
     }
 
-    async function initializeMap() {
-        if (typeof L === 'undefined' || !mapElement) {
-            setStatus('The interactive map library could not be loaded. Check your connection and reload this page.', 'error');
+    function drawDraft(fillOpacity) {
+        const type = currentTargetType();
+        const target = currentTarget();
+        const color = colorFor(type, target);
+        if (drawingLine) drawingLine.setMap(null);
+        if (draftLayer) draftLayer.setMap(null);
+        drawingLine = null;
+        draftLayer = null;
+        if (drawingPoints.length >= 3) {
+            draftLayer = new google.maps.Polygon({
+                ...polygonOptions(type, target, { strokeWeight: 3, fillOpacity }),
+                paths: drawingPoints,
+                map,
+            });
+        } else if (drawingPoints.length) {
+            drawingLine = new google.maps.Polyline({
+                path: drawingPoints,
+                strokeColor: color,
+                strokeWeight: 3,
+                clickable: false,
+                map,
+            });
+        }
+    }
+
+    function initializeMap() {
+        if (!mapElement || typeof google === 'undefined' || !google.maps) {
+            setStatus('Google Maps could not be loaded. Check your connection and reload this page.', 'error');
             return;
         }
 
-        map = L.map(mapElement, { doubleClickZoom: false }).setView([14.0668, 120.8531], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',
-        }).addTo(map).on('tileerror', () => {
-            setStatus('Map tiles failed to load. Check your connection or try again later.', 'error');
+        map = new google.maps.Map(mapElement, {
+            center: defaultCenter,
+            zoom: 15,
+            mapTypeId: 'roadmap',
+            streetViewControl: false,
+            fullscreenControl: true,
+            clickableIcons: false,
+            disableDoubleClickZoom: true,
         });
-        savedBoundaryLayers.addTo(map);
-        pinLayers.addTo(map);
         renderSavedLayers();
 
-        map.on('click', (event) => {
+        map.addListener('click', (event) => {
+            const latLng = event.latLng;
+            if (!latLng) return;
             if (mode === 'draw') {
                 if (drawingFinished) return;
-                drawingPoints.push([event.latlng.lat, event.latlng.lng]);
-                if (drawingLine) map.removeLayer(drawingLine);
-                if (draftLayer) map.removeLayer(draftLayer);
-                if (drawingPoints.length >= 3) {
-                    draftLayer = L.polygon(drawingPoints, {
-                        ...colorFor(currentTargetType(), currentTarget()),
-                        weight: 3,
-                        fillOpacity: 0.16,
-                    }).addTo(map);
-                } else {
-                    drawingLine = L.polyline(drawingPoints, {
-                        color: colorFor(currentTargetType(), currentTarget()).color,
-                        dashArray: '5 5',
-                        weight: 3,
-                    }).addTo(map);
-                }
+                drawingPoints.push({ lat: latLng.lat(), lng: latLng.lng() });
+                drawDraft(0.16);
                 boundaryDirty = drawingPoints.length >= 3;
                 updateBoundaryButtons();
                 setStatus(`${drawingPoints.length} boundary point${drawingPoints.length === 1 ? '' : 's'} added for ${currentTargetName()}. Finish drawing to preview and save.`);
                 return;
             }
             if (mode !== 'pin' || !currentTarget()) return;
-            if (targetPin) targetPin.setLatLng(event.latlng);
-            else {
-                targetPin = L.marker(event.latlng, {
-                    icon: createPinIcon(currentTargetType()),
-                    draggable: true,
-                }).addTo(map);
-                targetPin.on('dragend', () => {
-                    targetPinDirty = true;
-                    updateBoundaryButtons();
-                    savePinButton.disabled = false;
-                    setStatus(`Pin for ${currentTargetName()} moved. Save to keep it.`);
-                });
-            }
+            if (targetPin) targetPin.setPosition(latLng);
+            else targetPin = createTargetPin(latLng, currentTargetType());
             targetPinDirty = true;
             savePinButton.disabled = false;
             cancelChangesButton.disabled = false;
-            setStatus(`Pin selected for ${currentTargetName()} at ${event.latlng.lat.toFixed(6)}, ${event.latlng.lng.toFixed(6)}. Save to keep it.`);
-        });
-
-        map.on('pm:edit pm:vertexadded pm:vertexremoved pm:markerdragend', () => {
-            if (mode !== 'edit') return;
-            boundaryDirty = true;
-            drawingFinished = true;
-            updateBoundaryButtons();
-            setStatus(`Boundary for ${currentTargetName()} edited. Save to apply the changes.`);
+            setStatus(`Pin selected for ${currentTargetName()} at ${latLng.lat().toFixed(6)}, ${latLng.lng().toFixed(6)}. Save to keep it.`);
         });
 
         refreshTarget();
+    }
+
+    window.startDemographicsMap = initializeMap;
+    if (window.demographicsGoogleReady) initializeMap();
+
+    function markBoundaryEdited() {
+        if (mode !== 'edit') return;
+        boundaryDirty = true;
+        drawingFinished = true;
+        updateBoundaryButtons();
+        setStatus(`Boundary for ${currentTargetName()} edited. Save to apply the changes.`);
     }
 
     function chooseMode(nextMode) {
@@ -524,12 +525,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if ((boundaryDirty || targetPinDirty) && !window.confirm('Discard unsaved map changes?')) return;
-        if (draftLayer?.pm?.enabled?.()) draftLayer.pm.disable();
         clearDraftLayer();
-        if (mode === 'draw' && map.pm?.Draw?.getActiveShape?.()) map.pm.disableDraw();
         removeTargetPin();
+        renderSavedLayers();
         mode = nextMode;
-        root.querySelectorAll('.map-mode-controls .button-group:first-child .btn').forEach((button) => button.classList.remove('active'));
+
         const activeButton = nextMode === 'pin'
             ? document.getElementById('pinMode')
             : nextMode === 'edit'
@@ -539,8 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? document.getElementById('drawPurokBoundary')
                         : document.getElementById('drawSubgroupBoundary')
                     : null;
-        const modeButtons = root.querySelectorAll('.map-mode-controls .button-group:first-child .btn');
-        modeButtons.forEach((button) => {
+        root.querySelectorAll('.map-mode-controls .button-group:first-child .btn').forEach((button) => {
             const selected = button === activeButton;
             button.classList.toggle('active', selected);
             button.setAttribute('aria-pressed', selected ? 'true' : 'false');
@@ -557,28 +556,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (nextMode === 'edit') {
-            if (!L.PM) {
-                mode = 'pin';
-                resetTargetPin();
-                setStatus('Boundary editing tools failed to load. Check your connection and reload the page.', 'error');
-                return;
-            }
-            const layer = selectedBoundary();
-            if (!layer) {
+            if (!target.boundary) {
                 mode = 'pin';
                 setStatus(`No saved boundary exists for ${target.name}. Draw a boundary first.`, 'error');
                 resetTargetPin();
                 return;
             }
-            draftLayer = layer;
-            draftLayer.setStyle({ ...colorFor(currentTargetType(), target), weight: 3, fillOpacity: 0.2 });
-            draftLayer.addTo(map);
-            draftLayer.pm?.enable({ allowSelfIntersection: false });
+            const key = entityKey(currentTargetType(), target.id);
+            savedPolygons.get(key)?.setMap(null);
+            draftLayer = new google.maps.Polygon({
+                ...polygonOptions(currentTargetType(), target, { strokeWeight: 3, fillOpacity: 0.2 }),
+                paths: ringFromGeoJson(target.boundary),
+                editable: true,
+                clickable: true,
+                map,
+            });
+            const path = draftLayer.getPath();
+            ['set_at', 'insert_at', 'remove_at'].forEach((eventName) => {
+                google.maps.event.addListener(path, eventName, markBoundaryEdited);
+            });
             boundaryDirty = false;
             drawingFinished = true;
             deleteBoundaryButton.disabled = true;
             cancelChangesButton.disabled = false;
-            setStatus(`Edit mode for ${target.name}. Drag vertices, add a vertex on an edge, or remove a vertex. Save when finished.`);
+            setStatus(`Edit mode for ${target.name}. Drag vertices or drag a midpoint to add one. Save when finished.`);
             updateBoundaryButtons();
         }
     }
@@ -601,13 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('Add at least three points before finishing the boundary.', 'error');
             return;
         }
-        if (drawingLine) map.removeLayer(drawingLine);
-        drawingLine = null;
-        draftLayer = L.polygon(drawingPoints, {
-            ...colorFor(currentTargetType(), currentTarget()),
-            weight: 3,
-            fillOpacity: 0.18,
-        }).addTo(map);
+        drawDraft(0.18);
         drawingFinished = true;
         boundaryDirty = true;
         updateBoundaryButtons();
@@ -617,23 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     undoBoundaryButton.addEventListener('click', () => {
         if (mode !== 'draw' || drawingFinished || drawingPoints.length === 0) return;
         drawingPoints.pop();
-        if (drawingLine) map.removeLayer(drawingLine);
-        if (draftLayer) map.removeLayer(draftLayer);
-        drawingLine = null;
-        draftLayer = null;
-        if (drawingPoints.length >= 3) {
-            draftLayer = L.polygon(drawingPoints, {
-                ...colorFor(currentTargetType(), currentTarget()),
-                weight: 3,
-                fillOpacity: 0.16,
-            }).addTo(map);
-        } else if (drawingPoints.length) {
-            drawingLine = L.polyline(drawingPoints, {
-                color: colorFor(currentTargetType(), currentTarget()).color,
-                dashArray: '5 5',
-                weight: 3,
-            }).addTo(map);
-        }
+        drawDraft(0.16);
         boundaryDirty = drawingPoints.length >= 3;
         updateBoundaryButtons();
         setStatus(`${drawingPoints.length} unsaved boundary points remain.`);
@@ -641,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cancelChangesButton.addEventListener('click', () => {
         if ((boundaryDirty || targetPinDirty) && !window.confirm('Discard unsaved map changes?')) return;
-        if (draftLayer?.pm?.enabled?.()) draftLayer.pm.disable();
         clearDraftLayer();
         mode = 'pin';
         removeTargetPin();
@@ -662,16 +640,16 @@ document.addEventListener('DOMContentLoaded', () => {
     savePinButton.addEventListener('click', async () => {
         const target = currentTarget();
         if (!target || !targetPinDirty) return;
-        const position = targetPin?.getLatLng();
+        const position = targetPin?.getPosition();
         savePinButton.disabled = true;
         setStatus(`Saving pin for ${target.name}...`);
         try {
             await sendJson(mapRoute('Pin', target.id), {
-                latitude: position ? position.lat : null,
-                longitude: position ? position.lng : null,
+                latitude: position ? position.lat() : null,
+                longitude: position ? position.lng() : null,
             });
-            target.latitude = position ? position.lat : null;
-            target.longitude = position ? position.lng : null;
+            target.latitude = position ? position.lat() : null;
+            target.longitude = position ? position.lng() : null;
             targetPinDirty = false;
             renderSavedLayers();
             refreshTarget();
@@ -697,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await sendJson(mapRoute('Boundary', target.id), { boundary: geometry });
             target.boundary = geometry;
-            if (draftLayer?.pm?.enabled?.()) draftLayer.pm.disable();
             clearDraftLayer();
             mode = 'pin';
             renderSavedLayers();
@@ -716,7 +693,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await sendJson(mapRoute('BoundaryDelete', target.id), undefined, 'DELETE');
             target.boundary = null;
-            if (draftLayer?.pm?.enabled?.()) draftLayer.pm.disable();
             clearDraftLayer();
             renderSavedLayers();
             refreshTarget();
@@ -758,10 +734,4 @@ document.addEventListener('DOMContentLoaded', () => {
             form.querySelector('.assignment-count').textContent = form.querySelectorAll('input[name="bhw_ids[]"]:checked').length;
         });
     });
-
-    if (typeof L === 'undefined') {
-        setStatus('The map library could not be loaded. Check your connection and reload this page.', 'error');
-    } else {
-        initializeMap();
-    }
 });

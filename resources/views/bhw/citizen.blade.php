@@ -4,6 +4,37 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+    <style>
+        .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-password-modal.is-open { display: flex; }
+        .citizen-password-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-password-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-password-dialog p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-password-dialog label { display: block; margin: 12px 0 6px; color: #334155; font-size: 12px; font-weight: 700; }
+        .citizen-password-dialog input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .citizen-password-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+        .citizen-export-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-export-modal.is-open { display: flex; }
+        .citizen-export-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-export-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-export-dialog p { margin: 0 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-export-options { display: grid; gap: 10px; }
+        .citizen-export-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #172033; text-align: left; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+        .citizen-export-option:hover { border-color: #2563eb; background: #eff6ff; }
+        .citizen-export-option strong { display: block; color: #173b82; }
+        .citizen-export-option small { display: block; margin-top: 3px; color: #64748b; }
+        .citizen-export-close { display: flex; justify-content: flex-end; margin-top: 18px; }
+        .citizen-export-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
+        .citizen-export-field { display: flex; align-items: center; gap: 8px; color: #334155; font-size: 13px; }
+        .citizen-export-field input { width: 16px; height: 16px; }
+        .citizen-export-format { display: flex; justify-content: center; gap: 0; margin-top: 20px; }
+        .citizen-export-format button { padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; cursor: pointer; }
+        .citizen-export-format button:first-child { border-radius: 7px 0 0 7px; }
+        .citizen-export-format button:last-child { border-radius: 0 7px 7px 0; }
+        .citizen-export-format button.active { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
+        .citizen-export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    </style>
 @endsection
 
 @section('content')
@@ -291,7 +322,7 @@
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="pcv"><span>Pneumococcal Conjugate Vaccine (PCV)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mmr"><span>Measles, Mumps, Rubella (MMR)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mr"><span>Measles-Rubella (MR)</span></label>
-                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
+                <label class="citizen-status-op <input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
             </section>
 

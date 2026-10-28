@@ -20,7 +20,7 @@ class EventController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $citizenQuery = citizens::with('vaccinations')->orderBy('Citizen_LName')->orderBy('Citizen_FName');
+        $citizenQuery = citizens::with(['vaccinations', 'vaccinationSchedules'])->orderBy('Citizen_LName')->orderBy('Citizen_FName');
         $canViewAll = UserPermission::where('user_id', $user->id)
             ->where('feature', 'view_all_citizens')
             ->where('access', '!=', 'none')

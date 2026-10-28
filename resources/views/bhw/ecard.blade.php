@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
+@section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@endsection
+
 @section('content')
 <div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
     <div class="ecard-page-header print:hidden">
@@ -217,10 +221,15 @@
             </div>
 
 
+            @php($citizenAge = $citizen->ageForEligibility())
             <div class="mb-6 grid grid-cols-1 gap-4 border-b border-gray-300 pb-4 text-sm sm:grid-cols-2">
                 <div><span class="block text-xs text-gray-500">Housing Status</span><span class="font-semibold">{{ $citizen->Citizen_HousingStatus ?: 'N/A' }}</span></div>
-                <div><span class="block text-xs text-gray-500">Pregnancy Status</span><span class="font-semibold">{{ !empty($citizen->Citizen_Pregnant) ? 'Yes' : 'No' }}</span></div>
-                <div><span class="block text-xs text-gray-500">Taking Pills</span><span class="font-semibold">{{ !empty($citizen->Citizen_InPills) ? 'Yes' : 'No' }}</span></div>
+                @if($citizen->Citizen_Sex === 'Female')
+                    <div><span class="block text-xs text-gray-500">Pregnancy Status</span><span class="font-semibold">{{ (bool) $citizen->Citizen_Pregnant ? 'Yes' : 'No' }}</span></div>
+                    @if($citizenAge !== null && $citizenAge >= 16)
+                        <div><span class="block text-xs text-gray-500">Taking Pills</span><span class="font-semibold">{{ (bool) $citizen->Citizen_InPills ? 'Yes' : 'No' }}</span></div>
+                    @endif
+                @endif
                 <div><span class="block text-xs text-gray-500">Deceased Status</span><span class="font-semibold">{{ !empty($citizen->Citizen_IsDeceased) ? 'Deceased' : 'Living' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Family ID</span><span class="font-semibold">{{ $citizen->family?->id ?? 'None' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Family Name</span><span class="font-semibold">{{ $citizen->family?->family_name ?: 'No family assigned' }}</span></div>
@@ -292,6 +301,12 @@
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
                                         {{ $vax->vaccine_name }}
+                                        @if($vax->eligibility_review_required)
+                                            <div class="mt-1 text-xs font-normal text-amber-700">Review required: {{ $vax->eligibility_review_reason }}</div>
+                                        @endif
+                                        @if($vax->catch_up_reviewed)
+                                            <div class="mt-1 text-xs font-normal text-blue-700">Catch-up schedule confirmed by health center.</div>
+                                        @endif
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}

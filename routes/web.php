@@ -224,9 +224,18 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
+    // Citizen Announcement Details
+Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
+    $user = auth()->user();
+
+    if (!$user->isCitizen() && !$user->isSuperAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    return view('citizen.announcement-detail', compact('announcement'));
+})->name('announcements.show');
 
 });
-
 
 
 /*
@@ -251,7 +260,11 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     // Electronic Health & Vaccination Card Routes (NEW)
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
-    Route::post('/citizen/{id}/vaccination', [CitizenController::class, 'storeVaccination'])->name('citizen.vaccination.store');
+    Route::post('/citizen/{id}/vaccination', fn ($id) => app(CitizenController::class)->storeVaccination(
+        request(),
+        app(\App\Services\VaccinationEligibility::class),
+        $id
+    ))->name('citizen.vaccination.store');
     Route::delete('/citizen/{citizenId}/vaccination-record/{recordId}', [CitizenController::class, 'deleteVaccinationRecord'])->name('citizen.vaccination.delete');
     Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
     Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');

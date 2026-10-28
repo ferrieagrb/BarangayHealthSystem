@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <table>
+    <table class="users-table">
         <thead>
             <tr>
                 <th>Name / Email</th>
