@@ -120,6 +120,14 @@ class BhwHomeController extends Controller
             }
         }
 
+        $subgroupTotalsByPurok = [];
+        foreach ($subgroupCounts as $sid => $cnt) {
+            $pid = $subgroupPurokIds[$sid] ?? null;
+            if ($pid) {
+                $subgroupTotalsByPurok[$pid] = ($subgroupTotalsByPurok[$pid] ?? 0) + $cnt;
+            }
+        }
+
         $purokHeatmapData = Purok::all()->map(fn ($purok) => [
             'type' => 'purok',
             'label' => $purok->name,
@@ -127,6 +135,8 @@ class BhwHomeController extends Controller
             'lng' => $purok->longitude,
             'boundary' => $purok->boundary,
             'count' => (int) ($purokCounts[$purok->id] ?? 0),
+            // Diagnoses not already attributed to one of its subgroups, so the heat isn't double counted.
+            'weight' => max(0, (int) ($purokCounts[$purok->id] ?? 0) - (int) ($subgroupTotalsByPurok[$purok->id] ?? 0)),
         ])->concat(
             PurokSubgroup::with('purok')->get()->map(fn ($subgroup) => [
                 'type' => 'subgroup',
@@ -135,6 +145,7 @@ class BhwHomeController extends Controller
                 'lng' => $subgroup->longitude,
                 'boundary' => $subgroup->boundary,
                 'count' => (int) ($subgroupCounts[$subgroup->id] ?? 0),
+                'weight' => (int) ($subgroupCounts[$subgroup->id] ?? 0),
             ])
         )->filter(fn ($area) => $area['boundary'] || ($area['lat'] !== null && $area['lng'] !== null))
             ->values();
