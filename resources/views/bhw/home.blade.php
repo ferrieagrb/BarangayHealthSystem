@@ -47,9 +47,9 @@
     </div>
 
     <section class="home-card home-card-wide" style="margin-bottom: 18px;">
-        <div class="home-card-header"><div><h2>Citizen Distribution Heatmap</h2><p>Resident concentration by Purok based on current citizen records.</p></div><a href="{{ route('healthrecord') }}">Open health records</a></div>
+        <div class="home-card-header"><div><h2>Diagnosis Heatmap</h2><p>Diagnoses recorded in the last 7 days, by Purok and subgroup boundary set in Demographics.</p></div><a href="{{ route('healthrecord') }}">Open health records</a></div>
         <div id="bhwCitizenHeatmap" class="home-map"></div>
-        <div class="heatmap-legend"><span>Lower concentration</span><span>Higher concentration</span></div>
+        <div class="heatmap-legend"><span>Fewer diagnoses</span><span>More diagnoses</span></div>
     </section>
 
     <div class="home-grid">
@@ -106,31 +106,63 @@ function initBhwHomeMap() {
         zoomControl: true
     });
 
-    const points = @json($purokHeatmapData);
+    const areas = @json($purokHeatmapData);
     const infoWindow = new google.maps.InfoWindow();
+    const bounds = new google.maps.LatLngBounds();
 
-    points.forEach(function (point) {
-        const count = point.count || 0;
-        const fillColor = count >= 10 ? '#b30000' : (count >= 3 ? '#ff4d4d' : '#ffcc00');
-        const strokeColor = count >= 10 ? '#800000' : (count >= 3 ? '#cc0000' : '#ff9900');
-        const radius = count >= 10 ? 150 : (count >= 3 ? 110 : 75);
-        const circle = new google.maps.Circle({
-            strokeColor,
-            strokeOpacity: .9,
-            strokeWeight: 2,
-            fillColor,
-            fillOpacity: .5,
-            map,
-            center: { lat: point.lat, lng: point.lng },
-            radius: Math.max(radius, point.weight * 140)
-        });
+    function colorsFor(count) {
+        if (count >= 10) return { fill: '#b30000', stroke: '#800000', opacity: .55 };
+        if (count >= 3) return { fill: '#ff4d4d', stroke: '#cc0000', opacity: .5 };
+        if (count >= 1) return { fill: '#ffcc00', stroke: '#ff9900', opacity: .45 };
+        return { fill: '#94a3b8', stroke: '#64748b', opacity: .12 };
+    }
 
-        circle.addListener('click', function () {
-            infoWindow.setContent(`<div style="color:#000;padding:5px;"><strong>${point.label}</strong><br>Registered Citizens: ${count}</div>`);
-            infoWindow.setPosition(circle.getCenter());
-            infoWindow.open(map);
-        });
+    function showInfo(area, position) {
+        infoWindow.setContent(`<div style="color:#000;padding:5px;"><strong>${area.label}</strong><br>Diagnoses (last 7 days): ${area.count}</div>`);
+        infoWindow.setPosition(position);
+        infoWindow.open(map);
+    }
+
+    // Puroks first so subgroup shapes are drawn on top of them.
+    areas.sort((a, b) => (a.type === b.type ? 0 : a.type === 'purok' ? -1 : 1));
+
+    areas.forEach(function (area) {
+        const count = area.count || 0;
+        const color = colorsFor(count);
+        const ring = area.boundary && area.boundary.coordinates ? area.boundary.coordinates[0] : null;
+
+        if (ring && ring.length >= 3) {
+            const path = ring.map(function (point) { return { lat: point[1], lng: point[0] }; });
+            path.forEach(function (point) { bounds.extend(point); });
+            const polygon = new google.maps.Polygon({
+                paths: path,
+                map,
+                strokeColor: color.stroke,
+                strokeOpacity: .9,
+                strokeWeight: area.type === 'purok' ? 3 : 2,
+                fillColor: color.fill,
+                fillOpacity: area.type === 'purok' ? color.opacity * .6 : color.opacity,
+                zIndex: area.type === 'purok' ? 1 : 2
+            });
+            polygon.addListener('click', function (event) { showInfo(area, event.latLng); });
+        } else if (area.lat !== null && area.lng !== null) {
+            const center = { lat: Number(area.lat), lng: Number(area.lng) };
+            bounds.extend(center);
+            const circle = new google.maps.Circle({
+                strokeColor: color.stroke,
+                strokeOpacity: .9,
+                strokeWeight: 2,
+                fillColor: color.fill,
+                fillOpacity: Math.max(color.opacity, .3),
+                map,
+                center,
+                radius: count >= 10 ? 150 : (count >= 3 ? 110 : 75)
+            });
+            circle.addListener('click', function () { showInfo(area, center); });
+        }
     });
+
+    if (!bounds.isEmpty()) map.fitBounds(bounds, 40);
 }
 </script>
 @endsection
