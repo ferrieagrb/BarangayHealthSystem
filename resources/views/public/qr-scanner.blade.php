@@ -44,8 +44,9 @@
         @media (max-width: 440px) { .public-qr-facts { grid-template-columns: 1fr; } .public-qr-actions > * { flex: 1 1 100%; } }
     </style>
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
     <div class="topbar">
         <div class="container topbar-content">
             <div class="topbar-item">
@@ -74,7 +75,7 @@
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
                     <li><a href="{{ route('public.qr-scanner') }}" class="active" aria-current="page">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
         </div>
@@ -99,8 +100,8 @@
                     <h2>QR Scanner</h2>
                     <div id="public-qr-reader" aria-label="QR camera preview"></div>
                     <div class="public-qr-actions">
-                        <button type="button" class="public-qr-button" id="public-qr-start">Start camera</button>
-                        <button type="button" class="public-qr-button secondary" id="public-qr-stop" disabled>Stop camera</button>
+                        <button type="button" class="public-qr-button" id="public-qr-start" data-ui-action="secondary">Start camera</button>
+                        <button type="button" class="public-qr-button secondary" id="public-qr-stop" disabled data-ui-action="secondary">Stop camera</button>
                     </div>
                     <div class="public-qr-input-group">
                         <label for="public-qr-image">Scan a saved QR image</label>
@@ -110,7 +111,7 @@
                         <label for="public-qr-manual">Enter Health ID link or token</label>
                         <input type="text" id="public-qr-manual" autocomplete="off" placeholder="Paste the Citizen QR link or UUID">
                         <div class="public-qr-actions">
-                            <button type="button" class="public-qr-button secondary" id="public-qr-submit">View health summary</button>
+                            <button type="button" class="public-qr-button secondary" id="public-qr-submit" data-ui-action="secondary">View health summary</button>
                         </div>
                     </div>
                     <div id="public-qr-status" class="public-qr-status" role="status" aria-live="polite">Ready to scan a Citizen ID QR code.</div>

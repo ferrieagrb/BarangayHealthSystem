@@ -13,8 +13,9 @@
     
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
 
     <!-- Top Info Bar -->
     <div class="topbar">
@@ -47,7 +48,7 @@
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
                     <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
         </div>
@@ -62,7 +63,7 @@
             <p class="hero-description">Connecting residents to accessible health services, real-time announcements, and community updates.</p>
             
             <div class="hero-actions">
-                <a href="{{ url('/contactdirectory') }}" class="btn btn-secondary"><i class="fa-solid fa-address-book"></i> Contact Directory</a>
+                <a href="{{ url('/contactdirectory') }}" class="btn btn-secondary" data-ui-action="secondary"><i class="fa-solid fa-address-book"></i> Contact Directory</a>
             </div>
         </div>
     </section>

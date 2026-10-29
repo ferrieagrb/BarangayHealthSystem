@@ -11,7 +11,7 @@
         <p>Generated on {{ date('F d, Y') }}</p>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button onclick="window.print()" class="btn-secondary">🖨️ Print / Save PDF</button>
+        <button onclick="window.print()" class="btn-secondary" data-ui-action="secondary">Print / Save PDF</button>
     </div>
 </div>
 
@@ -19,7 +19,7 @@
 <div class="table-container" style="margin-top: 20px; background: white; padding: 25px; border-radius: 8px;">
     <!-- Render tables based on report type as structured previously -->
     <div style="margin-top: 30px;">
-        <a href="{{ route('bhw.reports') }}" class="btn-secondary">← Back to Filter</a>
+        <a href="{{ route('bhw.reports') }}" class="btn-secondary" data-ui-action="secondary">← Back to Filter</a>
     </div>
 </div>
 @endsection

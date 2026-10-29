@@ -29,9 +29,9 @@
     </div>
 
     <div class="right">
-        <a href="{{ route('citizenlist') }}" class="btn-secondary" style="text-decoration: none !important;">← Back</a>
+        <a href="{{ route('citizenlist') }}" class="btn-secondary" style="text-decoration: none !important;" data-ui-action="secondary">← Back</a>
         @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-            <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()">Edit</button>
+            <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()" data-ui-action="secondary">Edit</button>
         @elseif(!$canEdit && !(bool) $citizen->Citizen_IsDeceased)
             <span class="text-muted" style="font-weight: bold; font-size: 13px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #475569;">Read Only (Unassigned)</span>
         @else
@@ -156,7 +156,7 @@
                      id="Citizen_Subgroup"
                      value="{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}"
                      readonly>
-                 <button type="button" class="btn-secondary" id="openEditManualPicker" style="display:none;">Assign without family</button>
+                 <button type="button" class="btn-secondary" id="openEditManualPicker" style="display:none;" data-ui-action="secondary">Assign without family</button>
 
             <hr class="citizen-section-divider">
 
@@ -189,7 +189,7 @@
 
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
 
-                    <button type="button" class="btn btn-secondary" id="openEditFamilyPicker">Select Family</button>
+                    <button type="button" class="btn btn-secondary" id="openEditFamilyPicker" data-ui-action="secondary">Select Family</button>
 
                 </div>
 
@@ -488,8 +488,8 @@
                         <input type="hidden" id="administered_by" name="administered_by" value="{{ auth()->user()->name ?? 'BHW' }}" form="vaccinationForm">
 
                         <div class="immunization-action-wrapper diagnosis-actions record-form-actions">
-                            <button type="button" class="diagnosis-clear" id="clearVaccinationBtn">Clear</button>
-                            <button type="submit" class="btn-primary" form="vaccinationForm">Add Vaccination</button>
+                            <button type="button" class="diagnosis-clear" id="clearVaccinationBtn" data-ui-action="reset">Clear</button>
+                            <button type="submit" class="btn-primary" form="vaccinationForm" data-ui-action="primary">Add Vaccination</button>
                         </div>
                     </div>
                     <p id="vaccinationEligibilityMessage" class="immunization-preview-note" role="status" aria-live="polite">
@@ -515,7 +515,7 @@
                                         <label style="font-size:12px; color:#475569;">Date administered
                                             <input type="date" name="date_administered" value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" required style="display:block; margin-top:4px;">
                                         </label>
-                                        <button type="submit" class="btn-primary">Mark Administered</button>
+                                        <button type="submit" class="btn-primary" data-ui-action="primary">Mark Administered</button>
                                     </form>
                                 @endif
                             </div>
@@ -553,7 +553,7 @@
                                               onsubmit="return confirm('Archive this vaccination record? You can restore it from the archive.');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button>
+                                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button>
                                         </form>
                                     @endif
                                 </div>
@@ -627,7 +627,7 @@
                               onsubmit="return confirm('Archive this maintenance medicine record? You can restore it from the archive.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button>
+                            <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button>
                         </form>
                     @endif
                 </div>
@@ -709,8 +709,8 @@
             </div>
         </div>
         <div class="diagnosis-actions record-form-actions">
-            <button type="button" class="diagnosis-clear" id="clearMaintenanceBtn">Clear</button>
-            <button type="submit" class="btn-primary">Add Maintenance</button>
+            <button type="button" class="diagnosis-clear" id="clearMaintenanceBtn" data-ui-action="reset">Clear</button>
+            <button type="submit" class="btn-primary" data-ui-action="primary">Add Maintenance</button>
         </div>
     </form>
 
@@ -728,7 +728,7 @@
 
                 </div>
 
-                <button type="button" id="closeMedicinePicker" class="medicine-picker-close" aria-label="Close medicine picker">&times;</button>
+                <button type="button" id="closeMedicinePicker" class="medicine-picker-close" aria-label="Close medicine picker" data-ui-action="secondary">&times;</button>
 
             </div>
 
@@ -736,7 +736,7 @@
 
                 @forelse ($availableMedicines as $medicine)
 
-                    <button type="button" class="medicine-option" data-medicine="{{ $medicine->name }}">
+                    <button type="button" class="medicine-option" data-ui-action="secondary" data-medicine="{{ $medicine->name }}">
 
                         {{ $medicine->name }}
 
@@ -782,7 +782,7 @@
  @forelse($citizen->healthRecords->sortByDesc('record_date') as $record)
  <article class="diagnosis-history-card"><div class="diagnosis-history-inner"><div class="diagnosis-history-top"><div><div class="diagnosis-history-title">{{ $record->diagnosis }} <span class="diagnosis-pill">{{ $record->severity ?: 'Low / Mild' }}</span></div><div class="diagnosis-meta">Assessment Date: {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : $record->created_at?->format('M d, Y') }}</div></div>
 @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-<form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to archive this diagnosis record? You can restore it from the archive.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button></form>
+<form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to archive this diagnosis record? You can restore it from the archive.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button></form>
 @endif
 </div>
  <div class="diagnosis-vitals"><div><span>BMI</span><strong>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1).' kg/m²' : '—' }}</strong></div><div><span>Weight / Height</span><strong>{{ $record->weight !== null ? rtrim(rtrim(number_format((float)$record->weight,1,'.',''),'0'),'.').'kg' : '—' }} / {{ $record->height !== null ? rtrim(rtrim(number_format((float)$record->height,1,'.',''),'0'),'.').'cm' : '—' }}</strong></div><div><span>Temp</span><strong>{{ $record->temperature !== null ? number_format((float)$record->temperature,1).' °C' : '—' }}</strong></div><div><span>BP</span><strong>{{ $record->blood_pressure ?: '—' }}</strong></div></div>
@@ -806,7 +806,7 @@
  <div class="diagnosis-form-grid" style="margin-top:14px"><div class="diagnosis-field"><label for="temperatureInput">Temp (°C) <span style="font-weight:400;color:#64748b">Optional</span></label><input type="number" name="temperature" id="temperatureInput" step="0.1" min="25" max="45" placeholder="36.6"></div><div class="diagnosis-field"><label for="bloodPressureInput">BP (mmHg)</label><input type="text" name="blood_pressure" id="bloodPressureInput" maxlength="20" placeholder="120/80"></div></div>
  </div>
  <div class="diagnosis-field" style="margin-top:18px"><label for="commentsInput">Clinical Comments / Notes</label><textarea name="comments" id="commentsInput" rows="3" placeholder="Enter clinical observations, prescribed medications, or follow-up recommendations..."></textarea></div>
- <div class="diagnosis-actions"><button type="button" class="diagnosis-clear" id="clearDiagnosisBtn">Clear</button><button type="submit" class="diagnosis-save" id="saveDiagnosisBtn">Save Record</button></div>
+ <div class="diagnosis-actions"><button type="button" class="diagnosis-clear" id="clearDiagnosisBtn" data-ui-action="reset">Clear</button><button type="submit" class="diagnosis-save" id="saveDiagnosisBtn" data-ui-action="primary">Save Record</button></div>
 </form></div>
 @else <div class="diagnosis-add-section"><p class="diagnosis-subtitle">This citizen record is read-only. A diagnosis cannot be added from this account.</p></div> @endif
 </div>
@@ -841,7 +841,7 @@
 
             <h2 style="margin:0;">Select Family</h2>
 
-            <button type="button" class="family-picker-close" data-close-edit-modal>&times;</button>
+            <button type="button" class="family-picker-close" data-close-edit-modal data-ui-action="secondary">&times;</button>
 
         </div>
 
@@ -851,7 +851,7 @@
 
             @foreach ($families as $family)
 
-                <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}">
+                <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
 
                     <span><strong>F-{{ str_pad($family->id, 4, '0', STR_PAD_LEFT) }} · {{ $family->family_name }}</strong><br><small>{{$family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
 
@@ -869,13 +869,13 @@
     <div class="edit-assignment-box">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2 style="margin:0;">Select Purok / Subgroup</h2>
-            <button type="button" class="family-picker-close" data-close-edit-modal>&times;</button>
+            <button type="button" class="family-picker-close" data-close-edit-modal data-ui-action="secondary">&times;</button>
         </div>
         <div class="edit-assignment-list" style="margin-top:16px;">
             @foreach ($puroks as $purok)
                 <strong style="color:#173b82;">{{ $purok->name }}</strong>
                 @foreach ($purok->subgroups as $subgroup)
-                    <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}"><span>{{ $purok->name }} / {{$subgroup->name }}</span><span>Select</span></button>
+                    <button type="button" class="edit-assignment-option edit-manual-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}" data-ui-action="secondary"><span>{{ $purok->name }} / {{$subgroup->name }}</span><span>Select</span></button>
                 @endforeach
             @endforeach
         </div>
@@ -883,8 +883,8 @@
 </div>
 
 <div class="citizen-form-actions" style="display:flex; justify-content:flex-end; gap:10px; margin:24px 0;">
-    <button type="button" class="btn-primary" id="saveBtn" style="display:none;" onclick="handlePreSaveCheck()">Save Changes</button>
-    <button type="button" class="btn-secondary" id="cancelBtn" style="display:none;" onclick="disableEdit()">Cancel</button>
+    <button type="button" class="btn-primary" id="saveBtn" style="display:none;" onclick="handlePreSaveCheck()" data-ui-action="primary">Save Changes</button>
+    <button type="button" class="btn-secondary" id="cancelBtn" style="display:none;" onclick="disableEdit()" data-ui-action="secondary">Cancel</button>
 </div>
 
 {{-- DECEASED CONFIRMATION MODAL --}}
@@ -907,9 +907,9 @@
 
         <div class="deceased-modal-buttons">
 
-            <button type="button" class="btn-secondary" onclick="closeDeceasedModal()">Cancel</button>
+            <button type="button" class="btn-secondary" onclick="closeDeceasedModal()" data-ui-action="secondary">Cancel</button>
 
-            <button type="button" class="btn-danger" id="confirmDeceasedSaveBtn" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Yes, Mark Deceased</button>
+            <button type="button" class="btn-danger" id="confirmDeceasedSaveBtn" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;" data-ui-action="danger">Yes, Mark Deceased</button>
 
         </div>
 

@@ -18,8 +18,9 @@
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/calendar.css') }}">
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
 
     <!-- Topbar -->
     <div class="topbar">
@@ -52,7 +53,7 @@
                     <li><a href="{{ route('publiccalendar') }}" class="active">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
                     <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
         </div>

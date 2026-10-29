@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
 
     <div class="login-card">
         <div class="top-nav">
@@ -55,7 +56,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">
+            <button type="submit" class="submit-btn" data-ui-action="primary">
                 <span>Sign In</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </button>

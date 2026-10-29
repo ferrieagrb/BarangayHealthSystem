@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="security-button-wrapper">
-                    <button type="button" class="btn-danger-outline">
+                    <button type="button" class="btn-danger-outline" data-ui-action="reset">
                         Clear Failed Login Cache &amp; Block IPs
                     </button>
                 </div>

@@ -13,7 +13,7 @@
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.7a8.3 8.3 0 1 0 0 16.6 8.3 8.3 0 0 0 0-16.6Zm3.7 6.1-4.2 4.7a.9.9 0 0 1-1.3.1L6.4 11a.9.9 0 1 1 1.2-1.3l1.2 1.1 3.6-4a.9.9 0 0 1 1.3 1.2Z"/></svg>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" class="family-alert-close" aria-label="Dismiss notification" onclick="document.getElementById('familyPageAlert').remove()">&times;</button>
+            <button type="button" class="family-alert-close" aria-label="Dismiss notification" onclick="document.getElementById('familyPageAlert').remove()" data-ui-action="secondary">&times;</button>
         </div>
     @endif
 
@@ -22,7 +22,7 @@
             <h1>Family Registry &amp; Household Management</h1>
             <p>Manage barangay family records, citizen associations, and purok subgroup assignments.</p>
         </div>
-        <button type="button" class="btn btn-secondary header-browse-button" onclick="openSubgroupPicker('browse')">
+        <button type="button" class="btn btn-secondary header-browse-button" onclick="openSubgroupPicker('browse')" data-ui-action="secondary">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 8 3l8 3 5-2.5v15L16 21l-8-3-5 2.5v-15ZM8 3v15m8-12v15M5.5 8.5 6.7 8m7.1.7.7.3m-8.3 4.8.5-.3"/></svg>
             Browse Puroks
         </button>
@@ -50,12 +50,12 @@
                         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
                     </span>
                 </label>
-                <button type="button" class="btn btn-secondary register-browse-button" onclick="openSubgroupPicker('register')">
+                <button type="button" class="btn btn-secondary register-browse-button" onclick="openSubgroupPicker('register')" data-ui-action="secondary">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                     Browse Puroks
                 </button>
             </div>
-            <button type="submit" class="btn btn-primary create-family-button">
+            <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
                 Create Family Record
             </button>
@@ -100,12 +100,12 @@
                         <td class="family-actions-cell">
                             <div class="family-actions">
                                 @if(auth()->user()->hasWriteAccess('family'))
-                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)" data-ui-action="secondary">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.8 4.2 15.8 8.2M4 16l3.6-.8 8.9-8.9a1.8 1.8 0 0 0-2.6-2.6L5 12.6 4 16Z"/></svg>
                                     Manage / Edit
                                 </button>
                                 @else
-                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)" data-ui-action="secondary">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z"/><circle cx="10" cy="10" r="2"/></svg>
                                     View
                                 </button>
@@ -135,7 +135,7 @@
                 <p>Household details &amp; member directory</p>
             </div>
         </div>
-        <button type="button" class="modal-close-button" onclick="closeFamilyModal()" aria-label="Close family details">&times;</button>
+        <button type="button" class="modal-close-button" onclick="closeFamilyModal()" aria-label="Close family details" data-ui-action="secondary">&times;</button>
     </div>
 
     <div class="modal-body family-management-body">
@@ -158,7 +158,7 @@
                     </span>
                 </label>
                 @if(auth()->user()->hasWriteAccess('family'))
-                <button type="submit" class="btn btn-primary update-family-button">Update Details</button>
+                <button type="submit" class="btn btn-primary update-family-button" data-ui-action="primary">Update Details</button>
                 @endif
             </div>
         </form>
@@ -182,7 +182,7 @@
                         </span>
                     </label>
                     @if(auth()->user()->hasWriteAccess('family'))
-                    <button type="submit" class="btn btn-success add-member-button">Add Family</button>
+                    <button type="submit" class="btn btn-success add-member-button" data-ui-action="primary">Add Family</button>
                     @else
                     <span class="read-only-note">View only</span>
                     @endif
@@ -219,10 +219,10 @@
         <form id="archiveFamilyForm" method="POST" onsubmit="return confirm('Archive this family? Its members are kept, and you can restore the family from the archive.')">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger">Archive family</button>
+            <button type="submit" class="btn btn-danger" data-ui-action="danger">Archive family</button>
         </form>
         @endif
-        <button type="button" class="btn btn-secondary" onclick="closeFamilyModal()">Close</button>
+        <button type="button" class="btn btn-secondary" onclick="closeFamilyModal()" data-ui-action="secondary">Close</button>
     </div>
 </dialog>
 
@@ -230,7 +230,7 @@
 <dialog id="citizenPickerModal" class="family-modal" style="max-width: 600px;">
     <div class="modal-header">
         <h3 style="margin: 0;">Select Unassigned Citizen</h3>
-        <button type="button" onclick="closeCitizenPicker()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #7f8c8d;">&times;</button>
+        <button type="button" onclick="closeCitizenPicker()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #7f8c8d;" data-ui-action="secondary">&times;</button>
     </div>
     <div class="modal-body">
         <input type="text" id="citizenSearch" class="form-control" placeholder="Search by name..." style="width: 100%; margin-bottom: 15px;" oninput="filterCitizens()">
@@ -249,9 +249,9 @@
         </table>
 
         <div class="pagination-controls">
-            <button type="button" class="btn btn-secondary" id="prevPageBtn" onclick="changeCitizenPage(-1)">Previous</button>
+            <button type="button" class="btn btn-secondary" id="prevPageBtn" onclick="changeCitizenPage(-1)" data-ui-action="secondary">Previous</button>
             <span id="citizenPageInfo" style="font-size: 14px; color: #555;">Page 1 of 1</span>
-            <button type="button" class="btn btn-secondary" id="nextPageBtn" onclick="changeCitizenPage(1)">Next</button>
+            <button type="button" class="btn btn-secondary" id="nextPageBtn" onclick="changeCitizenPage(1)" data-ui-action="secondary">Next</button>
         </div>
     </div>
 </dialog>
@@ -260,21 +260,21 @@
 <dialog id="subgroupPickerModal" class="family-modal subgroup-picker-modal" aria-labelledby="subgroupPickerTitle">
     <div class="modal-header">
         <h3 id="subgroupPickerTitle">Barangay Purok Subgroups</h3>
-        <button type="button" class="modal-close-button" onclick="closeSubgroupPicker()" aria-label="Close purok list">&times;</button>
+        <button type="button" class="modal-close-button" onclick="closeSubgroupPicker()" aria-label="Close purok list" data-ui-action="secondary">&times;</button>
     </div>
     <div class="modal-body subgroup-picker-body">
         <p id="subgroupPickerDescription" class="subgroup-picker-description">Select a purok to view details or filter family registry records:</p>
         <input type="text" id="subgroupSearch" class="form-control subgroup-search-input" placeholder="Search purok or subgroup..." oninput="filterSubgroups()" aria-label="Search purok or subgroup">
         <div id="subgroupPickerList" class="subgroup-picker-list" aria-live="polite"></div>
         <div class="pagination-controls subgroup-pagination" id="subgroupPagination">
-            <button type="button" class="btn btn-secondary" id="prevSubgroupPageBtn" onclick="changeSubgroupPage(-1)">Previous</button>
+            <button type="button" class="btn btn-secondary" id="prevSubgroupPageBtn" onclick="changeSubgroupPage(-1)" data-ui-action="secondary">Previous</button>
             <span id="subgroupPageInfo">Page 1 of 1</span>
-            <button type="button" class="btn btn-secondary" id="nextSubgroupPageBtn" onclick="changeSubgroupPage(1)">Next</button>
+            <button type="button" class="btn btn-secondary" id="nextSubgroupPageBtn" onclick="changeSubgroupPage(1)" data-ui-action="secondary">Next</button>
         </div>
     </div>
     <div class="modal-footer subgroup-picker-footer">
-        <button type="button" class="btn btn-link" id="resetFamilyFilterButton" onclick="resetFamilySubgroupFilter()">Reset Filter (Show All)</button>
-        <button type="button" class="btn btn-secondary" onclick="closeSubgroupPicker()">Close</button>
+        <button type="button" class="btn btn-link" id="resetFamilyFilterButton" onclick="resetFamilySubgroupFilter()" data-ui-action="reset">Reset Filter (Show All)</button>
+        <button type="button" class="btn btn-secondary" onclick="closeSubgroupPicker()" data-ui-action="secondary">Close</button>
     </div>
 </dialog>
 
@@ -359,6 +359,7 @@
                 const removeButton = document.createElement('button');
                 removeButton.type = 'submit';
                 removeButton.className = 'btn-danger';
+                removeButton.dataset.uiAction = 'danger';
                 removeButton.textContent = 'Remove';
                 form.appendChild(removeButton);
                 @else
@@ -437,6 +438,7 @@
                 const option = document.createElement('button');
                 option.type = 'button';
                 option.className = 'subgroup-option';
+                option.dataset.uiAction = 'secondary';
                 option.setAttribute('aria-label', `${item.displayName}, ${getSubgroupHouseholdCount(item.id)} households`);
 
                 const name = document.createElement('span');
@@ -563,6 +565,7 @@
                 const selectButton = document.createElement('button');
                 selectButton.type = 'button';
                 selectButton.className = 'btn btn-sm';
+                selectButton.dataset.uiAction = 'secondary';
                 selectButton.textContent = 'Select';
                 selectButton.addEventListener('click', () => selectCitizen(citizen.id, fullName));
                 actionCell.appendChild(selectButton);

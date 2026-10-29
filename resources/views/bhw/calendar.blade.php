@@ -536,7 +536,7 @@ MOBILE
         <p>Manage scheduled events and activities</p>
     </div>
     @if($vaccinationSchedulingEnabled)
-        <button type="button" id="openVaccinationScheduleBtn" class="btn-primary">Schedule Vaccination</button>
+        <button type="button" id="openVaccinationScheduleBtn" class="btn-primary" data-ui-action="primary">Schedule Vaccination</button>
     @endif
 </div>
 
@@ -560,7 +560,7 @@ MOBILE
                     <div class="vaccination-schedule-row" data-schedule-index="0">
                         <label>Citizen
                             <input type="hidden" name="schedules[0][citizen_id]" class="schedule-citizen-id">
-                            <button type="button" class="schedule-citizen-picker">Choose citizen</button>
+                            <button type="button" class="schedule-citizen-picker" data-ui-action="secondary">Choose citizen</button>
                         </label>
                         <label>Vaccine or immunization
                             <select name="schedules[0][vaccine_name]" class="schedule-vaccine-name" required>
@@ -583,16 +583,16 @@ MOBILE
                             <input type="checkbox" name="schedules[0][catch_up_reviewed]" value="1" class="schedule-catch-up-checkbox">
                             Health center confirmed this catch-up vaccine and dose schedule
                         </label>
-                        <button type="button" class="remove-schedule-row" aria-label="Remove schedule row" disabled>&times;</button>
+                        <button type="button" class="remove-schedule-row" aria-label="Remove schedule row" disabled data-ui-action="danger">&times;</button>
                         <label style="grid-column: 1 / -2;">Notes
                             <input type="text" name="schedules[0][notes]" placeholder="Optional instructions">
                         </label>
                     </div>
                 </div>
-                <button type="button" id="addVaccinationScheduleRow" class="btn-secondary add-schedule-row">+ Add another schedule</button>
+                <button type="button" id="addVaccinationScheduleRow" class="btn-secondary add-schedule-row" data-ui-action="primary">+ Add another schedule</button>
                 <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Save All Schedules</button>
-                    <button type="button" id="closeVaccinationScheduleBtn" class="btn-secondary">Close</button>
+                    <button type="submit" class="btn-primary" data-ui-action="primary">Save All Schedules</button>
+                    <button type="button" id="closeVaccinationScheduleBtn" class="btn-secondary" data-ui-action="secondary">Close</button>
                 </div>
             </form>
         </div>
@@ -656,7 +656,7 @@ MOBILE
                         data-vaccines="{{ strtolower($calendarCitizen->vaccinations->pluck('vaccine_name')->implode('|')) }}"
                         data-birth-date="{{ $calendarCitizen->Citizen_BirthDate }}"
                         data-vaccination-history='@json($calendarCitizen->vaccinations->map(fn ($record) => ["vaccine" => $record->vaccine_name, "dose" => $record->dose_number])->values())'
-                        data-vaccination-schedules='@json($calendarCitizen->vaccinationSchedules->where("status", "scheduled")->map(fn ($schedule) => ["vaccine" => $schedule->vaccine_name, "dose" => $schedule->dose_number])->values())'>
+                        data-vaccination-schedules='@json($calendarCitizen->vaccinationSchedules->where("status", "scheduled")->map(fn ($schedule) => ["vaccine" => $schedule->vaccine_name, "dose" => $schedule->dose_number])->values())' data-ui-action="secondary">
                         <span>
                             <strong>{{ $calendarCitizen->Citizen_LName }}, {{ $calendarCitizen->Citizen_FName }}</strong>
                             <small>Citizen ID: C-{{ str_pad($calendarCitizen->id, 4, '0', STR_PAD_LEFT) }} · {{ $calendarCitizen->Citizen_Purok ?: 'Unassigned' }}</small>
@@ -668,7 +668,7 @@ MOBILE
                 @endforelse
             </div>
             <div class="modal-actions">
-                <button type="button" id="closeCitizenPickerBtn" class="btn-secondary">Close</button>
+                <button type="button" id="closeCitizenPickerBtn" class="btn-secondary" data-ui-action="secondary">Close</button>
             </div>
         </div>
     </div>
@@ -703,7 +703,7 @@ EDIT MODAL
             <button
                 id="editBtn"
                 class="btn-primary"
-            >
+             data-ui-action="secondary">
                 Edit
             </button>
 
@@ -711,21 +711,21 @@ EDIT MODAL
                 id="saveBtn"
                 class="btn-primary"
                 style="display:none;"
-            >
+             data-ui-action="primary">
                 Save
             </button>
 
             <button
                 id="deleteBtn"
                 class="btn-danger"
-            >
+             data-ui-action="danger">
                 Archive
             </button>
 
             <button
                 onclick="closeModal()"
                 class="btn-secondary"
-            >
+             data-ui-action="secondary">
                 Close
             </button>
 
@@ -772,14 +772,14 @@ ADD MODAL
             <button
                 id="addSaveBtn"
                 class="btn-primary"
-            >
+             data-ui-action="primary">
                 Save
             </button>
 
             <button
                 onclick="closeAddModal()"
                 class="btn-secondary"
-            >
+             data-ui-action="secondary">
                 Close
             </button>
 
@@ -817,7 +817,7 @@ ADD EVENT CONFIRMATION MODAL
                 type="button"
                 id="cancelEventConfirmation"
                 class="event-confirm-cancel"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -825,7 +825,7 @@ ADD EVENT CONFIRMATION MODAL
                 type="button"
                 id="confirmEventSubmission"
                 class="event-confirm-save"
-            >
+             data-ui-action="primary">
                 Yes, Add Event
             </button>
 
@@ -863,7 +863,7 @@ DELETE EVENT CONFIRMATION MODAL
                 type="button"
                 id="cancelDeleteConfirmation"
                 class="event-confirm-cancel"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -871,7 +871,7 @@ DELETE EVENT CONFIRMATION MODAL
                 type="button"
                 id="confirmDeleteSubmission"
                 class="event-confirm-save"
-            >
+             data-ui-action="danger">
                 Yes, Archive
             </button>
 
@@ -945,13 +945,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function scheduleRowMarkup(index) {
         return '<div class="vaccination-schedule-row" data-schedule-index="' + index + '">' +
-            '<label>Citizen<input type="hidden" name="schedules[' + index + '][citizen_id]" class="schedule-citizen-id"><button type="button" class="schedule-citizen-picker">Choose citizen</button></label>' +
+            '<label>Citizen<input type="hidden" name="schedules[' + index + '][citizen_id]" class="schedule-citizen-id"><button type="button" class="schedule-citizen-picker" data-ui-action="secondary">Choose citizen</button></label>' +
             '<label>Vaccine or immunization<select name="schedules[' + index + '][vaccine_name]" required>' + vaccineOptionsMarkup() + '</select></label>' +
             '<label>Dose / label<select name="schedules[' + index + '][dose_number]" class="schedule-dose-number" required>' + doseOptionsMarkup() + '</select></label>' +
             '<label>Scheduled date<input type="date" name="schedules[' + index + '][scheduled_date]" class="schedule-date" min="{{ now()->format('Y-m-d') }}" required></label>' +
             '<small class="schedule-eligibility-message" role="status" style="grid-column:1/-1;">Choose a citizen and date to check age eligibility.</small>' +
             '<label class="schedule-catch-up-review" hidden style="grid-column:1/-1;"><input type="checkbox" name="schedules[' + index + '][catch_up_reviewed]" value="1" class="schedule-catch-up-checkbox"> Health center confirmed this catch-up vaccine and dose schedule</label>' +
-            '<button type="button" class="remove-schedule-row" aria-label="Remove schedule row">&times;</button>' +
+            '<button type="button" class="remove-schedule-row" aria-label="Remove schedule row" data-ui-action="danger">&times;</button>' +
             '<label style="grid-column: 1 / -2;">Notes<input type="text" name="schedules[' + index + '][notes]" placeholder="Optional instructions"></label>' +
             '</div>';
     }

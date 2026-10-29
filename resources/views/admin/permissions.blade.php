@@ -65,7 +65,7 @@
                                 onclick="openPermissionModal('permission-modal-{{ $bhw->id }}')"
                                 aria-haspopup="dialog"
                                 aria-controls="permission-modal-{{ $bhw->id }}"
-                            >
+                             data-ui-action="secondary">
                                 <span aria-hidden="true">&#9998;</span>
                                 Edit Permissions
                             </button>
@@ -114,7 +114,7 @@
                     class="close-modal-button"
                     onclick="closePermissionModal('permission-modal-{{ $bhw->id }}')"
                     aria-label="Close permissions dialog"
-                >
+                 data-ui-action="secondary">
                     &times;
                 </button>
             </div>
@@ -231,11 +231,11 @@
                         type="button"
                         class="cancel-button"
                         onclick="closePermissionModal('permission-modal-{{ $bhw->id }}')"
-                    >
+                     data-ui-action="secondary">
                         Cancel
                     </button>
 
-                    <button type="submit" class="save-button">
+                    <button type="submit" class="save-button" data-ui-action="primary">
                         Save Changes
                     </button>
                 </div>
@@ -304,7 +304,7 @@
                 type="button"
                 class="permission-back-button"
                 id="permission-back-button"
-            >
+             data-ui-action="secondary">
                 Back to Editing
             </button>
 
@@ -312,7 +312,7 @@
                 type="button"
                 class="permission-confirm-button"
                 id="permission-confirm-button"
-            >
+             data-ui-action="primary">
                 Confirm &amp; Save
             </button>
         </div>

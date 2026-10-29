@@ -162,8 +162,9 @@
         }
     </style>
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
     <header class="main-header">
         <div class="container nav-container">
             <a href="{{ url('/') }}" class="brand">
@@ -179,7 +180,7 @@
                     <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                     <li><a href="{{ route('public.announcements') }}" class="active">Announcements</a></li>
                     <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
                 </ul>
             </nav>
         </div>

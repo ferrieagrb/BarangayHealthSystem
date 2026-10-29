@@ -338,10 +338,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
                     Include graphic summaries
                 </label>
-                <button type="submit" class="btn-primary">Generate Report</button>
-                <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}">Reset Filters</a>
-                <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true">Export to Excel</button>
-                <button type="button" class="btn-secondary" onclick="window.print()">Export / Print PDF</button>
+                <button type="submit" class="btn-primary" data-ui-action="primary">Generate Report</button>
+                <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}" data-ui-action="reset">Reset Filters</a>
+                <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true" data-ui-action="secondary">Export to Excel</button>
+                <button type="button" class="btn-secondary" onclick="window.print()" data-ui-action="secondary">Export / Print PDF</button>
                 <p id="reportExportFeedback" class="report-export-feedback" role="alert" hidden></p>
             </div>
         </form>

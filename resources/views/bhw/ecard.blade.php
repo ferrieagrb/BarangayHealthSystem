@@ -12,11 +12,11 @@
 <div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
     <div class="ecard-page-header print:hidden">
         <h1>Citizen ID & Electronic Health Card</h1>
-        <a href="{{ route('citizenlist') }}" class="ecard-button ecard-button-secondary">Back to Citizen List</a>
+        <a href="{{ route('citizenlist') }}" class="ecard-button ecard-button-secondary" data-ui-action="secondary">Back to Citizen List</a>
     </div>
     <div class="ecard-actions-top print:hidden">
-        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')">Print Health Card Only</button>
-        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')">Print Health Information Only</button>
+        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')" data-ui-action="secondary">Print Health Card Only</button>
+        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
     </div>
     <div class="ecard-content-stack">
 <section class="bheams-id-card">

@@ -65,12 +65,12 @@
 
             <div style="display:flex; gap:10px; align-items:center;">
             @if($showArchived)
-                <a href="{{ route('superadmin.users') }}" class="primary-btn" style="text-decoration:none;">
+                <a href="{{ route('superadmin.users') }}" class="primary-btn" style="text-decoration:none;" data-ui-action="secondary">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                     Active Users
                 </a>
             @else
-                <a href="{{ route('superadmin.users', ['archived' => 1]) }}" class="primary-btn" style="text-decoration:none;">
+                <a href="{{ route('superadmin.users', ['archived' => 1]) }}" class="primary-btn" style="text-decoration:none;" data-ui-action="secondary">
                     <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
                     Archive ({{ $archivedCount }})
                 </a>
@@ -79,7 +79,7 @@
                 type="button"
                 class="primary-btn"
                 id="openAddUserModal"
-            >
+             data-ui-action="primary">
                 <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                 Add New User
             </button>
@@ -141,7 +141,7 @@
                                         >
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn-action btn-edit" title="Set Active" aria-label="Set Active">
+                                            <button type="submit" class="btn-action btn-edit" title="Set Active" aria-label="Set Active" data-ui-action="primary">
                                                 <i class="fa-solid fa-user-check" aria-hidden="true"></i>
                                                 <span>Set Active</span>
                                             </button>
@@ -157,7 +157,7 @@
                                             data-email="{{ $user->email }}"
                                             data-username="{{ $user->username }}"
                                             data-role="{{ $user->role }}"
-                                        >
+                                         data-ui-action="secondary">
                                             <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             <span>Edit</span>
                                         </button>
@@ -175,7 +175,7 @@
                                                 class="btn-action btn-delete"
                                                 title="Set Inactive"
                                                 aria-label="Set Inactive"
-                                            >
+                                             data-ui-action="danger">
                                                 <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
                                                 <span>Set Inactive</span>
                                             </button>
@@ -230,7 +230,7 @@
                 class="close-btn"
                 data-close-modal="editModal"
                 aria-label="Close edit user modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -296,7 +296,7 @@
                     type="button"
                     class="secondary-btn"
                     data-close-modal="editModal"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -304,7 +304,7 @@
                     type="submit"
                     class="primary-btn"
                     id="saveEditUserButton"
-                >
+                 data-ui-action="primary">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                     Save Changes
                 </button>
@@ -333,7 +333,7 @@
                 class="close-btn"
                 data-close-modal="addModal"
                 aria-label="Close add user modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -414,7 +414,7 @@
                     type="button"
                     class="secondary-btn"
                     data-close-modal="addModal"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -422,7 +422,7 @@
                     type="submit"
                     class="primary-btn"
                     id="createUserButton"
-                >
+                 data-ui-action="primary">
                     <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                     Create User
                 </button>

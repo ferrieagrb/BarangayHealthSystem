@@ -28,7 +28,7 @@
         <p>Manage system users, roles, and access permissions.</p>
     </div>
 
-    <button type="button" class="btn-primary" onclick="openAddModal()">
+    <button type="button" class="btn-primary" onclick="openAddModal()" data-ui-action="primary">
         + Add User
     </button>
 </div>
@@ -82,9 +82,9 @@
             <p>{{ $showArchived ? 'Inactive users cannot sign in. Reactivating requires them to change their password.' : 'Manage all registered system users and their roles.' }}</p>
         </div>
         @if($showArchived)
-            <a href="{{ route('admin.users') }}" class="btn-primary" style="text-decoration:none;">&larr; Active Users</a>
+            <a href="{{ route('admin.users') }}" class="btn-primary" style="text-decoration:none;" data-ui-action="secondary">&larr; Active Users</a>
         @else
-            <a href="{{ route('admin.users', ['archived' => 1]) }}" class="btn-primary" style="text-decoration:none;">Archive ({{ $archivedCount }})</a>
+            <a href="{{ route('admin.users', ['archived' => 1]) }}" class="btn-primary" style="text-decoration:none;" data-ui-action="secondary">Archive ({{ $archivedCount }})</a>
         @endif
     </div>
 
@@ -116,7 +116,7 @@
                     <form action="{{ route('admin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn btn-sm btn-warning">Unlock Account</button>
+                        <button type="submit" class="btn btn-sm btn-warning" data-ui-action="primary">Unlock Account</button>
                     </form>
                 @else
                     <span class="badge bg-success">Active</span>
@@ -130,10 +130,10 @@
                             onsubmit="return confirm('Reactivate this user? They will be required to change their password at next login.')" style="display:inline;">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="btn-primary">Set Active</button>
+                            <button type="submit" class="btn-primary" data-ui-action="primary">Set Active</button>
                         </form>
                         @else
-                        <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')">
+                        <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')" data-ui-action="secondary">
                             Edit
                         </button>
 
@@ -142,7 +142,7 @@
                             onsubmit="return confirm('Mark this user as inactive? The account will be archived and cannot sign in until reactivated.')" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-danger">Set Inactive</button>
+                            <button type="submit" class="btn-danger" data-ui-action="danger">Set Inactive</button>
                         </form>
                         @endif
                     </div>
@@ -167,7 +167,7 @@
     <div class="modal-card" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3>Add New User</h3>
-            <button type="button" class="close-btn" onclick="closeAddModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;">&times;</button>
+            <button type="button" class="close-btn" onclick="closeAddModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;" data-ui-action="secondary">&times;</button>
         </div>
         <form action="{{ route('admin.users.store') }}" method="POST">
             @csrf
@@ -195,8 +195,8 @@
                 </div>
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                <button type="button" class="secondary-btn" onclick="closeAddModal()">Cancel</button>
-                <button type="submit" class="primary-btn">Create User</button>
+                <button type="button" class="secondary-btn" onclick="closeAddModal()" data-ui-action="secondary">Cancel</button>
+                <button type="submit" class="primary-btn" data-ui-action="primary">Create User</button>
             </div>
         </form>
     </div>
@@ -207,7 +207,7 @@
     <div class="modal-card" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3>Edit User Information</h3>
-            <button type="button" class="close-btn" onclick="closeEditModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;">&times;</button>
+            <button type="button" class="close-btn" onclick="closeEditModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;" data-ui-action="secondary">&times;</button>
         </div>
         <form id="editUserForm" method="POST">
             @csrf
@@ -235,8 +235,8 @@
                 </div>
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                <button type="button" class="secondary-btn" onclick="closeEditModal()">Cancel</button>
-                <button type="submit" class="primary-btn">Save Changes</button>
+                <button type="button" class="secondary-btn" onclick="closeEditModal()" data-ui-action="secondary">Cancel</button>
+                <button type="submit" class="primary-btn" data-ui-action="primary">Save Changes</button>
             </div>
         </form>
     </div>

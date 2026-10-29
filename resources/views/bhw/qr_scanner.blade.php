@@ -73,8 +73,8 @@
             <div id="qr-reader"></div>
 
             <div class="qr-actions">
-                <button type="button" id="start-scanner" class="qr-btn qr-btn-primary">Start Camera</button>
-                <button type="button" id="stop-scanner" class="qr-btn qr-btn-secondary" disabled>Stop Camera</button>
+                <button type="button" id="start-scanner" class="qr-btn qr-btn-primary" data-ui-action="primary">Start Camera</button>
+                <button type="button" id="stop-scanner" class="qr-btn qr-btn-secondary" disabled data-ui-action="secondary">Stop Camera</button>
             </div>
 
             <div class="qr-manual">
@@ -88,7 +88,7 @@
                 <label for="manual-token">Manual lookup (if the camera is unavailable)</label>
                 <input id="manual-token" type="text" autocomplete="off" placeholder="Paste the Health ID QR URL or token">
                 <div class="qr-actions">
-                    <button type="button" id="manual-lookup" class="qr-btn qr-btn-secondary">Find Citizen</button>
+                    <button type="button" id="manual-lookup" class="qr-btn qr-btn-secondary" data-ui-action="secondary">Find Citizen</button>
                 </div>
             </div>
         </section>
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div><label for="qr-diagnosis">Diagnosis *</label><input id="qr-diagnosis" name="diagnosis" required maxlength="255" placeholder="Enter diagnosis"></div>
                     <div><label for="qr-record-date">Record date *</label><input id="qr-record-date" name="record_date" type="date" required value="${new Date().toISOString().slice(0,10)}"></div>
                     <div class="full"><label for="qr-comments">Notes / Comments</label><textarea id="qr-comments" name="comments" placeholder="Symptoms, notes, or follow-up instructions"></textarea></div>
-                    <div class="full"><button class="qr-btn qr-btn-primary" type="submit" id="qr-save-diagnosis">Save Diagnosis</button></div>
+                    <div class="full"><button class="qr-btn qr-btn-primary" type="submit" id="qr-save-diagnosis" data-ui-action="primary">Save Diagnosis</button></div>
                 </form>
             </div>`;
         document.getElementById('qr-diagnosis-form').addEventListener('submit', saveDiagnosis);

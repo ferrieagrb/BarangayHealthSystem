@@ -165,7 +165,7 @@
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-                    <button type="submit" class="btn-save">Save Preferences</button>
+                    <button type="submit" class="btn-save" data-ui-action="primary">Save Preferences</button>
                 </div>
             </form>
         </div>
@@ -214,7 +214,7 @@
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-                    <button type="submit" class="btn-save" style="background: #0f172a;">Update Password</button>
+                    <button type="submit" class="btn-save" style="background: #0f172a;" data-ui-action="primary">Update Password</button>
                 </div>
             </form>
         </div>
@@ -246,7 +246,7 @@
                                 </span>
                                 <form method="POST" action="{{ route('verification.send') }}">
                                     @csrf
-                                    <button type="submit" class="btn-save" style="padding: 7px 12px; font-size: 0.85rem;">Send Verification Email</button>
+                                    <button type="submit" class="btn-save" style="padding: 7px 12px; font-size: 0.85rem;" data-ui-action="primary">Send Verification Email</button>
                                 </form>
                             </div>
                         @endif

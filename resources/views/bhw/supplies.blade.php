@@ -219,7 +219,7 @@
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
-        <a href="{{ route('supplies.create') }}" class="btn-primary">
+        <a href="{{ route('supplies.create') }}" class="btn-primary" data-ui-action="primary">
             + Add New Item
         </a>
     @endif
@@ -293,7 +293,7 @@
                     <td>{{ $firstRelease->claim_date->format('M d, Y') }}</td>
                     <td>{{ $releaseGroup->count() }}</td>
                     <td>{{ $claimedCount }} / {{ $releaseGroup->count() }} claimed</td>
-                    <td><a href="{{ route('supplies.batch.release.show', $eventId) }}" class="btn-secondary">View Batch</a></td>
+                    <td><a href="{{ route('supplies.batch.release.show', $eventId) }}" class="btn-secondary" data-ui-action="secondary">View Batch</a></td>
                 </tr>
             @empty
                 <tr>
@@ -406,7 +406,7 @@
                                     type="button"
                                     class="btn-primary openDeposit"
                                     data-name="{{ $itemName }}"
-                                >
+                                 data-ui-action="primary">
                                     + Deposit Packs
                                 </button>
 
@@ -567,7 +567,7 @@
                                                                     data-id="{{ $supply->id }}"
                                                                     data-max="{{ $supply->quantity }}"
                                                                     data-code="{{ $supply->item_number ?? 'N/A' }}"
-                                                                >
+                                                                 data-ui-action="secondary">
                                                                     Withdraw
                                                                 </button>
 
@@ -590,8 +590,8 @@
                                                                     class="btn-secondary"
                                                                     style="padding: 4px 8px; color: #d9534f; border-color: #d9534f;"
                                                                     title="Archive Pack"
-                                                                >
-                                                                    🗄️ Archive
+                                                                 data-ui-action="danger">
+                                                                    Archive
                                                                 </button>
 
                                                             </form>
@@ -764,7 +764,7 @@
                                     class="btn-secondary removeRowBtn"
                                     style="padding: 4px 8px;"
                                     disabled
-                                >
+                                 data-ui-action="secondary">
                                     X
                                 </button>
 
@@ -784,7 +784,7 @@
                 type="button"
                 id="addRowBtn"
                 class="supplies-add-row-btn"
-            >
+             data-ui-action="primary">
                 + Add Another Pack Row
             </button>
 
@@ -795,14 +795,14 @@
                 <button
                     type="submit"
                     class="btn-primary"
-                >
+                 data-ui-action="primary">
                     Submit All Deposits
                 </button>
 
                 <button
                     type="button"
                     class="btn-secondary closeModal"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -846,7 +846,7 @@
                 type="button"
                 id="cancelDepositConfirmation"
                 class="deposit-confirm-cancel"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -854,7 +854,7 @@
                 type="button"
                 id="confirmDepositSubmission"
                 class="deposit-confirm-save"
-            >
+             data-ui-action="primary">
                 Yes, Submit
             </button>
 
@@ -951,14 +951,14 @@
                 <button
                     type="submit"
                     class="btn-primary"
-                >
+                 data-ui-action="primary">
                     Confirm Withdrawal
                 </button>
 
                 <button
                     type="button"
                     class="btn-secondary closeWithdrawModalBtn"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -1142,7 +1142,7 @@
                         type="button"
                         class="btn-secondary removeRowBtn"
                         style="padding: 4px 8px;"
-                    >
+                     data-ui-action="secondary">
                         X
                     </button>
 
@@ -1447,7 +1447,7 @@
                 <h2 id="batchReleaseTitle">Schedule Batch Release</h2>
                 <p>Assign specific supply batches to citizens and add the claiming schedule.</p>
             </div>
-            <button type="button" id="closeBatchReleaseModal" class="batch-release-close" aria-label="Close batch release modal">&times;</button>
+            <button type="button" id="closeBatchReleaseModal" class="batch-release-close" aria-label="Close batch release modal" data-ui-action="secondary">&times;</button>
         </div>
 
         <form method="POST" action="{{ route('supplies.batch.release') }}" id="batchReleaseForm">
@@ -1469,11 +1469,11 @@
 
             <div id="batchReleaseAssignments"></div>
 
-            <button type="button" id="addBatchReleaseAssignment" class="batch-release-add">+ Add Citizen Assignment</button>
+            <button type="button" id="addBatchReleaseAssignment" class="batch-release-add" data-ui-action="primary">+ Add Citizen Assignment</button>
 
             <div class="batch-release-actions" style="margin-top: 22px; justify-content: flex-end;">
-                <button type="button" id="cancelBatchRelease" class="btn-secondary">Cancel</button>
-                <button type="submit" class="btn-primary">Release &amp; Schedule Batch</button>
+                <button type="button" id="cancelBatchRelease" class="btn-secondary" data-ui-action="secondary">Cancel</button>
+                <button type="submit" class="btn-primary" data-ui-action="primary">Release &amp; Schedule Batch</button>
             </div>
         </form>
     </div>
@@ -1483,14 +1483,14 @@
     <div class="batch-picker-dialog">
         <div class="batch-release-header">
             <h2 id="batchPickerTitle">Select Citizen</h2>
-            <button type="button" id="closeBatchPicker" class="batch-release-close" aria-label="Close picker">&times;</button>
+            <button type="button" id="closeBatchPicker" class="batch-release-close" aria-label="Close picker" data-ui-action="secondary">&times;</button>
         </div>
         <input type="search" id="batchPickerSearch" class="batch-picker-search" placeholder="Search...">
         <div id="batchPickerOptions"></div>
         <div class="batch-picker-footer">
-            <button type="button" id="batchPickerPrevious" class="btn-secondary">Previous</button>
+            <button type="button" id="batchPickerPrevious" class="btn-secondary" data-ui-action="secondary">Previous</button>
             <span id="batchPickerPage">Page 1</span>
-            <button type="button" id="batchPickerNext" class="btn-secondary">Next</button>
+            <button type="button" id="batchPickerNext" class="btn-secondary" data-ui-action="secondary">Next</button>
         </div>
     </div>
 </div>
@@ -1548,6 +1548,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const option = document.createElement('button');
             option.type = 'button';
             option.className = 'batch-picker-option';
+                option.dataset.uiAction = 'secondary';
             option.textContent = activePickerType === 'citizen'
                 ? item.name || 'Unnamed citizen'
                 : `${item.name} | ${item.code} | Available: ${item.quantity}`;
@@ -1602,16 +1603,16 @@ document.addEventListener('DOMContentLoaded', function () {
         row.innerHTML = `
             <div class="batch-release-row-header">
                 <strong>Assignment ${assignmentIndex + 1}</strong>
-                <button type="button" class="batch-release-remove" aria-label="Remove assignment">&times;</button>
+                <button type="button" class="batch-release-remove" aria-label="Remove assignment" data-ui-action="danger">&times;</button>
             </div>
             <div class="batch-release-row-grid">
                 <label>Citizen
                     <input type="hidden" name="assignments[${assignmentIndex}][citizen_id]" class="assignment-citizen-id" required>
-                    <button type="button" class="batch-picker-trigger select-citizen-button">Select citizen</button>
+                    <button type="button" class="batch-picker-trigger select-citizen-button" data-ui-action="secondary">Select citizen</button>
                 </label>
                 <label>Specific Supply Batch
                     <input type="hidden" name="assignments[${assignmentIndex}][supply_id]" class="assignment-supply-id" required>
-                    <button type="button" class="batch-picker-trigger select-supply-button">Select supply batch</button>
+                    <button type="button" class="batch-picker-trigger select-supply-button" data-ui-action="secondary">Select supply batch</button>
                 </label>
                 <label>Quantity
                     <input type="number" name="assignments[${assignmentIndex}][quantity]" min="1" value="1" required>

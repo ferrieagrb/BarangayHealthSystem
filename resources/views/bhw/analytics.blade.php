@@ -110,8 +110,8 @@
                 </select>
             </label>
             <div class="disease-filter-actions">
-                <button type="submit" class="btn btn-primary">Apply filters</button>
-                <a class="btn btn-secondary" href="{{ route('bhw.analytics') }}">Reset filters</a>
+                <button type="submit" class="btn btn-primary" data-ui-action="primary">Apply filters</button>
+                <a class="btn btn-secondary" href="{{ route('bhw.analytics') }}" data-ui-action="reset">Reset filters</a>
             </div>
         </form>
 

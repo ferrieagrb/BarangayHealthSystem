@@ -1766,7 +1766,7 @@ body.theme-dark .c-home {
         {{-- BUTTON OUTSIDE THE ID CARD --}}
         <div class="c-id-actions-outside">
             <a class="c-btn"
-               href="{{ route('citizen.ecard') }}">
+               href="{{ route('citizen.ecard') }}" data-ui-action="secondary">
                 Open Health Card & Print Options
             </a>
         </div>
@@ -1787,7 +1787,7 @@ body.theme-dark .c-home {
                 <form method="POST" action="{{ route('citizen.health-sharing.revoke') }}">
                     @csrf
                     @method('DELETE')
-                    <button class="c-btn" type="submit" style="background:#b91c1c;">Revoke sharing now</button>
+                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Revoke sharing now</button>
                 </form>
             @else
                 <p class="c-muted">
@@ -1801,7 +1801,7 @@ body.theme-dark .c-home {
                         <input type="checkbox" name="consent" value="1" required style="margin-top:4px;">
                         <span>I consent to sharing the health information described above for seven days.</span>
                     </label>
-                    <button class="c-btn" type="submit">Enable 7-day sharing</button>
+                    <button class="c-btn" type="submit" data-ui-action="primary">Enable 7-day sharing</button>
                 </form>
             @endif
             @if(session('success'))
@@ -1986,7 +1986,7 @@ body.theme-dark .c-home {
                 </div>
             </div>
     <div class="c-actions" style="padding:20px 0 0">
-        <a class="c-btn" href="{{ route('citizen.ecard') }}">View Printable Health Record</a>
+        <a class="c-btn" href="{{ route('citizen.ecard') }}" data-ui-action="secondary">View Printable Health Record</a>
     </div>
 @else <div class="c-empty">Health information will appear here once your account is linked to a citizen profile.</div>
 @endif
@@ -2006,7 +2006,7 @@ body.theme-dark .c-home {
             <h3>Talk to your Barangay Health Worker</h3>
             <p>Contact or visit the BHW so your concern can be assessed and your referral can be recorded. This page currently provides referral guidance; an online referral submission form is not yet available. For emergencies, go to the nearest emergency facility.</p>
         </div>
-        <a class="c-btn c-green" href="tel:+639587891234">Call Health Center</a>
+        <a class="c-btn c-green" href="tel:+639587891234" data-ui-action="secondary">Call Health Center</a>
     </div>
 </section>
 </div>

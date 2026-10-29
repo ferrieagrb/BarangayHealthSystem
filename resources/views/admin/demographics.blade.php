@@ -13,7 +13,7 @@
             <h1>Demographics, Puroks &amp; Subgroups</h1>
             <p>Manage community areas, map coverage, subgroup assignments, and local health workers.</p>
         </div>
-        <button type="button" class="btn btn-primary demographics-header-action" data-open-tab="map">Open map workspace</button>
+        <button type="button" class="btn btn-primary demographics-header-action" data-open-tab="map" data-ui-action="secondary">Open map workspace</button>
     </header>
 
     @if(session('success'))
@@ -54,7 +54,7 @@
         </section>
 
         <section class="demographics-card overview-list">
-            <div class="section-heading"><div><h2>Purok summary</h2><p>Current locations and subgroup coverage.</p></div><button type="button" class="btn btn-primary" data-open-tab="puroks">Manage Puroks</button></div>
+            <div class="section-heading"><div><h2>Purok summary</h2><p>Current locations and subgroup coverage.</p></div><button type="button" class="btn btn-primary" data-open-tab="puroks" data-ui-action="secondary">Manage Puroks</button></div>
             @forelse($puroks as $purok)
                 <article class="overview-purok">
                     <div><strong>{{ $purok->name }}</strong><small>{{ $purok->description ?: 'No description provided' }}</small></div>
@@ -73,7 +73,7 @@
                 @csrf
                 <label class="field"><span>Purok name</span><input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Purok 1" maxlength="255" required></label>
                 <label class="field"><span>Description <small>(optional)</small></span><input type="text" name="description" value="{{ old('description') }}" placeholder="Area notes or landmarks" maxlength="2000"></label>
-                <button type="submit" class="btn btn-primary">Add Purok</button>
+                <button type="submit" class="btn btn-primary" data-ui-action="primary">Add Purok</button>
             </form>
         </div>
 
@@ -88,13 +88,13 @@
                             <label class="field"><span>Name</span><input type="text" name="name" value="{{ $purok->name }}" maxlength="255" required></label>
                             <label class="field"><span>Description</span><input type="text" name="description" value="{{ $purok->description }}" maxlength="2000" placeholder="Optional"></label>
                             <div class="record-meta"><span>{{ $purok->families_count }} families</span><span>{{ $purok->subgroups_count }} subgroups</span><span>{{ $purok->purge_citizens_count }} citizens</span></div>
-                            <div class="record-actions"><button type="submit" class="btn btn-secondary">Save changes</button></div>
+                            <div class="record-actions"><button type="submit" class="btn btn-primary" data-ui-action="primary">Save changes</button></div>
                         </form>
                         <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this Purok? It can only be archived after its families, subgroups, and citizen references have been moved. You can restore it later from the archive.')">
                             @csrf
                             @method('DELETE')
                             <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled($purok->families_count || $purok->subgroups_count) title="Move dependent records before archiving">Archive</button>
+                            <button type="submit" class="btn btn-danger" data-ui-action="danger" @disabled($purok->families_count || $purok->subgroups_count) title="Move dependent records before archiving">Archive</button>
                         </form>
                         <form action="{{ route('admin.puroks.citizens.destroy', $purok->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Archive all {{ $purok->purge_citizens_count }} citizen records in {{ $purok->name }}? They can be restored from the archive.">
                             @csrf
@@ -104,7 +104,7 @@
                             <p>Archives citizen profiles and linked citizen login accounts. Nothing is permanently deleted and they can be restored from the archive. Families and BHW accounts are kept.</p>
                             <label class="field"><span>Type <strong>{{ $purok->name }}</strong> to confirm</span><input type="text" name="confirmation" maxlength="255" autocomplete="off" required></label>
                             <label class="field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled(!$purok->purge_citizens_count)>Archive citizens</button>
+                            <button type="submit" class="btn btn-danger" data-ui-action="danger" @disabled(!$purok->purge_citizens_count)>Archive citizens</button>
                         </form>
                     </article>
                 @empty
@@ -132,7 +132,7 @@
                         @endforelse
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add subgroup</button>
+                <button type="submit" class="btn btn-primary" data-ui-action="primary">Add subgroup</button>
             </form>
         </div>
 
@@ -150,7 +150,7 @@
                                 <label class="field"><span>Description</span><input type="text" name="description" value="{{ $subgroup->description }}" maxlength="2000" placeholder="Optional"></label>
                             </div>
                             <div class="bhw-assignment">
-                                <div class="assignment-heading"><strong>Assigned BHWs <span class="assignment-count">{{ $subgroup->bhws->count() }}</span></strong><div><button type="button" class="text-button select-all-bhws">Select all</button><button type="button" class="text-button clear-bhws">Clear</button></div></div>
+                                <div class="assignment-heading"><strong>Assigned BHWs <span class="assignment-count">{{ $subgroup->bhws->count() }}</span></strong><div><button type="button" class="text-button select-all-bhws" data-ui-action="secondary">Select all</button><button type="button" class="text-button clear-bhws" data-ui-action="reset">Clear</button></div></div>
                                 <input type="hidden" name="bhw_ids_present" value="1">
                                 <div class="bhw-checklist">
                                     @forelse($bhws as $bhw)
@@ -162,14 +162,14 @@
                             </div>
                             <div class="subgroup-record-footer">
                                 <div class="record-meta"><span>{{ $subgroup->families_count }} families</span><span>{{ $subgroup->purge_citizens_count }} citizens</span><span>{{ $subgroup->latitude !== null ? 'Pin saved' : 'No pin' }}</span></div>
-                                <div class="record-actions"><button type="submit" class="btn btn-secondary">Save subgroup</button></div>
+                                <div class="record-actions"><button type="submit" class="btn btn-primary" data-ui-action="primary">Save subgroup</button></div>
                             </div>
                         </form>
                         <form action="{{ route('admin.subgroups.destroy', $subgroup->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this subgroup? Any empty family records will also be archived. Move its citizens first. You can restore it later from the archive.')">
                             @csrf
                             @method('DELETE')
                             <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled($subgroup->purge_citizens_count) title="Move citizens before archiving; empty family records will be archived">Archive</button>
+                            <button type="submit" class="btn btn-danger" data-ui-action="danger" @disabled($subgroup->purge_citizens_count) title="Move citizens before archiving; empty family records will be archived">Archive</button>
                         </form>
                         <form action="{{ route('admin.subgroups.citizens.destroy', $subgroup->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Archive all {{ $subgroup->purge_citizens_count }} citizen records in {{ $subgroup->name }} - {{ $subgroup->purok->name }}? They can be restored from the archive.">
                             @csrf
@@ -179,7 +179,7 @@
                             <p>Archives citizen profiles and linked citizen login accounts. Nothing is permanently deleted and they can be restored from the archive. Families and BHW accounts are kept.</p>
                             <label class="field"><span>Type <strong>{{ $subgroup->name }} - {{ $subgroup->purok->name }}</strong> to confirm</span><input type="text" name="confirmation" maxlength="513" autocomplete="off" required></label>
                             <label class="field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled(!$subgroup->purge_citizens_count)>Archive citizens</button>
+                            <button type="submit" class="btn btn-danger" data-ui-action="danger" @disabled(!$subgroup->purge_citizens_count)>Archive citizens</button>
                         </form>
                     </article>
                 @empty
@@ -199,19 +199,19 @@
             </div>
             <div class="map-mode-controls">
                 <div class="button-group" aria-label="Map editing mode">
-                    <button type="button" class="btn btn-secondary active" id="pinMode" aria-pressed="true">Place pin</button>
-                    <button type="button" class="btn btn-secondary" id="drawPurokBoundary" aria-pressed="false">Draw Purok boundary</button>
-                    <button type="button" class="btn btn-secondary" id="drawSubgroupBoundary" aria-pressed="false">Draw subgroup boundary</button>
-                    <button type="button" class="btn btn-secondary" id="editBoundary" aria-pressed="false">Edit saved boundary</button>
-                    <button type="button" class="btn btn-secondary" id="finishBoundary" aria-pressed="false" disabled>Finish drawing</button>
+                    <button type="button" class="btn btn-secondary active" id="pinMode" aria-pressed="true" data-ui-action="secondary">Place pin</button>
+                    <button type="button" class="btn btn-secondary" id="drawPurokBoundary" aria-pressed="false" data-ui-action="secondary">Draw Purok boundary</button>
+                    <button type="button" class="btn btn-secondary" id="drawSubgroupBoundary" aria-pressed="false" data-ui-action="secondary">Draw subgroup boundary</button>
+                    <button type="button" class="btn btn-secondary" id="editBoundary" aria-pressed="false" data-ui-action="secondary">Edit saved boundary</button>
+                    <button type="button" class="btn btn-secondary" id="finishBoundary" aria-pressed="false" disabled data-ui-action="primary">Finish drawing</button>
                 </div>
                 <div class="button-group map-edit-actions">
-                    <button type="button" class="btn btn-secondary" id="undoBoundary" disabled>Undo point</button>
-                    <button type="button" class="btn btn-secondary" id="cancelMapChanges" disabled>Cancel changes</button>
-                    <button type="button" class="btn btn-secondary" id="resetPin">Reset pin</button>
-                    <button type="button" class="btn btn-primary" id="savePin" disabled>Save pin</button>
-                    <button type="button" class="btn btn-primary" id="saveBoundary" disabled>Save boundary</button>
-                    <button type="button" class="btn btn-danger" id="deleteBoundary" disabled>Delete Purok boundary</button>
+                    <button type="button" class="btn btn-secondary" id="undoBoundary" disabled data-ui-action="secondary">Undo point</button>
+                    <button type="button" class="btn btn-secondary" id="cancelMapChanges" disabled data-ui-action="secondary">Cancel changes</button>
+                    <button type="button" class="btn btn-secondary" id="resetPin" data-ui-action="reset">Reset pin</button>
+                    <button type="button" class="btn btn-primary" id="savePin" disabled data-ui-action="primary">Save pin</button>
+                    <button type="button" class="btn btn-primary" id="saveBoundary" disabled data-ui-action="primary">Save boundary</button>
+                    <button type="button" class="btn btn-danger" id="deleteBoundary" disabled data-ui-action="danger">Delete Purok boundary</button>
                 </div>
             </div>
             <p class="map-status" id="mapStatus" role="status">Choose a Purok to view its map details.</p>

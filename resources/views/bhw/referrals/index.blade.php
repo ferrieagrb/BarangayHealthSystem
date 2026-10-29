@@ -16,7 +16,7 @@
             <p>Manage and monitor barangay health referrals.</p>
         </div>
 
-        <a href="{{ route('referrals.create') }}" class="btn-primary">
+        <a href="{{ route('referrals.create') }}" class="btn-primary" data-ui-action="primary">
             Create Referral
         </a>
 
@@ -138,7 +138,7 @@
 
                                 </select>
 
-                                <button type="submit" class="btn-primary">
+                                <button type="submit" class="btn-primary" data-ui-action="primary">
                                     Update
                                 </button>
 
@@ -153,7 +153,7 @@
                                 <a
                                     href="{{ route('referrals.download', $referral->id) }}"
                                     class="btn-primary"
-                                >
+                                 data-ui-action="secondary">
                                     Download PDF
                                 </a>
 

@@ -46,7 +46,7 @@
             </select>
         </div>
 
-        <button type="submit">Create User</button>
+        <button type="submit" data-ui-action="primary">Create User</button>
 
     </div>
 </form>

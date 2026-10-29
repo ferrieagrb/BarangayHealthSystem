@@ -44,8 +44,9 @@
         }
     </style>
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body>
+<body id="appActionControls">
     @if(!$citizen)
         <main class="access-card">
             <div class="brand-mark" aria-hidden="true" style="margin:0 auto 16px;">▦</div>

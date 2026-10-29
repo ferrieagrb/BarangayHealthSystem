@@ -240,7 +240,7 @@
                 <a
                     href="{{ route('superadmin.system.settings.backup') }}"
                     class="settings-button settings-button-secondary"
-                >
+                 data-ui-action="secondary">
                     Download Database Backup
                 </a>
             </div>
@@ -248,7 +248,7 @@
 
         {{-- Save Settings --}}
         <div class="settings-form-footer">
-            <button type="submit" class="settings-button settings-button-primary">
+            <button type="submit" class="settings-button settings-button-primary" data-ui-action="primary">
                 Save Settings
             </button>
         </div>
@@ -285,7 +285,7 @@
                 type="button"
                 id="cancelLogoUpload"
                 class="settings-button settings-button-secondary"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -293,7 +293,7 @@
                 type="button"
                 id="confirmLogoUpload"
                 class="settings-button settings-button-primary"
-            >
+             data-ui-action="primary">
                 Confirm &amp; Save
             </button>
         </div>

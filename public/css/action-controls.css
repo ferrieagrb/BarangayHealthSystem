@@ -1,0 +1,161 @@
+/* Explicit action roles keep labels, inline styles, and page overrides consistent. */
+:root {
+    --action-primary: #234f9b;
+    --action-primary-hover: #193e7e;
+    --action-danger: #b91c1c;
+    --action-danger-hover: #991b1b;
+    --action-secondary: #f1f5f9;
+    --action-secondary-hover: #e2e8f0;
+    --action-secondary-ink: #334155;
+    --action-secondary-border: #94a3b8;
+    --action-reset: #fffbeb;
+    --action-reset-hover: #fef3c7;
+    --action-reset-ink: #854d0e;
+    --action-reset-border: #a16207;
+}
+
+body.theme-dark, html[data-theme="dark"] {
+    --action-secondary: #334155;
+    --action-secondary-hover: #475569;
+    --action-secondary-ink: #f1f5f9;
+    --action-secondary-border: #94a3b8;
+    --action-reset: #422006;
+    --action-reset-hover: #713f12;
+    --action-reset-ink: #fde68a;
+    --action-reset-border: #fbbf24;
+}
+
+/* Important declarations intentionally take precedence over legacy inline button styles. */
+body button,
+body a:is(.btn, [class^="btn-"], [class*=" btn-"], .inventory-button),
+body button * {
+    text-decoration: none !important;
+}
+
+#appActionControls [data-ui-action] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    box-sizing: border-box;
+    min-height: 42px !important;
+    max-width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--control-border) !important;
+    border-radius: 8px;
+    background: var(--control-background) !important;
+    color: var(--control-ink) !important;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+
+body [data-ui-action="primary"] {
+    --control-background: var(--action-primary);
+    --control-hover: var(--action-primary-hover);
+    --control-border: var(--action-primary);
+    --control-ink: #fff;
+}
+
+body [data-ui-action="danger"] {
+    --control-background: var(--action-danger);
+    --control-hover: var(--action-danger-hover);
+    --control-border: var(--action-danger);
+    --control-ink: #fff;
+}
+
+body [data-ui-action="secondary"] {
+    --control-background: var(--action-secondary);
+    --control-hover: var(--action-secondary-hover);
+    --control-border: var(--action-secondary-border);
+    --control-ink: var(--action-secondary-ink);
+}
+
+body [data-ui-action="reset"] {
+    --control-background: var(--action-reset);
+    --control-hover: var(--action-reset-hover);
+    --control-border: var(--action-reset-border);
+    --control-ink: var(--action-reset-ink);
+}
+
+#appActionControls [data-ui-action]:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--control-hover) !important;
+}
+
+#appActionControls [data-ui-action]:is(:hover, :focus, :active),
+#appActionControls [data-ui-action] * {
+    text-decoration: none !important;
+}
+
+#appActionControls [data-ui-action]:focus-visible {
+    outline: 3px solid #60a5fa;
+    outline-offset: 3px;
+}
+
+#appActionControls [data-ui-action]:disabled,
+#appActionControls [data-ui-action][aria-disabled="true"] {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+:is(.record-actions, .action-group, .modal-actions, .modal-footer, .form-actions, .confirm-buttons, .inventory-modal-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+:is(.record-actions, .action-group, .modal-actions, .modal-footer, .form-actions) > form {
+    margin: 0;
+}
+
+#demographicsApp .map-mode-controls .button-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(168px, 100%), 1fr));
+    align-items: stretch;
+}
+
+#demographicsApp .map-mode-controls .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px !important;
+    transform: none;
+}
+
+#demographicsApp .map-mode-controls [aria-pressed="true"] {
+    background: var(--action-primary) !important;
+    border-color: var(--action-primary) !important;
+    color: #fff !important;
+}
+
+#demographicsApp .assignment-heading,
+#demographicsApp .assignment-heading > div {
+    flex-wrap: wrap;
+}
+
+#demographicsApp .assignment-heading .text-button {
+    width: 120px;
+    min-width: 0;
+}
+
+#demographicsApp .delete-form .btn {
+    margin-top: auto;
+}
+
+#demographicsApp .subgroup-create-form > .btn {
+    grid-column: 1 / -1;
+    justify-self: end;
+}
+
+@media (max-width: 520px) {
+    :is(.modal-actions, .modal-footer, .form-actions, .confirm-buttons) > [data-ui-action] {
+        flex: 1 1 140px;
+        min-width: 0;
+    }
+}

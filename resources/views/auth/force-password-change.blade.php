@@ -416,9 +416,10 @@
         }
     </style>
 @include('partials.favicon')
+<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
 
-<body>
+<body id="appActionControls">
 
     <main class="password-page">
 
@@ -641,7 +642,7 @@
                 </div>
 
                 <!-- Original Submit Button -->
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" data-ui-action="primary">
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

@@ -66,8 +66,8 @@
         <h2 id="logoutConfirmTitle">Log out?</h2>
         <p>Are you sure you want to log out of your account?</p>
         <div class="logout-confirm-actions">
-            <button type="button" class="logout-confirm-cancel">Cancel</button>
-            <button type="button" class="logout-confirm-submit">Log out</button>
+            <button type="button" class="logout-confirm-cancel" data-ui-action="secondary">Cancel</button>
+            <button type="button" class="logout-confirm-submit" data-ui-action="secondary">Log out</button>
         </div>
     </div>
 </div>

@@ -49,7 +49,7 @@
                         <td>
                             <form method="POST" action="{{ route($restoreRoute, ['type' => $type, 'id' => $item->id]) }}" onsubmit="return confirm('Restore this record?')">
                                 @csrf
-                                <button type="submit" class="archive-restore">Restore</button>
+                                <button type="submit" class="archive-restore" data-ui-action="primary">Restore</button>
                             </form>
                         </td>
                     </tr>

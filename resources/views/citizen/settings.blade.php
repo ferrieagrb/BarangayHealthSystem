@@ -284,7 +284,7 @@
                     </p>
                 </div>
 
-                <button class="cs-submit" type="submit">
+                <button class="cs-submit" type="submit" data-ui-action="primary">
                     Save Preferences
                 </button>
             </form>
@@ -352,7 +352,7 @@
                     >
                 </div>
 
-                <button class="cs-submit" type="submit">
+                <button class="cs-submit" type="submit" data-ui-action="primary">
                     Update Password
                 </button>
             </form>
@@ -394,7 +394,7 @@
                 >
                     @csrf
 
-                    <button class="cs-submit" type="submit">
+                    <button class="cs-submit" type="submit" data-ui-action="primary">
                         Send Verification Email
                     </button>
                 </form>
