@@ -440,6 +440,7 @@ body.print-id-only .bheams-id-qr small{font-size:3.8px!important;line-height:1.1
 body.print-id-only .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
 body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
+
 </style>
 <script>
 let citizenPrintPageRule = null;

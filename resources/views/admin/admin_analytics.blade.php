@@ -41,6 +41,36 @@
         </section>
     </div>
 
+    <section class="report-panel chart-panel workload-forecast-panel">
+        <div class="workload-forecast-heading">
+            <div>
+                <h2>Diagnosis-record workload forecast</h2>
+                <p>Monthly diagnosis entries by consultation date. Forecasts cover the next three months and are not counts of confirmed new disease cases.</p>
+            </div>
+            <span class="workload-forecast-status {{ $workloadForecast['available'] ? 'available' : 'insufficient' }}">
+                {{ $workloadForecast['available'] ? 'Baseline forecast' : 'Insufficient history' }}
+            </span>
+        </div>
+
+        @if($workloadChartLabels)
+            <div id="diagnosisWorkloadForecastChart" class="chart-container" role="img" aria-label="Monthly recorded diagnosis workload and short-term forecast"></div>
+        @else
+            <div class="empty-report">No health records with a consultation date are available to chart.</div>
+        @endif
+
+        @if($workloadForecast['available'])
+            <div class="workload-forecast-metrics">
+                <span>Selected method: <strong>{{ $workloadForecast['method'] }}</strong></span>
+                <span>Rolling backtest MAE: <strong>{{ number_format($workloadForecast['mae'], 2) }}</strong> records/month</span>
+                <span>Last-month baseline MAE: <strong>{{ number_format($workloadForecast['baseline_mae'], 2) }}</strong></span>
+                <span>Backtest WAPE: <strong>{{ $workloadForecast['wape'] === null ? 'N/A (zero actual total)' : number_format($workloadForecast['wape'], 1) . '%' }}</strong></span>
+            </div>
+            <p class="workload-forecast-note">The model selects between a trailing 3-month average and last-completed-month baseline using the final three one-month backtests. This short-term workload estimate has no formal prediction interval and does not establish an outbreak.</p>
+        @else
+            <p class="workload-forecast-note">{{ $workloadForecast['reason'] }} Only completed months with a recorded date are used for model fitting; the current month is partial and excluded. {{ $undatedHealthRecordCount ? number_format($undatedHealthRecordCount) . ' records without a consultation date are excluded.' : 'No undated health records are currently excluded.' }}</p>
+        @endif
+    </section>
+
     <div class="report-layout">
         <section class="report-panel chart-panel">
             <h2>Inventory Depletion Risk</h2>
@@ -150,6 +180,31 @@ document.addEventListener('DOMContentLoaded', function () {
         grid: { borderColor: '#e5e7eb' },
         yaxis: { min: 0, forceNiceScale: true }
     }).render();
+
+    const workloadForecastElement = document.querySelector('#diagnosisWorkloadForecastChart');
+    if (workloadForecastElement) {
+        const workloadCategories = @json($workloadChartLabels);
+        const recordedValues = @json($workloadRecordedValues);
+        const forecastValues = @json($workloadForecastValues);
+        new ApexCharts(workloadForecastElement, {
+            chart: { type: 'line', height: 320, toolbar: { show: false } },
+            series: [
+                { name: 'Recorded diagnosis entries', type: 'column', data: recordedValues },
+                { name: 'Three-month workload estimate', type: 'line', data: forecastValues }
+            ],
+            colors: ['#2563eb', '#d97706'],
+            stroke: { width: [0, 3], curve: 'straight', dashArray: [0, 6] },
+            plotOptions: { bar: { columnWidth: '55%', borderRadius: 3 } },
+            xaxis: { categories: workloadCategories, labels: { rotate: -35 } },
+            yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0, title: { text: 'Diagnosis records' } },
+            dataLabels: { enabled: false },
+            markers: { size: [0, 4], hover: { size: 6 } },
+            tooltip: { shared: true, intersect: false },
+            legend: { position: 'top', horizontalAlign: 'right' },
+            grid: { borderColor: '#e5e7eb' },
+            noData: { text: 'No dated diagnosis records are available.' }
+        }).render();
+    }
 
     new ApexCharts(document.querySelector('#purokChart'), {
         chart: { type: 'donut', height: 280 },

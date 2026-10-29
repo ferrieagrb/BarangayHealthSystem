@@ -227,9 +227,13 @@
 @endsection
 
 @section('scripts')
+<<<<<<< HEAD
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async"></script>
+=======
 <script src="{{ asset('js/admin/demographics.js') }}"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initDemographicsMap" async defer></script>
 
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const mapElement = document.getElementById('purokLocationMap');
