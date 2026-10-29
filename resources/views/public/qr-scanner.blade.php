@@ -46,39 +46,7 @@
 @include('partials.favicon')
 </head>
 <body>
-    <div class="topbar">
-        <div class="container topbar-content">
-            <div class="topbar-item">
-                <i class="fa-solid fa-phone"></i>
-                <span>BARANGAY HOTLINE: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-            <div class="topbar-item highlight">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>EMERGENCY: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="container nav-container">
-            <a href="{{ url('/') }}" class="brand">
-                <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="brand-logo">
-                <div class="brand-text">
-                    <span class="brand-title">BARANGAY AMUYONG</span>
-                    <span class="brand-subtitle">Health Services Portal</span>
-                </div>
-            </a>
-            <nav class="nav-menu" aria-label="Public navigation">
-                <ul>
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}" class="active" aria-current="page">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    @include('public.partials.header', ['activeNav' => 'qr'])
 
     <section class="hero page-hero" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%), url('{{ asset('images/mission.jpg') }}');">
         <div class="container hero-content">
@@ -129,36 +97,7 @@
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container footer-grid">
-            <div class="footer-col brand-col">
-                <div class="footer-brand">
-                    <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="footer-logo">
-                    <span>BARANGAY AMUYONG</span>
-                </div>
-                <p class="footer-desc">Dedicated to delivering transparent and efficient public health services to our community.</p>
-            </div>
-            <div class="footer-col">
-                <p class="footer-heading">Quick Links</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <p class="footer-heading">Contacts</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/contactdirectory') }}">Contact Directory</a></li>
-                    <li><a href="{{ route('login') }}">Staff Login</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container"><p>&copy; {{ date('Y') }} Barangay Amuyong. All rights reserved.</p></div>
-        </div>
-    </footer>
+    @include('public.partials.footer')
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
     <script>

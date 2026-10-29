@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Amuyong Calendar</title>
+    @include('partials.favicon')
     
     <!-- Google Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,52 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- FullCalendar CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
-    
     <!-- Theme Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/calendar.css') }}">
-@include('partials.favicon')
+    <link rel="stylesheet" href="{{ asset('css/citizencalendar.css') }}">
 </head>
 <body>
 
-    <!-- Topbar -->
-    <div class="topbar">
-        <div class="container topbar-content">
-            <div class="topbar-item">
-                <i class="fa-solid fa-phone"></i>
-                <span>BARANGAY HOTLINE: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-            <div class="topbar-item highlight">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>EMERGENCY: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Navigation Header -->
-    <header class="main-header">
-        <div class="container nav-container">
-            <a href="{{ url('/') }}" class="brand">
-                <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong Logo" class="brand-logo">
-                <div class="brand-text">
-                    <span class="brand-title">BARANGAY AMUYONG</span>
-                    <span class="brand-subtitle">Health Services Portal</span>
-                </div>
-            </a>
-            
-            <nav class="nav-menu">
-                <ul>
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}" class="active">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    @include('public.partials.header', ['activeNav' => 'calendar'])
 
     <!-- Calendar Hero Banner -->
     <section class="hero page-hero" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%), url('{{ asset('images/mission.jpg') }}');">
@@ -76,76 +38,95 @@
         <div class="calendar-card">
             <div id="calendar"></div>
         </div>
+
+        <dialog class="event-details-dialog" aria-labelledby="event-details-title">
+            <div class="event-details-header">
+                <h2 id="event-details-title"></h2>
+                <button class="event-details-close" type="button" aria-label="Close event details">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <dl class="event-details-list">
+                <div>
+                    <dt>Date</dt>
+                    <dd id="event-details-date"></dd>
+                </div>
+                <div>
+                    <dt>Time</dt>
+                    <dd id="event-details-time"></dd>
+                </div>
+                <div>
+                    <dt>Description</dt>
+                    <dd id="event-details-description"></dd>
+                </div>
+            </dl>
+        </dialog>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container footer-grid">
-            <div class="footer-col brand-col">
-                <div class="footer-brand">
-                    <img src="{{ asset('images/amuyong.png') }}" alt="Logo" class="footer-logo">
-                    <span>BARANGAY AMUYONG</span>
-                </div>
-                <p class="footer-desc">Dedicated to delivering transparent and efficient public health services to our community.</p>
-            </div>
-
-            <div class="footer-col">
-                <p class="footer-heading">Quick Links</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <p class="footer-heading">Contacts</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/contactdirectory') }}">Contact Directory</a></li>
-                    <li><a href="{{ route('login') }}">Staff Login</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <p class="footer-address">
-                    <i class="fa-solid fa-location-dot"></i>
-                        <a href="https://www.google.com/maps/search/?api=1&query=Amuyong+Barangay+Hall+Public+Highway+Alfonso+Cavite"
-                          target="_blank"
-                             rel="noopener noreferrer">
-                             Amuyong Barangay Hall, Public Highway
-                        </a>
-                </p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; {{ date('Y') }} Barangay Amuyong. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    @include('public.partials.footer')
 
     <!-- FullCalendar JS Script -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let calendarEl = document.getElementById('calendar');
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const eventDialog = document.querySelector('.event-details-dialog');
+            const eventTitle = document.getElementById('event-details-title');
+            const eventDate = document.getElementById('event-details-date');
+            const eventTime = document.getElementById('event-details-time');
+            const eventDescription = document.getElementById('event-details-description');
+            const closeEventDialog = eventDialog.querySelector('.event-details-close');
+            const compactToolbar = window.matchMedia(
+                '(max-width: 680px), (max-width: 1024px) and (max-height: 480px)'
+            );
+            const getToolbar = (compact) => compact
+                ? { left: 'prev,next', center: 'title', right: 'today' }
+                : { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' };
 
-        let calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            events: '/publicevents', 
-            selectable: false,       
-            editable: false,         
-            eventClick: null,        
-            dateClick: null,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek'
-            }
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 'auto',
+                contentHeight: 'auto',
+                expandRows: true,
+                events: '/publicevents',
+                selectable: false,
+                editable: false,
+                headerToolbar: getToolbar(compactToolbar.matches),
+                eventClick({ event }) {
+                    eventTitle.textContent = event.title;
+                    eventDate.textContent = calendar.formatDate(event.start, {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    eventTime.textContent = event.extendedProps.time
+                        || (event.allDay
+                            ? 'All day'
+                            : calendar.formatDate(event.start, { hour: 'numeric', minute: '2-digit' }));
+                    eventDescription.textContent = event.extendedProps.description || 'No description available.';
+                    eventDialog.showModal();
+                }
+            });
+
+            closeEventDialog.addEventListener('click', () => eventDialog.close());
+            eventDialog.addEventListener('click', (clickEvent) => {
+                if (clickEvent.target === eventDialog) {
+                    eventDialog.close();
+                }
+            });
+            document.addEventListener('keydown', (keyEvent) => {
+                if (keyEvent.key === 'Escape' && eventDialog.open) {
+                    eventDialog.close();
+                }
+            });
+
+            calendar.render();
+
+            compactToolbar.addEventListener('change', (event) => {
+                calendar.setOption('headerToolbar', getToolbar(event.matches));
+            });
         });
-
-        calendar.render();
-    });
     </script>
 
 </body>
