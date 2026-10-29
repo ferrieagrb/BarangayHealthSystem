@@ -16,12 +16,23 @@ class PublicAssetController extends Controller
         }
 
         $contents = Storage::disk('public')->get($path);
-        $mimeType = Storage::disk('public')->mimeType($path) ?: 'image/jpeg';
+        $mimeType = $this->imageMime($path);
 
         return response($contents, 200, [
             'Content-Type' => $mimeType,
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);
+    }
+
+    private function imageMime(string $path): string
+    {
+        $byExtension = [
+            'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif', 'webp' => 'image/webp', 'svg' => 'image/svg+xml', 'ico' => 'image/x-icon',
+        ];
+
+        return $byExtension[strtolower(pathinfo($path, PATHINFO_EXTENSION))]
+            ?? (Storage::disk('public')->mimeType($path) ?: 'image/png');
     }
 
     public function announcementImage(string $path)
