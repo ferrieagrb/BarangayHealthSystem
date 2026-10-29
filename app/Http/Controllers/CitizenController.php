@@ -252,7 +252,7 @@ class CitizenController extends Controller
             }
         }
 
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -451,6 +451,7 @@ class CitizenController extends Controller
                 User::create([
                     'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
                     'email' => $validated['email'],
+                    'username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate']),
                     'password' => $password,
                     'role' => 'citizen',
                     'citizen_id' => $citizen->id,
@@ -768,7 +769,7 @@ class CitizenController extends Controller
         $this->authorizeCitizenEdit($citizen);
         $canEdit = $this->canEditCitizen($citizen);
         $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -822,7 +823,7 @@ class CitizenController extends Controller
         $families = Family::with(['purok', 'subgroup'])
             ->orderBy('family_name')
             ->get();
-        $puroks = Purok::with('subgroups')->get();
+        $puroks = Purok::orderedWithSubgroups();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -1005,6 +1006,11 @@ class CitizenController extends Controller
         }
 
         $citizen->update($validated);
+
+        $citizenUser = User::where('citizen_id', $citizen->id)->first();
+        if ($citizenUser) {
+            $citizenUser->update(['username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate'], $citizenUser->id)]);
+        }
 
         $this->logActivity('update', 'citizen', $citizen->id, 'Updated citizen details');
 
@@ -1281,10 +1287,17 @@ class CitizenController extends Controller
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
             $this->logAdminActivity('citizens.imported', 'Imported citizen records from Excel.', 'data');
 
-            return redirect()->route('citizenlist')->with(
-                'success',
-                "Citizens imported successfully. {$import->createdAccounts} citizen accounts were created with the default temporary password."
-            );
+            $message = "Import finished. {$import->createdAccounts} citizen accounts were created with the default temporary password.";
+            if ($import->skippedRows > 0) {
+                $message .= " {$import->skippedRows} row(s) were skipped.";
+            }
+            if ($import->ignoredValues > 0) {
+                $message .= " {$import->ignoredValues} wrongly formatted value(s) were left blank.";
+            }
+
+            return redirect()->route('citizenlist')
+                ->with('success', $message)
+                ->with('import_issues', $import->issues);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Citizen Import Error: ' . $e->getMessage() . ' on line ' . $e->getLine());
             $this->logAuditEvent('citizens.import_failed', 'Citizen Excel import failed: ' . $e->getMessage());

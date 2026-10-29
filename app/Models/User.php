@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'citizen_id',
         'name',
         'email',
+        'username',
         'password',
         'role',
         'citizen_id',
@@ -41,6 +42,34 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Citizen username: lastname_MMDD (e.g. delacruz_0111); a number is appended if already taken.
+    public static function citizenUsername($lastName, $birthDate, $ignoreUserId = null): ?string
+    {
+        try {
+            $mmdd = \Illuminate\Support\Carbon::parse($birthDate)->format('md');
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $last = preg_replace('/[^a-z0-9]/', '', strtolower(\Illuminate\Support\Str::ascii((string) $lastName)));
+        if ($last === '') {
+            return null;
+        }
+
+        $base = substr($last, 0, 40) . '_' . $mmdd;
+        $username = $base;
+        $i = 2;
+
+        while (static::withTrashed()
+            ->where('username', $username)
+            ->when($ignoreUserId, fn ($q) => $q->where('id', '!=', $ignoreUserId))
+            ->exists()) {
+            $username = $base . $i++;
+        }
+
+        return $username;
     }
 
     public function isSuperAdmin()

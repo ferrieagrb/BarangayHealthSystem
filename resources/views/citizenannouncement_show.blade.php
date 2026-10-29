@@ -161,6 +161,7 @@
             .lightbox-next { right: 8px; }
         }
     </style>
+@include('partials.favicon')
 </head>
 <body>
     @include('public.partials.header', ['activeNav' => 'announcements'])

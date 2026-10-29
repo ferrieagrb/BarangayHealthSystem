@@ -1081,6 +1081,7 @@ body:has(.maintenance-section) .health-alert-error {
         grid-template-columns: 1fr;
     }
 }
+}
 
 
 

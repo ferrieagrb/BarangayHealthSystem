@@ -43,6 +43,7 @@
         @media (max-width: 760px) { .public-qr-layout { grid-template-columns: 1fr; } .public-qr-panel { padding: 17px; } }
         @media (max-width: 440px) { .public-qr-facts { grid-template-columns: 1fr; } .public-qr-actions > * { flex: 1 1 100%; } }
     </style>
+@include('partials.favicon')
 </head>
 <body>
     @include('public.partials.header', ['activeNav' => 'qr'])
