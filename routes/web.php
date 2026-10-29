@@ -91,6 +91,7 @@ Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name(
 
 Route::get('/login', fn () => view('login'))->name('login');
 Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
+Route::get('/site-favicon.png', [PublicAssetController::class, 'favicon'])->name('site.favicon');
 Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announcementImage'])
     ->where('path', '.*')
     ->name('announcement.image');
