@@ -33,10 +33,21 @@ class BhwDiseaseMonitoringTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
 
         foreach (['purok_subgroup_user', 'referrals', 'events', 'vaccination_schedules', 'vaccinations', 'medication_records', 'maintenance_records', 'health_records', 'vaccination_records', 'supplies', 'citizens', 'families', 'purok_subgroups', 'puroks', 'user_permissions', 'users'] as $table) {
             Schema::dropIfExists($table);
         }
+
+        Schema::dropIfExists('citizen_activity_logs');
+        Schema::create('citizen_activity_logs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('citizen_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('module');
+            $table->string('action');
+            $table->timestamps();
+        });
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -95,6 +106,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('Citizen_Purok')->nullable();
             $table->string('Citizen_Sex')->nullable();
             $table->boolean('Citizen_Pregnant')->default(false);
+            $table->boolean('Citizen_InPills')->default(false);
             $table->boolean('Citizen_IsDeceased')->default(false);
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->unsignedBigInteger('family_id')->nullable();
@@ -181,6 +193,10 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
         });
+        foreach (['users', 'puroks', 'purok_subgroups', 'families', 'citizens', 'supplies', 'health_records', 'maintenance_records', 'vaccination_records', 'medication_records', 'events'] as $tableName) {
+            Schema::table($tableName, fn (Blueprint $table) => $table->softDeletes());
+        }
+
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
             $table->date('date_of_referral');
@@ -294,6 +310,40 @@ class BhwDiseaseMonitoringTest extends TestCase
         );
         $this->assertSame(1, $deletedData['totalRecords']);
         $this->assertTrue($deletedData['privacySuppressed']);
+    }
+
+    public function test_bhw_health_forecast_waits_for_sufficient_data(): void
+    {
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+
+        $response = $this->actingAs($bhw)->get(route('bhw.analytics'));
+
+        $response->assertOk()
+            ->assertSee('Waiting for sufficient data')
+            ->assertSee('at least 10 valid health activity records')
+            ->assertSee('Recent record activity')
+            ->assertSee('Citizen creation / import log entries')
+            ->assertDontSee('New citizen registration forecast');
+    }
+
+    public function test_analytics_activity_logs_are_scoped_to_accessible_citizens(): void
+    {
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+        $purok = Purok::create(['name' => 'Activity area']);
+        $assigned = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'Assigned']);
+        $other = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'Other']);
+        $bhw->assignedSubgroups()->attach($assigned->id);
+        $visible = $this->createCitizen($purok, $assigned, 'Visible');
+        $hidden = $this->createCitizen($purok, $other, 'Hidden');
+        foreach ([$visible, $hidden] as $citizen) {
+            \App\Models\CitizenActivityLog::create([
+                'citizen_id' => $citizen->id, 'module' => 'citizen', 'action' => 'create',
+            ]);
+        }
+        $this->actingAs($bhw)->get(route('bhw.analytics'))
+            ->assertOk()->assertViewHas('citizenAdditions', 1);
     }
 
     public function test_small_results_are_suppressed_from_aggregate_details(): void

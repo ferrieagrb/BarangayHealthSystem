@@ -38,6 +38,7 @@ class VaccinationEligibilityTest extends TestCase
             $table->date('date_administered');
             $table->string('administered_by');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('vaccination_schedules', function (Blueprint $table) {

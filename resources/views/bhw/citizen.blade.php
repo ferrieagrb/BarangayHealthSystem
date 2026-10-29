@@ -4,43 +4,10 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
-<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<<<<<<< HEAD
-=======
-    <style>
-        .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
-        .citizen-password-modal.is-open { display: flex; }
-        .citizen-password-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
-        .citizen-password-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
-        .citizen-password-dialog p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.5; }
-        .citizen-password-dialog label { display: block; margin: 12px 0 6px; color: #334155; font-size: 12px; font-weight: 700; }
-        .citizen-password-dialog input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        .citizen-password-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-        .citizen-export-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
-        .citizen-export-modal.is-open { display: flex; }
-        .citizen-export-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
-        .citizen-export-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
-        .citizen-export-dialog p { margin: 0 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
-        .citizen-export-options { display: grid; gap: 10px; }
-        .citizen-export-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #172033; text-align: left; cursor: pointer; text-decoration: none; box-sizing: border-box; }
-        .citizen-export-option:hover { border-color: #2563eb; background: #eff6ff; }
-        .citizen-export-option strong { display: block; color: #173b82; }
-        .citizen-export-option small { display: block; margin-top: 3px; color: #64748b; }
-        .citizen-export-close { display: flex; justify-content: flex-end; margin-top: 18px; }
-        .citizen-export-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
-        .citizen-export-field { display: flex; align-items: center; gap: 8px; color: #334155; font-size: 13px; }
-        .citizen-export-field input { width: 16px; height: 16px; }
-        .citizen-export-format { display: flex; justify-content: center; gap: 0; margin-top: 20px; }
-        .citizen-export-format button { padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; cursor: pointer; }
-        .citizen-export-format button:first-child { border-radius: 7px 0 0 7px; }
-        .citizen-export-format button:last-child { border-radius: 0 7px 7px 0; }
-        .citizen-export-format button.active { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
-        .citizen-export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-    </style>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @endsection
 
 @section('content')
+<div class="citizen-management-page">
 
 {{-- SUCCESS POPUP --}}
 @if(session('success'))
@@ -63,7 +30,7 @@
         <p>Manage resident profiles, monitor status, and update citizen health-related information.</p>
     </div>
 
-    <div class="page-header-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div class="page-header-actions">
         <a href="{{ route('citizen.add') }}" class="btn-primary">+ Add Citizen</a>
         <button type="button" class="btn-secondary"
                 onclick="document.getElementById('excelFileInput').click();">
@@ -77,46 +44,46 @@
     <div class="summary-cards">
         <div class="summary-card">
             <span>Total Citizens</span>
-            <strong>{{ $totalCitizens }}</strong>
+            <strong>{{ number_format($totalCitizens) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['total']['state'] }}">
                 <span>{{ $citizenTrends['total']['icon'] }} {{ $citizenTrends['total']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Kids</span>
-            <strong>{{ $kids }}</strong>
+            <span>Children <small>0–17 years</small></span>
+            <strong>{{ number_format($kids) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['kids']['state'] }}">
                 <span>{{ $citizenTrends['kids']['icon'] }} {{ $citizenTrends['kids']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Adults</span>
-            <strong>{{ $adults }}</strong>
+            <span>Adults <small>18–59 years</small></span>
+            <strong>{{ number_format($adults) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['adults']['state'] }}">
                 <span>{{ $citizenTrends['adults']['icon'] }} {{ $citizenTrends['adults']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Seniors</span>
-            <strong>{{ $seniors }}</strong>
+            <span>Seniors <small>60+ years</small></span>
+            <strong>{{ number_format($seniors) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['seniors']['state'] }}">
                 <span>{{ $citizenTrends['seniors']['icon'] }} {{ $citizenTrends['seniors']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
     </div>
 
     <div class="chart-card">
         <div class="chart-header">
-            <h3>Demographics Breakdown</h3>
+            <h3>Residents by age group</h3><p>All registered residents · independent of list filters</p>
         </div>
-        <div id="demographicsApexChart"></div>
+        <div id="demographicsApexChart" role="img" aria-label="Residents by age group; counts shown in the summary cards"></div>
     </div>
 </div>
 
@@ -127,7 +94,7 @@
               class="citizen-filter-form" id="citizenFilterForm">
 
             {{-- SEARCH --}}
-            <div class="search-box">
+            <div class="search-box"><label for="citizenSearchInput" class="citizen-control-label">Search residents</label>
                 <input type="search" name="search" id="citizenSearchInput"
                        value="{{ request('search') }}"
                        placeholder="Search citizen name or ID"
@@ -136,7 +103,7 @@
             </div>
 
             {{-- GROUPED PUROK AND SUBGROUP FILTER --}}
-            <div class="filter-box purok-filter-box">
+            <div class="filter-box purok-filter-box"><label for="purokFilter" class="citizen-control-label">Purok / subgroup</label>
                 <select id="purokFilter" aria-label="Filter by Purok or Subgroup">
                     <option value="">All Puroks</option>
 
@@ -165,13 +132,15 @@
 
             {{-- AGE FILTER --}}
             <div class="filter-box">
-                <input type="text" name="age"
+                <label for="citizenAgeFilter" class="citizen-control-label">Age or age range</label>
+                <input type="text" name="age" id="citizenAgeFilter"
                        value="{{ request('age') }}"
                        placeholder="Age or range (e.g. 8 or 4-10)">
             </div>
 
             {{-- STATUS FILTER --}}
             <div class="filter-box">
+                <span class="citizen-control-label">Additional filters</span>
                 <button type="button" id="openCitizenStatusFilter"
                         class="citizen-status-filter-btn">
                     <span>Status & Filters</span>
@@ -325,7 +294,7 @@
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="pcv"><span>Pneumococcal Conjugate Vaccine (PCV)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mmr"><span>Measles, Mumps, Rubella (MMR)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mr"><span>Measles-Rubella (MR)</span></label>
-                <label class="citizen-status-op <input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
             </section>
 
@@ -399,16 +368,15 @@
             }
         @endphp
 
-        <div id="citizen-results-summary" class="citizen-results-highlight"
-             style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:8px 12px;border:1px solid #bbf7d0;border-radius:8px;background:#f0fdf4;color:#166534;font-size:13px;font-weight:500;line-height:1.5;">
-            <strong style="font-weight:700;">Showing {{ $citizens->total() }} results</strong>
-
+        <div id="citizen-results-summary" class="citizen-results-highlight" role="status" aria-live="polite">
+            <strong>{{ number_format($citizens->total()) }} {{ $citizens->total() === 1 ? 'resident' : 'residents' }} found</strong>
             @if(count($activeFilters) > 0)
-                <span aria-hidden="true" style="color:#86a98e;font-weight:700;">·</span>
-                <span id="active-citizen-filters">{{ implode(', ', $activeFilters) }}</span>
+                <span id="active-citizen-filters">{{ implode(' · ', $activeFilters) }}</span>
+                <a href="{{ route('citizenlist') }}" class="citizen-clear-filters">Clear filters</a>
             @endif
         </div>
 
+        <div class="citizen-table-scroll" role="region" aria-label="Citizen records" tabindex="0">
         <table>
             <thead>
                 <tr>
@@ -418,7 +386,7 @@
                     <th>Contact</th>
                     <th>Purok</th>
                     <th>Subgroup</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -426,7 +394,7 @@
                 @forelse($citizens as $citizen)
                     <tr>
                         <td>
-                            <span class="record-name">{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}</span>
+                            <span class="record-name">{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_MName }} {{ $citizen->Citizen_LName }}</span>
                             <span class="record-sub">ID: {{ $citizenDisplayIds[$citizen->id] ?? 'Unassigned' }}</span>
                         </td>
 
@@ -478,14 +446,15 @@
                 @empty
                     <tr>
                         <td colspan="7" class="empty-text" style="text-align:center;padding:20px;">
-                            No citizen records found.
+                            No residents match your search or filters. Try a different name, ID, or age range.
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
 
-        <div style="margin-top:15px;">
+        <div class="citizen-pagination">
             {{ $citizens->appends(request()->query())->links('pagination::bootstrap-5') }}
         </div>
     </div>
@@ -746,7 +715,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }],
         chart: {
             type: 'bar',
-            height: '100%',
+            height: 270,
             toolbar: { show: false }
         },
         plotOptions: {
@@ -769,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         legend: { show: false },
         xaxis: {
-            categories: ['Kids', 'Adults', 'Seniors'],
+            categories: ['Children (0–17)', 'Adults (18–59)', 'Seniors (60+)'],
             axisBorder: { show: false },
             axisTicks: { show: false },
             labels: {
@@ -1052,4 +1021,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+</div>
 @endsection

@@ -55,7 +55,7 @@ class BhwDiseaseMonitoringService
         $totalRecords = (clone $recordsQuery)->count('hr.id');
         $uniqueCitizens = (clone $recordsQuery)->distinct()->count('hr.citizen_id');
 
-        $periodDays = $start->diffInDays($end) + 1;
+        $periodDays = (int) $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
         $previousEnd = $start->copy()->subDay();
         $previousStart = $previousEnd->copy()->subDays($periodDays - 1);
         $previousQuery = $applyFilters($baseQuery(), false)
@@ -231,6 +231,8 @@ class BhwDiseaseMonitoringService
             ->leftJoin('puroks AS area_purok', function ($join) {
                 $join->on('area_purok.id', '=', DB::raw('COALESCE(csg.purok_id, fsg.purok_id, text_purok.id)'));
             })
+            ->whereNull('hr.deleted_at')
+            ->whereNull('c.deleted_at')
             ->whereNotNull('hr.diagnosis')
             ->whereRaw("TRIM(hr.diagnosis) <> ''");
 

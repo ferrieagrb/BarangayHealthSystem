@@ -580,14 +580,7 @@
         <span class="diagnosis-count">{{ $citizen->maintenanceRecords->count() }} {{ $citizen->maintenanceRecords->count() === 1 ? 'Record' : 'Records' }}</span>
     </div>
 
-<<<<<<< HEAD
-<div class="maintenance-container-box">
-    <h3>Maintenance Medicines</h3>
-
-    @if(session('success'))
-=======
     @if(session('success') === 'Maintenance medicine added successfully.')
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
         <p class="health-alert health-alert-success">
 
@@ -646,15 +639,9 @@
                     <div><span>Duration</span><strong>{{ $maintenance->end_date ? $maintenance->start_date?->diffInDays($maintenance->end_date) + 1 . ' days' : 'Ongoing' }}</strong></div>
                 </div>
 
-<<<<<<< HEAD
-            <p><strong>Quantity:</strong> {{ $maintenance->quantity_dispensed ?? 1 }}</p>
-
-            <p><strong>Dosage:</strong> {{ $maintenance->dosage }}</p>
-=======
                 @if($maintenance->notes)
                     <div class="diagnosis-notes"><strong>Notes:</strong> {{ $maintenance->notes }}</div>
                 @endif
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 
             </div>
         </article>
@@ -721,14 +708,10 @@
                 <textarea name="notes" id="maintenance_notes" class="maintenance-field" maxlength="2000" placeholder="Additional instructions or notes...">{{ old('notes') }}</textarea>
             </div>
         </div>
-<<<<<<< HEAD
-        <button type="submit" class="btn-primary">Add Maintenance</button>
-=======
         <div class="diagnosis-actions record-form-actions">
             <button type="button" class="diagnosis-clear" id="clearMaintenanceBtn">Clear</button>
             <button type="submit" class="btn-primary">Add Maintenance</button>
         </div>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
     </form>
 
     <div id="medicinePickerModal" class="medicine-picker-modal" role="dialog" aria-modal="true" aria-labelledby="medicinePickerTitle" aria-hidden="true">
@@ -802,264 +785,6 @@
 <form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to archive this diagnosis record? You can restore it from the archive.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2">Archive</button></form>
 @endif
 </div>
-<<<<<<< HEAD
-
-<!-- ================================================================
-
-     ADD NEW DIAGNOSIS
-
-     ================================================================ -->
-
-<section class="immunization-section diagnosis-section" aria-labelledby="diagnosisHistoryTitle">
-<div class="immunization-history diagnosis-history">
-    <h3 id="diagnosisHistoryTitle">Diagnosis History</h3>
-    @forelse($citizen->healthRecords as $record)
-        <div class="immunization-history-item">
-            <strong>{{ $record->diagnosis }}</strong>
-            <span>{{ $record->record_date ?? $record->created_at?->format('Y-m-d') }}</span>
-            <small>{{ $record->comments ?: 'No notes recorded.' }}</small>
-        </div>
-    @empty
-        <p>No diagnosis records yet.</p>
-    @endforelse
-</div>
-
-<div class="diagnosis-entry-heading edit-gated-form" style="display:none;">
-    <h3>Add Diagnosis</h3>
-    <p>Record a new diagnosis for this citizen.</p>
-</div>
-
-<form
-
-    id="diagnosisForm"
-
-    class="edit-gated-form"
-
-    method="POST"
-
-    action="{{ route('health.record.store') }}"
-
-    style="display:none;"
-
->
-
-    @csrf
-
-    <input
-
-        type="hidden"
-
-        name="citizen_id"
-
-        value="{{ $citizen->id }}"
-
-    >
-
-    <!-- Diagnosis (manual input) -->
-
-    <label>
-
-        Diagnosis
-
-    </label>
-
-    <textarea
-
-        name="diagnosis"
-
-        id="diagnosisInput"
-
-        required
-
-        placeholder="Enter diagnosis..."
-
-    ></textarea>
-
-    <!-- Date -->
-
-    <label>
-
-        Date
-
-    </label>
-
-    <input
-
-        type="date"
-
-        name="record_date"
-
-        id="recordDateInput"
-
-        required
-
-    >
-
-    <!-- Comments -->
-
-    <label>
-
-        Comments / Notes
-
-    </label>
-
-    <textarea
-
-        name="comments"
-
-        id="commentsInput"
-
-        placeholder="Enter notes..."
-
-    ></textarea>
-
-    <!-- SAVE -->
-
-    <button
-
-        type="submit"
-
-        id="saveDiagnosisBtn"
-
-    >
-
-        Save
-
-    </button>
-
-</form>
-
-</section>
-
-<!-- ================================================================
-
-     DIAGNOSIS CONFIRMATION MODAL
-
-     ================================================================ -->
-
-<div
-
-    id="diagnosisConfirmModal"
-
-    class="diagnosis-confirm-overlay"
-
->
-
-    <div class="diagnosis-confirm-modal">
-
-        <h2>
-
-            Confirm New Diagnosis
-
-        </h2>
-
-        <p>
-
-            Are you sure you want to save this new diagnosis
-
-            for
-
-            <strong>
-
-                {{ $citizen->Citizen_FName }}
-
-                {{ $citizen->Citizen_LName }}
-
-            </strong>?
-
-        </p>
-
-        <!-- CONFIRMATION DETAILS -->
-
-        <div class="diagnosis-confirm-details">
-
-            <div class="diagnosis-confirm-detail">
-
-                <span>
-
-                    Diagnosis
-
-                </span>
-
-                <strong id="confirmDiagnosis">
-
-                    —
-
-                </strong>
-
-            </div>
-
-            <div class="diagnosis-confirm-detail">
-
-                <span>
-
-                    Date
-
-                </span>
-
-                <strong id="confirmDiagnosisDate">
-
-                    —
-
-                </strong>
-
-            </div>
-
-            <div class="diagnosis-confirm-detail">
-
-                <span>
-
-                    Comments / Notes
-
-                </span>
-
-                <strong id="confirmDiagnosisComments">
-
-                    No notes
-
-                </strong>
-
-            </div>
-
-        </div>
-
-        <!-- CONFIRMATION BUTTONS -->
-
-        <div class="diagnosis-confirm-buttons">
-
-            <button
-
-                type="button"
-
-                id="cancelDiagnosisConfirmation"
-
-                class="diagnosis-confirm-cancel"
-
-            >
-
-                Cancel
-
-            </button>
-
-            <button
-
-                type="button"
-
-                id="confirmDiagnosisSubmission"
-
-                class="diagnosis-confirm-save"
-
-            >
-
-                Yes, Save
-
-            </button>
-
-        </div>
-
-    </div>
-
-=======
  <div class="diagnosis-vitals"><div><span>BMI</span><strong>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1).' kg/m²' : '—' }}</strong></div><div><span>Weight / Height</span><strong>{{ $record->weight !== null ? rtrim(rtrim(number_format((float)$record->weight,1,'.',''),'0'),'.').'kg' : '—' }} / {{ $record->height !== null ? rtrim(rtrim(number_format((float)$record->height,1,'.',''),'0'),'.').'cm' : '—' }}</strong></div><div><span>Temp</span><strong>{{ $record->temperature !== null ? number_format((float)$record->temperature,1).' °C' : '—' }}</strong></div><div><span>BP</span><strong>{{ $record->blood_pressure ?: '—' }}</strong></div></div>
  <div class="diagnosis-notes"><strong>Notes:</strong> {{ $record->comments ?: 'No notes recorded.' }}</div></div></article>
  @empty <div class="diagnosis-empty"><strong style="display:block;color:#334155">No Diagnosis History Recorded</strong><span>Add a new record using the entry form below.</span></div> @endforelse
@@ -1084,7 +809,6 @@
  <div class="diagnosis-actions"><button type="button" class="diagnosis-clear" id="clearDiagnosisBtn">Clear</button><button type="submit" class="diagnosis-save" id="saveDiagnosisBtn">Save Record</button></div>
 </form></div>
 @else <div class="diagnosis-add-section"><p class="diagnosis-subtitle">This citizen record is read-only. A diagnosis cannot be added from this account.</p></div> @endif
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 </div>
 </section>
 
@@ -1717,191 +1441,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     setEditGatedState(false);
 
-    const diagnosisInput =
-
-        document.getElementById("diagnosisInput");
-
-    const recordDateInput =
-
-        document.getElementById("recordDateInput");
-
-    const commentsInput =
-
-        document.getElementById("commentsInput");
-
-    const saveDiagnosisBtn =
-
-        document.getElementById("saveDiagnosisBtn");
-
-
-       CONFIRMATION MODAL ELEMENTS
-
-       ============================================================ */
-
-    const diagnosisConfirmModal =
-
-        document.getElementById("diagnosisConfirmModal");
-
-    const confirmDiagnosis =
-
-        document.getElementById("confirmDiagnosis");
-
-    const confirmDiagnosisDate =
-
-        document.getElementById("confirmDiagnosisDate");
-
-    const confirmDiagnosisComments =
-
-        document.getElementById("confirmDiagnosisComments");
-
-    const cancelDiagnosisConfirmation =
-
-        document.getElementById(
-
-            "cancelDiagnosisConfirmation"
-
-        );
-
-    const confirmDiagnosisSubmission =
-
-        document.getElementById(
-
-            "confirmDiagnosisSubmission"
-
-        );
-
-    /* ============================================================
-
-       FORM SUBMISSION
-
-       ============================================================ */
-
-    diagnosisForm.addEventListener("submit", function (event) {
-
-        event.preventDefault();
-
-        const diagnosis =
-
-            diagnosisInput.value.trim();
-
-        const recordDate =
-
-            recordDateInput.value;
-
-        const comments =
-
-            commentsInput.value.trim();
-
-        if (!diagnosis || !recordDate) {
-
-            diagnosisForm.reportValidity();
-
-            return;
-
-        }
-
-        confirmDiagnosis.textContent =
-
-            diagnosis;
-
-        confirmDiagnosisDate.textContent =
-
-            recordDate;
-
-        confirmDiagnosisComments.textContent =
-
-            comments || "No notes";
-
-        diagnosisConfirmModal.classList.add("active");
-
-    });
-
-    cancelDiagnosisConfirmation.addEventListener(
-
-        "click",
-
-        function () {
-
-            diagnosisConfirmModal.classList.remove(
-
-                "active"
-
-            );
-
-        }
-
-    );
-
-    confirmDiagnosisSubmission.addEventListener(
-
-        "click",
-
-        function () {
-
-            confirmDiagnosisSubmission.disabled = true;
-
-            confirmDiagnosisSubmission.textContent =
-
-                "Saving...";
-
-            diagnosisConfirmModal.classList.remove(
-
-                "active"
-
-            );
-
-            saveDiagnosisBtn.disabled = true;
-
-            diagnosisForm.submit();
-
-        }
-
-    );
-
-    window.addEventListener(
-
-        "click",
-
-        function (event) {
-
-            if (
-
-                event.target === diagnosisConfirmModal
-
-            ) {
-
-                diagnosisConfirmModal.classList.remove(
-
-                    "active"
-
-                );
-
-            }
-
-        }
-
-    );
-
-    document.addEventListener(
-
-        "keydown",
-
-        function (event) {
-
-            if (event.key === "Escape") {
-
-                diagnosisConfirmModal.classList.remove(
-
-                    "active"
-
-                );
-
-            }
-
-        }
-
-    );
-
 });
 
 </script>
@@ -2012,6 +1551,5 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @endsection
 

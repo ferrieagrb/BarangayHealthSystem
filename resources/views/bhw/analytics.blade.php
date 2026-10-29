@@ -4,8 +4,18 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
+    .analytics-period { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 18px; color: #334155; font-size: 13px; font-weight: 600; }
+    .analytics-period span { color: #64748b; font-weight: 400; }
+    .analytics-scope { color: #64748b; font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
+    .analytics-activity { margin-bottom: 18px; }
+    .analytics-activity-totals { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 16px; color: #64748b; font-size: 13px; }
+    .analytics-activity-totals strong { margin-left: 8px; color: #173b82; }
+    .disease-kpi small { display: block; color: #64748b; line-height: 1.5; margin-top: 8px; }
+    .analytics-table tbody tr:hover { background: #f8fafc; }
+    .analytics-table td { line-height: 1.5; }
+    .analytics-table a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
     .analytics-page { width: 100%; padding: 0; color: #172033; }
-    .analytics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .analytics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
     .analytics-card, .analytics-panel { min-width: 0; padding: 20px; border: 1px solid #dce4ee; border-radius: 12px; background: #fff; box-shadow: 0 4px 18px rgba(20,42,76,.06); }
     .analytics-card span, .analytics-panel p { color: #64748b; font-size: 13px; }
     .analytics-card strong { display: block; margin: 8px 0 4px; color: #173b82; font-size: 28px; line-height: 1.1; }
@@ -55,16 +65,14 @@
     <div class="page-top">
         <div class="page-title-group">
             <h1>BHW Analytics</h1>
-            <p>Predictive indicators and recommended actions based on recent barangay records.</p>
+            <p>Diagnosis patterns, record activity, and supply planning in one place.</p>
         </div>
     </div>
 
-    <h2 class="analytics-type-heading">Predictive Analytics</h2>
-
-    <h2 class="analytics-type-heading">Disease Monitoring</h2>
+    <h2 class="analytics-type-heading">Disease monitoring</h2>
     <section class="analytics-panel" aria-labelledby="diseaseMonitoringHeading">
         <h2 id="diseaseMonitoringHeading">Diagnosis records by illness and area</h2>
-        <p>Aggregates use diagnosis text and the recorded diagnosis date. Filters apply to all disease summary and map figures below.</p>
+        <p>Aggregates use diagnosis text and the recorded diagnosis date. Filters apply to the disease summaries, diagnosis chart, area table, and map only.</p>
         <form class="disease-filters" method="GET" action="{{ route('bhw.analytics') }}" id="diseaseFilters">
             <label>
                 Reporting period
@@ -115,6 +123,7 @@
             </div>
         </form>
 
+        <div class="analytics-period">{{ $periodStart->format('M j, Y') }} – {{ $periodEnd->format('M j, Y') }} <span>Accessible citizens only</span></div>
         <div class="disease-kpi-grid">
             <div class="disease-kpi"><span>Diagnosis records · {{ $periodLabel }}</span><strong>{{ $diseaseMonitoringData['privacySuppressed'] ? 'Suppressed' : number_format($diseaseMonitoringData['totalRecords']) }}</strong></div>
             <div class="disease-kpi"><span>Distinct citizens recorded</span><strong>{{ $diseaseMonitoringData['privacySuppressed'] ? 'Fewer than 3' : number_format($diseaseMonitoringData['uniqueCitizens']) }}</strong></div>
@@ -129,9 +138,12 @@
         <section class="analytics-panel">
             <h2>Most recorded diagnoses</h2>
             <p>Diagnosis names are grouped by case and outer-whitespace normalization only; clinically distinct terms are not automatically merged.</p>
-            <div id="diagnosisRankingChart" class="analytics-chart"></div>
+            @if($diseaseMonitoringData['diagnosisRankings']->isNotEmpty())
+                <div id="diagnosisRankingChart" class="analytics-chart" role="img" aria-label="Top diagnoses by record count; values are listed in the table below"></div>
+            @endif
+            <p>Up to 10 diagnoses are shown. Each must include at least three distinct citizens; displayed shares may not total 100%.</p>
             <table class="analytics-table">
-                <thead><tr><th>Diagnosis</th><th>Records</th><th>Distinct citizens</th><th>Share</th></tr></thead>
+                <thead><tr><th>Diagnosis</th><th>Records</th><th>Distinct citizens</th><th>Share of all filtered records</th></tr></thead>
                 <tbody>
                     @forelse($diseaseMonitoringData['diagnosisRankings'] as $row)
                         <tr>
@@ -141,7 +153,7 @@
                             <td>{{ $diseaseMonitoringData['totalRecords'] ? number_format($row->record_count / $diseaseMonitoringData['totalRecords'] * 100, 1) : '0.0' }}%</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Details are withheld because fewer than three distinct citizens match these filters.' : 'No diagnosis records match these filters.' }}</td></tr>
+                        <tr><td colspan="4">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Details are withheld because fewer than three distinct citizens match these filters.' : 'No diagnoses meet the minimum of three distinct citizens for display.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -151,7 +163,7 @@
             <p>Only saved Purok or subgroup coordinates and boundaries are used. Map values are aggregated and do not identify citizens.</p>
             @if(count($diseaseMonitoringData['mapAreas']))
                 <div id="diseaseMonitoringMap" class="disease-map" role="img" aria-label="Aggregated diagnosis records by mapped Purok and subgroup"></div>
-                <div class="disease-map-legend"><span><i></i> Area pin</span><span><i class="boundary"></i> Saved boundary</span><span>Areas with fewer than three distinct citizens are not displayed</span></div>
+                <div class="disease-map-legend"><span><i></i> Records by area (larger circle = more records)</span><span><i class="boundary"></i> Saved boundary</span><span>Areas with fewer than three distinct citizens are not displayed</span></div>
             @else
                 <div class="disease-empty">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Map details are withheld because fewer than three distinct citizens match these filters.' : 'No mapped areas match these filters. Check saved Purok/subgroup locations and the selected period.' }}</div>
             @endif
@@ -181,42 +193,69 @@
         </section>
     </div>
 
-    <h2 class="analytics-type-heading">Predictive Analytics</h2>
+    <h2 class="analytics-type-heading">Activity &amp; planning</h2>
+    <p class="analytics-scope">Fixed activity window: {{ $currentStart->format('M j, Y') }} – {{ now()->format('M j, Y') }}. Records are counted by creation date, not treatment date. Disease filters above do not apply here.</p>
+    <section class="analytics-panel analytics-activity">
+        <h2>Recent record activity</h2>
+        <p>Diagnosis, maintenance, and vaccination entries created for accessible citizens. Entries are not unique visits or people.</p>
+        <div id="activityMixChart" class="analytics-chart" role="img" aria-label="Record counts by activity type"></div>
+        <div class="analytics-activity-totals"><span>Diagnosis <strong>{{ number_format($currentDiagnosisCount) }}</strong></span><span>Maintenance <strong>{{ number_format($currentMaintenanceCount) }}</strong></span><span>Vaccination <strong>{{ number_format($currentVaccinationCount) }}</strong></span></div>
+    </section>
+
+    <div class="analytics-panel" style="margin-bottom: 18px; background: {{ $forecastAvailable ? '#f0fdf4' : '#fff7ed' }}; border-color: {{ $forecastAvailable ? '#86efac' : '#fdba74' }};">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div>
+                <strong style="display: block; color: #173b82; margin-bottom: 4px;">{{ $forecastStatusLabel }}</strong>
+                <small style="color: #475569;">{{ $forecastStatusMessage }}</small>
+            </div>
+            @if($forecastAvailable)
+                <span style="padding: 6px 10px; border-radius: 999px; background: rgba(34,197,94,0.12); color: #166534; font-size: 12px; font-weight: 700;">Ready for projection</span>
+            @else
+                <span style="padding: 6px 10px; border-radius: 999px; background: rgba(251,146,60,0.12); color: #9a4d00; font-size: 12px; font-weight: 700;">Need more data</span>
+            @endif
+        </div>
+    </div>
 
     <div class="analytics-grid">
-        <div class="analytics-card"><span>Next 14-day health-record forecast</span><strong>{{ number_format($forecast) }}</strong><small>Based on the latest 14 days of records</small></div>
-        <div class="analytics-card"><span>New citizen registration forecast</span><strong>{{ number_format($citizenAdditions) }}</strong><small>New citizens added or imported in the previous 14 days</small></div>
-        <div class="analytics-card"><span>Citizen detail-edit forecast</span><strong>{{ number_format($citizenDetailEdits) }}</strong><small>Citizen information updates in the previous 14 days</small></div>
+        <div class="analytics-card"><span>Next 14-day record-entry estimate</span><strong>{{ $forecastAvailable ? number_format($forecast) : '—' }}</strong><small>{{ $forecastAvailable ? 'Extrapolated from two 14-day windows' : 'Requires at least ' . $minimumForecastRecords . ' valid recent health records' }}</small></div>
+        <div class="analytics-card"><span>Citizen creation / import log entries</span><strong>{{ number_format($citizenAdditions) }}</strong><small>Recorded creation / import actions for accessible citizens</small></div>
+        <div class="analytics-card"><span>Citizen update log entries</span><strong>{{ number_format($citizenDetailEdits) }}</strong><small>Recorded update actions for accessible citizens</small></div>
     </div>
 
     <div class="analytics-layout">
         <section class="analytics-panel analytics-demand-panel">
-            <h2>Predicted Health Demand</h2>
-            <p>The next 14-day estimate uses all diagnosis, maintenance, and immunization/vaccine activity from the latest two 14-day periods. It projects the current change forward and cannot fall below zero.</p>
-            <div id="healthDemandChart" class="analytics-chart"></div>
-            <table class="analytics-table">
-                <thead><tr><th>Current activity type</th><th>Records in previous 14 days</th></tr></thead>
-                <tbody>
-                    <tr><td>Diagnosis</td><td>{{ number_format($currentDiagnosisCount) }}</td></tr>
-                    <tr><td>Maintenance</td><td>{{ number_format($currentMaintenanceCount) }}</td></tr>
-                    <tr><td>Immunization / vaccine</td><td>{{ number_format($currentVaccinationCount) }}</td></tr>
-                    <tr><th>Total activity</th><th>{{ number_format($currentCount) }}</th></tr>
-                </tbody>
-            </table>
-            <div class="analytics-note">Use this signal to prepare BHW schedules, screening activities, immunization sessions, maintenance follow-ups, and commonly needed supplies. Investigate sudden increases before taking action.</div>
+            <h2>Record-entry trend estimate</h2>
+            @if($forecastAvailable)
+                <p>Comparison window: {{ $previousStart->format('M j, Y') }} – {{ $previousEnd->format('M j, Y') }}. The next 14-day estimate uses all diagnosis, maintenance, and immunization/vaccine activity from the latest two 14-day periods. Estimate = max(0, 2 × current entries − previous entries). This simple trend extrapolation has no confidence interval and does not predict illness or care needs.</p>
+                <div id="healthDemandChart" class="analytics-chart"></div>
+                <table class="analytics-table">
+                    <thead><tr><th>Current activity type</th><th>Entries in current 14-day window</th></tr></thead>
+                    <tbody>
+                        <tr><td>Diagnosis</td><td>{{ number_format($currentDiagnosisCount) }}</td></tr>
+                        <tr><td>Maintenance</td><td>{{ number_format($currentMaintenanceCount) }}</td></tr>
+                        <tr><td>Immunization / vaccine</td><td>{{ number_format($currentVaccinationCount) }}</td></tr>
+                        <tr><th>Total activity</th><th>{{ number_format($currentCount) }}</th></tr>
+                    </tbody>
+                </table>
+                <div class="analytics-note">Compare with actual appointments and service schedules before planning staffing. Data entry backlogs and imports can change these counts without a change in care demand.</div>
+            @else
+                <p>Health forecasting is automatically disabled until there is enough valid recent activity data.</p>
+                <div class="analytics-note">Add at least {{ $minimumForecastRecords }} valid records with recent dates across diagnosis, maintenance, or immunization activity to activate this forecast. The estimate remains unavailable below this data threshold.</div>
+            @endif
         </section>
 
         <section class="analytics-panel analytics-supply-panel">
-            <h2>Supply Depletion Forecast</h2>
+            <h2>Supply stock &amp; usage</h2>
             <p>This forecast answers two questions: how much was withdrawn recently, and how much may be withdrawn during the next 14 days if the same usage continues.</p>
-            <div class="analytics-note">The next 14-day projection matches the previous 14-day withdrawal quantity. “Days remaining” compares current stock with the recent daily withdrawal rate. Medicine use is inferred from the medicine name and withdrawal notes.</div>
+            <div class="analytics-note">The next 14-day projection matches the current 14-day withdrawal quantity. “Days remaining” compares current stock with the recent daily withdrawal rate. All barangay inventory is shown, independent of citizen filters. Restocking and future changes in usage are not included. Quantities use each item’s recorded inventory unit.</div>
+            <div id="supplyPlanningChart" class="analytics-chart" role="img" aria-label="Current stock and next 14-day estimated withdrawals by supply"></div>
             <table class="analytics-table">
-                <thead><tr><th>Medicine / supply</th><th>Typical use</th><th>Withdrawn recently<br><small>Previous 14 days</small></th><th>Expected withdrawal<br><small>Next 14 days</small></th><th>Current stock</th><th>Estimated days remaining</th></tr></thead>
+                <thead><tr><th>Medicine / supply</th><th>Stock review</th><th>Withdrawn recently<br><small>Current 14-day window</small></th><th>Expected withdrawal<br><small>Next 14 days</small></th><th>Current stock</th><th>Estimated days remaining</th></tr></thead>
                 <tbody>
                     @forelse($supplyRecommendations as $supply)
                         <tr>
                             <td>{{ $supply['name'] }}</td>
-                            <td>{{ $supply['purpose'] }}</td>
+                            <td><span class="analytics-badge {{ $supply['priority'] === 'Stable' ? 'stable' : '' }}">{{ $supply['priority'] }}</span><br><small>Minimum: {{ number_format($supply['min_stock']) }}</small></td>
                             <td><strong>{{ $supply['withdrawn_quantity'] }} units</strong><br><small>{{ $supply['withdrawal_count'] }} withdrawal activities</small></td>
                             <td>{{ $supply['forecast_quantity'] }} units</td>
                             <td>{{ $supply['quantity'] }} units</td>
@@ -261,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).addTo(map);
             const layers = [];
             mapAreas.forEach((area) => {
-                const color = area.records_count >= 10 ? '#b91c1c' : area.records_count >= 3 ? '#2563eb' : '#0f766e';
+                const color = '#2563eb';
                 const popup = document.createElement('div');
                 const heading = document.createElement('strong');
                 heading.textContent = area.type === 'subgroup' ? `${area.name} — ${area.purok}` : area.name;
@@ -298,14 +337,40 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (typeof ApexCharts === 'undefined') return;
+    const activityCounts = @json([$currentDiagnosisCount, $currentMaintenanceCount, $currentVaccinationCount]);
+    new ApexCharts(document.querySelector('#activityMixChart'), {
+        chart: { type: 'bar', height: 230, toolbar: { show: false } },
+        series: [{ name: 'Record entries', data: activityCounts }],
+        xaxis: { categories: ['Diagnosis', 'Maintenance', 'Vaccination'] },
+        yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0 },
+        colors: ['#2563eb', '#0d9488', '#7c3aed'],
+        plotOptions: { bar: { distributed: true, borderRadius: 5, columnWidth: '40%' } },
+        legend: { show: false }, dataLabels: { enabled: true },
+        noData: { text: 'No activity recorded' }
+    }).render();
+    const supplies = @json($supplyRecommendations);
+    if (supplies.length) {
+        new ApexCharts(document.querySelector('#supplyPlanningChart'), {
+            chart: { type: 'bar', height: Math.max(260, supplies.length * 65), toolbar: { show: false } },
+            series: [
+                { name: 'Current stock', data: supplies.map(s => s.quantity) },
+                { name: 'Next 14-day withdrawal estimate', data: supplies.map(s => s.forecast_quantity) }
+            ],
+            xaxis: { categories: supplies.map(s => s.name), decimalsInFloat: 0 },
+            colors: ['#2563eb', '#f59e0b'],
+            plotOptions: { bar: { horizontal: true, borderRadius: 3 } },
+            dataLabels: { enabled: false }, legend: { position: 'top' },
+            tooltip: { shared: true, intersect: false }
+        }).render();
+    }
     const demandChart = document.querySelector('#healthDemandChart');
 
-    if (demandChart) {
+    if (demandChart && @json($forecastAvailable)) {
         new ApexCharts(demandChart, {
             chart: { type: 'bar', height: 260, toolbar: { show: false } },
             series: [{ name: 'All health activities', data: @json([$previousCount, $currentCount, $forecast]) }],
-            xaxis: { categories: ['Previous 14 days', 'Current 14 days', 'Next 14-day estimate'] },
-            colors: ['#2563eb'],
+            xaxis: { categories: ['Previous 14 days (observed)', 'Current 14 days (observed)', 'Next 14 days (estimate)'] },
+            colors: ['#94a3b8', '#2563eb', '#0d9488'],
             plotOptions: { bar: { borderRadius: 5, distributed: true } },
             dataLabels: { enabled: true },
             legend: { show: false },
