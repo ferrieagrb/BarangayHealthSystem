@@ -1597,7 +1597,7 @@ body.theme-dark .c-home {
                             @endphp
                             <div class="c-ann-slide">
                                 <a class="c-ann-link"
-                                   href="{{ route('citizen.announcements.show', $announcement->id) }}"
+                                   href="{{ route('citizen.announcements.show', ['announcement' => $announcement->id, 'from' => 'dashboard']) }}"
                                    aria-label="Read full announcement: {{ $announcement->title }}">
                                     <article class="c-ann-card">
                                     <div class="c-ann-cover">
