@@ -1,0 +1,286 @@
+/* Shared appearance layer for authenticated layouts. Light pages retain their existing design. */
+:root {
+    --theme-bg: #f3f6fb;
+    --theme-surface: #fff;
+    --theme-raised: #f1f5f9;
+    --theme-hover: #e8eef7;
+    --theme-text: #172b4d;
+    --theme-muted: #64748b;
+    --theme-border: #dce4ee;
+    --theme-link: #234f9b;
+    --theme-brand: #234f9b;
+    --theme-brand-hover: #193e7e;
+}
+html[data-theme="dark"] {
+    color-scheme: dark;
+    background: #0f1724 !important;
+    --theme-bg: #0f1724;
+    --theme-surface: #182334;
+    --theme-raised: #223047;
+    --theme-hover: #2b3c55;
+    --theme-text: #e6edf7;
+    --theme-muted: #b0bfd2;
+    --theme-border: #3b4d66;
+    --theme-link: #a8caff;
+    --theme-brand: #285aa7;
+    --theme-brand-hover: #326bc0;
+}
+html[data-theme="light"] { color-scheme: light; }
+/* Text sizing is applied once from measured page typography, including fixed pixel labels. */
+body[data-appearance-role]:is(.font-normal, .font-large, .font-xl) { font-size: 1rem; }
+.appearance-card { max-width: 900px; margin-bottom: 20px; padding: 20px; border: 1px solid var(--theme-border); border-radius: 12px; background: var(--theme-surface); color: var(--theme-text); }
+.appearance-card .settings-card-header { margin-bottom: 16px; padding: 0; background: transparent; }
+.appearance-card h2 { margin: 0 0 6px; font-size: 18px; }
+.appearance-card p { color: var(--theme-muted); line-height: 1.5; }
+.appearance-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.appearance-fields .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-weight: 600; }
+.appearance-fields select { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--theme-border); border-radius: 8px; background: var(--theme-surface); color: var(--theme-text); font: inherit; }
+.appearance-fields select:focus-visible { outline: 3px solid #749dd7; outline-offset: 2px; }
+.appearance-preview-status { margin: 14px 0; font-size: 13px; }
+.appearance-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.appearance-actions button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--theme-brand); border-radius: 8px; background: var(--theme-brand); color: #fff; font: inherit; cursor: pointer; }
+.appearance-actions .appearance-cancel, .cs-submit.appearance-cancel { border: 1px solid var(--theme-border) !important; background: var(--theme-raised) !important; color: var(--theme-text) !important; }
+@media (max-width: 600px) {
+    .appearance-fields { grid-template-columns: minmax(0, 1fr); }
+    .appearance-card { padding: 16px; }
+    .appearance-actions button { flex: 1 1 140px; }
+}
+@media print {
+    html[data-theme="dark"], body.theme-dark {
+        color-scheme: light;
+        background: #fff !important;
+        color: #172b4d;
+    }
+}
+
+@media screen {
+    html[data-theme="dark"] body.theme-dark,
+    html[data-theme="dark"] body.theme-dark :is(.main, .main-content, .dashboard, .content-wrapper) {
+        background-color: var(--theme-bg) !important;
+    }
+    /* Bridge the existing role-specific tokens to the shared palette. */
+    body.theme-dark,
+    body.theme-dark .demographics-container {
+        --demo-ink: var(--theme-text);
+        --demo-muted: var(--theme-muted);
+        --demo-border: var(--theme-border);
+        --demo-surface: var(--theme-surface);
+        --demo-primary: var(--theme-brand);
+        --demo-primary-hover: var(--theme-brand-hover);
+        --bhw-ink: var(--theme-text);
+        --bhw-muted: var(--theme-muted);
+        --bhw-primary: var(--theme-brand);
+        --bhw-border: var(--theme-border);
+        --bhw-surface: var(--theme-surface);
+        --bhw-page: var(--theme-bg);
+        --citizen-bg: var(--theme-bg);
+        --citizen-surface: var(--theme-surface);
+        --citizen-surface-raised: var(--theme-raised);
+        --citizen-surface-hover: var(--theme-hover);
+        --citizen-text: var(--theme-text);
+        --citizen-text-muted: var(--theme-muted);
+        --citizen-border: var(--theme-border);
+        --citizen-link: var(--theme-link);
+        --primary-color: var(--theme-link);
+        --secondary-color: var(--theme-text);
+        --text-color: var(--theme-text);
+        --text-muted: var(--theme-muted);
+        --border-color: var(--theme-border);
+        --surface-white: var(--theme-surface);
+        color: var(--theme-text);
+        background-color: var(--theme-bg) !important;
+    }
+    body.theme-dark :is(.dashboard, .main, .main-content, .c-home, .content-wrapper, .health-wrapper, .dashboard-container, .system-analytics-container, .system-connections-container, .audit-trail-container) {
+        background-color: var(--theme-bg) !important;
+        color: var(--theme-text);
+    }
+    /* Surfaces cover the actual card/panel families used by all four role layouts. */
+    body.theme-dark :is(
+        .card, [class$="-card"], [class*="-card "], .panel, [class$="-panel"], [class*="-panel "],
+        .top-bar, .form-container, .form-container .form-group, .table-container, .inventory-container, .calendar-wrapper,
+        .print-health-record,
+        .citizen-supplies-page, .disease-kpi, .disease-empty,
+        .recent-tab, .connections-summary, .connections-empty-state, .connections-error-state, .connections-loading-card,
+        #calendar, .edit-assignment-box, .edit-assignment-option, .medicine-picker-header,
+        .family-picker-box, .family-option,
+        .permission-confirmation-content, .permission-confirmation-header,
+        .diagnosis-empty, .diagnosis-bmi-empty, .maintenance-empty, .immunization-preview-note,
+        .filter-box, .toolbar, .inventory-toolbar, .referral-filters, .health-record-toolbar,
+        .health-record-filter-form, .citizen-filter-form, .disease-filters, .summary,
+        .purok-record, .subgroup-record, .bhw-assignment, .bhw-option, .workflow-steps li,
+        .overview-purok, .home-list-item, .immunization-history-item, .diagnosis-add-section,
+        .maintenance-container-box, .deceased-section-box, .family-member-add-section,
+        .qr-detail-group, .qr-info-item, .report-section, .report-config-row,
+        .diagnosis-section, .maintenance-section, .immunization-section, #diagnosisForm,
+        .diagnosis-notes, .diagnosis-confirm-detail, .diagnosis-vitals, .report-graphic,
+        .vaccine-option, .family-picker-item, .citizen-status-option, .inventory-category-form-row,
+        .inventory-item, .inventory-item-summary, .pack-details-wrapper, .pack-details-row,
+        .vaccination-schedule-row, .citizen-picker-filters, .settings-toggle-row,
+        .settings-logo-preview-box, .settings-modal-preview, .security-row,
+        .modal-content, .modal-card, .custom-modal-box, .deceased-modal-box,
+        [class$="-dialog"], [class*="-dialog "], .inventory-modal-content,
+        .settings-modal-content, .permission-modal-content, .deposit-modal-content,
+        .supplies-modal-content, .add-event-modal-content, .photo-preview-panel,
+        #session-timeout-modal > div, .leaflet-popup-content-wrapper, .leaflet-popup-tip
+    ):not(.bheams-id-card):not(.c-id-card):not(.ecard-id-card) {
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
+    }
+    body.theme-dark :is(.sidebar, #citizenSidebar) { background: #132036 !important; border-color: var(--theme-border) !important; }
+    body.theme-dark .sidebar :is(a, button), body.theme-dark #citizenSidebar :is(a, button) { color: var(--theme-text) !important; }
+    body.theme-dark .sidebar :is(a:hover, a.active, .nav-dropdown-toggle:hover, .nav-dropdown-toggle:focus-visible, .nav-dropdown-menu a),
+    body.theme-dark #citizenSidebar a.active { background: var(--theme-raised) !important; }
+    body.theme-dark :is(.card-header, .table-header, .modal-header, .modal-footer, .modal-body,
+        .settings-card-header, .subgroup-section-header, .subgroup-record-footer,
+        .permission-confirmation-summary, .subgroup-archive-scope, .family-info-row,
+        .citizen-status-header, .citizen-status-body, .citizen-status-footer,
+        .diagnosis-panel-head, .batch-release-summary, .batch-release-row-header,
+        .inventory-batch-header, .inventory-modal-header, .inventory-modal-footer,
+        .demographics-tabs, .map-mode-controls, .audit-filter-form, .audit-card-header,
+        .table-footer, .pagination-container, .report-empty, .empty-state, .qr-empty,
+        .map-status, .audit-empty-icon, .c-heading a, .diagnosis-count,
+        .dashboard-card-trend b, .summary-card-trend span, .citizen-results-highlight,
+        .citizen-export-selection-bar, .permission-confirmation-note, .disease-note,
+        .print-health-record h3) {
+        background-color: var(--theme-raised) !important;
+        color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
+    }
+    /* Legacy headings and inline copy previously used dark ink on dark surfaces. */
+    body.theme-dark :is(h1, h2, h3, h4, h5, h6, label, legend, .page-title, .security-label,
+        .dashboard-card-title, .table-user-name, .bhw-name, .section-card-title,
+        strong, b, .analytics-stat-value, .vaccine-label, .diagnosis-vital-value, .diagnosis-count,
+        .citizen-name, .print-health-record > div.grid > div > span):not(.bheams-id-card *, .c-id-card *, .ecard-id-card *) {
+        color: var(--theme-text) !important;
+    }
+    body.theme-dark :is(.header-user, .header-user span, .summary-card > span, .summary-card > div > span,
+        .required-fields-note, .create-bhw-tools, .create-bhw-tools > span,
+        .announcement-date, .announcement-desc, .map-legend, .map-legend span,
+        .heatmap-legend, .heatmap-legend span, .home-empty, .home-list-item time,
+        .users-page-header span, .page-title-group span, .empty-table span,
+        .connections-empty-state span, .connections-error-state span, .failed-jobs-title,
+        .connections-summary span, .citizen-picker-empty, figcaption,
+        .pagination-controls span, .modal-header > button, .btn-link, .disease-kpi span,
+        .analytics-card > span,
+        td > span:not([class])) {
+        color: var(--theme-muted) !important;
+    }
+    body.theme-dark :is(p, small, .form-hint, .cs-hint, .security-hint, .table-subtext,
+        .table-user-email, .record-meta, .ann-date, .post-date, .announcement-modal-meta,
+        .announcement-detail-meta, .citizen-announcement-meta, .settings-field-help,
+        .modal-description, .empty-text, .empty-log, .empty-members-message,
+        .loader-status-text, .qr-info-item small, .c-stat-label):not(.bheams-id-card *, .c-id-card *, .ecard-id-card *) {
+        color: var(--theme-muted) !important;
+    }
+    body.theme-dark :is(.ann-content, .announcement-body, .announcement-detail-content,
+        .announcement-detail-description, .announcement-modal-description,
+        .citizen-announcement-description, .qr-profile, .qr-info-item, .c-ann-body) { color: var(--theme-text) !important; }
+    body.theme-dark a:not([class]):not(.sidebar a) { color: var(--theme-link); }
+    body.theme-dark hr { border-color: var(--theme-border) !important; }
+    body.theme-dark :is(.field, .form-group, .form-group-custom, .cs-field) > :is(span, label) { color: var(--theme-text) !important; }
+    body.theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+    body.theme-dark select, body.theme-dark textarea, body.theme-dark option, body.theme-dark optgroup {
+        background-color: var(--theme-raised) !important;
+        color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
+        caret-color: var(--theme-text);
+    }
+    body.theme-dark :is(input, textarea)::placeholder { color: var(--theme-muted) !important; opacity: 1; }
+    body.theme-dark :is(input, select, textarea):disabled { color: var(--theme-muted) !important; opacity: .75; }
+    body.theme-dark :is(input[type="checkbox"], input[type="radio"]) { accent-color: #75a8ff; }
+    body.theme-dark :focus-visible { outline: 3px solid #8bb6ff; outline-offset: 2px; }
+    body.theme-dark table { background: var(--theme-surface) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+    body.theme-dark :is(thead, th) { background: var(--theme-raised) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+    body.theme-dark :is(tbody, tr, td) { background-color: var(--theme-surface) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+    body.theme-dark tbody tr:nth-child(even) > td { background-color: #1b293e !important; }
+    body.theme-dark tbody tr:hover > td { background-color: var(--theme-hover) !important; }
+    body.theme-dark :is(.pagination a, .pagination span, .pagination-container a, .pagination-container span) { background: var(--theme-raised) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+    body.theme-dark :is(.pagination .active, .pagination [aria-current="page"]) { background: var(--theme-brand) !important; color: #fff !important; }
+    body.theme-dark :is(.btn-primary, .btn-save, .btn-submit, .cs-submit, .settings-save-button,
+        .btn-modal-confirm, .c-referral-submit, .qr-btn-primary, .qr-action-link,
+        .appearance-actions [type="submit"], .fc-button-primary) {
+        background: var(--theme-brand) !important; border-color: #729bdd !important; color: #fff !important;
+    }
+    body.theme-dark :is(.btn-primary, .btn-save, .btn-submit, .cs-submit, .fc-button-primary):hover { background: var(--theme-brand-hover) !important; }
+    body.theme-dark :is(.btn-secondary, .btn-modal-cancel, .appearance-cancel, .logout-confirm-cancel,
+        .text-button, .qr-btn-secondary, .qr-action-link.secondary, .c-ann-arrow,
+        .demographics-tab, .tab, .status-filter-btn, .schedule-citizen-picker,
+        .close-btn, .modal-close-button, .family-picker-close, .medicine-picker-close,
+        .citizen-export-selection-bar button) {
+        background: var(--theme-raised) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important;
+    }
+    body.theme-dark :is(.demographics-tab.active, .tab.active, .c-header-section-nav a.active,
+        .button-group .active, .bhw-option:has(input:checked)) {
+        background: #294772 !important; color: #edf4ff !important; border-color: #82aef0 !important;
+    }
+    body.theme-dark :is(.c-header-section-nav a, .c-settings-link) { color: var(--theme-text) !important; }
+    body.theme-dark :is(button, a, h1, h2, h3) > :is(.bx, .fa, .fa-solid, .fa-regular) {
+        color: inherit !important;
+    }
+    /* Status colors keep their meaning rather than becoming generic gray badges. */
+    body.theme-dark :is(.badge, .status-badge, .status-tag, .status-select, .batch-status,
+        .record-meta span, .overview-badges span, .family-count-badge, .category-badge,
+        .assignment-count, .diagnosis-pill, .immunization-count, .maintenance-quantity,
+        .audit-action-badge, .audit-source-badge, .audit-mode-badge,
+        .audit-oversight-badge, .badge-action, .badge-guard, .badge-monitor, .cs-status) {
+        background: #283b56 !important; color: #dbeafe !important; border-color: #6783a8 !important;
+    }
+    body.theme-dark :is(.status-approved, .status-released, .badge-active, .badge-online,
+        .status-success, .alert-success, .alert-success-custom, .settings-alert-success,
+        .qr-verified, .qr-status.success, .home-status.success, .home-status.good,
+        .health-alert-success, .diagnosis-bmi-normal, .connections-summary-status.is-healthy, .demographics-alert.success,
+        .pin-status-badge, .supply-release-status.released) {
+        background: #143d32 !important; color: #a7f3d0 !important; border-color: #39836a !important;
+    }
+    body.theme-dark :is(.btn-danger, .logout-confirm-submit, .status-danger, .badge-inactive,
+        .alert-danger, .alert-danger-custom, .settings-alert-error, .qr-status.error,
+        .demographics-alert.error, .health-alert-error, .diagnosis-bmi-obese, .subgroup-archive-error, .failed-jobs-badge,
+        .security-alert-box, .security-alert-desc, .security-alert-title, .security-alert-box strong,
+        .connections-summary-status.is-failed, .btn-danger-outline, .btn-logout) {
+        background: #57262f !important; color: #fecdd3 !important; border-color: #b96b79 !important;
+    }
+    body.theme-dark :is(.status-pending, .status-returned, .alert-warning, .status-warning,
+        .warning-badge, .home-status:not(.good), .diagnosis-bmi-overweight, .connections-summary-status.is-warning) {
+        background: #493719 !important; color: #fde68a !important; border-color: #9d7b35 !important;
+    }
+    /* FullCalendar uses these tokens for grid, popovers, non-business days and events. */
+    body.theme-dark .fc {
+        --fc-page-bg-color: var(--theme-surface);
+        --fc-neutral-bg-color: var(--theme-raised);
+        --fc-neutral-text-color: var(--theme-muted);
+        --fc-border-color: var(--theme-border);
+        --fc-today-bg-color: #263c5b;
+        --fc-list-event-hover-bg-color: var(--theme-hover);
+        --fc-event-bg-color: var(--theme-brand);
+        --fc-event-text-color: #fff;
+    }
+    body.theme-dark .fc :is(.fc-col-header-cell-cushion, .fc-daygrid-day-number, .fc-list-day-text, .fc-list-day-side-text) { color: var(--theme-text) !important; }
+    body.theme-dark .fc :is(.fc-popover, .fc-popover-header, .fc-list-day-cushion) { background: var(--theme-raised) !important; color: var(--theme-text) !important; }
+    body.theme-dark .fc .fc-day-today { background: #263c5b !important; }
+    body.theme-dark .fc .fc-event { color: #fff !important; }
+    /* SVG charts need fill as well as text color. Preserve series and data colors. */
+    body.theme-dark .apexcharts-canvas :is(.apexcharts-xaxis text, .apexcharts-yaxis text, .apexcharts-title-text, .apexcharts-subtitle-text) { fill: var(--theme-muted) !important; }
+    body.theme-dark :is(.apexcharts-legend-text, .apexcharts-tooltip, .apexcharts-tooltip-title, .apexcharts-menu) { background: var(--theme-raised) !important; color: var(--theme-text) !important; border-color: var(--theme-border) !important; }
+    body.theme-dark .apexcharts-gridline { stroke: var(--theme-border) !important; }
+    body.theme-dark .apexcharts-text.apexcharts-datalabel-value,
+    body.theme-dark .apexcharts-text.apexcharts-datalabel-label { fill: var(--theme-text) !important; }
+    /* Admin and BHW use a username row, not a full-width header surface. */
+    body.theme-dark:is([data-appearance-role="admin"], [data-appearance-role="bhw"]) .main-content > div#accountHeader.top-bar {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    /* Native maps and scannable/printable health cards retain their own contrast. */
+    body.theme-dark :is(.c-id-card, .bheams-id-card, .ecard-id-card) {
+        --c-primary: #173b82;
+        --c-primary-dark: #102b5c;
+        --c-text: #172033;
+        --c-muted: #475569;
+        color: #172b4d !important;
+    }
+    body.theme-dark :is(.c-photo small, .bheams-no-photo small) { color: #475569 !important; }
+
+    body.theme-dark .leaflet-control { color-scheme: light; }
+    body.theme-dark .leaflet-control a { color: #172b4d !important; background: #fff !important; }
+}

@@ -116,8 +116,7 @@
 
     <section class="demographics-panel" role="tabpanel" data-panel="subgroups" hidden>
         <div class="demographics-card subgroup-section-card">
-            <div class="subgroup-section-header subgroup-create-header">
-                <span class="subgroup-section-icon create-icon" aria-hidden="true"><i class="bx bx-plus"></i></span>
+            <div class="section-heading subgroup-section-header subgroup-create-header">
                 <div>
                     <h2>Create a Subgroup</h2>
                     <p>Choose a parent Purok and optionally assign one or more BHWs.</p>
@@ -166,8 +165,7 @@
         </div>
 
         <div class="demographics-card subgroup-section-card">
-            <div class="subgroup-section-header subgroup-list-header">
-                <span class="subgroup-section-icon list-icon" aria-hidden="true"><i class="bx bx-list-check"></i></span>
+            <div class="section-heading subgroup-section-header subgroup-list-header">
                 <div class="subgroup-list-title">
                     <h2>Subgroups &amp; Assignments</h2>
                     <p>Assignments are stored independently; saving one subgroup will not affect another.</p>

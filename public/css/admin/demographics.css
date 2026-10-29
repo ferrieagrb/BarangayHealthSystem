@@ -1384,59 +1384,18 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .subgroup-section-card {
-    padding: 0;
     overflow: hidden;
 }
 
 .subgroup-section-header {
-    display: flex;
-    align-items: center;
-    gap: 11px;
     min-width: 0;
-    padding: 18px 22px;
-    border-bottom: 1px solid #e8edf4;
-    background: #f9fbfd;
-}
-
-.main-content .subgroup-section-header h2 {
-    margin: 0;
-    color: #172b4d;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-.main-content .subgroup-section-header p {
-    margin: 2px 0 0;
-    color: #64748b;
-    font-size: 11px;
-    line-height: 1.45;
-}
-
-.subgroup-section-icon {
-    display: grid;
-    place-items: center;
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.create-icon {
-    background: #e8f0ff;
-    color: #234f9b;
-}
-
-.list-icon {
-    background: #e5f8ef;
-    color: #13835b;
+    flex-wrap: wrap;
 }
 
 .required-fields-note {
     margin-left: auto;
     color: #8491a4;
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
 }
 
@@ -1446,38 +1405,17 @@ body.theme-dark .citizen-purge-form > p {
 
 .subgroup-create-body,
 .subgroup-list-body {
-    padding: 18px 22px 20px;
+    min-width: 0;
 }
 
 .subgroup-create-form .subgroup-form-fields {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 18px;
-}
-
-.subgroup-create-form .field > span,
-.subgroup-edit-form .subgroup-form-fields .field > span {
-    color: #46566d;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .035em;
-    text-transform: uppercase;
 }
 
 .subgroup-create-form .field > span b {
     color: #d14343;
-}
-
-.subgroup-create-form .field input,
-.subgroup-create-form .field select,
-.subgroup-edit-form .subgroup-form-fields .field input,
-.subgroup-edit-form .subgroup-form-fields .field select {
-    min-height: 38px;
-    padding: 8px 11px;
-    border-color: #d1d9e3;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 11px;
 }
 
 .create-bhw-heading {
@@ -1491,25 +1429,24 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .create-bhw-heading > div:first-child > span {
-    color: #46566d;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .035em;
-    text-transform: uppercase;
+    color: var(--demo-muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .create-bhw-heading > div:first-child > span small {
     color: #8b97a8;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
 }
 
 .create-bhw-heading p {
-    margin: 2px 0 0;
-    color: #7b8797;
-    font-size: 10px;
+    margin: 5px 0 0;
+    color: var(--demo-muted);
+    font-size: 12px;
+    line-height: 1.55;
 }
 
 .create-bhw-tools {
@@ -1517,7 +1454,7 @@ body.theme-dark .citizen-purge-form > p {
     align-items: center;
     gap: 8px;
     color: #64748b;
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
 }
 
@@ -1543,7 +1480,7 @@ body.theme-dark .citizen-purge-form > p {
     position: absolute;
     left: 11px;
     color: #9aa6b5;
-    font-size: 11px;
+    font-size: 12px;
     pointer-events: none;
 }
 
@@ -1552,7 +1489,7 @@ body.theme-dark .citizen-purge-form > p {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    min-height: 34px;
+    min-height: 42px;
     padding: 7px 10px;
     border: 1px solid #d6dee8;
     border-radius: 8px;
@@ -1560,7 +1497,8 @@ body.theme-dark .citizen-purge-form > p {
     background: #fff;
     color: #334155;
     font: inherit;
-    font-size: 10px;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .bhw-search-field input:focus,
@@ -1583,14 +1521,14 @@ body.theme-dark .citizen-purge-form > p {
     justify-content: space-between;
     gap: 12px;
     min-width: 0;
-    min-height: 38px;
+    min-height: 42px;
     box-sizing: border-box;
     padding: 6px 8px;
     border: 1px solid #e1e6ed;
     border-radius: 9px;
     background: #fafbfd;
     color: #35445a;
-    font-size: 10px;
+    font-size: 12px;
     cursor: pointer;
     transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
 }
@@ -1639,12 +1577,7 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .subgroup-create-footer .btn {
-    width: auto;
-    min-width: 154px;
-    min-height: 38px;
-    border-radius: 9px;
-    background: #234f9b;
-    box-shadow: 0 3px 7px rgba(35, 79, 155, .16);
+    width: 168px;
 }
 
 .subgroup-list-header {
@@ -1672,15 +1605,20 @@ body.theme-dark .citizen-purge-form > p {
     min-width: min(220px, 100%);
 }
 
+.subgroup-filter-search input {
+    padding-left: 30px;
+}
+
 .subgroup-filter-search input,
 .subgroup-filter-purok select {
-    min-height: 34px;
-    border: 1px solid #d6dee8;
+    min-height: 42px;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     background-color: #fff;
     color: #475569;
     font: inherit;
-    font-size: 10px;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .subgroup-filter-purok select {
@@ -1692,7 +1630,7 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .subgroup-list-body {
-    padding-top: 16px;
+    padding-top: 0;
 }
 
 .subgroup-list {
@@ -1701,9 +1639,10 @@ body.theme-dark .citizen-purge-form > p {
 
 .subgroup-record {
     gap: 12px;
-    padding: 16px 18px;
-    border-color: #e0e5ec;
-    border-radius: 13px;
+    padding: 12px;
+    border-color: var(--demo-border);
+    border-radius: 11px;
+    background: #fcfdff;
     box-shadow: none;
 }
 
@@ -1719,14 +1658,14 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .assignment-heading {
-    min-height: 30px;
+    min-height: 42px;
     margin-bottom: 8px;
     padding-bottom: 8px;
     border-bottom: 1px solid #e9edf2;
 }
 
 .assignment-heading strong {
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .assignment-count {
@@ -1734,39 +1673,7 @@ body.theme-dark .citizen-purge-form > p {
     height: 19px;
     background: #e5efff;
     color: #234f9b;
-    font-size: 10px;
-}
-
-.demographics-container .subgroup-edit-form .text-button {
-    min-height: 28px;
-    padding: 4px 9px;
-    border: 1px solid #dce6f4;
-    border-radius: 7px;
-    background: #eaf2ff;
-    color: #234f9b;
-    font-size: 9px;
-}
-
-.demographics-container .subgroup-create-form .text-button {
-    min-height: 28px;
-    padding: 4px 9px;
-    border: 1px solid #dce6f4;
-    border-radius: 7px;
-    background: #eaf2ff;
-    color: #234f9b;
-    font-size: 9px;
-}
-
-.demographics-container .subgroup-section-card .text-button:hover {
-    border-color: #b9cce5;
-    background: #edf4ff;
-    color: #193e7e;
-}
-
-.demographics-container .subgroup-edit-form .text-button.clear-bhws {
-    border-color: #e1e6ed;
-    background: #f1f3f6;
-    color: #5a6677;
+    font-size: 12px;
 }
 
 .visually-hidden {
@@ -1788,7 +1695,7 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .subgroup-bhw-search input {
-    min-height: 30px;
+    min-height: 42px;
 }
 
 .subgroup-record .bhw-checklist {
@@ -1797,7 +1704,7 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 .subgroup-record .bhw-option {
-    min-height: 34px;
+    min-height: 42px;
     padding: 5px 7px;
     background: #fff;
 }
@@ -1814,7 +1721,7 @@ body.theme-dark .citizen-purge-form > p {
     border-color: #e2e8f0;
     background: #f3f6fa;
     color: #5d6e84;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .subgroup-record .record-meta .pin-status-badge {
@@ -1836,10 +1743,10 @@ body.theme-dark .citizen-purge-form > p {
 
 .subgroup-record .record-actions .btn {
     min-width: 120px;
-    min-height: 34px;
-    padding: 6px 10px;
+    min-height: 40px;
+    padding: 8px 12px;
     border-radius: 8px;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .subgroup-record .record-actions .btn-primary {
@@ -1860,8 +1767,7 @@ body.theme-dark .citizen-purge-form > p {
 }
 
 body.theme-dark .subgroup-section-header {
-    border-bottom-color: #3f3f46;
-    background: #242424;
+    background: transparent;
 }
 
 body.theme-dark .subgroup-section-header h2,
@@ -1945,7 +1851,7 @@ body.theme-dark .subgroup-record .record-actions .btn-archive {
 
     .subgroup-list-filters {
         width: 100%;
-        margin-left: 41px;
+        margin-left: 0;
     }
 
     .subgroup-filter-search {
@@ -1957,7 +1863,7 @@ body.theme-dark .subgroup-record .record-actions .btn-archive {
 @media (max-width: 760px) {
     .subgroup-create-body,
     .subgroup-list-body {
-        padding: 15px;
+        padding: 0;
     }
 
     .subgroup-create-form .subgroup-form-fields,
@@ -1967,7 +1873,7 @@ body.theme-dark .subgroup-record .record-actions .btn-archive {
     }
 
     .subgroup-section-header {
-        padding: 14px 15px;
+        padding: 0;
     }
 
     .subgroup-list-filters {
@@ -2010,19 +1916,11 @@ body.theme-dark .subgroup-record .record-actions .btn-archive {
     .required-fields-note {
         align-self: flex-start;
         margin-left: auto;
-        font-size: 9px;
+        font-size: 12px;
     }
 
     .subgroup-section-header {
         gap: 9px;
-    }
-
-    .main-content .subgroup-section-header h2 {
-        font-size: 14px;
-    }
-
-    .main-content .subgroup-section-header p {
-        font-size: 10px;
     }
 
     .subgroup-list-filters {
