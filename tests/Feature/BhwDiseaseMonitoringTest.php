@@ -45,6 +45,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('password');
             $table->string('role')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('user_permissions', function (Blueprint $table) {
             $table->id();
@@ -60,6 +61,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('boundary')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('purok_subgroups', function (Blueprint $table) {
             $table->id();
@@ -70,6 +72,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('boundary')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('purok_subgroup_user', function (Blueprint $table) {
             $table->id();
@@ -83,6 +86,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->unsignedBigInteger('purok_id')->nullable();
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('citizens', function (Blueprint $table) {
             $table->id();
@@ -95,10 +99,12 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('Citizen_Purok')->nullable();
             $table->string('Citizen_Sex')->nullable();
             $table->boolean('Citizen_Pregnant')->default(false);
+            $table->boolean('Citizen_InPills')->default(false);
             $table->boolean('Citizen_IsDeceased')->default(false);
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->unsignedBigInteger('family_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('health_records', function (Blueprint $table) {
             $table->id();
@@ -113,6 +119,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('temperature', 4, 1)->nullable();
             $table->string('blood_pressure', 20)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('vaccination_records', function (Blueprint $table) {
             $table->id();
@@ -122,6 +129,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->date('date_administered')->nullable();
             $table->string('administered_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('vaccinations', function (Blueprint $table) {
             $table->id();
@@ -150,6 +158,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->integer('quantity_dispensed');
             $table->date('date_dispensed');
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('maintenance_records', function (Blueprint $table) {
             $table->id();
@@ -163,6 +172,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->text('notes')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('supplies', function (Blueprint $table) {
             $table->id();
@@ -171,6 +181,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->integer('quantity')->default(0);
             $table->integer('min_stock')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('events', function (Blueprint $table) {
             $table->id();
@@ -180,6 +191,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->text('description')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
