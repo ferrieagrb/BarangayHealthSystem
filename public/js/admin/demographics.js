@@ -6,9 +6,9 @@ window.initDemographicsMap = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const root = document.getElementById('demographicsApp');
-    if (!root || !window.demographicsMapData) return;
+    if (!root) return;
 
-    const data = window.demographicsMapData;
+    const data = window.demographicsMapData || { puroks: [], subgroups: [], routes: {} };
     const tabs = [...root.querySelectorAll('.demographics-tab')];
     const panels = [...root.querySelectorAll('.demographics-panel')];
     const mapElement = document.getElementById('demographicsMap');
@@ -27,11 +27,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelChangesButton = document.getElementById('cancelMapChanges');
     const boundaryVisibilityOptions = document.getElementById('boundaryVisibilityOptions');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const archiveDialog = document.getElementById('subgroupArchiveDialog');
+    const archiveForm = document.getElementById('subgroupArchiveForm');
+    const archiveTitle = document.getElementById('subgroupArchiveTitle');
+    const archiveDescription = document.getElementById('subgroupArchiveDescription');
+    const archiveScope = document.getElementById('subgroupArchiveScope');
+    const archiveConfirmationName = document.getElementById('subgroupArchiveConfirmationName');
+    const archiveConfirmationInput = document.getElementById('subgroupArchiveConfirmation');
+    const archivePasswordInput = document.getElementById('subgroupArchivePassword');
+    const archiveConfirmButton = document.getElementById('subgroupArchiveConfirm');
+    const archiveError = document.getElementById('subgroupArchiveError');
     const savedPolygons = new Map();
     const savedMarkers = new Map();
     const boundaryVisibility = new Map();
     const defaultCenter = { lat: 14.0668, lng: 120.8531 };
 
+    let activeArchiveCard = null;
+    let archiveConfirmationValue = '';
+    let archiveMode = 'citizens';
+    let archiveSubmitting = false;
     let map;
     let mode = 'pin';
     let targetPin;
@@ -106,6 +120,140 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    function updateAssignmentCount(form) {
+        const count = form.querySelectorAll('input[name="bhw_ids[]"]:checked').length;
+        const countElement = form.querySelector('.assignment-count');
+        if (countElement) countElement.textContent = count;
+    }
+
+    root.querySelectorAll('.bhw-search-input').forEach((input) => {
+        input.addEventListener('input', () => {
+            const checklist = input.closest('.bhw-selector, .bhw-assignment').querySelector('.bhw-checklist');
+            const query = input.value.trim().toLocaleLowerCase();
+            let visibleCount = 0;
+            checklist.querySelectorAll('.bhw-option').forEach((option) => {
+                const matches = option.dataset.bhwName.toLocaleLowerCase().includes(query);
+                option.hidden = !matches;
+                if (matches) visibleCount++;
+            });
+            const noResults = checklist.querySelector('.bhw-no-search-results');
+            if (noResults) noResults.hidden = visibleCount > 0;
+        });
+    });
+
+    root.querySelectorAll('.subgroup-create-form input[name="bhw_ids[]"], .subgroup-edit-form input[name="bhw_ids[]"]').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => updateAssignmentCount(checkbox.closest('form')));
+    });
+
+    function updateArchiveConfirmButton() {
+        archiveConfirmButton.disabled = archiveSubmitting
+            || archiveConfirmationInput.value !== archiveConfirmationValue
+            || !archivePasswordInput.value;
+    }
+
+    function clearArchiveError() {
+        archiveError.hidden = true;
+        archiveError.textContent = '';
+    }
+
+    function openArchiveDialog(card) {
+        activeArchiveCard = card;
+        archiveMode = Number(card.dataset.citizenCount) > 0 ? 'citizens' : 'subgroup';
+        archiveConfirmationValue = card.dataset.confirmationName;
+        archiveTitle.textContent = archiveMode === 'citizens' ? 'Archive citizens' : 'Archive subgroup';
+        archiveDescription.textContent = archiveMode === 'citizens'
+            ? `You are archiving ${card.dataset.citizenCount} citizen records in ${archiveConfirmationValue}.`
+            : `There are no active citizens in ${archiveConfirmationValue}. Archiving now will archive the subgroup and its empty family records.`;
+        archiveScope.textContent = archiveMode === 'citizens'
+            ? 'Citizen profiles and linked citizen login accounts will be archived and can be restored. Family records and BHW accounts will remain unchanged.'
+            : 'The subgroup and any empty family records will be archived and can be restored. BHW accounts and assignment records will remain unchanged.';
+        archiveConfirmationName.textContent = archiveConfirmationValue;
+        archiveForm.action = archiveMode === 'citizens'
+            ? card.dataset.citizenArchiveAction
+            : card.dataset.subgroupArchiveAction;
+        archiveForm.reset();
+        archivePasswordInput.type = 'password';
+        archiveForm.querySelector('[data-toggle-password]').setAttribute('aria-pressed', 'false');
+        archiveForm.querySelector('[data-toggle-password]').setAttribute('aria-label', 'Show password');
+        archiveForm.querySelector('[data-toggle-password] i').className = 'bx bx-show';
+        archiveSubmitting = false;
+        archiveConfirmButton.textContent = 'Confirm Archive';
+        clearArchiveError();
+        updateArchiveConfirmButton();
+        archiveDialog.showModal();
+        archiveConfirmationInput.focus();
+    }
+
+    root.querySelectorAll('[data-open-archive]').forEach((button) => {
+        button.addEventListener('click', () => openArchiveDialog(button.closest('[data-subgroup-card]')));
+    });
+
+    archiveForm.querySelectorAll('[data-close-archive]').forEach((button) => {
+        button.addEventListener('click', () => archiveDialog.close());
+    });
+
+    archiveDialog.addEventListener('click', (event) => {
+        if (event.target === archiveDialog) archiveDialog.close();
+    });
+
+    archiveForm.addEventListener('input', () => {
+        clearArchiveError();
+        updateArchiveConfirmButton();
+    });
+
+    archiveForm.querySelector('[data-toggle-password]').addEventListener('click', (event) => {
+        const button = event.currentTarget;
+        const showPassword = archivePasswordInput.type === 'password';
+        archivePasswordInput.type = showPassword ? 'text' : 'password';
+        button.setAttribute('aria-pressed', String(showPassword));
+        button.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+        button.querySelector('i').className = showPassword ? 'bx bx-hide' : 'bx bx-show';
+    });
+
+    archiveForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!activeArchiveCard || archiveConfirmButton.disabled) return;
+
+        archiveSubmitting = true;
+        archiveConfirmButton.disabled = true;
+        archiveConfirmButton.textContent = 'Archiving...';
+        clearArchiveError();
+
+        try {
+            const response = await fetch(archiveForm.action, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: new FormData(archiveForm),
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                const messages = Object.values(result.errors || {}).flat();
+                throw new Error(messages.join(' ') || result.message || 'Unable to archive this subgroup.');
+            }
+
+            archiveDialog.close();
+            window.location.reload();
+        } catch (error) {
+            archiveError.textContent = error.message || 'Unable to archive this subgroup. Please try again.';
+            archiveError.hidden = false;
+            archiveSubmitting = false;
+            archiveConfirmButton.textContent = 'Confirm Archive';
+            updateArchiveConfirmButton();
+        }
+    });
+
+    archiveDialog.addEventListener('close', () => {
+        archiveForm.reset();
+        clearArchiveError();
+        archiveSubmitting = false;
+        updateArchiveConfirmButton();
+    });
+
     const initialTab = root.dataset.initialTab;
     setTab(tabs.some((tab) => tab.dataset.tab === initialTab) ? initialTab : 'overview');
 
@@ -717,21 +865,63 @@ document.addEventListener('DOMContentLoaded', () => {
     root.querySelectorAll('.select-all-bhws').forEach((button) => {
         button.addEventListener('click', () => {
             const form = button.closest('form');
-            form.querySelectorAll('input[name="bhw_ids[]"]').forEach((checkbox) => { checkbox.checked = true; });
-            form.querySelector('.assignment-count').textContent = form.querySelectorAll('input[name="bhw_ids[]"]:checked').length;
+            const visibleOptions = form.querySelectorAll('.bhw-option:not([hidden]) input[name="bhw_ids[]"]');
+            visibleOptions.forEach((checkbox) => { checkbox.checked = true; });
+            updateAssignmentCount(form);
         });
     });
     root.querySelectorAll('.clear-bhws').forEach((button) => {
         button.addEventListener('click', () => {
             const form = button.closest('form');
             form.querySelectorAll('input[name="bhw_ids[]"]').forEach((checkbox) => { checkbox.checked = false; });
-            form.querySelector('.assignment-count').textContent = '0';
+            updateAssignmentCount(form);
         });
     });
+
+    root.querySelectorAll('.subgroup-create-form, .subgroup-edit-form').forEach(updateAssignmentCount);
+
+    const subgroupSearch = document.getElementById('subgroupSearch');
+    const subgroupPurokFilter = document.getElementById('subgroupPurokFilter');
+    const subgroupCards = [...root.querySelectorAll('[data-subgroup-card]')];
+    const noSubgroupResults = root.querySelector('.subgroup-no-results');
+
+    function filterSubgroups() {
+        const query = subgroupSearch.value.trim().toLocaleLowerCase();
+        const purokId = subgroupPurokFilter.value;
+        let visibleCount = 0;
+
+        subgroupCards.forEach((card) => {
+            const bhwNames = [...card.querySelectorAll('.subgroup-edit-form .bhw-option input:checked')]
+                .map((checkbox) => checkbox.closest('.bhw-option').dataset.bhwName)
+                .join(' ');
+            const subgroupForm = card.querySelector('.subgroup-edit-form');
+            const selectedPurok = subgroupForm.querySelector('[name="purok_id"]');
+            const currentPurokId = selectedPurok.value;
+            const searchableText = [
+                subgroupForm.querySelector('[name="name"]').value,
+                selectedPurok.selectedOptions[0]?.textContent || '',
+                card.querySelector('[name="description"]')?.value || '',
+                bhwNames,
+            ].join(' ').toLocaleLowerCase();
+            const matches = (!query || searchableText.includes(query))
+                && (!purokId || currentPurokId === purokId);
+
+            card.hidden = !matches;
+            if (matches) visibleCount++;
+        });
+
+        noSubgroupResults.hidden = visibleCount > 0 || subgroupCards.length === 0;
+    }
+
+    subgroupSearch.addEventListener('input', filterSubgroups);
+    subgroupPurokFilter.addEventListener('change', filterSubgroups);
+    root.querySelectorAll('.subgroup-edit-form [name="name"], .subgroup-edit-form [name="description"], .subgroup-edit-form [name="purok_id"]').forEach((input) => {
+        input.addEventListener('input', filterSubgroups);
+        input.addEventListener('change', filterSubgroups);
+    });
+
     root.querySelectorAll('.subgroup-edit-form input[name="bhw_ids[]"]').forEach((checkbox) => {
-        checkbox.addEventListener('change', () => {
-            const form = checkbox.closest('form');
-            form.querySelector('.assignment-count').textContent = form.querySelectorAll('input[name="bhw_ids[]"]:checked').length;
-        });
+        checkbox.addEventListener('change', filterSubgroups);
     });
+    filterSubgroups();
 });

@@ -455,12 +455,28 @@ class PublicHealthIdSummaryTest extends TestCase
             ->assertDontSee('SQLSTATE');
     }
 
-    public function test_public_qr_scanner_page_is_available_to_guests_and_marks_its_navigation_item_active(): void
+    public function test_public_qr_scanner_navigation_works_for_guests_and_authenticated_users(): void
     {
-        $this->get(route('public.qr-scanner'))
+        $this->get(route('public.qr-scanner', [], false))
             ->assertOk()
             ->assertSee('id="public-qr-start"', false)
-            ->assertSee('class="active" aria-current="page">QR Scanner</a>', false);
+            ->assertSee('href="/public/qr-scanner"', false)
+            ->assertSee('class="active"', false);
+
+        $this->assertGuest();
+        $this->get('/qr-scanner')->assertRedirect(route('login'));
+
+        $bhw = User::create([
+            'name' => 'Test BHW',
+            'email' => 'bhw@example.test',
+            'password' => 'password',
+            'role' => 'bhw',
+        ]);
+
+        $this->actingAs($bhw)
+            ->get('/public/qr-scanner')
+            ->assertOk()
+            ->assertSee('id="public-qr-start"', false);
     }
 
     private function createActiveShare(citizens $citizen): int

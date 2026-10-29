@@ -115,33 +115,94 @@
     </section>
 
     <section class="demographics-panel" role="tabpanel" data-panel="subgroups" hidden>
-        <div class="demographics-card">
-            <div class="section-heading"><div><h2>Create a subgroup</h2><p>Choose a parent Purok and optionally assign one or more BHWs.</p></div></div>
+        <div class="demographics-card subgroup-section-card">
+            <div class="subgroup-section-header subgroup-create-header">
+                <span class="subgroup-section-icon create-icon" aria-hidden="true"><i class="bx bx-plus"></i></span>
+                <div>
+                    <h2>Create a Subgroup</h2>
+                    <p>Choose a parent Purok and optionally assign one or more BHWs.</p>
+                </div>
+                <span class="required-fields-note">* Required fields</span>
+            </div>
             <form action="{{ route('admin.subgroups.store') }}" method="POST" class="subgroup-create-form">
                 @csrf
-                <label class="field"><span>Parent Purok</span><select name="purok_id" required><option value="">Select Purok</option>@foreach($puroks as $purok)<option value="{{ $purok->id }}" {{ old('purok_id') == $purok->id ? 'selected' : '' }}>{{ $purok->name }}</option>@endforeach</select></label>
-                <label class="field"><span>Subgroup name</span><input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. P1A" maxlength="255" required></label>
-                <label class="field subgroup-description"><span>Description <small>(optional)</small></span><input type="text" name="description" value="{{ old('description') }}" placeholder="Optional area notes" maxlength="2000"></label>
-                <div class="field bhw-selector">
-                    <span>Assign BHWs <small>(optional, select all that apply)</small></span>
-                    <div class="bhw-checklist">
+                <div class="subgroup-create-body">
+                    <div class="subgroup-form-fields">
+                        <label class="field"><span>Parent Purok <b aria-hidden="true">*</b></span><select name="purok_id" required><option value="">Select Purok</option>@foreach($puroks as $purok)<option value="{{ $purok->id }}" {{ old('purok_id') == $purok->id ? 'selected' : '' }}>{{ $purok->name }}</option>@endforeach</select></label>
+                        <label class="field"><span>Subgroup name <b aria-hidden="true">*</b></span><input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. P1A, Sector 3" maxlength="255" required></label>
+                        <label class="field"><span>Description <small>(optional)</small></span><input type="text" name="description" value="{{ old('description') }}" placeholder="Optional area notes or landmarks" maxlength="2000"></label>
+                    </div>
+                    <div class="field bhw-selector">
+                        <div class="create-bhw-heading">
+                            <div>
+                                <span>Assign BHWs <small>(optional, select all that apply)</small></span>
+                                <p>Selected health workers will be primary responders for this subgroup area.</p>
+                            </div>
+                            <div class="create-bhw-tools">
+                                <span><strong class="assignment-count">0</strong> selected</span>
+                                <button type="button" class="text-button select-all-bhws">Select All</button>
+                            </div>
+                        </div>
+                        <label class="bhw-search-field">
+                            <input type="search" class="bhw-search-input" placeholder="Filter BHW list..." aria-label="Filter available BHWs">
+                        </label>
+                        <div class="bhw-checklist create-bhw-checklist">
                         @forelse($bhws as $bhw)
-                            <label><input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}"><span>{{ $bhw->name ?: $bhw->email }}</span></label>
+                            <label class="bhw-option" data-bhw-name="{{ $bhw->name ?: $bhw->email }}">
+                                <span class="bhw-name">{{ $bhw->name ?: $bhw->email }}</span>
+                                <input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}" @checked(in_array($bhw->id, old('bhw_ids', [])))>
+                            </label>
                         @empty
                             <p class="empty-state">No BHW accounts available.</p>
                         @endforelse
+                        <p class="empty-state bhw-no-search-results" hidden>No BHWs match your search.</p>
+                        </div>
+                    </div>
+                    <div class="subgroup-create-footer">
+                        <button type="submit" class="btn btn-primary"><i class="bx bx-plus-circle" aria-hidden="true"></i> Add Subgroup</button>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add subgroup</button>
             </form>
         </div>
 
-        <div class="demographics-card">
-            <div class="section-heading"><div><h2>Subgroups &amp; assignments</h2><p>Assignments are stored independently; saving one subgroup will not affect another.</p></div></div>
+        <div class="demographics-card subgroup-section-card">
+            <div class="subgroup-section-header subgroup-list-header">
+                <span class="subgroup-section-icon list-icon" aria-hidden="true"><i class="bx bx-list-check"></i></span>
+                <div class="subgroup-list-title">
+                    <h2>Subgroups &amp; Assignments</h2>
+                    <p>Assignments are stored independently; saving one subgroup will not affect another.</p>
+                </div>
+                <div class="subgroup-list-filters">
+                    <label class="subgroup-filter-search">
+                        <i class="bx bx-search" aria-hidden="true"></i>
+                        <input type="search" id="subgroupSearch" placeholder="Search subgroup or BHW..." aria-label="Search subgroups and assigned BHWs">
+                    </label>
+                    <label class="subgroup-filter-purok">
+                        <span class="visually-hidden">Filter by Parent Purok</span>
+                        <select id="subgroupPurokFilter" aria-label="Filter by Parent Purok">
+                            <option value="">All Parent Puroks</option>
+                            @foreach($puroks as $purok)
+                                <option value="{{ $purok->id }}">{{ $purok->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="subgroup-list-body">
             <div class="subgroup-list">
                 @forelse($subgroups as $subgroup)
-                    <article class="subgroup-record">
-                        <form action="{{ route('admin.subgroups.update', $subgroup->id) }}" method="POST" class="subgroup-edit-form">
+                    <article
+                        class="subgroup-record"
+                        data-subgroup-card
+                        data-subgroup-name="{{ $subgroup->name }}"
+                        data-purok-name="{{ $subgroup->purok->name }}"
+                        data-purok-id="{{ $subgroup->purok_id }}"
+                        data-citizen-count="{{ $subgroup->purge_citizens_count }}"
+                        data-confirmation-name="{{ $subgroup->name }} - {{ $subgroup->purok->name }}"
+                        data-citizen-archive-action="{{ route('admin.subgroups.citizens.destroy', $subgroup->id) }}"
+                        data-subgroup-archive-action="{{ route('admin.subgroups.destroy', $subgroup->id) }}"
+                    >
+                        <form id="subgroup-edit-{{ $subgroup->id }}" action="{{ route('admin.subgroups.update', $subgroup->id) }}" method="POST" class="subgroup-edit-form">
                             @csrf
                             @method('PUT')
                             <div class="subgroup-form-fields">
@@ -152,42 +213,76 @@
                             <div class="bhw-assignment">
                                 <div class="assignment-heading"><strong>Assigned BHWs <span class="assignment-count">{{ $subgroup->bhws->count() }}</span></strong><div><button type="button" class="text-button select-all-bhws">Select all</button><button type="button" class="text-button clear-bhws">Clear</button></div></div>
                                 <input type="hidden" name="bhw_ids_present" value="1">
+                                <label class="bhw-search-field subgroup-bhw-search">
+                                    <input type="search" class="bhw-search-input" placeholder="Filter BHW list..." aria-label="Filter BHWs for {{ $subgroup->name }}">
+                                </label>
                                 <div class="bhw-checklist">
                                     @forelse($bhws as $bhw)
-                                        <label><input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}" {{ $subgroup->bhws->contains('id', $bhw->id) || (!$subgroup->bhws->count() && $subgroup->user_id == $bhw->id) ? 'checked' : '' }}><span>{{ $bhw->name ?: $bhw->email }}</span></label>
+                                        <label class="bhw-option" data-bhw-name="{{ $bhw->name ?: $bhw->email }}">
+                                            <span class="bhw-name">{{ $bhw->name ?: $bhw->email }}</span>
+                                            <input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}" {{ $subgroup->bhws->contains('id', $bhw->id) || (!$subgroup->bhws->count() && $subgroup->user_id == $bhw->id) ? 'checked' : '' }}>
+                                        </label>
                                     @empty
                                         <p class="empty-state">No BHW accounts available.</p>
                                     @endforelse
+                                    <p class="empty-state bhw-no-search-results" hidden>No BHWs match your search.</p>
                                 </div>
                             </div>
                             <div class="subgroup-record-footer">
-                                <div class="record-meta"><span>{{ $subgroup->families_count }} families</span><span>{{ $subgroup->purge_citizens_count }} citizens</span><span>{{ $subgroup->latitude !== null ? 'Pin saved' : 'No pin' }}</span></div>
-                                <div class="record-actions"><button type="submit" class="btn btn-secondary">Save subgroup</button></div>
+                                <div class="record-meta">
+                                    <span><i class="bx bx-home-alt" aria-hidden="true"></i> {{ $subgroup->families_count }} families</span>
+                                    <span class="citizen-count-badge"><i class="bx bx-group" aria-hidden="true"></i> {{ $subgroup->purge_citizens_count }} citizens</span>
+                                    <span @class(['pin-status-badge' => $subgroup->latitude !== null])><i class="bx bx-map-pin" aria-hidden="true"></i> {{ $subgroup->latitude !== null ? 'Pinned on map' : 'No pin' }}</span>
+                                </div>
+                                <div class="record-actions">
+                                    <button type="submit" class="btn btn-primary"><i class="bx bx-save" aria-hidden="true"></i> Save subgroup</button>
+                                    <button type="button" class="btn btn-archive" data-open-archive><i class="bx bx-archive" aria-hidden="true"></i> Archive</button>
+                                </div>
                             </div>
-                        </form>
-                        <form action="{{ route('admin.subgroups.destroy', $subgroup->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this subgroup? Any empty family records will also be archived. Move its citizens first. You can restore it later from the archive.')">
-                            @csrf
-                            @method('DELETE')
-                            <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled($subgroup->purge_citizens_count) title="Move citizens before archiving; empty family records will be archived">Archive</button>
-                        </form>
-                        <form action="{{ route('admin.subgroups.citizens.destroy', $subgroup->id) }}" method="POST" class="citizen-purge-form" data-confirm-message="Archive all {{ $subgroup->purge_citizens_count }} citizen records in {{ $subgroup->name }} - {{ $subgroup->purok->name }}? They can be restored from the archive.">
-                            @csrf
-                            @method('DELETE')
-                            <input type="hidden" name="demographics_tab" value="subgroups">
-                            <div class="purge-heading"><strong>Archive citizens</strong><span>{{ $subgroup->purge_citizens_count }} citizens</span></div>
-                            <p>Archives citizen profiles and linked citizen login accounts. Nothing is permanently deleted and they can be restored from the archive. Families and BHW accounts are kept.</p>
-                            <label class="field"><span>Type <strong>{{ $subgroup->name }} - {{ $subgroup->purok->name }}</strong> to confirm</span><input type="text" name="confirmation" maxlength="513" autocomplete="off" required></label>
-                            <label class="field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
-                            <button type="submit" class="btn btn-danger" @disabled(!$subgroup->purge_citizens_count)>Archive citizens</button>
                         </form>
                     </article>
                 @empty
                     <p class="empty-state">No subgroups have been created yet.</p>
                 @endforelse
             </div>
+            <p class="empty-state subgroup-no-results" hidden>No subgroups match your filters.</p>
+            </div>
         </div>
     </section>
+
+    <dialog class="subgroup-archive-dialog" id="subgroupArchiveDialog" aria-labelledby="subgroupArchiveTitle" aria-describedby="subgroupArchiveDescription">
+        <form class="subgroup-archive-form" id="subgroupArchiveForm">
+            @csrf
+            <input type="hidden" name="_method" value="DELETE">
+            <div class="subgroup-archive-heading">
+                <span class="subgroup-archive-icon" aria-hidden="true"><i class="bx bx-archive"></i></span>
+                <div>
+                    <h2 id="subgroupArchiveTitle">Archive subgroup</h2>
+                    <p id="subgroupArchiveDescription"></p>
+                </div>
+                <button type="button" class="subgroup-archive-close" data-close-archive aria-label="Close archive confirmation">&times;</button>
+            </div>
+            <div class="subgroup-archive-scope" id="subgroupArchiveScope"></div>
+            <div class="subgroup-archive-error" id="subgroupArchiveError" role="alert" hidden></div>
+            <label class="field" for="subgroupArchiveConfirmation">
+                <span>Type <strong id="subgroupArchiveConfirmationName"></strong> to confirm</span>
+                <input id="subgroupArchiveConfirmation" name="confirmation" type="text" maxlength="513" autocomplete="off" required>
+            </label>
+            <label class="field subgroup-archive-password" for="subgroupArchivePassword">
+                <span>Admin password</span>
+                <span class="password-input-wrap">
+                    <input id="subgroupArchivePassword" name="current_password" type="password" autocomplete="current-password" required>
+                    <button type="button" class="password-visibility-toggle" aria-label="Show password" aria-pressed="false" data-toggle-password>
+                        <i class="bx bx-show" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </label>
+            <div class="subgroup-archive-actions">
+                <button type="button" class="btn btn-archive-cancel" data-close-archive>Cancel</button>
+                <button type="submit" class="btn btn-danger" id="subgroupArchiveConfirm" disabled>Confirm Archive</button>
+            </div>
+        </form>
+    </dialog>
 
     <section class="demographics-panel map-workspace" role="tabpanel" data-panel="map" hidden>
         <div class="demographics-card map-controls">

@@ -30,7 +30,7 @@
                 <li><a href="{{ route('landing') }}" @class(['active' => ($activeNav ?? '') === 'home']) @if(($activeNav ?? '') === 'home') aria-current="page" @endif>Home</a></li>
                 <li><a href="{{ route('publiccalendar') }}" @class(['active' => ($activeNav ?? '') === 'calendar']) @if(($activeNav ?? '') === 'calendar') aria-current="page" @endif>Calendar</a></li>
                 <li><a href="{{ route('public.announcements') }}" @class(['active' => ($activeNav ?? '') === 'announcements']) @if(($activeNav ?? '') === 'announcements') aria-current="page" @endif>Announcements</a></li>
-                <li><a href="{{ route('public.qr-scanner') }}" @class(['active' => ($activeNav ?? '') === 'qr']) @if(($activeNav ?? '') === 'qr') aria-current="page" @endif>QR Scanner</a></li>
+                <li><a href="{{ route('public.qr-scanner', [], false) }}" @class(['active' => ($activeNav ?? '') === 'qr']) @if(($activeNav ?? '') === 'qr') aria-current="page" @endif>QR Scanner</a></li>
                 <li><a href="{{ route('login') }}" class="btn-login"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Login</a></li>
             </ul>
         </nav>
