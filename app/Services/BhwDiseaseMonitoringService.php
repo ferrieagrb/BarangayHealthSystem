@@ -232,7 +232,6 @@ class BhwDiseaseMonitoringService
                 $join->on('area_purok.id', '=', DB::raw('COALESCE(csg.purok_id, fsg.purok_id, text_purok.id)'));
             })
             ->whereNull('hr.deleted_at')
-            ->whereNull('c.deleted_at')
             ->whereNotNull('hr.diagnosis')
             ->whereRaw("TRIM(hr.diagnosis) <> ''");
 

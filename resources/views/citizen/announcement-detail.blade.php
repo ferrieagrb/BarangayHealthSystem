@@ -99,8 +99,8 @@
 
 <div class="announcement-detail-page">
     <a class="announcement-detail-back"
-       href="{{ request('from') === 'announcements' ? route('citizen.announcements') : route('citizen.dashboard') }}">
-        ← {{ request('from') === 'announcements' ? 'Back to Announcements' : 'Back to Dashboard' }}
+       href="{{ route('citizen.announcements') }}">
+        ← Back to Announcements
     </a>
 
     <article class="announcement-detail-card">

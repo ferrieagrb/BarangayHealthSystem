@@ -261,26 +261,26 @@
                             value="normal"
                             @selected($user->font_size === 'normal')
                         >
-                            Normal
+                            Small
                         </option>
 
                         <option
                             value="large"
                             @selected($user->font_size === 'large')
                         >
-                            Large
+                            Medium
                         </option>
 
                         <option
                             value="xl"
                             @selected($user->font_size === 'xl')
                         >
-                            Extra large
+                            Large
                         </option>
                     </select>
 
                     <p class="cs-hint">
-                        Larger text can make the website easier to use.
+                        Choose a text size that is comfortable to read.
                     </p>
                 </div>
 
@@ -408,4 +408,19 @@
     </section>
 
 </main>
+<script>
+    (function () {
+        const citizenThemeSelect = document.getElementById('theme');
+        if (!citizenThemeSelect) return;
+
+        citizenThemeSelect.addEventListener('change', function () {
+            const isDark = this.value === 'dark';
+            document.body.classList.toggle('theme-dark', isDark);
+            document.body.classList.toggle('theme-light', !isDark);
+            document.documentElement.classList.toggle('theme-dark', isDark);
+            document.documentElement.classList.toggle('theme-light', !isDark);
+            document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+        });
+    })();
+</script>
 @endsection

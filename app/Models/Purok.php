@@ -17,6 +17,19 @@ class Purok extends Model
         'boundary' => 'array',
     ];
 
+    public static function orderedWithSubgroups()
+    {
+        return static::with('subgroups')->get()
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->each(function (self $purok): void {
+                $purok->setRelation(
+                    'subgroups',
+                    $purok->subgroups->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()
+                );
+            });
+    }
+
     public function bhw()
     {
         return $this->belongsTo(User::class, 'user_id')->withTrashed();

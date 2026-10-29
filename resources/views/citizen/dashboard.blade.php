@@ -696,6 +696,15 @@
     font-size: 16px;
     line-height: 1.65;
 }
+body.theme-dark .c-home {
+    --c-primary: #a9c5ff;
+    --c-primary-dark: #c4d6ff;
+    --c-text: #e6edf7;
+    --c-muted: #a9b8cb;
+    --c-border: #34445b;
+    --c-surface: #111c2e;
+    --c-page: #0b1220;
+}
 
 .c-home * { box-sizing: border-box; }
 .c-home p { line-height: 1.7; }
@@ -1652,6 +1661,7 @@
 
     @if($citizen)
         {{-- ACTUAL ID CARD --}}
+        <div class="c-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="citizen-card-scroll-hint" tabindex="0">
         <div class="c-panel c-id-card">
 
             {{-- BLUE HEADER --}}
@@ -1750,6 +1760,8 @@
                 <span>OFFICIAL CITIZEN IDENTIFICATION</span>
             </div>
         </div>
+        </div>
+        <p class="c-id-scroll-hint" id="citizen-card-scroll-hint">Swipe horizontally to view the full card.</p>
 
         {{-- BUTTON OUTSIDE THE ID CARD --}}
         <div class="c-id-actions-outside">
@@ -2144,6 +2156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .filter(Boolean);
 
     if (!sections.length) return;
+    let pendingNavigationSection = null;
 
     function setActive(section) {
         links.forEach(link => {
@@ -2160,12 +2173,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function getSectionFromHash() {
+        if (!window.location.hash) return null;
+
+        const targetId = decodeURIComponent(window.location.hash.slice(1));
+        return sections.find(section => section.id === targetId) || null;
+    }
+
     function updateActiveTab() {
         const header = document.querySelector('.top-bar');
         const headerHeight = header ? header.offsetHeight : 0;
-
-        let current = sections[0];
         const activationPoint = headerHeight + 25;
+        const hashSection = getSectionFromHash();
+        let current = sections[0];
 
         sections.forEach(section => {
             if (section.getBoundingClientRect().top <= activationPoint) {
@@ -2173,10 +2193,32 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Only select the final tab when the referral section itself is in view.
+        if (pendingNavigationSection) {
+            const bounds = pendingNavigationSection.getBoundingClientRect();
+            if (bounds.top <= activationPoint + 1 && bounds.bottom > activationPoint) {
+                current = pendingNavigationSection;
+                pendingNavigationSection = null;
+            } else {
+                current = pendingNavigationSection;
+            }
+        } else if (hashSection) {
+            const bounds = hashSection.getBoundingClientRect();
+            if (bounds.top <= activationPoint + 1 && bounds.bottom > activationPoint) {
+                current = hashSection;
+            }
+        }
+
         const lastSection = sections[sections.length - 1];
-        if (lastSection && lastSection.getBoundingClientRect().top < window.innerHeight * 0.72) {
-            current = lastSection;
+        if (lastSection) {
+            const lastBounds = lastSection.getBoundingClientRect();
+            const isAtPageBottom = window.scrollY + window.innerHeight
+                >= document.documentElement.scrollHeight - 2;
+            const lastSectionVisible = lastBounds.top < window.innerHeight
+                && lastBounds.bottom > headerHeight;
+
+            if (!pendingNavigationSection && isAtPageBottom && lastSectionVisible) {
+                current = lastSection;
+            }
         }
 
         setActive(current);
@@ -2191,6 +2233,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!target) return;
 
             event.preventDefault();
+            pendingNavigationSection = target;
+            const targetHash = '#' + target.id;
+            if (window.location.hash !== targetHash) {
+                window.history.pushState(null, '', targetHash);
+            }
             setActive(target);
 
             const header = document.querySelector('.top-bar');
@@ -2214,8 +2261,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('resize', updateActiveTab);
+    function restoreSectionFromHistory() {
+        const target = getSectionFromHash();
+        if (target) {
+            pendingNavigationSection = target;
+            const header = document.querySelector('.top-bar');
+            const headerHeight = header ? header.offsetHeight : 0;
+            const targetY = target.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+            window.scrollTo({ top: Math.max(0, targetY), behavior: 'auto' });
+        } else {
+            pendingNavigationSection = null;
+        }
+        updateActiveTab();
+    }
+
+    window.addEventListener('hashchange', restoreSectionFromHistory);
+    window.addEventListener('popstate', restoreSectionFromHistory);
+    window.addEventListener('pageshow', updateActiveTab);
 
     updateActiveTab();
+    window.requestAnimationFrame(updateActiveTab);
+    if (getSectionFromHash()) {
+        window.requestAnimationFrame(restoreSectionFromHistory);
+    }
 });
 </script>
 
@@ -2223,6 +2291,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <style>
 /* Only the dashboard health card is styled here; other dashboard sections are untouched. */
+.c-home .c-id-card-scroll {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
 .c-home .c-id-card {
     width: 100%;
     max-width: 1000px;
@@ -2280,48 +2353,70 @@ document.addEventListener('DOMContentLoaded', function () {
     font-weight: 800;
     letter-spacing: .5px;
 }
-@media (max-width: 760px) {
-    .c-home .c-id-body {
-        grid-template-columns: 76px minmax(0, 1fr);
-        align-items: start;
-        gap: 12px;
-        padding: 15px 12px;
-    }
-    .c-home .c-id-body .c-photo {
-        grid-column: 1;
-        grid-row: 1 / span 3;
-    }
-    .c-home .c-id-details { grid-column: 2; grid-row: 1; }
-    .c-home .c-id-secondary-details {
-        grid-column: 2;
-        grid-row: 2;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0 12px;
-    }
-    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 9px; }
-    .c-home .c-id-body > .c-id-qr-centered {
-        grid-column: 2;
-        grid-row: 3;
-        justify-self: start;
-        align-items: flex-start;
-    }
-    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-        width: 72px;
-        height: 72px;
-    }
+.c-home .c-id-scroll-hint {
+    display: none;
 }
-@media (max-width: 420px) {
-    .c-home .c-id-body {
-        grid-template-columns: 58px minmax(0, 1fr);
-        gap: 8px;
-        padding: 12px 8px;
+@media (max-width: 760px) {
+    .c-home .c-id-card-scroll {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
     }
-    .c-home .c-id-body .c-photo { width: 58px; height: 76px; }
-    .c-home .c-id-secondary-details { grid-template-columns: minmax(0, 1fr); }
+    .c-home .c-id-body {
+        grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
+        align-items: center;
+        gap: 22px;
+        padding: 22px;
+    }
+    .c-home .c-id-card {
+        width: 760px;
+        max-width: none;
+    }
+    .c-home .c-id-header {
+        min-height: 116px;
+        gap: 16px;
+        padding: 18px 24px;
+    }
+    .c-home .c-id-header > img {
+        flex-basis: 70px;
+        width: 70px;
+        height: 70px;
+    }
+    .c-home .c-id-header-text h3 { font-size: 27px; }
+    .c-home .c-id-header-text strong { font-size: 13px; }
+    .c-home .c-id-header-text small { font-size: 10px; }
+    .c-home .c-id-body .c-photo {
+        grid-column: auto;
+        grid-row: auto;
+        width: 132px;
+        height: 164px;
+    }
+    .c-home .c-id-details {
+        grid-column: auto;
+        grid-row: auto;
+    }
+    .c-home .c-id-secondary-details {
+        display: block;
+        grid-column: auto;
+        grid-row: auto;
+    }
+    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
+    .c-home .c-id-body > .c-id-qr-centered {
+        grid-column: 4;
+        grid-row: 1;
+        justify-self: end;
+        align-items: center;
+    }
     .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-        width: 60px;
-        height: 60px;
+        width: 100px;
+        height: 100px;
+    }
+    .c-home .c-id-scroll-hint {
+        display: block;
+        margin: 6px 0 0;
+        color: #52657e;
+        font-size: 12px;
+        text-align: center;
     }
 }
 </style>

@@ -26,17 +26,22 @@ class AdminSettings extends Controller
     {
         $puroks = Purok::withCount(['families', 'subgroups'])
             ->with('subgroups.bhws')
-            ->orderBy('name')
-            ->get();
+            ->get()
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
         $puroks->each(function (Purok $purok) {
+            $purok->setRelation('subgroups', $purok->subgroups->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values());
             $purok->setAttribute('purge_citizens_count', $this->citizensInPurokQuery($purok)->count());
         });
         $bhws = User::where('role', 'bhw')->orderBy('name')->get();
         $subgroups = PurokSubgroup::with(['purok', 'bhws', 'bhw'])
             ->withCount(['families', 'citizens'])
-            ->orderBy('purok_id')
-            ->orderBy('name')
-            ->get();
+            ->get()
+            ->sort(function ($a, $b) {
+                return strnatcasecmp((string) optional($a->purok)->name, (string) optional($b->purok)->name)
+                    ?: strnatcasecmp((string) $a->name, (string) $b->name);
+            })
+            ->values();
         $subgroups->each(function (PurokSubgroup $subgroup) {
             $subgroup->setAttribute('purge_citizens_count', $this->citizensInSubgroupQuery($subgroup)->count());
         });

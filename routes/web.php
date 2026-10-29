@@ -91,6 +91,7 @@ Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name(
 
 Route::get('/login', fn () => view('login'))->name('login');
 Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
+Route::get('/site-favicon.png', [PublicAssetController::class, 'favicon'])->name('site.favicon');
 Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announcementImage'])
     ->where('path', '.*')
     ->name('announcement.image');
@@ -197,7 +198,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         return view('citizen.calendar');
     })->name('calendar');
 
-    // Citizen Vaccination Route
+    // Keep the legacy vaccination page route pointed at the existing health records section.
     Route::get('/vaccination', function () {
         $user = auth()->user();
 
@@ -205,7 +206,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             abort(403, 'Unauthorized action.');
         }
 
-        return view('citizen.vaccination');
+        return redirect()->to(route('citizen.dashboard') . '#health-information');
     })->name('vaccination');
 
     // Citizen Announcements Route
@@ -251,7 +252,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
     Route::get('/addcitizen', function () {
-        $puroks = \App\Models\Purok::with('subgroups')->get();
+        $puroks = \App\Models\Purok::orderedWithSubgroups();
         $families = \App\Models\Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
 
         return view('bhw.addcitizen', compact('puroks', 'families'));

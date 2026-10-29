@@ -1,7 +1,7 @@
 @extends('templates.citizen')
 
 @section('content')
-<div style="max-width: 900px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<div class="citizen-supplies-page" style="max-width: 900px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div style="margin-bottom: 20px;">
         <h2>💊 Available Health Center Supplies & Medicines</h2>
         <p style="color: #666; font-size: 14px;">Browse current health center stock availability.</p>
@@ -13,6 +13,7 @@
     </form>
 
     <!-- Available Supplies Table -->
+    <div class="citizen-table-scroll" role="region" aria-label="Available supplies" tabindex="0">
     <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 40px;">
         <thead>
             <tr style="background: #f1f1f1; text-align: left;">
@@ -39,11 +40,13 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <div style="border-top: 2px solid #e5e7eb; padding-top: 25px;">
         <h3 style="margin-bottom: 8px; color: #1f2937;">Scheduled Supply Releases</h3>
         <p style="color: #666; font-size: 14px;">Supplies assigned to you by the BHW and their claiming dates.</p>
 
+        <div class="citizen-table-scroll" role="region" aria-label="Scheduled supply releases" tabindex="0">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px;">
             <thead>
                 <tr style="background: #f3f4f6; text-align: left;">
@@ -64,7 +67,7 @@
                         <td style="padding: 12px; text-align: center; color: #0369a1; font-weight: 600;">
                             {{ $release->claim_date->format('M d, Y') }}
                         </td>
-                        <td style="padding: 12px; text-align: center; font-weight: 600; color: {{ $release->status === 'claimed' ? '#166534' : '#92400e' }};">
+                        <td class="supply-release-status {{ $release->status === 'claimed' ? 'status-claimed' : 'status-pending' }}" style="padding: 12px; text-align: center; font-weight: 600; color: {{ $release->status === 'claimed' ? '#166534' : '#92400e' }};">
                             {{ ucfirst($release->status) }}
                         </td>
                         <td style="padding: 12px; color: #555;">{{ $release->details ?? 'No additional details.' }}</td>
@@ -76,6 +79,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection
