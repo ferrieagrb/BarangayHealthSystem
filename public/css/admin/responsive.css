@@ -161,7 +161,7 @@
         max-width: 100%;
     }
 
-    .main-content button,
+    .main-content button:not(.subgroup-archive-close):not(.password-visibility-toggle),
     .main-content .btn,
     .main-content [class^="btn-"] {
         min-height: 42px;

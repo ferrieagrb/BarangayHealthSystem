@@ -227,14 +227,31 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
     // Citizen Announcement Details
-Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
+Route::get('/announcements/{announcement}', function (\Illuminate\Http\Request $request, \App\Models\Announcement $announcement) {
     $user = auth()->user();
 
     if (!$user->isCitizen() && !$user->isSuperAdmin()) {
         abort(403, 'Unauthorized action.');
     }
 
-    return view('citizen.announcement-detail', compact('announcement'));
+    $source = in_array($request->query('from'), ['dashboard', 'announcements'], true)
+        ? $request->query('from')
+        : 'dashboard';
+    $scroll = $request->query('scroll');
+    $scroll = is_string($scroll) && ctype_digit($scroll)
+        ? min((int) $scroll, 10000000)
+        : null;
+    $returnParameters = $scroll === null ? [] : ['scroll' => $scroll];
+    $returnUrl = route(
+        $source === 'announcements' ? 'citizen.announcements' : 'citizen.dashboard',
+        $returnParameters
+    );
+
+    if ($source === 'dashboard') {
+        $returnUrl .= '#announcements';
+    }
+
+    return view('citizen.announcement-detail', compact('announcement', 'returnUrl', 'source'));
 })->name('announcements.show');
 
 });

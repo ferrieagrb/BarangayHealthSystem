@@ -9,8 +9,9 @@
 .ann-back{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 17px;border-radius:9px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:750}
 .ann-list{display:grid;gap:18px}
 .ann-card{padding:clamp(18px,2.5vw,26px);border:1px solid #dbe3ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px #0f172a0a}
-.ann-card.announcement-modal-trigger{width:100%;text-align:left;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
-.ann-card.announcement-modal-trigger:hover{transform:translateY(-2px);box-shadow:0 10px 24px #0f172a18}
+.ann-card{display:block;color:inherit;text-align:left;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}
+.ann-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px #0f172a18}
+.ann-card:focus-visible{outline:3px solid rgba(29,78,216,.45);outline-offset:3px}
 .ann-card h2{margin:0 0 9px;color:#173b82;font-size:clamp(19px,2vw,23px);line-height:1.35}
 .ann-date{display:block;margin-bottom:14px;color:#64748b;font-size:14px}
 .ann-content{margin:0;color:#334155;font-size:16px;line-height:1.75;white-space:pre-line;overflow-wrap:anywhere}
@@ -30,15 +31,30 @@
     </header>
     <div class="ann-list">
         @forelse($announcements as $announcement)
-            <button type="button" class="ann-card announcement-modal-trigger" data-announcement-id="{{ $announcement->id }}" aria-label="Open announcement: {{ $announcement->title }}">
+            <a class="ann-card" href="{{ route('citizen.announcements.show', ['announcement' => $announcement->id, 'from' => 'announcements']) }}" aria-label="Open announcement: {{ $announcement->title }}">
                 <h2>{{ $announcement->title }}</h2>
                 <time class="ann-date" datetime="{{ optional($announcement->created_at)->toIso8601String() }}">Posted {{ optional($announcement->created_at)->format('F d, Y · h:i A') }}</time>
                 <p class="ann-content">{{ $announcement->content ?? $announcement->description ?? 'Please contact the Barangay Health Center for more information.' }}</p>
-            </button>
+            </a>
         @empty
             <div class="ann-empty">No announcements are available at this time.</div>
         @endforelse
     </div>
 </main>
-@include('citizen.partials.announcement_modal', ['announcements' => $announcements])
+<script>
+document.querySelectorAll('.ann-card[href]').forEach((link) => {
+    link.addEventListener('click', () => {
+        const destination = new URL(link.href, window.location.href);
+        destination.searchParams.set('scroll', String(Math.round(window.scrollY)));
+        link.href = destination.toString();
+    });
+});
+
+window.addEventListener('pageshow', () => {
+    const scroll = new URLSearchParams(window.location.search).get('scroll');
+    if (scroll && /^\d+$/.test(scroll)) {
+        window.requestAnimationFrame(() => window.scrollTo(0, Number(scroll)));
+    }
+});
+</script>
 @endsection

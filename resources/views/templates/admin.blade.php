@@ -7,7 +7,7 @@
     $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
 @endphp
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
+<html lang="en" class="theme-{{ $currentTheme }}" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
@@ -20,9 +20,10 @@
     @yield('CSSown')
     <link rel="stylesheet" href="{{ asset('css/admin/responsive.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/admin-ui.css') }}">
+    @include('partials.appearance-assets')
 </head>
 
-<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+<body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 @yield('scripts')
 <div class="dashboard">
 
@@ -119,8 +120,8 @@
 
     <!-- MAIN -->
     <div class="main-content">
-        <div class="top-bar">
-            <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
+        <div class="top-bar" id="accountHeader">
+            <div class="header-user" style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
         </div>
         @yield('content')
     </div>

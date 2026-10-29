@@ -67,22 +67,28 @@ class AdminCitizenPurgeTest extends TestCase
 
         $this->assertDatabaseHas('puroks', ['id' => $purok->id]);
 
-        $this->delete(route('admin.subgroups.destroy', $subgroup), ['current_password' => 'incorrect'])
+        $this->delete(route('admin.subgroups.destroy', $subgroup), [
+            'confirmation' => '1A - Purok 2',
+            'current_password' => 'incorrect',
+        ])
             ->assertRedirect(route('admin.demographics'))
             ->assertSessionHasErrors('current_password');
 
         $this->assertDatabaseHas('purok_subgroups', ['id' => $subgroup->id]);
 
-        $this->delete(route('admin.subgroups.destroy', $subgroup), ['current_password' => 'password'])
+        $this->delete(route('admin.subgroups.destroy', $subgroup), [
+            'confirmation' => '1A - Purok 2',
+            'current_password' => 'password',
+        ])
             ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHas('success', 'Purok subgroup deleted successfully!');
+            ->assertSessionHas('success', 'Purok subgroup archived successfully!');
 
         $this->delete(route('admin.puroks.destroy', $purok), ['current_password' => 'password'])
             ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHas('success', 'Purok deleted successfully!');
+            ->assertSessionHas('success', 'Purok archived successfully!');
     }
 
-    public function test_admin_can_permanently_delete_citizens_and_citizen_accounts_in_a_purok_only(): void
+    public function test_admin_can_archive_citizens_and_citizen_accounts_in_a_purok_only(): void
     {
         $admin = User::factory()->create([
             'role' => User::ROLE_ADMIN,
@@ -148,17 +154,28 @@ class AdminCitizenPurgeTest extends TestCase
             ])
             ->assertRedirect(route('admin.demographics'))
             ->assertSessionHas('demographics_tab', 'puroks')
-            ->assertSessionHas('success', '2 citizens and 1 linked citizen accounts were permanently deleted from Purok 1. Family records and BHW accounts were not deleted.');
+            ->assertSessionHas('success', '2 citizens and 1 linked citizen accounts were archived from Purok 1. They can be restored from the archive. Family records and BHW accounts were not changed.');
 
-        $this->assertDatabaseMissing('citizens', ['id' => $assignedCitizen->id]);
-        $this->assertDatabaseMissing('citizens', ['id' => $unassignedCitizen->id]);
+        $this->assertSoftDeleted('citizens', ['id' => $assignedCitizen->id]);
+        $this->assertSoftDeleted('citizens', ['id' => $unassignedCitizen->id]);
         $this->assertDatabaseHas('citizens', ['id' => $otherCitizen->id]);
         $this->assertDatabaseHas('citizens', ['id' => $conflictingAssignmentCitizen->id]);
-        $this->assertDatabaseMissing('health_records', ['id' => $healthRecordId]);
-        $this->assertDatabaseMissing('users', ['id' => $citizenAccount->id]);
+        $this->assertDatabaseHas('health_records', ['id' => $healthRecordId]);
+        $this->assertSoftDeleted('users', ['id' => $citizenAccount->id]);
         $this->assertDatabaseHas('users', ['id' => $unrelatedCitizenAccount->id]);
         $this->assertDatabaseHas('users', ['id' => $bhwAccount->id]);
         $this->assertDatabaseHas('families', ['id' => $family->id]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.archive.restore', ['type' => 'citizens', 'id' => $assignedCitizen->id]))
+            ->assertRedirect(route('admin.archive.index', ['type' => 'citizens']));
+
+        $this->assertNotSoftDeleted('citizens', ['id' => $assignedCitizen->id]);
+        $this->assertNotSoftDeleted('users', ['id' => $citizenAccount->id]);
+        $this->assertDatabaseHas('users', [
+            'id' => $citizenAccount->id,
+            'must_change_password' => true,
+        ]);
     }
 
     public function test_subgroup_purge_uses_family_membership_and_requires_an_exact_confirmation(): void
@@ -191,40 +208,38 @@ class AdminCitizenPurgeTest extends TestCase
         $conflictingAssignmentCitizen = $this->createCitizen('Purok 1', $subgroup->id, $otherFamily->id);
 
         $this->actingAs($admin)
-            ->from(route('admin.demographics'))
-            ->delete(route('admin.subgroups.citizens.destroy', $subgroup), [
+            ->deleteJson(route('admin.subgroups.citizens.destroy', $subgroup), [
                 'confirmation' => '1a - Purok 1',
                 'current_password' => 'password',
                 'demographics_tab' => 'subgroups',
             ])
-            ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHasErrors('confirmation');
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('confirmation');
 
         $this->assertDatabaseHas('citizens', ['id' => $familyCitizen->id]);
 
         $this->actingAs($admin)
-            ->from(route('admin.demographics'))
-            ->delete(route('admin.subgroups.citizens.destroy', $subgroup), [
+            ->deleteJson(route('admin.subgroups.citizens.destroy', $subgroup), [
                 'confirmation' => '1A - Purok 1',
                 'current_password' => 'incorrect',
                 'demographics_tab' => 'subgroups',
             ])
-            ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHasErrors('current_password');
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('current_password');
 
         $this->assertDatabaseHas('citizens', ['id' => $familyCitizen->id]);
 
         $this->actingAs($admin)
-            ->from(route('admin.demographics'))
-            ->delete(route('admin.subgroups.citizens.destroy', $subgroup), [
+            ->deleteJson(route('admin.subgroups.citizens.destroy', $subgroup), [
                 'confirmation' => '1A - Purok 1',
                 'current_password' => 'password',
                 'demographics_tab' => 'subgroups',
             ])
-            ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHas('demographics_tab', 'subgroups');
+            ->assertOk()
+            ->assertJsonPath('citizen_count', 1)
+            ->assertJsonPath('account_count', 0);
 
-        $this->assertDatabaseMissing('citizens', ['id' => $familyCitizen->id]);
+        $this->assertSoftDeleted('citizens', ['id' => $familyCitizen->id]);
         $this->assertDatabaseHas('citizens', ['id' => $otherCitizen->id]);
         $this->assertDatabaseHas('citizens', ['id' => $conflictingAssignmentCitizen->id]);
         $this->assertDatabaseHas('families', ['id' => $family->id]);
@@ -239,7 +254,7 @@ class AdminCitizenPurgeTest extends TestCase
         $purok = Purok::create(['name' => 'Purok 1']);
 
         $this->actingAs($bhw)
-            ->delete(route('admin.puroks.citizens.destroy', $purok), [
+            ->deleteJson(route('admin.puroks.citizens.destroy', $purok), [
                 'confirmation' => 'Purok 1',
             ])
             ->assertForbidden();
@@ -276,12 +291,68 @@ class AdminCitizenPurgeTest extends TestCase
 
         $this->actingAs($admin)
             ->from(route('admin.demographics'))
-            ->delete(route('admin.subgroups.destroy', $subgroup), ['current_password' => 'password'])
+            ->delete(route('admin.subgroups.destroy', $subgroup), [
+                'confirmation' => '1B - Purok 1',
+                'current_password' => 'password',
+            ])
             ->assertRedirect(route('admin.demographics'))
-            ->assertSessionHas('success', 'Purok subgroup deleted successfully!');
+            ->assertSessionHas('success', 'Purok subgroup archived successfully!');
 
-        $this->assertDatabaseMissing('families', ['id' => $family->id]);
-        $this->assertDatabaseMissing('purok_subgroups', ['id' => $subgroup->id]);
+        $this->assertSoftDeleted('families', ['id' => $family->id]);
+        $this->assertSoftDeleted('purok_subgroups', ['id' => $subgroup->id]);
+    }
+
+    public function test_archiving_an_empty_subgroup_requires_exact_confirmation_and_preserves_bhw_assignments(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'must_change_password' => false,
+        ]);
+        $bhw = User::factory()->create([
+            'role' => User::ROLE_BHW,
+            'must_change_password' => false,
+        ]);
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create([
+            'purok_id' => $purok->id,
+            'name' => '1C',
+        ]);
+        $family = Family::create([
+            'family_name' => '1C Family',
+            'purok_id' => $purok->id,
+            'subgroup_id' => $subgroup->id,
+        ]);
+        $subgroup->bhws()->attach($bhw->id);
+
+        $this->actingAs($admin)
+            ->deleteJson(route('admin.subgroups.destroy', $subgroup), [
+                'confirmation' => '1c - Purok 1',
+                'current_password' => 'password',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('confirmation');
+
+        $this->deleteJson(route('admin.subgroups.destroy', $subgroup), [
+            'confirmation' => '1C - Purok 1',
+            'current_password' => 'incorrect',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('current_password');
+
+        $this->deleteJson(route('admin.subgroups.destroy', $subgroup), [
+            'confirmation' => '1C - Purok 1',
+            'current_password' => 'password',
+        ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Subgroup 1C - Purok 1 and its empty family records were archived. BHW accounts and assignment records were not changed.');
+
+        $this->assertSoftDeleted('purok_subgroups', ['id' => $subgroup->id]);
+        $this->assertSoftDeleted('families', ['id' => $family->id]);
+        $this->assertDatabaseHas('purok_subgroup_user', [
+            'purok_subgroup_id' => $subgroup->id,
+            'user_id' => $bhw->id,
+        ]);
+        $this->assertNotSoftDeleted('users', ['id' => $bhw->id]);
     }
 
     private function createCitizen(string $purok, ?int $subgroupId = null, ?int $familyId = null): citizens
@@ -315,6 +386,7 @@ class AdminCitizenPurgeTest extends TestCase
             $table->unsignedBigInteger('citizen_id')->nullable();
             $table->boolean('must_change_password')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('puroks', function (Blueprint $table) {
@@ -322,6 +394,7 @@ class AdminCitizenPurgeTest extends TestCase
             $table->string('name');
             $table->json('boundary')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('purok_subgroups', function (Blueprint $table) {
@@ -330,6 +403,7 @@ class AdminCitizenPurgeTest extends TestCase
             $table->string('name');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('families', function (Blueprint $table) {
@@ -338,6 +412,14 @@ class AdminCitizenPurgeTest extends TestCase
             $table->unsignedBigInteger('purok_id');
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('purok_subgroup_user', function (Blueprint $table) {
+            $table->foreignId('purok_subgroup_id');
+            $table->foreignId('user_id');
+            $table->timestamps();
+            $table->primary(['purok_subgroup_id', 'user_id']);
         });
 
         Schema::create('citizens', function (Blueprint $table) {
@@ -354,6 +436,7 @@ class AdminCitizenPurgeTest extends TestCase
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->unsignedBigInteger('family_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('health_records', function (Blueprint $table) {

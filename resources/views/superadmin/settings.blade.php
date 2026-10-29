@@ -13,6 +13,8 @@
         </div>
     </div>
 
+    @include('partials.appearance-settings', ['appearanceFeedbackHandled' => true])
+
     @if(session('success'))
         <div class="settings-alert settings-alert-success" role="alert">
             {{ session('success') }}
