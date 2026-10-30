@@ -543,6 +543,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (familyIdInput.value) useFamilyAssignment();
     else useManualAssignment();
 
+    // After a validation error the page reloads, so re-apply the previous Purok/subgroup/family selection.
+    @php
+        $oldFamilyId = old('family_id');
+        $oldSubgroupId = old('subgroup_id');
+    @endphp
+    const oldFamilyId = @json($oldFamilyId);
+    const oldSubgroupId = @json($oldSubgroupId);
+    if (oldFamilyId) {
+        const familyOption = document.querySelector(`#familyPickerList .family-option[data-family-id="${oldFamilyId}"]`);
+        if (familyOption) familyOption.click();
+    } else if (oldSubgroupId) {
+        const manualOption = document.querySelector(`.manual-assignment-option[data-subgroup-id="${oldSubgroupId}"]`);
+        if (manualOption) manualOption.click();
+    }
+
     const ageInput = document.getElementById('age');
     const birthdateInput = document.getElementById('birthdate');
     const sexInput = document.getElementById('Citizen_Sex');
