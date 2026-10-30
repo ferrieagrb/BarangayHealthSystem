@@ -5,8 +5,6 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<<<<<<< HEAD
-=======
     <style>
         .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
         .citizen-password-modal.is-open { display: flex; }
@@ -37,7 +35,6 @@
         .citizen-export-format button.active { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
         .citizen-export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
     </style>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @endsection
 
 @section('content')
