@@ -143,7 +143,7 @@ class AdminAnalytics extends Controller
             'topInventory', 'inventoryRisk', 'referralStatusCounts',
             'recentSupplyActivity', 'recentEvents', 'pageViewsToday',
             'workloadChartLabels', 'workloadRecordedValues', 'workloadForecast',
-            'workloadForecastValues', 'undatedHealthRecordCount'
+            'workloadForecastLabels', 'workloadForecastValues', 'undatedHealthRecordCount'
         ));
     }
 }

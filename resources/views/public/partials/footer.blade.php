@@ -14,7 +14,7 @@
                 <li><a href="{{ route('landing') }}">Home</a></li>
                 <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
                 <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
+                <li><a href="{{ route('public.qr-scanner', [], false) }}">QR Scanner</a></li>
             </ul>
         </div>
 

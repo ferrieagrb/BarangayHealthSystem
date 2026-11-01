@@ -34,27 +34,28 @@ class DiagnosisRecordWorkloadForecaster
         }
 
         $firstTestIndex = count($monthlyCounts) - self::BACKTEST_MONTHS;
-        $averageErrors = [];
-        $baselineErrors = [];
+        $movingAverageErrors = [];
+        $lastMonthErrors = [];
         $backtestActuals = [];
 
         for ($testIndex = $firstTestIndex; $testIndex < count($monthlyCounts); $testIndex++) {
             $history = array_slice($monthlyCounts, 0, $testIndex);
-            $recentMonths = array_slice($history, -3);
-            $averagePrediction = array_sum($recentMonths) / count($recentMonths);
-            $baselinePrediction = (float) $history[array_key_last($history)];
+            $recentHistory = array_slice($history, -3);
+            $movingAverage = array_sum($recentHistory) / count($recentHistory);
+            $lastMonth = (float) $history[array_key_last($history)];
             $actual = (float) $monthlyCounts[$testIndex];
 
-            $averageErrors[] = abs($actual - $averagePrediction);
-            $baselineErrors[] = abs($actual - $baselinePrediction);
+            $movingAverageErrors[] = abs($actual - $movingAverage);
+            $lastMonthErrors[] = abs($actual - $lastMonth);
             $backtestActuals[] = $actual;
         }
 
-        $averageMae = array_sum($averageErrors) / count($averageErrors);
-        $baselineMae = array_sum($baselineErrors) / count($baselineErrors);
-        $useAverage = $averageMae < $baselineMae;
-        $selectedErrors = $useAverage ? $averageErrors : $baselineErrors;
-        $forecastValue = $useAverage
+        $movingAverageMae = array_sum($movingAverageErrors) / count($movingAverageErrors);
+        $lastMonthMae = array_sum($lastMonthErrors) / count($lastMonthErrors);
+        $useMovingAverage = $movingAverageMae < $lastMonthMae;
+        $method = $useMovingAverage ? 'Trailing 3-month average' : 'Last completed month';
+        $selectedErrors = $useMovingAverage ? $movingAverageErrors : $lastMonthErrors;
+        $forecastValue = $useMovingAverage
             ? array_sum(array_slice($monthlyCounts, -3)) / 3
             : (float) $monthlyCounts[array_key_last($monthlyCounts)];
         $actualTotal = array_sum($backtestActuals);
@@ -64,9 +65,9 @@ class DiagnosisRecordWorkloadForecaster
             'reason' => null,
             'history_months' => count($monthlyCounts),
             'forecast_values' => array_fill(0, self::FORECAST_MONTHS, round($forecastValue, 1)),
-            'method' => $useAverage ? 'Trailing 3-month average' : 'Last completed month baseline',
+            'method' => $method,
             'mae' => round(array_sum($selectedErrors) / count($selectedErrors), 2),
-            'baseline_mae' => round($baselineMae, 2),
+            'baseline_mae' => round($lastMonthMae, 2),
             'wape' => $actualTotal > 0
                 ? round(array_sum($selectedErrors) / $actualTotal * 100, 1)
                 : null,

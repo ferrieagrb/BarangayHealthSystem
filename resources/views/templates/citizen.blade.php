@@ -717,8 +717,9 @@ body,
 
 </style>
         <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
+    @include('partials.appearance-assets')
 </head>
-<body class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
+<body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
     @yield('scripts')
 
     <div class="dashboard">
@@ -1039,59 +1040,6 @@ body,
             window.addEventListener('scroll', resetTimer);
         });
 </script>@endauth
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const fontScaleByPreference = {
-            normal: 0.9,
-            large: 1,
-            xl: 1.1
-        };
-        const originalFontSizes = new WeakMap();
-        const textNodeSelector = 'body *:not(script):not(style)';
 
-        function applyCitizenFontSize(preference) {
-            const scale = fontScaleByPreference[preference] || fontScaleByPreference.normal;
-            const textElements = Array.from(document.querySelectorAll(textNodeSelector)).filter(function (element) {
-                return Array.from(element.childNodes).some(function (node) {
-                    return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
-                }) && !element.closest('.bx, svg');
-            });
-
-            textElements.forEach(function (element) {
-                if (!originalFontSizes.has(element)) {
-                    const computedSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
-                    if (!Number.isFinite(computedSize)) return;
-                    originalFontSizes.set(element, {
-                        computed: computedSize,
-                        inline: element.style.fontSize
-                    });
-                }
-            });
-
-            textElements.forEach(function (element) {
-                if (!originalFontSizes.has(element)) return;
-                const original = originalFontSizes.get(element);
-                element.style.fontSize = scale === 1
-                    ? original.inline
-                    : `${original.computed * scale}px`;
-            });
-
-            document.documentElement.dataset.font = preference;
-            document.body.dataset.font = preference;
-            document.body.classList.remove('font-normal', 'font-large', 'font-xl');
-            document.body.classList.add(`font-${preference}`);
-        }
-
-        const initialPreference = document.body.dataset.font || 'normal';
-        applyCitizenFontSize(initialPreference);
-
-        const fontSizeSelect = document.getElementById('font_size');
-        if (fontSizeSelect) {
-            fontSizeSelect.addEventListener('change', function () {
-                applyCitizenFontSize(this.value);
-            });
-        }
-    });
-</script>
 </body>
 </html>

@@ -128,48 +128,7 @@
 @section('content')
 <div class="settings-container">
     
-    {{-- CARD 1: PREFERENCES SETTINGS --}}
-    <div class="settings-card">
-        <div class="settings-header">
-            <i class='bx bx-slider-alt'></i> Appearance & Accessibility Preferences
-        </div>
-        
-        <div class="settings-body">
-            @if(session('success'))
-                <div class="alert-custom alert-success-custom">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <form action="{{ route('user.preferences.update') }}" method="POST">
-                @csrf
-                @method('PUT')
-
-                <div class="form-group-custom">
-                    <label for="theme">Appearance Theme</label>
-                    <select name="theme" id="theme">
-                        <option value="light" {{ auth()->user()->theme === 'light' ? 'selected' : '' }}>Light Mode</option>
-                        <option value="dark" {{ auth()->user()->theme === 'dark' ? 'selected' : '' }}>Dark Mode</option>
-                    </select>
-                    <div class="form-hint">Choose your preferred visual theme for the system interface.</div>
-                </div>
-
-                <div class="form-group-custom">
-                    <label for="font_size">Font Size Accessibility</label>
-                    <select name="font_size" id="font_size">
-                        <option value="normal" {{ auth()->user()->font_size === 'normal' ? 'selected' : '' }}>Normal (Default)</option>
-                        <option value="large" {{ auth()->user()->font_size === 'large' ? 'selected' : '' }}>Large</option>
-                        <option value="xl" {{ auth()->user()->font_size === 'xl' ? 'selected' : '' }}>Extra Large (XL)</option>
-                    </select>
-                    <div class="form-hint">Adjust text scaling across your dashboard for improved readability.</div>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-                    <button type="submit" class="btn-save">Save Preferences</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('partials.appearance-settings')
 
     {{-- CARD 2: SECURITY & PASSWORD SETTINGS --}}
     <div class="settings-card">

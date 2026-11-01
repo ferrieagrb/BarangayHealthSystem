@@ -103,7 +103,13 @@ function initBhwHomeMap() {
         center: { lat: 14.0668, lng: 120.8531 },
         mapTypeId: 'roadmap',
         disableDefaultUI: true,
-        zoomControl: true
+        zoomControl: true,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_LEFT,
+            mapTypeIds: ['roadmap', 'satellite']
+        }
     });
 
     const areas = @json($purokHeatmapData);

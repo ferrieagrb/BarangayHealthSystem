@@ -13,4 +13,6 @@
     </div>
 </div>
 
+@include('partials.appearance-settings')
+
 @endsection

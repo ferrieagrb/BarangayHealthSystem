@@ -183,16 +183,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const workloadForecastElement = document.querySelector('#diagnosisWorkloadForecastChart');
     if (workloadForecastElement) {
+        const workloadCategories = @json($workloadChartLabels);
+        const recordedValues = @json($workloadRecordedValues);
+        const forecastValues = @json($workloadForecastValues);
         new ApexCharts(workloadForecastElement, {
             chart: { type: 'line', height: 320, toolbar: { show: false } },
             series: [
-                { name: 'Recorded diagnosis entries', type: 'column', data: @json($workloadRecordedValues) },
-                { name: 'Three-month workload estimate', type: 'line', data: @json($workloadForecastValues) }
+                { name: 'Recorded diagnosis entries', type: 'column', data: recordedValues },
+                { name: 'Three-month workload estimate', type: 'line', data: forecastValues }
             ],
             colors: ['#2563eb', '#d97706'],
             stroke: { width: [0, 3], curve: 'straight', dashArray: [0, 6] },
             plotOptions: { bar: { columnWidth: '55%', borderRadius: 3 } },
-            xaxis: { categories: @json($workloadChartLabels), labels: { rotate: -35 } },
+            xaxis: { categories: workloadCategories, labels: { rotate: -35 } },
             yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0, title: { text: 'Diagnosis records' } },
             dataLabels: { enabled: false },
             markers: { size: [0, 4], hover: { size: 6 } },

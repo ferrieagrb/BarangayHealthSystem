@@ -162,7 +162,7 @@
     line-height: 1.45;
 }
 
-.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row),
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):not(.subgroup-archive-close):not(.password-visibility-toggle),
 .main-content a.btn,
 .main-content a.inventory-button {
     display: inline-flex;
@@ -187,7 +187,7 @@
     transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
-.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):hover:not(:disabled),
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):not(.subgroup-archive-close):not(.password-visibility-toggle):hover:not(:disabled),
 .main-content a.btn:hover,
 .main-content a.inventory-button:hover {
     border-color: #193e7e;
@@ -211,11 +211,11 @@
     color: #fff;
 }
 
-.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):active:not(:disabled) {
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):not(.subgroup-archive-close):not(.password-visibility-toggle):active:not(:disabled) {
     transform: translateY(1px);
 }
 
-.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):disabled {
+.main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):not(.subgroup-archive-close):not(.password-visibility-toggle):disabled {
     cursor: not-allowed;
     opacity: .58;
 }
@@ -331,7 +331,7 @@ body.theme-dark .main-content .page-title-group p {
         width: 100%;
     }
 
-    .main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row) {
+    .main-content button:not(.tab):not(.demographics-tab):not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.inventory-remove-row):not(.subgroup-archive-close):not(.password-visibility-toggle) {
         min-height: 42px;
     }
 
@@ -373,4 +373,103 @@ body.theme-dark .main-content .page-title-group p {
     .main-content .button-group > button {
         width: 100%;
     }
+}
+
+#demographicsApp .subgroup-section-card .text-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #dce6f4;
+    border-radius: 8px;
+    background: #eaf2ff;
+    color: #234f9b;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+#demographicsApp .subgroup-section-card .text-button:hover:not(:disabled) {
+    border-color: #b9cce5;
+    background: #edf4ff;
+    color: #193e7e;
+}
+
+#demographicsApp .subgroup-section-card .text-button.clear-bhws {
+    border-color: #e1e6ed;
+    background: #f1f3f6;
+    color: #5a6677;
+}
+
+#demographicsApp .subgroup-record .record-actions .btn-archive {
+    border-color: #dce2e9;
+    background: #f7f8fa;
+    color: #586679;
+}
+
+#demographicsApp .subgroup-record .record-actions .btn-archive:hover:not(:disabled) {
+    border-color: #c4ceda;
+    background: #eef1f5;
+    color: #35445a;
+}
+
+#subgroupArchiveDialog .subgroup-archive-actions .btn-archive-cancel {
+    border-color: #cbd5e1;
+    background: #fff;
+    color: #475569;
+}
+
+#subgroupArchiveDialog .subgroup-archive-actions .btn-archive-cancel:hover:not(:disabled) {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+#subgroupArchiveDialog #subgroupArchiveConfirm {
+    border-color: #b42318;
+    background: #b42318;
+    color: #fff;
+}
+
+#subgroupArchiveDialog #subgroupArchiveConfirm:hover:not(:disabled) {
+    border-color: #912018;
+    background: #912018;
+}
+
+#subgroupArchiveDialog #subgroupArchiveConfirm:disabled {
+    border-color: #d6a09c;
+    background: #d6a09c;
+    color: #fff;
+    cursor: not-allowed;
+}
+
+body.theme-dark #demographicsApp .subgroup-section-card .text-button {
+    border-color: #52525b;
+    background: #30343b;
+    color: #bfdbfe;
+}
+
+body.theme-dark #demographicsApp .subgroup-section-card .text-button.clear-bhws {
+    background: #303036;
+    color: #d4d4d8;
+}
+
+body.theme-dark #demographicsApp .subgroup-record .record-actions .btn-archive {
+    border-color: #52525b;
+    background: #303036;
+    color: #d4d4d8;
+}
+
+body.theme-dark #subgroupArchiveDialog .subgroup-archive-actions .btn-archive-cancel {
+    border-color: #52525b;
+    background: #262626;
+    color: #d4d4d8;
 }

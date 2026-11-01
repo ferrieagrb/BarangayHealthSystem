@@ -166,7 +166,19 @@ class HealthRecordController extends Controller
             'diagnosis' => trim($validated['diagnosis']),
             'record_date' => $validated['record_date'],
             'comments' => isset($validated['comments']) ? trim($validated['comments']) : null,
+            'severity' => $validated['severity'] ?? 'Low / Mild',
+            'weight' => $weight,
+            'height' => $height,
+            'bmi' => $bmi,
+            'temperature' => $validated['temperature'] ?? null,
+            'blood_pressure' => isset($validated['blood_pressure']) ? trim($validated['blood_pressure']) : null,
         ]);
+
+        // Keep the citizen's latest weight/height in sync with the profile where these fields exist.
+        $profileUpdates = [];
+        if ($weight !== null) $profileUpdates['Citizen_Weight'] = $weight;
+        if ($height !== null) $profileUpdates['Citizen_Height'] = $height;
+        if ($profileUpdates) $citizen->forceFill($profileUpdates)->save();
 
         return redirect()->back()->with('success', 'Diagnosis added successfully.');
     }

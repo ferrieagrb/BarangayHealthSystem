@@ -64,6 +64,39 @@ class BhwDiseaseMonitoringService
         $previousCitizens = (clone $previousQuery)->distinct()->count('hr.citizen_id');
         $privacySuppressed = $uniqueCitizens < 3;
 
+        $trendGranularity = $start->diffInDays($end) <= 62 ? 'day' : 'month';
+        $trendBucketExpression = $this->trendBucketExpression($trendGranularity);
+        $trendRows = $privacySuppressed
+            ? collect()
+            : (clone $recordsQuery)
+                ->selectRaw($trendBucketExpression . ' AS period_bucket, COUNT(hr.id) AS record_count, COUNT(DISTINCT hr.citizen_id) AS citizen_count')
+                ->groupByRaw($trendBucketExpression)
+                ->orderBy('period_bucket')
+                ->get()
+                ->keyBy('period_bucket');
+        $trendLabels = [];
+        $trendRecordCounts = [];
+        $trendCitizenCounts = [];
+        $trendCursor = $trendGranularity === 'day'
+            ? $start->copy()->startOfDay()
+            : $start->copy()->startOfMonth();
+        $trendLastBucket = $trendGranularity === 'day'
+            ? $end->copy()->startOfDay()
+            : $end->copy()->startOfMonth();
+
+        while ($trendCursor->lte($trendLastBucket)) {
+            $bucketKey = $trendGranularity === 'day'
+                ? $trendCursor->toDateString()
+                : $trendCursor->format('Y-m');
+            $bucket = $trendRows->get($bucketKey);
+            $visibleBucket = !$bucket || (int) $bucket->citizen_count >= 3;
+
+            $trendLabels[] = $trendCursor->format($trendGranularity === 'day' ? 'M j' : 'M Y');
+            $trendRecordCounts[] = !$bucket ? 0 : ($visibleBucket ? (int) $bucket->record_count : null);
+            $trendCitizenCounts[] = !$bucket ? 0 : ($visibleBucket ? (int) $bucket->citizen_count : null);
+            $trendCursor->add($trendGranularity === 'day' ? '1 day' : '1 month');
+        }
+
         $diagnosisRankings = (clone $recordsQuery)
             ->selectRaw('LOWER(TRIM(hr.diagnosis)) AS diagnosis_key, MIN(TRIM(hr.diagnosis)) AS diagnosis, COUNT(*) AS record_count, COUNT(DISTINCT hr.citizen_id) AS citizen_count')
             ->groupByRaw('LOWER(TRIM(hr.diagnosis))')
@@ -212,10 +245,35 @@ class BhwDiseaseMonitoringService
             'diagnosisRankings' => $privacySuppressed ? collect() : $diagnosisRankings,
             'areaRankings' => $privacySuppressed ? collect() : $areaRankings,
             'mapAreas' => $privacySuppressed ? [] : $visibleMapAreas,
+            'trend' => [
+                'granularity' => $trendGranularity,
+                'labels' => $privacySuppressed ? [] : $trendLabels,
+                'recordCounts' => $privacySuppressed ? [] : $trendRecordCounts,
+                'citizenCounts' => $privacySuppressed ? [] : $trendCitizenCounts,
+            ],
             'diagnosisOptions' => $diagnosisOptions,
             'availablePuroks' => $availablePuroks,
             'availableSubgroups' => $availableSubgroups,
         ];
+    }
+
+    private function trendBucketExpression(string $granularity): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if ($granularity === 'day') {
+            return match ($driver) {
+                'pgsql' => 'hr.record_date::text',
+                default => 'DATE(hr.record_date)',
+            };
+        }
+
+        return match ($driver) {
+            'mysql', 'mariadb' => "DATE_FORMAT(hr.record_date, '%Y-%m')",
+            'pgsql' => "TO_CHAR(hr.record_date, 'YYYY-MM')",
+            'sqlite' => "strftime('%Y-%m', hr.record_date)",
+            default => throw new \RuntimeException('Unsupported database driver for disease trend aggregation.'),
+        };
     }
 
     private function query(bool $canViewAll, Collection $assignedSubgroupIds): Builder

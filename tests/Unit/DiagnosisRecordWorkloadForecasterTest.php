@@ -32,7 +32,7 @@ class DiagnosisRecordWorkloadForecasterTest extends TestCase
         $forecast = (new DiagnosisRecordWorkloadForecaster())->forecast([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 20]);
 
         $this->assertTrue($forecast['available']);
-        $this->assertSame('Last completed month baseline', $forecast['method']);
+        $this->assertSame('Last completed month', $forecast['method']);
         $this->assertSame([20.0, 20.0, 20.0], $forecast['forecast_values']);
         $this->assertSame($forecast['baseline_mae'], $forecast['mae']);
     }
