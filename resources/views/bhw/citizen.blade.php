@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
 
-<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
     <style>
         .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
         .citizen-password-modal.is-open { display: flex; }
@@ -38,6 +37,7 @@
 @endsection
 
 @section('content')
+<div class="bhw-citizen-page">
 
 {{-- SUCCESS POPUP --}}
 @if(session('success'))
@@ -416,6 +416,7 @@
             @endif
         </div>
 
+        <div class="citizen-table-scroll" role="region" aria-label="Citizen records table" tabindex="0">
         <table>
             <thead>
                 <tr>
@@ -491,6 +492,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         <div style="margin-top:15px;">
             {{ $citizens->appends(request()->query())->links('pagination::bootstrap-5') }}
@@ -536,6 +538,7 @@
     </div>
 </div>
 
+</div>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 {{-- SUCCESS POPUP --}}
@@ -753,9 +756,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }],
         chart: {
             type: 'bar',
-            height: '100%',
+            height: 280,
+            width: '100%',
+            parentHeightOffset: 0,
             toolbar: { show: false }
         },
+        responsive: [{
+            breakpoint: 600,
+            options: { chart: { height: 240 } }
+        }],
         plotOptions: {
             bar: {
                 borderRadius: 4,
