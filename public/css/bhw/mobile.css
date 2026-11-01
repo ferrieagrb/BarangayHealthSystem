@@ -1,0 +1,305 @@
+/* BHW layout only. Keep every rule inside the existing phone/tablet breakpoint;
+   printing and all widths above 768px retain their current presentation. */
+@media screen and (max-width: 768px) {
+    body[data-appearance-role="bhw"] { --bhw-mobile-gap: 14px; }
+    body.bhw-mobile-drawer-open { overflow: hidden; }
+    html.bhw-mobile-drawer-open { overflow: hidden; }
+    .bhw-mobile-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        background: rgba(15, 23, 42, .48);
+        touch-action: none;
+    }
+    .bhw-mobile-backdrop[hidden] { display: none; }
+    #bhwSidebar { overscroll-behavior-y: contain; }
+    #bhwSidebar .top { position: sticky; top: 0; z-index: 2; background: inherit; }
+    #bhwSidebar .topbutton { min-height: 44px; }
+    #bhwSidebar > ul { flex-shrink: 0; }
+    #bhwSidebar .sidebar-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    #bhwSidebar a[aria-current="page"] { background: rgba(255, 255, 255, .1); box-shadow: inset 3px 0 #00bcb2; }
+
+    #bhwSidebar ~ .main-content {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+    #bhwSidebar ~ .main-content :is(.main, .content-wrapper, .qr-page, .batch-release-page, .settings-container) {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-inline: 0;
+        padding: 0;
+    }
+    #bhwSidebar ~ .main-content :is(.page-top, .page-header, .page-heading, .family-page-header, .report-meta, .ecard-page-header) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    #bhwSidebar ~ .main-content :is(.right, .page-header-actions, .toolbar, .toolbar-left, .toolbar-actions,
+        .modal-actions, .form-actions, .diagnosis-actions, .record-form-actions, .diagnosis-panel-head,
+        .diagnosis-vitals-head, .diagnosis-bmi, .family-list-heading, .announcement-card-actions, .security-row) {
+        min-width: 0;
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    #bhwSidebar ~ .main-content :is(.summary, .summary-cards, .cards, .analytics-grid, .analytics-layout,
+        .disease-filters, .disease-kpi-grid, .form-grid, .report-config-row, .batch-release-row-grid,
+        .vaccination-schedule-row, .citizen-picker-filters, .add-event-form-grid, .immunization-form-grid,
+        .diagnosis-form-grid, .maintenance-form-grid, .appearance-fields, .announcement-modal-images,
+        .picture-confirm-compare) {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: var(--bhw-mobile-gap);
+    }
+    #bhwSidebar ~ .main-content :is(.form-group.full, .diagnosis-field.full, .add-event-field-full) { grid-column: auto; }
+    #bhwSidebar ~ .main-content :is(.summary-card, .analytics-card, .disease-kpi, .form-group, .report-field,
+        .batch-release-field, .family-field, .diagnosis-field, .immunization-field, .citizen-picker-option > div) {
+        min-width: 0;
+        max-width: 100%;
+    }
+    #bhwSidebar ~ .main-content :is(.summary-card-trend, .dashboard-card-trend, .heatmap-legend, .report-toolbar) {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+    #bhwSidebar ~ .main-content :is(.form-container, .info-card, .diagnosis-panel, .analytics-panel,
+        .report-panel, .qr-panel, .batch-release-summary, .batch-release-assignments, .settings-body) { padding: 14px; }
+    #bhwSidebar ~ .main-content :is(.form-group, .family-info-field) { overflow-wrap: anywhere; }
+    #bhwSidebar ~ .main-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]), select, textarea) {
+        min-width: 0;
+        max-width: 100%;
+        min-height: 44px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    #bhwSidebar ~ .main-content textarea { resize: vertical; }
+    #bhwSidebar ~ .main-content :is(.form-actions, .modal-actions, .page-header-actions, .right) > :is(button, a),
+    #bhwSidebar ~ .main-content :is(.btn, .btn-primary, .btn-secondary, .btn-danger, .archive-restore, .page-link) {
+        min-height: 44px;
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    #bhwSidebar ~ .main-content :is(.pagination, .pagination-container nav ul) { flex-wrap: wrap; }
+
+    /* Only the table scrolls; keep its heading, filters and pagination stationary. */
+    .bhw-mobile-table-scroll {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    .bhw-mobile-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+    #bhwSidebar ~ .main-content .bhw-mobile-table-scroll table { min-width: 560px; }
+    #bhwSidebar ~ .main-content .bhw-mobile-table-scroll .report-details-table { min-width: 1500px; }
+    #bhwSidebar ~ .main-content .bhw-mobile-table-scroll .pack-table { min-width: 780px; }
+    #bhwSidebar ~ .main-content :is(.analytics-panel, .archive-card, .batch-release-assignments) { min-width: 0; }
+    #bhwSidebar ~ .main-content .archive-card { overflow: visible; }
+    #bhwSidebar ~ .main-content :is(.log-table, .archive-table) :is(td, th) { padding: 10px; }
+
+    /* Clinical details: keep field labels and action controls out of narrow rows. */
+    #bhwSidebar ~ .main-content :is(.family-info-row, .immunization-fields, .qr-info-grid) { grid-template-columns: minmax(0, 1fr) !important; }
+    #bhwSidebar ~ .main-content :is(.diagnosis-history-top, .family-info-field, .medicine-option, .edit-assignment-option) { flex-wrap: wrap; gap: 8px; }
+    #bhwSidebar ~ .main-content :is(.diagnosis-vitals, .maintenance-vitals) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #bhwSidebar ~ .main-content :is(.diagnosis-count, .diagnosis-pill, .diagnosis-bmi-status) { white-space: normal; }
+    #bhwSidebar ~ .main-content .health-record-filter-form { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+    #bhwSidebar ~ .main-content .health-record-filter-form > * { flex: 0 1 auto; width: 100%; min-width: 0; }
+    #bhwSidebar ~ .main-content :is(.health-record-search, .health-record-purok) { flex: 0 1 auto; width: 100%; min-width: 0; }
+    #bhwSidebar ~ .main-content :is(.register-form-row, .family-edit-row, .add-member-row) { grid-template-columns: minmax(0, 1fr) !important; }
+
+    /* Calendar owns its table widths; it must never inherit data-table minimums. */
+    #bhwSidebar ~ .main-content #calendar { padding: 10px; }
+    #bhwSidebar ~ .main-content #calendar table { min-width: 0 !important; width: 100% !important; }
+    #bhwSidebar ~ .main-content #calendar .fc-header-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+    #bhwSidebar ~ .main-content #calendar .fc-toolbar-chunk { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
+    #bhwSidebar ~ .main-content #calendar .fc-button { min-height: 44px; padding: 6px 8px; font-size: 13px; }
+    #bhwSidebar ~ .main-content #calendar .fc-daygrid-event { white-space: normal; }
+    #bhwSidebar ~ .main-content .vaccination-schedule-row label[style] { grid-column: auto !important; }
+
+    /* Dialogs retain their existing open/close logic. Scroll their content on short screens. */
+    #bhwSidebar ~ .main-content :is(.modal, .citizen-status-overlay, .supplies-modal-overlay, .batch-release-modal,
+        .batch-picker-modal, .medicine-picker-modal, .edit-assignment-modal, .deceased-modal-overlay,
+        .announcement-modal, .event-confirm-overlay, .deposit-confirm-overlay, .announcement-confirm-overlay,
+        .diagnosis-confirm-overlay, .citizen-delete-confirm-overlay, .citizen-password-modal, .citizen-export-modal, #confirmation-modal) {
+        padding: 10px;
+        max-width: 100vw;
+        max-height: 100dvh;
+        overflow-y: auto;
+    }
+    #bhwSidebar ~ .main-content :is(.modal-content, .supplies-modal-content, .batch-release-dialog,
+        .batch-picker-dialog, .medicine-picker-dialog, .edit-assignment-box, .deceased-modal-box,
+        .announcement-modal-dialog, .picture-confirm-dialog, .event-confirm-modal, .deposit-confirm-modal,
+        .announcement-confirm-modal, .citizen-status-modal, .citizen-delete-confirm-modal,
+        .diagnosis-confirm-modal, .custom-modal-box) {
+        min-width: 0;
+        width: 100%;
+        max-width: calc(100vw - 20px);
+        max-height: calc(100dvh - 20px);
+        padding: 16px;
+        overflow-y: auto;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+    #bhwSidebar ~ .main-content dialog.family-modal { max-height: calc(100dvh - 20px); max-width: calc(100vw - 20px); }
+    #bhwSidebar ~ .main-content dialog.family-modal :is(.modal-header, .modal-footer) { flex-wrap: wrap; gap: 10px; }
+    #bhwSidebar ~ .main-content :is(.settings-header, .settings-card-header) { padding: 16px; }
+    #bhwSidebar ~ .main-content .security-row { align-items: flex-start; }
+    /* Six referral columns were squeezing descriptions and controls into short
+       fragments. Show each record as a labeled card on phones and small tablets. */
+    #bhwSidebar ~ .main-content .bhw-referrals-page .table-container { padding: 12px; }
+    #bhwSidebar ~ .main-content .bhw-referrals-table {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+        background: transparent;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table tbody { display: grid; gap: 16px; }
+    #bhwSidebar ~ .main-content .bhw-referrals-table tbody tr {
+        display: block;
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--bhw-border, #dce4ee);
+        border-radius: 10px;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table td {
+        display: block;
+        padding: 9px 0;
+        border: 0;
+        font-size: 16px;
+        line-height: 1.6;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 5px;
+        color: var(--bhw-muted, #64748b);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table :is(.citizen-name, .citizen-sub) {
+        display: block;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table .citizen-sub { font-size: 14px; }
+    #bhwSidebar ~ .main-content .bhw-referrals-table .action-group { flex-direction: column; align-items: stretch; }
+    #bhwSidebar ~ .main-content .bhw-referrals-table :is(.status-select, .btn-primary) {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        min-height: 44px;
+        font-size: 15px;
+        white-space: normal;
+        line-height: 1.5;
+    }
+    #bhwSidebar ~ .main-content .bhw-referrals-table .status-badge {
+        padding: 5px 10px;
+        border-radius: 8px;
+        background: #eef2f7;
+        color: #334155;
+        font-size: 14px;
+    }
+    body.theme-dark #bhwSidebar ~ .main-content .bhw-referrals-table tbody tr { border-color: var(--theme-border); }
+    body.theme-dark #bhwSidebar ~ .main-content .bhw-referrals-table .citizen-name { color: var(--theme-text); }
+    body.theme-dark #bhwSidebar ~ .main-content .bhw-referrals-table .citizen-sub { color: var(--theme-muted); }
+    body.theme-dark #bhwSidebar ~ .main-content .bhw-referrals-table .status-badge {
+        background: var(--theme-raised);
+        color: var(--theme-text);
+    }
+    #bhwSidebar ~ .main-content .referral-form-card { padding: 16px; }
+    #bhwSidebar ~ .main-content .referral-form-card label { font-size: 16px; line-height: 1.5; }
+    /* Audit log columns become labeled records on small screens. Keep every
+       tab's original table structure and desktop styles intact. */
+    #bhwSidebar ~ .main-content .logs-page .tab-content { padding: 12px; }
+    #bhwSidebar ~ .main-content .logs-page .log-table {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+        background: transparent;
+    }
+    #bhwSidebar ~ .main-content .logs-page .log-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    #bhwSidebar ~ .main-content .logs-page .log-table tbody { display: grid; gap: 16px; }
+    #bhwSidebar ~ .main-content .logs-page .log-table tbody tr {
+        display: block;
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--bhw-border, #dce4ee);
+        border-radius: 10px;
+    }
+    #bhwSidebar ~ .main-content .logs-page .log-table td {
+        display: block;
+        min-width: 0;
+        padding: 9px 0;
+        border: 0;
+        font-size: 16px;
+        line-height: 1.6;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: anywhere;
+    }
+    #bhwSidebar ~ .main-content .logs-page .log-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 5px;
+        color: var(--bhw-muted, #64748b);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    #bhwSidebar ~ .main-content .logs-page :is(.tag, .status-tag) {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    #bhwSidebar ~ .main-content .logs-page .tabs button { min-height: 44px; font-size: 14px; }
+    body.theme-dark #bhwSidebar ~ .main-content .logs-page .log-table tbody tr { border-color: var(--theme-border); }
+    body.theme-dark #bhwSidebar ~ .main-content .logs-page .tab-content {
+        background: var(--theme-surface);
+        color: var(--theme-text);
+    }
+    body.theme-dark #bhwSidebar ~ .main-content .logs-page .log-table td { color: var(--theme-text); }
+    #bhwSidebar ~ .main-content .analytics-chart { min-height: 260px !important; max-height: 360px; overflow-y: auto; }
+    #bhwSidebar ~ .main-content .disease-map { height: min(330px, 65dvh); }
+    body[data-appearance-role="bhw"] .logout-confirm-dialog { max-height: calc(100dvh - 40px); overflow-y: auto; }
+    body[data-appearance-role="bhw"] .logout-confirm-actions { flex-wrap: wrap; }
+    body[data-appearance-role="bhw"] .logout-confirm-actions button { min-height: 44px; }
+
+    /* Apply the saved appearance palette to page-specific surfaces missed by the shared theme. */
+    body.theme-dark #bhwSidebar ~ .main-content :is(.archive-card, .analytics-note, .disease-kpi, .batch-release-dialog,
+        .batch-picker-dialog, .medicine-picker-dialog, .edit-assignment-box, .deceased-modal-box,
+        .picture-confirm-dialog, .event-confirm-modal, .deposit-confirm-modal, .announcement-confirm-modal,
+        .diagnosis-confirm-modal, .custom-modal-box,
+        .announcement-modal-dialog, .supplies-modal-content, .vaccination-schedule-row, .citizen-picker-option) {
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
+    }
+    body.theme-dark #bhwSidebar ~ .main-content :is(.modal-content, .supplies-modal-content, .batch-release-dialog,
+        .medicine-picker-dialog, .edit-assignment-box, .deceased-modal-box, .announcement-modal-dialog,
+        .event-confirm-modal, .deposit-confirm-modal, .announcement-confirm-modal) :is(h2, h3, label, strong) { color: var(--theme-text) !important; }
+    body.theme-dark #bhwSidebar ~ .main-content :is(.modal-content, .supplies-modal-content,
+        .announcement-modal-dialog, .event-confirm-modal, .deposit-confirm-modal, .announcement-confirm-modal) p { color: var(--theme-muted) !important; }
+}
