@@ -162,29 +162,9 @@
         }
     </style>
 @include('partials.favicon')
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body id="appActionControls">
-    <header class="main-header">
-        <div class="container nav-container">
-            <a href="{{ url('/') }}" class="brand">
-                <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong Logo" class="brand-logo">
-                <div class="brand-text">
-                    <span class="brand-title">BARANGAY AMUYONG</span>
-                    <span class="brand-subtitle">Health Services Portal</span>
-                </div>
-            </a>
-            <nav class="nav-menu">
-                <ul>
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}" class="active">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+<body>
+    @include('public.partials.header', ['activeNav' => 'announcements'])
 
     <main class="container announcement-detail">
         <a href="{{ route('public.announcements') }}" class="view-all"><i class="fa-solid fa-arrow-left"></i> All Announcements</a>
@@ -204,6 +184,8 @@
 
         <p class="announcement-detail-description">{{ $announcement->description }}</p>
     </main>
+
+    @include('public.partials.footer')
 
     <div class="lightbox" id="announcementLightbox" hidden role="dialog" aria-modal="true" aria-label="Announcement image viewer">
         <div class="lightbox-toolbar">

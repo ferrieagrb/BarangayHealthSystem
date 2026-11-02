@@ -91,6 +91,7 @@ Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name(
 
 Route::get('/login', fn () => view('login'))->name('login');
 Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
+Route::get('/site-favicon.png', [PublicAssetController::class, 'favicon'])->name('site.favicon');
 Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announcementImage'])
     ->where('path', '.*')
     ->name('announcement.image');
@@ -226,14 +227,31 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
 
     // Citizen Announcement Details
-Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
+Route::get('/announcements/{announcement}', function (\Illuminate\Http\Request $request, \App\Models\Announcement $announcement) {
     $user = auth()->user();
 
     if (!$user->isCitizen() && !$user->isSuperAdmin()) {
         abort(403, 'Unauthorized action.');
     }
 
-    return view('citizen.announcement-detail', compact('announcement'));
+    $source = in_array($request->query('from'), ['dashboard', 'announcements'], true)
+        ? $request->query('from')
+        : 'dashboard';
+    $scroll = $request->query('scroll');
+    $scroll = is_string($scroll) && ctype_digit($scroll)
+        ? min((int) $scroll, 10000000)
+        : null;
+    $returnParameters = $scroll === null ? [] : ['scroll' => $scroll];
+    $returnUrl = route(
+        $source === 'announcements' ? 'citizen.announcements' : 'citizen.dashboard',
+        $returnParameters
+    );
+
+    if ($source === 'dashboard') {
+        $returnUrl .= '#announcements';
+    }
+
+    return view('citizen.announcement-detail', compact('announcement', 'returnUrl', 'source'));
 })->name('announcements.show');
 
 });
@@ -360,7 +378,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name
 
 Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/home',[AdminSettings::class,'dashboard'])->name('home');
-    Route::get('/analytics', fn () => app(AdminAnalytics::class)->index())->name('analytics');
+    Route::get('/analytics', [AdminAnalytics::class, 'index'])->name('analytics');
     Route::get('/logs', fn () => app(AdminLogController::class)->index())->name('logs');
     Route::get('/settings', fn () => app(AdminSettings::class)->index())->name('settings');
     Route::get('/supplies', fn (\Illuminate\Http\Request $request) => app(SupplyController::class)->index($request))->name('supplies');

@@ -28,6 +28,7 @@
     @media (max-width: 800px) { .home-grid { grid-template-columns: 1fr; } .home-card-wide { grid-column: auto; } }
 </style>
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/dashboard-mobile.css') }}">
 @endsection
 
 @section('content')
@@ -73,9 +74,9 @@
 
         <section class="home-card home-card-wide">
             <div class="home-card-header"><div><h2>Referral Follow-up</h2><p>Recent patients requiring coordination</p></div><a href="{{ route('referrals.index') }}">View referrals</a></div>
-            <table class="home-table"><thead><tr><th>Date</th><th>Patient</th><th>Request</th><th>Status</th></tr></thead><tbody>
+            <table class="home-table" role="table" aria-label="Referral Follow-up"><thead role="rowgroup"><tr role="row"><th scope="col">Date</th><th scope="col">Patient</th><th scope="col">Request</th><th scope="col">Status</th></tr></thead><tbody role="rowgroup">
                 @forelse($recentReferrals as $referral)
-                    <tr><td>{{ \Carbon\Carbon::parse($referral->date_of_referral)->format('M d, Y') }}</td><td>{{ $referral->name }}</td><td>{{ $referral->requests_for }}</td><td><span class="home-status {{ in_array($referral->status, ['released', 'returned']) ? 'good' : '' }}">{{ ucfirst($referral->status ?? 'pending') }}</span></td></tr>
+                    <tr role="row"><td role="cell" data-label="Date">{{ \Carbon\Carbon::parse($referral->date_of_referral)->format('M d, Y') }}</td><td role="cell" data-label="Patient">{{ $referral->name }}</td><td role="cell" data-label="Request">{{ $referral->requests_for }}</td><td role="cell" data-label="Status"><span class="home-status {{ in_array($referral->status, ['released', 'returned']) ? 'good' : '' }}">{{ ucfirst($referral->status ?? 'pending') }}</span></td></tr>
                 @empty <tr><td colspan="4" class="home-empty">No referrals recorded.</td></tr> @endforelse
             </tbody></table>
         </section>
@@ -103,7 +104,13 @@ function initBhwHomeMap() {
         center: { lat: 14.0668, lng: 120.8531 },
         mapTypeId: 'roadmap',
         disableDefaultUI: true,
-        zoomControl: true
+        zoomControl: true,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_LEFT,
+            mapTypeIds: ['roadmap', 'satellite']
+        }
     });
 
     const areas = @json($purokHeatmapData);

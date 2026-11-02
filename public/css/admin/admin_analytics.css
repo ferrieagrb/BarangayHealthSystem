@@ -176,6 +176,58 @@
     max-width: 100%;
 }
 
+.workload-forecast-panel {
+    margin-bottom: 20px;
+}
+
+.workload-forecast-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.workload-forecast-status {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.workload-forecast-status.available {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.workload-forecast-status.insufficient {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.workload-forecast-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.workload-forecast-metrics strong {
+    color: #1f2937;
+}
+
+.workload-forecast-note {
+    margin: 12px 0 0 !important;
+    padding: 11px 12px;
+    border-left: 3px solid #d97706;
+    background: #fff7ed;
+    color: #7c2d12 !important;
+    font-size: 12px !important;
+    line-height: 1.5;
+}
+
 /* =========================================
    BAR LIST
 ========================================= */
@@ -329,6 +381,15 @@ body.theme-dark .empty-report {
     color: #9ca3af;
 }
 
+body.theme-dark .workload-forecast-metrics strong {
+    color: #f3f4f6;
+}
+
+body.theme-dark .workload-forecast-note {
+    background: #431407;
+    color: #fed7aa !important;
+}
+
 body.theme-dark .report-card strong,
 body.theme-dark .report-panel h2 {
     color: #f3f4f6;
@@ -404,6 +465,10 @@ body.theme-dark .report-table tbody tr:hover td {
     .report-card,
     .report-panel {
         padding: 16px;
+    }
+
+    .workload-forecast-heading {
+        flex-direction: column;
     }
 }
 

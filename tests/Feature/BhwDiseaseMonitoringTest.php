@@ -45,6 +45,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('password');
             $table->string('role')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('user_permissions', function (Blueprint $table) {
             $table->id();
@@ -60,6 +61,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('boundary')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('purok_subgroups', function (Blueprint $table) {
             $table->id();
@@ -70,6 +72,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('boundary')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('purok_subgroup_user', function (Blueprint $table) {
             $table->id();
@@ -83,6 +86,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->unsignedBigInteger('purok_id')->nullable();
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('citizens', function (Blueprint $table) {
             $table->id();
@@ -95,10 +99,12 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('Citizen_Purok')->nullable();
             $table->string('Citizen_Sex')->nullable();
             $table->boolean('Citizen_Pregnant')->default(false);
+            $table->boolean('Citizen_InPills')->default(false);
             $table->boolean('Citizen_IsDeceased')->default(false);
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->unsignedBigInteger('family_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('health_records', function (Blueprint $table) {
             $table->id();
@@ -113,6 +119,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->decimal('temperature', 4, 1)->nullable();
             $table->string('blood_pressure', 20)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('vaccination_records', function (Blueprint $table) {
             $table->id();
@@ -122,6 +129,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->date('date_administered')->nullable();
             $table->string('administered_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('vaccinations', function (Blueprint $table) {
             $table->id();
@@ -150,6 +158,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->integer('quantity_dispensed');
             $table->date('date_dispensed');
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('maintenance_records', function (Blueprint $table) {
             $table->id();
@@ -163,6 +172,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->text('notes')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('supplies', function (Blueprint $table) {
             $table->id();
@@ -171,6 +181,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->integer('quantity')->default(0);
             $table->integer('min_stock')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('events', function (Blueprint $table) {
             $table->id();
@@ -180,6 +191,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->text('description')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
@@ -321,6 +333,50 @@ class BhwDiseaseMonitoringTest extends TestCase
         $this->assertSame([], $data['mapAreas']);
         $this->assertTrue($data['diagnosisRankings']->isEmpty());
         $this->assertNull($data['missingLocationRecords']);
+    }
+
+    public function test_monthly_trend_counts_records_and_masks_buckets_with_fewer_than_three_citizens(): void
+    {
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+
+        $purok = Purok::create(['name' => 'Purok Trend']);
+        $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'Trend Group']);
+        $bhw->assignedSubgroups()->attach($subgroup->id);
+        $citizens = collect(range(1, 3))->map(
+            fn ($number) => $this->createCitizen($purok, $subgroup, "Trend {$number}")
+        );
+
+        $start = Carbon::today()->subMonths(4)->startOfMonth();
+        $end = Carbon::today()->endOfMonth();
+        $smallBucketDate = $start->copy()->addMonth()->day(5)->toDateString();
+        $visibleBucketDate = $start->copy()->addMonths(2)->day(10)->toDateString();
+        $repeatVisitDate = $start->copy()->addMonths(2)->day(12)->toDateString();
+
+        $this->createDiagnosis($citizens->first()->id, 'Dengue', $smallBucketDate);
+        foreach ($citizens as $citizen) {
+            $this->createDiagnosis($citizen->id, 'Dengue', $visibleBucketDate);
+        }
+        $this->createDiagnosis($citizens->first()->id, 'Dengue', $repeatVisitDate);
+
+        $data = app(BhwDiseaseMonitoringService::class)->build(
+            $bhw,
+            $start,
+            $end,
+            'dengue',
+            null,
+            null
+        );
+
+        $this->assertSame('month', $data['trend']['granularity']);
+        $smallBucketIndex = array_search($start->copy()->addMonth()->format('M Y'), $data['trend']['labels'], true);
+        $visibleBucketIndex = array_search($start->copy()->addMonths(2)->format('M Y'), $data['trend']['labels'], true);
+
+        $this->assertNotFalse($smallBucketIndex);
+        $this->assertNull($data['trend']['recordCounts'][$smallBucketIndex]);
+        $this->assertNotFalse($visibleBucketIndex);
+        $this->assertSame(4, $data['trend']['recordCounts'][$visibleBucketIndex]);
+        $this->assertSame(3, $data['trend']['citizenCounts'][$visibleBucketIndex]);
     }
 
     public function test_reports_page_loads_when_vaccine_filter_is_active(): void

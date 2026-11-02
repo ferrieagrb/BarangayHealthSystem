@@ -43,6 +43,8 @@
     .citizen-announcement-gallery button.active { border-color: #1d4ed8; }
     .citizen-announcement-gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
     .citizen-announcement-description { color: #334155; line-height: 1.75; white-space: pre-line; }
+    .citizen-announcement-full-link { display: inline-flex; margin-top: 18px; color: #1d4ed8; font-weight: 700; text-decoration: none; }
+    .citizen-announcement-full-link:hover { text-decoration: underline; }
     .citizen-announcement-viewer { position: fixed; inset: 0; z-index: 6000; display: grid; place-items: center; padding: 24px; background: rgba(15, 23, 42, .94); overflow: hidden; isolation: isolate; }
     .citizen-announcement-viewer-stage { position: fixed; inset: 0; z-index: 1; display: grid; place-items: center; overflow: hidden; touch-action: none; }
     .citizen-announcement-viewer img { position: relative; z-index: 1; max-width: min(92vw, 1200px); max-height: 86vh; object-fit: contain; transform: translate(0, 0) scale(1); transition: transform .15s ease; cursor: zoom-in; touch-action: none; user-select: none; }
@@ -68,6 +70,7 @@
         <p class="citizen-announcement-meta" id="citizenAnnouncementDate"></p>
         <div class="citizen-announcement-gallery" id="citizenAnnouncementGallery"></div>
         <p class="citizen-announcement-description" id="citizenAnnouncementDescription"></p>
+        <a class="citizen-announcement-full-link" id="citizenAnnouncementFullLink" href="">Read full announcement</a>
     </article>
 </div>
 
@@ -93,6 +96,10 @@
             'date' => optional($announcement->created_at)->format('F d, Y'),
             'description' => $announcement->content ?? $announcement->description ?? '',
             'images' => $announcement->images->map(fn ($image) => $image->url)->values(),
+            'detailUrl' => route('citizen.announcements.show', [
+                'announcement' => $announcement->id,
+                'from' => 'announcements',
+            ]),
         ]];
     })->toArray();
 @endphp
@@ -104,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const viewer = document.getElementById('citizenAnnouncementViewer');
     const gallery = document.getElementById('citizenAnnouncementGallery');
     const viewerImage = document.getElementById('citizenAnnouncementViewerImage');
+    const fullAnnouncementLink = document.getElementById('citizenAnnouncementFullLink');
     let currentImages = [];
     let currentImageIndex = 0;
     let zoom = 1;
@@ -128,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('citizenAnnouncementCategory').textContent = announcement.category;
         document.getElementById('citizenAnnouncementDate').textContent = `Posted ${announcement.date}`;
         document.getElementById('citizenAnnouncementDescription').textContent = announcement.description;
+        fullAnnouncementLink.href = announcement.detailUrl;
         currentImages = announcement.images || [];
         gallery.innerHTML = '';
         currentImages.forEach((src, index) => {
@@ -188,6 +197,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.announcement-modal-trigger').forEach((card) => {
         card.addEventListener('click', () => openAnnouncement(card.dataset.announcementId));
+    });
+    fullAnnouncementLink.addEventListener('click', () => {
+        const destination = new URL(fullAnnouncementLink.href, window.location.href);
+        destination.searchParams.set('scroll', String(Math.round(window.scrollY)));
+        fullAnnouncementLink.href = destination.toString();
     });
     document.getElementById('citizenAnnouncementClose').addEventListener('click', closeAnnouncement);
     document.getElementById('citizenAnnouncementViewerClose').addEventListener('click', closeViewer);

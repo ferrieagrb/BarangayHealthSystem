@@ -44,42 +44,9 @@
         @media (max-width: 440px) { .public-qr-facts { grid-template-columns: 1fr; } .public-qr-actions > * { flex: 1 1 100%; } }
     </style>
 @include('partials.favicon')
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
 </head>
-<body id="appActionControls">
-    <div class="topbar">
-        <div class="container topbar-content">
-            <div class="topbar-item">
-                <i class="fa-solid fa-phone"></i>
-                <span>BARANGAY HOTLINE: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-            <div class="topbar-item highlight">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>EMERGENCY: <strong>(+63) 958 789 1234</strong></span>
-            </div>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="container nav-container">
-            <a href="{{ url('/') }}" class="brand">
-                <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="brand-logo">
-                <div class="brand-text">
-                    <span class="brand-title">BARANGAY AMUYONG</span>
-                    <span class="brand-subtitle">Health Services Portal</span>
-                </div>
-            </a>
-            <nav class="nav-menu" aria-label="Public navigation">
-                <ul>
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}" class="active" aria-current="page">QR Scanner</a></li>
-                    <li><a href="{{ route('login') }}" class="btn-login" data-ui-action="primary"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+<body>
+    @include('public.partials.header', ['activeNav' => 'qr'])
 
     <section class="hero page-hero" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%), url('{{ asset('images/mission.jpg') }}');">
         <div class="container hero-content">
@@ -100,8 +67,8 @@
                     <h2>QR Scanner</h2>
                     <div id="public-qr-reader" aria-label="QR camera preview"></div>
                     <div class="public-qr-actions">
-                        <button type="button" class="public-qr-button" id="public-qr-start" data-ui-action="secondary">Start camera</button>
-                        <button type="button" class="public-qr-button secondary" id="public-qr-stop" disabled data-ui-action="secondary">Stop camera</button>
+                        <button type="button" class="public-qr-button" id="public-qr-start">Start camera</button>
+                        <button type="button" class="public-qr-button secondary" id="public-qr-stop" disabled>Stop camera</button>
                     </div>
                     <div class="public-qr-input-group">
                         <label for="public-qr-image">Scan a saved QR image</label>
@@ -111,7 +78,7 @@
                         <label for="public-qr-manual">Enter Health ID link or token</label>
                         <input type="text" id="public-qr-manual" autocomplete="off" placeholder="Paste the Citizen QR link or UUID">
                         <div class="public-qr-actions">
-                            <button type="button" class="public-qr-button secondary" id="public-qr-submit" data-ui-action="secondary">View health summary</button>
+                            <button type="button" class="public-qr-button secondary" id="public-qr-submit">View health summary</button>
                         </div>
                     </div>
                     <div id="public-qr-status" class="public-qr-status" role="status" aria-live="polite">Ready to scan a Citizen ID QR code.</div>
@@ -130,36 +97,7 @@
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container footer-grid">
-            <div class="footer-col brand-col">
-                <div class="footer-brand">
-                    <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="footer-logo">
-                    <span>BARANGAY AMUYONG</span>
-                </div>
-                <p class="footer-desc">Dedicated to delivering transparent and efficient public health services to our community.</p>
-            </div>
-            <div class="footer-col">
-                <p class="footer-heading">Quick Links</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('publiccalendar') }}">Calendar</a></li>
-                    <li><a href="{{ route('public.announcements') }}">Announcements</a></li>
-                    <li><a href="{{ route('public.qr-scanner') }}">QR Scanner</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <p class="footer-heading">Contacts</p>
-                <ul class="footer-links">
-                    <li><a href="{{ url('/contactdirectory') }}">Contact Directory</a></li>
-                    <li><a href="{{ route('login') }}">Staff Login</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container"><p>&copy; {{ date('Y') }} Barangay Amuyong. All rights reserved.</p></div>
-        </div>
-    </footer>
+    @include('public.partials.footer')
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
     <script>

@@ -223,6 +223,7 @@
 
         <div class="cs-body">
             <form
+                data-appearance-form
                 action="{{ route('user.preferences.update') }}"
                 method="POST"
             >
@@ -284,7 +285,9 @@
                     </p>
                 </div>
 
-                <button class="cs-submit" type="submit" data-ui-action="primary">
+                <p class="cs-hint" data-appearance-status role="status" aria-live="polite">Your saved preferences are applied.</p>
+                <button class="cs-submit appearance-cancel" type="reset">Cancel Preview</button>
+                <button class="cs-submit" type="submit">
                     Save Preferences
                 </button>
             </form>
@@ -352,7 +355,7 @@
                     >
                 </div>
 
-                <button class="cs-submit" type="submit" data-ui-action="primary">
+                <button class="cs-submit" type="submit">
                     Update Password
                 </button>
             </form>
@@ -394,7 +397,7 @@
                 >
                     @csrf
 
-                    <button class="cs-submit" type="submit" data-ui-action="primary">
+                    <button class="cs-submit" type="submit">
                         Send Verification Email
                     </button>
                 </form>
@@ -408,19 +411,5 @@
     </section>
 
 </main>
-<script>
-    (function () {
-        const citizenThemeSelect = document.getElementById('theme');
-        if (!citizenThemeSelect) return;
 
-        citizenThemeSelect.addEventListener('change', function () {
-            const isDark = this.value === 'dark';
-            document.body.classList.toggle('theme-dark', isDark);
-            document.body.classList.toggle('theme-light', !isDark);
-            document.documentElement.classList.toggle('theme-dark', isDark);
-            document.documentElement.classList.toggle('theme-light', !isDark);
-            document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
-        });
-    })();
-</script>
 @endsection

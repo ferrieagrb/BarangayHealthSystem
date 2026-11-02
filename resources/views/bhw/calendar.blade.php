@@ -192,6 +192,8 @@ INPUTS
     margin-top: 22px;
 }
 
+<<<<<<< HEAD
+=======
 .vaccination-schedule-modal .modal-content { width: min(1080px, calc(100vw - 32px)); overflow-x: hidden; }
 .vaccination-schedule-help { margin: -10px 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
 .citizen-picker-modal .modal-content { width: min(680px, calc(100vw - 32px)); }
@@ -215,16 +217,20 @@ INPUTS
 .remove-schedule-row { width: 38px; height: 40px; border: 0; border-radius: 7px; background: #fee2e2; color: #b91c1c; cursor: pointer; font-size: 20px; }
 .add-schedule-row { margin-top: 12px; border: 1px dashed #2563eb; background: #eff6ff; color: #1d4ed8; }
 
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @media (max-width: 640px) {
     .modal-content { padding: 22px; }
     .add-event-form-grid { grid-template-columns: 1fr; gap: 14px; }
     .add-event-field-full { grid-column: auto; }
+<<<<<<< HEAD
+=======
 }
 
 @media (max-width: 900px) {
     .vaccination-schedule-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .vaccination-schedule-row label[style] { grid-column: 1 / -1 !important; }
     .vaccination-schedule-row .remove-schedule-row { width: 100%; }
+>>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 }
 
 /* =========================================================

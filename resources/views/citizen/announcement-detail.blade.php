@@ -99,13 +99,13 @@
 
 <div class="announcement-detail-page">
     <a class="announcement-detail-back"
-       href="{{ route('citizen.announcements') }}">
-        ← Back to Announcements
+       href="{{ $returnUrl }}">
+        ← Back to {{ $source === 'announcements' ? 'Announcements' : 'Dashboard' }}
     </a>
 
     <article class="announcement-detail-card">
         <header class="announcement-detail-header">
-            <span class="announcement-detail-label">📢 Health Advisory</span>
+            <span class="announcement-detail-label">Health Advisory</span>
             <h1>{{ $announcement->title }}</h1>
             <div class="announcement-detail-meta">
                 @if($displayEventDate)

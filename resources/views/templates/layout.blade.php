@@ -8,7 +8,7 @@
 @endphp
 
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
+<html lang="en" class="theme-{{ $currentTheme }}" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
@@ -79,9 +79,12 @@
     </style>
 
     @yield('CSSown')
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
+    @include('partials.appearance-assets')
+    <link rel="stylesheet" href="{{ asset('css/bhw/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bhw/mobile.css') }}" media="screen and (max-width: 768px)">
+    <script src="{{ asset('js/bhw-mobile.js') }}" defer></script>
 </head>
-<body id="appActionControls" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+<body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 
 @yield('scripts')
     <div class="dashboard">
@@ -138,13 +141,18 @@
 </script>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">
+    <div class="sidebar" id="bhwSidebar" style="display: flex; flex-direction: column; height: 100vh;">
+        @if(request()->routeIs('bhw.reports', 'bhw.analytics'))
+            <script>
+                document.getElementById('bhwSidebar').classList.toggle('collapsed', !window.matchMedia('(max-width: 768px)').matches);
+            </script>
+        @endif
 
         <!-- TOP TOGGLE -->
         <div class="top">
-            <div class="topbutton">
+            <button type="button" class="topbutton" aria-label="Toggle sidebar" aria-controls="bhwSidebar" aria-expanded="true">
                 <i class="bx bx-sidebar"></i>
-            </div>
+            </button>
         </div>
 
         <!-- MAIN NAVIGATION LINKS -->
@@ -172,21 +180,23 @@
 
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
-                    <div class="nav-dropdown {{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'is-open' : '' }}">
-                        <button type="button" class="nav-dropdown-toggle" aria-expanded="{{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'true' : 'false' }}" aria-controls="bhwReportsMenu">
+                    <div class="nav-dropdown {{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'has-active-page' : '' }}">
+                        <button type="button" class="nav-dropdown-toggle" aria-label="Reports{{ request()->routeIs('bhw.analytics') ? ': Analytics selected' : (request()->routeIs('bhw.reports') ? ': Report Builder selected' : '') }}" aria-expanded="false" aria-controls="bhwReportsMenu">
                             <i class="bx bx-file"></i>
                             <span class="nav-item">Reports</span>
                             <i class="bx bx-chevron-down nav-chevron"></i>
                         </button>
-                        <div class="nav-dropdown-menu" id="bhwReportsMenu">
-                            <a href="{{ route('bhw.analytics') }}">
+                        <div class="nav-dropdown-menu" id="bhwReportsMenu" inert>
+                            <div class="nav-dropdown-inner">
+                            <a href="{{ route('bhw.analytics') }}" @if(request()->routeIs('bhw.analytics')) class="active" aria-current="page" @endif>
                                 <i class="bx bx-line-chart"></i>
                                 <span class="nav-item">Analytics</span>
                             </a>
-                            <a href="{{ route('bhw.reports') }}">
+                            <a href="{{ route('bhw.reports') }}" @if(request()->routeIs('bhw.reports')) class="active" aria-current="page" @endif>
                                 <i class="bx bx-file-blank"></i>
                                 <span class="nav-item">Report Builder</span>
                             </a>
+                            </div>
                         </div>
                     </div>
                 </li>
@@ -255,7 +265,7 @@
                 <li>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
                         @csrf
-                        <button type="submit" data-ui-action="secondary">
+                        <button type="submit">
                             <i class="bx bx-log-out"></i>
                             <span class="nav-item">Logout</span>
                         </button>
@@ -268,8 +278,8 @@
 
     <!-- MAIN -->
     <div class="main-content">
-        <div class="top-bar">
-            <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
+        <div class="top-bar" id="accountHeader">
+            <div class="header-user" style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
         </div>
         @yield('content')
     </div>
@@ -282,6 +292,7 @@
 
 <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
     <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
         <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
         <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
         <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
@@ -297,15 +308,50 @@ const toggleBtn = document.querySelector(".topbutton");
 
 toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("collapsed");
+    closeReportsMenu();
+    updateSidebarToggle();
 });
 
-document.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
+const sidebarMobile = window.matchMedia('(max-width: 768px)');
+function updateSidebarToggle() {
+    const collapsed = sidebar.classList.contains('collapsed');
+    toggleBtn.setAttribute('aria-expanded', String(sidebarMobile.matches ? collapsed : !collapsed));
+}
+sidebarMobile.addEventListener('change', updateSidebarToggle);
+updateSidebarToggle();
+
+function closeReportsMenu() {
+    sidebar.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
+        dropdown.classList.remove('is-open');
+        dropdown.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
+        dropdown.querySelector('.nav-dropdown-menu').inert = true;
+    });
+}
+
+sidebar.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
     button.addEventListener("click", () => {
+        // Open the full sidebar before revealing the inline submenu.
+        sidebar.classList.toggle('collapsed', sidebarMobile.matches);
+        updateSidebarToggle();
         const dropdown = button.closest(".nav-dropdown");
         const isOpen = dropdown.classList.toggle("is-open");
         button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        dropdown.querySelector('.nav-dropdown-menu').inert = !isOpen;
     });
 });
+
+sidebar.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        closeReportsMenu();
+        if (link.closest('.nav-dropdown-menu')) {
+            sidebar.classList.toggle('collapsed', !sidebarMobile.matches);
+            updateSidebarToggle();
+        }
+    });
+});
+sidebarMobile.addEventListener('change', closeReportsMenu);
+window.addEventListener('pageshow', closeReportsMenu);
 </script>
 
 @auth

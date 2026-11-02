@@ -35,26 +35,28 @@ return new class extends Migration
         }
 
         $eligibility = app(VaccinationEligibility::class);
-        VaccinationRecord::with('citizen')->chunkById(100, function ($records) use ($eligibility): void {
-            foreach ($records as $record) {
-                $result = $record->citizen
-                    ? $eligibility->evaluate(
-                        $record->citizen,
-                        $record->vaccine_name,
-                        $record->dose_number,
-                        $record->date_administered,
-                        checkSequence: false
-                    )
-                    : ['eligible' => false, 'reason' => 'The linked citizen record could not be found.'];
+        VaccinationRecord::withTrashed()
+            ->with('citizen')
+            ->chunkById(100, function ($records) use ($eligibility): void {
+                foreach ($records as $record) {
+                    $result = $record->citizen
+                        ? $eligibility->evaluate(
+                            $record->citizen,
+                            $record->vaccine_name,
+                            $record->dose_number,
+                            $record->date_administered,
+                            checkSequence: false
+                        )
+                        : ['eligible' => false, 'reason' => 'The linked citizen record could not be found.'];
 
-                if (!$result['eligible']) {
-                    $record->forceFill([
-                        'eligibility_review_required' => true,
-                        'eligibility_review_reason' => $result['reason'],
-                    ])->saveQuietly();
+                    if (!$result['eligible']) {
+                        $record->forceFill([
+                            'eligibility_review_required' => true,
+                            'eligibility_review_reason' => $result['reason'],
+                        ])->saveQuietly();
+                    }
                 }
-            }
-        });
+            });
     }
 
     public function down(): void

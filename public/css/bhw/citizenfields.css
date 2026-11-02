@@ -1080,8 +1080,9 @@ body:has(.maintenance-section) .health-alert-error {
     .immunization-form-grid {
         grid-template-columns: 1fr;
     }
+
 }
-}
+
 
 
 

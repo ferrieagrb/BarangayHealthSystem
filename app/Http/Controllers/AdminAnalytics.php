@@ -11,12 +11,13 @@ use App\Models\SupplyLog;
 use App\Models\SupplyRelease;
 use App\Models\User;
 use App\Models\citizens;
+use App\Services\DiagnosisRecordWorkloadForecaster;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AdminAnalytics extends Controller
 {
-    public function index()
+    public function index(DiagnosisRecordWorkloadForecaster $workloadForecaster)
     {
         $totalCitizens = citizens::count();
         $totalUsers = User::count();
@@ -45,6 +46,66 @@ class AdminAnalytics extends Controller
             ->get()
             ->groupBy(fn ($record) => Carbon::parse($record->created_at)->format('M Y'));
         $healthTrend = $monthLabels->map(fn ($label) => $healthRecordsByMonth->get($label, collect())->count())->values();
+
+        $monthExpression = match (DB::connection()->getDriverName()) {
+            'mysql', 'mariadb' => "DATE_FORMAT(record_date, '%Y-%m')",
+            'pgsql' => "TO_CHAR(record_date, 'YYYY-MM')",
+            'sqlite' => "strftime('%Y-%m', record_date)",
+            default => throw new \RuntimeException('Unsupported database driver for diagnosis workload reporting.'),
+        };
+        $monthlyRecordRows = DB::table('health_records')
+            ->whereNotNull('record_date')
+            ->whereDate('record_date', '<=', today())
+            ->selectRaw($monthExpression . ' AS month_key, COUNT(*) AS record_count')
+            ->groupByRaw($monthExpression)
+            ->orderBy('month_key')
+            ->get();
+        $monthlyRecordMap = $monthlyRecordRows->pluck('record_count', 'month_key');
+        $firstRecordedMonth = $monthlyRecordRows->first()?->month_key;
+        $currentMonth = now()->startOfMonth();
+        $lastCompletedMonth = $currentMonth->copy()->subMonthNoOverflow();
+        $monthlyHistory = [];
+        $workloadChartLabels = [];
+        $workloadRecordedValues = [];
+
+        if ($firstRecordedMonth !== null) {
+            $monthCursor = Carbon::createFromFormat('Y-m', $firstRecordedMonth)->startOfMonth();
+
+            while ($monthCursor->lte($currentMonth)) {
+                $monthKey = $monthCursor->format('Y-m');
+                $recordCount = (int) ($monthlyRecordMap[$monthKey] ?? 0);
+                $workloadChartLabels[] = $monthCursor->format('M Y');
+                $workloadRecordedValues[] = $recordCount;
+
+                if ($monthCursor->lt($currentMonth) && $monthCursor->lte($lastCompletedMonth)) {
+                    $monthlyHistory[] = $recordCount;
+                }
+
+                $monthCursor->addMonth();
+            }
+        }
+
+        $workloadForecast = $workloadForecaster->forecast($monthlyHistory);
+        $workloadForecastLabels = [];
+        $workloadForecastValues = [];
+
+        if ($workloadForecast['available']) {
+            for ($offset = 1; $offset <= count($workloadForecast['forecast_values']); $offset++) {
+                $workloadForecastLabels[] = $currentMonth->copy()->addMonths($offset)->format('M Y');
+            }
+            $workloadChartLabels = array_merge($workloadChartLabels, $workloadForecastLabels);
+            $recordedValueCount = count($workloadRecordedValues);
+            $workloadRecordedValues = array_merge(
+                $workloadRecordedValues,
+                array_fill(0, count($workloadForecast['forecast_values']), null)
+            );
+            $workloadForecastValues = array_merge(
+                array_fill(0, $recordedValueCount, null),
+                $workloadForecast['forecast_values']
+            );
+        }
+
+        $undatedHealthRecordCount = HealthRecord::whereNull('record_date')->count();
 
         $purokCounts = citizens::select('Citizen_Purok')
             ->get()
@@ -80,7 +141,9 @@ class AdminAnalytics extends Controller
             'pendingReferrals', 'upcomingEvents', 'scheduledReleases', 'claimedReleases',
             'monthLabels', 'healthTrend', 'purokCounts',
             'topInventory', 'inventoryRisk', 'referralStatusCounts',
-            'recentSupplyActivity', 'recentEvents', 'pageViewsToday'
+            'recentSupplyActivity', 'recentEvents', 'pageViewsToday',
+            'workloadChartLabels', 'workloadRecordedValues', 'workloadForecast',
+            'workloadForecastLabels', 'workloadForecastValues', 'undatedHealthRecordCount'
         ));
     }
 }

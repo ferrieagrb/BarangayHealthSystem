@@ -26,17 +26,22 @@ class AdminSettings extends Controller
     {
         $puroks = Purok::withCount(['families', 'subgroups'])
             ->with('subgroups.bhws')
-            ->orderBy('name')
-            ->get();
+            ->get()
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
         $puroks->each(function (Purok $purok) {
+            $purok->setRelation('subgroups', $purok->subgroups->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values());
             $purok->setAttribute('purge_citizens_count', $this->citizensInPurokQuery($purok)->count());
         });
         $bhws = User::where('role', 'bhw')->orderBy('name')->get();
         $subgroups = PurokSubgroup::with(['purok', 'bhws', 'bhw'])
             ->withCount(['families', 'citizens'])
-            ->orderBy('purok_id')
-            ->orderBy('name')
-            ->get();
+            ->get()
+            ->sort(function ($a, $b) {
+                return strnatcasecmp((string) optional($a->purok)->name, (string) optional($b->purok)->name)
+                    ?: strnatcasecmp((string) $a->name, (string) $b->name);
+            })
+            ->values();
         $subgroups->each(function (PurokSubgroup $subgroup) {
             $subgroup->setAttribute('purge_citizens_count', $this->citizensInSubgroupQuery($subgroup)->count());
         });
@@ -245,21 +250,39 @@ class AdminSettings extends Controller
     public function destroySubgroup(Request $request, $id)
     {
         $subgroup = PurokSubgroup::findOrFail($id);
+        $subgroup->loadMissing('purok');
 
         if ($subgroup->families()->whereHas('members')->exists() || $subgroup->citizens()->exists()) {
+            $message = 'This subgroup cannot be archived while it has citizens. Move those records first.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'errors' => ['subgroup' => [$message]],
+                ], 422);
+            }
+
             return back()->withErrors([
-                'subgroup' => 'This subgroup cannot be archived while it has citizens. Move those records first.',
+                'subgroup' => $message,
             ]);
         }
 
-        $request->validate([
-            'current_password' => ['required', 'current_password'],
-        ]);
+        $confirmationName = "{$subgroup->name} - {$subgroup->purok->name}";
+        $this->validatePurgeConfirmation($request, $confirmationName);
 
         DB::transaction(function () use ($subgroup) {
             $subgroup->families()->whereDoesntHave('members')->delete();
             $subgroup->delete();
         });
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('success', "Subgroup {$confirmationName} and its empty family records were archived. BHW accounts and assignment records were not changed.");
+            $request->session()->flash('demographics_tab', 'subgroups');
+
+            return response()->json([
+                'message' => "Subgroup {$confirmationName} and its empty family records were archived. BHW accounts and assignment records were not changed.",
+            ]);
+        }
 
         return back()->with('success', 'Purok subgroup archived successfully!');
     }
@@ -300,6 +323,17 @@ class AdminSettings extends Controller
         $message = $citizenCount > 0
             ? "{$citizenCount} citizens and {$accountCount} linked citizen accounts were archived from {$confirmationName}. They can be restored from the archive. Family records and BHW accounts were not changed."
             : "No citizens were found in {$confirmationName}; nothing was archived.";
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('success', $message);
+            $request->session()->flash('demographics_tab', 'subgroups');
+
+            return response()->json([
+                'message' => $message,
+                'citizen_count' => $citizenCount,
+                'account_count' => $accountCount,
+            ]);
+        }
 
         return back()->with('success', $message)->with('demographics_tab', 'subgroups');
     }

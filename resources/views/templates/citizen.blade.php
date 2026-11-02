@@ -717,9 +717,9 @@ body,
 
 </style>
         <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
+    @include('partials.appearance-assets')
 </head>
-<body id="appActionControls" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
+<body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
     @yield('scripts')
 
     <div class="dashboard">
@@ -873,7 +873,7 @@ body,
             
             <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf
-                <button type="submit" class="btn-logout" data-ui-action="secondary">Logout</button>
+                <button type="submit" class="btn-logout">Logout</button>
             </form>
         </div>
     </div>
@@ -885,6 +885,7 @@ body,
 @auth
     <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
         <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
             <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
             <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
             <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
@@ -1039,59 +1040,6 @@ body,
             window.addEventListener('scroll', resetTimer);
         });
 </script>@endauth
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const fontScaleByPreference = {
-            normal: 0.9,
-            large: 1,
-            xl: 1.1
-        };
-        const originalFontSizes = new WeakMap();
-        const textNodeSelector = 'body *:not(script):not(style)';
 
-        function applyCitizenFontSize(preference) {
-            const scale = fontScaleByPreference[preference] || fontScaleByPreference.normal;
-            const textElements = Array.from(document.querySelectorAll(textNodeSelector)).filter(function (element) {
-                return Array.from(element.childNodes).some(function (node) {
-                    return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
-                }) && !element.closest('.bx, svg');
-            });
-
-            textElements.forEach(function (element) {
-                if (!originalFontSizes.has(element)) {
-                    const computedSize = Number.parseFloat(window.getComputedStyle(element).fontSize);
-                    if (!Number.isFinite(computedSize)) return;
-                    originalFontSizes.set(element, {
-                        computed: computedSize,
-                        inline: element.style.fontSize
-                    });
-                }
-            });
-
-            textElements.forEach(function (element) {
-                if (!originalFontSizes.has(element)) return;
-                const original = originalFontSizes.get(element);
-                element.style.fontSize = scale === 1
-                    ? original.inline
-                    : `${original.computed * scale}px`;
-            });
-
-            document.documentElement.dataset.font = preference;
-            document.body.dataset.font = preference;
-            document.body.classList.remove('font-normal', 'font-large', 'font-xl');
-            document.body.classList.add(`font-${preference}`);
-        }
-
-        const initialPreference = document.body.dataset.font || 'normal';
-        applyCitizenFontSize(initialPreference);
-
-        const fontSizeSelect = document.getElementById('font_size');
-        if (fontSizeSelect) {
-            fontSizeSelect.addEventListener('change', function () {
-                applyCitizenFontSize(this.value);
-            });
-        }
-    });
-</script>
 </body>
 </html>

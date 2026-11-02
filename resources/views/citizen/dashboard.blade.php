@@ -1597,11 +1597,11 @@ body.theme-dark .c-home {
                             @endphp
                             <div class="c-ann-slide">
                                 <a class="c-ann-link"
-                                   href="{{ route('citizen.announcements.show', $announcement->id) }}"
+                                   href="{{ route('citizen.announcements.show', ['announcement' => $announcement->id, 'from' => 'dashboard']) }}"
                                    aria-label="Read full announcement: {{ $announcement->title }}">
                                     <article class="c-ann-card">
                                     <div class="c-ann-cover">
-                                        <span class="c-ann-label">📢 Health Advisory</span>
+                                        <span class="c-ann-label">Health Advisory</span>
                                         @if($isUrgentAnnouncement)
                                             <span class="c-ann-priority">URGENT</span>
                                         @endif
@@ -2287,7 +2287,22 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+document.querySelectorAll('.c-ann-link').forEach((link) => {
+    link.addEventListener('click', () => {
+        const destination = new URL(link.href, window.location.href);
+        destination.searchParams.set('scroll', String(Math.round(window.scrollY)));
+        link.href = destination.toString();
+    });
+});
 
+window.addEventListener('pageshow', () => {
+    const scroll = new URLSearchParams(window.location.search).get('scroll');
+    if (scroll && /^\d+$/.test(scroll)) {
+        window.requestAnimationFrame(() => window.scrollTo(0, Number(scroll)));
+    }
+});
+</script>
 
 <style>
 /* Only the dashboard health card is styled here; other dashboard sections are untouched. */

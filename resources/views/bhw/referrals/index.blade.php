@@ -7,7 +7,7 @@
 
 @section('content')
 
-<div class="main">
+<div class="main bhw-referrals-page">
 
     <div class="page-top">
 
@@ -47,30 +47,30 @@
 
     <div class="table-container">
 
-        <table>
+        <table class="bhw-referrals-table" role="table" aria-label="Referral records">
 
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Patient</th>
-                    <th>Request For</th>
-                    <th>Status</th>
-                    <th>Update Status</th>
-                    <th>File</th>
+            <thead role="rowgroup">
+                <tr role="row">
+                    <th scope="col">Date</th>
+                    <th scope="col">Patient</th>
+                    <th scope="col">Request For</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Update Status</th>
+                    <th scope="col">File</th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody role="rowgroup">
 
                 @forelse($referrals as $referral)
 
-                    <tr>
+                    <tr role="row">
 
-                        <td>
+                        <td role="cell" data-label="Date">
                             {{ $referral->date_of_referral }}
                         </td>
 
-                        <td>
+                        <td role="cell" data-label="Patient">
                             <span class="citizen-name">
                                 {{ $referral->name }}
                             </span>
@@ -81,11 +81,11 @@
                             </span>
                         </td>
 
-                        <td>
+                        <td role="cell" data-label="Request For">
                             {{ $referral->requests_for }}
                         </td>
 
-                        <td>
+                        <td role="cell" data-label="Status">
 
                             @if($referral->status == 'approved')
                                 <span class="status-badge status-approved">
@@ -105,7 +105,7 @@
 
                         </td>
 
-                        <td>
+                        <td role="cell" data-label="Update Status">
 
                             <form
                                 action="{{ route('referrals.status', $referral->id) }}"
@@ -119,6 +119,7 @@
                                 <select
                                     name="status"
                                     class="status-select"
+                                    aria-label="Update referral status for {{ $referral->name }}"
                                 >
 
                                     <option value="approved"
@@ -146,7 +147,7 @@
 
                         </td>
 
-                        <td>
+                        <td role="cell" data-label="File">
 
                             @if($referral->file_path)
 

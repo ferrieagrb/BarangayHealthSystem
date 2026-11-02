@@ -7,7 +7,7 @@
     $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
 @endphp
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
+<html lang="en" class="theme-{{ $currentTheme }}" data-theme="{{ $currentTheme }}" data-font="{{ $currentFontSize }}">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
@@ -49,12 +49,12 @@
     </style>
     @yield('CSSown')
     <link rel="stylesheet" href="{{ asset('css/admin/responsive.css') }}">
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
+    @include('partials.appearance-assets')
 </head>
 
 
 
-<body id="appActionControls" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+<body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 @yield('scripts')
 <div class="dashboard">
 
@@ -124,7 +124,7 @@
                 <li>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
-                        <button type="submit" data-ui-action="secondary">
+                        <button type="submit">
                             <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
                             <span class="nav-item">Logout</span>
                         </button>
@@ -138,7 +138,7 @@
     <!-- MAIN -->
     <div class="main-content">
         <div class="top-bar">
-    <div style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
+    <div class="header-user" style="margin-left:auto; font-weight:500; color:#334155;">{{ auth()->user()->name }}</div>
     </div>
         @yield('content')
     </div>
@@ -150,6 +150,7 @@
 @auth
 <div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
     <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
         <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
         <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
         <a href="{{ route('login') }}" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
