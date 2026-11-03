@@ -1043,5 +1043,6 @@ body,
         });
 </script>@endauth
 
+<script src="{{ asset('js/password-toggle.js') . '?v=1793722773' }}"></script>
 </body>
 </html>
