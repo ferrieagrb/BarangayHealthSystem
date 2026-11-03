@@ -63,8 +63,10 @@ Route::get('/health-id/{token}/summary', [QRScannerController::class, 'publicHea
     ->whereUuid('token')
     ->middleware('throttle:60,1')
     ->name('health-id.summary');
-Route::view('/public/qr-scanner', 'public.qr-scanner')
+Route::view('/health-scanner', 'public.qr-scanner')
     ->name('public.qr-scanner');
+// Old path overlaps the server's real public/ folder on some hosts; keep it working via redirect.
+Route::redirect('/public/qr-scanner', '/health-scanner');
 
 // Legacy QR links printed before the public Health ID existed. Signed-in BHWs keep the
 // internal view; everyone else lands on the public Health ID instead of the login page.
