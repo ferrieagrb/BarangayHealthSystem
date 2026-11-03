@@ -452,7 +452,7 @@ body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-
 
 /* Standard ATM / ID-1 card preview dimensions. */
 @media screen {
-.bhw-ecard-page .bheams-id-card{display:flex!important;flex-direction:column!important;width:85.60mm!important;height:53.98mm!important;min-height:53.98mm!important;max-width:85.60mm!important;max-height:53.98mm!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
+.bhw-ecard-page .bheams-id-card{zoom:1.3;display:flex!important;flex-direction:column!important;width:85.60mm!important;height:53.98mm!important;min-height:53.98mm!important;max-width:85.60mm!important;max-height:53.98mm!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
 .bhw-ecard-page .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .43in!important;min-height:.43in!important;gap:.08in!important;padding:.04in .11in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
 .bhw-ecard-page .bheams-seal{width:.31in!important;height:.31in!important;min-width:.31in!important;min-height:.31in!important;flex:0 0 .31in!important;border-width:1px!important}
 .bhw-ecard-page .bheams-brand{min-width:0!important;flex:1!important}
@@ -512,4 +512,5 @@ window.addEventListener('afterprint', function() {
     }
 });
 </script>
+<script src="{{ asset('js/ecard-preview.js') }}?v={{ filemtime(public_path('js/ecard-preview.js')) }}"></script>
 @endsection
