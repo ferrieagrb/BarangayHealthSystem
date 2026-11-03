@@ -1,9 +1,11 @@
 
 @extends('templates.superadmin')
 
-@section('content')
+@section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/superadmin/superadmin_settings.css') }}">
+@endsection
 
+@section('content')
 <div class="superadmin-settings">
 
     <div class="settings-page-header">
@@ -13,31 +15,12 @@
         </div>
     </div>
 
-    @include('partials.appearance-settings', ['appearanceFeedbackHandled' => true])
-
     @if(session('success'))
         <div class="settings-alert settings-alert-success" role="alert">
             {{ session('success') }}
         </div>
     @endif
 
-<<<<<<< HEAD
-    <form method="POST" action="{{ route('superadmin.system.settings.update') }}" class="space-y-5" enctype="multipart/form-data" id="systemSettingsForm">
-        @csrf
-        @method('PUT')
-
-        <section class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-blue-900">Universal Website Logo</h2>
-            <p class="mt-1 text-sm text-gray-500">This logo is used on the public landing page and login screen.</p>
-            <div class="mt-5 flex flex-wrap items-center gap-5">
-                <div class="flex h-28 w-28 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 p-3">
-                    <img id="currentLogoPreview" src="{{ $logoUrl }}" alt="Current website logo" class="max-h-full max-w-full object-contain">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700" for="logoUpload">Upload new logo</label>
-                    <input id="logoUpload" name="logo" type="file" accept="image/png,image/jpeg,image/webp" class="mt-2 block text-sm text-gray-600">
-                    <p class="mt-1 text-xs text-gray-500">PNG, JPG, or WEBP. Maximum 2 MB.</p>
-=======
     @if(session('error'))
         <div class="settings-alert settings-alert-error" role="alert">
             {{ session('error') }}
@@ -87,19 +70,10 @@
                     <p class="settings-field-help">
                         PNG, JPG, or WEBP. Maximum 2 MB.
                     </p>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
                 </div>
             </div>
         </section>
 
-<<<<<<< HEAD
-        <section class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-blue-900">User Experience</h2>
-            <p class="mt-1 text-sm text-gray-500">Control interface preferences available to users.</p>
-            <label class="mt-5 flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <span><strong class="block text-sm text-gray-800">Allow dark mode</strong><small class="text-xs text-gray-500">Allow users to choose a dark interface theme.</small></span>
-                <input type="checkbox" name="allow_dark_mode" value="1" {{ $allowDarkMode ? 'checked' : '' }} class="h-5 w-5">
-=======
         {{-- User Experience --}}
         <section class="settings-card">
             <div class="settings-card-header">
@@ -120,7 +94,6 @@
                     {{ $allowDarkMode ? 'checked' : '' }}
                     class="settings-toggle-input"
                 >
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
             </label>
         </section>
 
@@ -165,6 +138,30 @@
                     name="vaccination_scheduling_enabled"
                     value="1"
                     {{ $vaccinationSchedulingEnabled ? 'checked' : '' }}
+                    class="settings-toggle-input"
+                >
+            </label>
+        </section>
+
+        {{-- Password Re-entry --}}
+        <section class="settings-card">
+            <div class="settings-card-header">
+                <h2>Password Re-entry</h2>
+                <p>Ask users to re-enter their own password before sensitive actions.</p>
+            </div>
+
+            <label class="settings-toggle-row">
+                <span class="settings-toggle-description">
+                    <strong>Require password confirmation</strong>
+                    <small>Applies to exports, backups, role changes and password resets. Turning this off weakens protection of citizen data.</small>
+                </span>
+
+                <input type="hidden" name="password_reentry_required" value="0">
+                <input
+                    type="checkbox"
+                    name="password_reentry_required"
+                    value="1"
+                    {{ $passwordReentryRequired ? 'checked' : '' }}
                     class="settings-toggle-input"
                 >
             </label>
@@ -269,7 +266,7 @@
                 <a
                     href="{{ route('superadmin.system.settings.backup') }}"
                     class="settings-button settings-button-secondary"
-                >
+                 data-ui-action="secondary">
                     Download Database Backup
                 </a>
             </div>
@@ -277,7 +274,7 @@
 
         {{-- Save Settings --}}
         <div class="settings-form-footer">
-            <button type="submit" class="settings-button settings-button-primary">
+            <button type="submit" class="settings-button settings-button-primary" data-ui-action="primary">
                 Save Settings
             </button>
         </div>
@@ -285,18 +282,6 @@
     </form>
 </div>
 
-<<<<<<< HEAD
-<div id="logoPreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-5" role="dialog" aria-modal="true" aria-labelledby="logoPreviewTitle">
-    <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-        <h2 id="logoPreviewTitle" class="text-lg font-semibold text-slate-800">Preview New Logo</h2>
-        <p class="mt-1 text-sm text-slate-500">Confirm this image before saving it as the universal website logo.</p>
-        <div class="mt-5 flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-5">
-            <img id="newLogoPreview" src="" alt="New logo preview" class="max-h-40 max-w-full object-contain">
-        </div>
-        <div class="mt-5 flex justify-end gap-3">
-            <button type="button" id="cancelLogoUpload" class="rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-            <button type="button" id="confirmLogoUpload" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Confirm &amp; Save</button>
-=======
 {{-- Logo Preview Modal --}}
 <div
     id="logoPreviewModal"
@@ -326,7 +311,7 @@
                 type="button"
                 id="cancelLogoUpload"
                 class="settings-button settings-button-secondary"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -334,10 +319,9 @@
                 type="button"
                 id="confirmLogoUpload"
                 class="settings-button settings-button-primary"
-            >
+             data-ui-action="primary">
                 Confirm &amp; Save
             </button>
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
         </div>
     </div>
 </div>
@@ -353,39 +337,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancel = document.getElementById('cancelLogoUpload');
     const confirm = document.getElementById('confirmLogoUpload');
 
-<<<<<<< HEAD
-    function closePreview() {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        input.value = '';
-        preview.removeAttribute('src');
-    }
-
-    input.addEventListener('change', function () {
-        const file = input.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = event => {
-            preview.src = event.target.result;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            cancel.focus();
-        };
-        reader.readAsDataURL(file);
-    });
-
-    cancel.addEventListener('click', closePreview);
-    confirm.addEventListener('click', function () {
-        confirm.disabled = true;
-        form.submit();
-    });
-    modal.addEventListener('click', event => {
-        if (event.target === modal) closePreview();
-    });
-    document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !modal.classList.contains('hidden')) closePreview();
-=======
     if (!form || !input || !modal || !preview || !cancel || !confirm) {
         return;
     }
@@ -471,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
             closePreview();
         }
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
     });
 });
 </script>

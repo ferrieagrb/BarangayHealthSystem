@@ -8,11 +8,11 @@
 <div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
     <div class="ecard-page-header print:hidden">
         <h1>Citizen ID & Electronic Health Card</h1>
-        <a href="{{ route('citizen.dashboard') }}" class="ecard-button ecard-button-secondary">Back to Dashboard</a>
+        <a href="{{ route('citizen.dashboard') }}" class="ecard-button ecard-button-secondary" data-ui-action="secondary">Back to Dashboard</a>
     </div>
     <div class="ecard-actions-top print:hidden">
-        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')">Print Health Card Only</button>
-        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')">Print Health Information Only</button>
+        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')" data-ui-action="secondary">Print Health Card Only</button>
+        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
     </div>
     <div class="ecard-content-stack">
 <div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="ecard-id-scroll-hint" tabindex="0">
@@ -49,7 +49,7 @@
         <div class="bheams-photo">
             @if($citizen->photo_path)
                 <img
-                    src="{{ asset('storage/' . $citizen->photo_path) }}"
+                    src="{{ route('citizen.photo', $citizen->id) }}"
                     alt="Citizen Photo"
                 >
             @else
@@ -298,8 +298,11 @@
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
                                         {{ $vax->vaccine_name }}
+                                        @if($vax->historical_recording)
+                                            <div class="mt-1 text-xs font-normal text-slate-600">Historical record</div>
+                                        @endif
                                         @if($vax->eligibility_review_required)
-                                            <div class="mt-1 text-xs font-normal text-amber-700">Review required: {{ $vax->eligibility_review_reason }}</div>
+                                            <div class="mt-1 text-xs font-normal text-amber-700">Clinical age eligibility not established: {{ $vax->eligibility_review_reason }}</div>
                                         @endif
                                         @if($vax->catch_up_reviewed)
                                             <div class="mt-1 text-xs font-normal text-blue-700">Catch-up schedule confirmed by health center.</div>
@@ -308,6 +311,12 @@
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}
                                         — {{ $vax->dose_number }}
+                                        @if($vax->cvx_code)
+                                            <div class="text-xs">CDC CVX {{ $vax->cvx_code }}</div>
+                                        @endif
+                                        @if($vax->vaccine_formulation)
+                                            <div class="text-xs">{{ $vax->vaccine_formulation }}</div>
+                                        @endif
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->date_administered }}

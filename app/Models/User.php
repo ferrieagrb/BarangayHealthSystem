@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'font_size',
         'failed_login_attempts',
         'is_locked',
+        'locked_until',
     ];
     
     protected $hidden = [
@@ -41,7 +42,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'locked_until' => 'datetime',
         ];
+    }
+
+    // True while the account is under a temporary lockout, or under a legacy manual lock.
+    public function isLockedOut(): bool
+    {
+        return (bool) $this->is_locked || ($this->locked_until && $this->locked_until->isFuture());
     }
 
     // Citizen username: lastname_MMDD (e.g. delacruz_0111); a number is appended if already taken.
@@ -106,8 +114,7 @@ class User extends Authenticatable implements MustVerifyEmail
 // Helper method to check if user has write access to a specific feature
 public function hasWriteAccess(string $feature): bool
 {
-    if ($this->role === 'admin') {
-        return true; // Admins always have write access everywhere
+    if ($this->role === 'admin' || $this->role === 'superadmin') {
     }
 
     $permission = $this->permissions()->where('feature', $feature)->first();
@@ -136,6 +143,13 @@ public function assignedSubgroup()
 public function assignedSubgroups()
 {
     return $this->belongsToMany(PurokSubgroup::class, 'purok_subgroup_user')
+        ->withTimestamps();
+
+}
+
+public function assignedPuroks()
+{
+    return $this->belongsToMany(Purok::class, 'purok_user')
         ->withTimestamps();
 }
 

@@ -40,6 +40,13 @@
 <div class="bhw-citizen-page">
 
 {{-- SUCCESS POPUP --}}
+@if($errors->has('confirm_password') || $errors->has('password'))
+<div role="alert" style="margin:0 0 14px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;">
+    @foreach($errors->all() as $error)
+        <div>{{ $error }}</div>
+    @endforeach
+</div>
+@endif
 @if(session('success'))
 <div id="citizen-success-popup"
      style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;">
@@ -58,7 +65,7 @@
             </div>
         @endif
         <button type="button" onclick="closeCitizenSuccessPopup()"
-                style="background:#1646bd;color:#fff;border:none;border-radius:7px;padding:10px 30px;cursor:pointer;font-weight:bold;">OK</button>
+                style="background:#1646bd;color:#fff;border:none;border-radius:7px;padding:10px 30px;cursor:pointer;font-weight:bold;" data-ui-action="secondary">OK</button>
     </div>
 </div>
 @endif
@@ -71,9 +78,9 @@
     </div>
 
     <div class="page-header-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <a href="{{ route('citizen.add') }}" class="btn-primary">+ Add Citizen</a>
+        <a href="{{ route('citizen.add') }}" class="btn-primary" data-ui-action="primary">+ Add Citizen</a>
         <button type="button" class="btn-secondary"
-                onclick="document.getElementById('excelFileInput').click();">
+                onclick="document.getElementById('excelFileInput').click();" data-ui-action="secondary">
             Import List
         </button>
     </div>
@@ -180,7 +187,7 @@
             {{-- STATUS FILTER --}}
             <div class="filter-box">
                 <button type="button" id="openCitizenStatusFilter"
-                        class="citizen-status-filter-btn">
+                        class="citizen-status-filter-btn" data-ui-action="secondary">
                     <span>Status & Filters</span>
                     <span class="status-filter-arrow" aria-hidden="true">⌄</span>
                 </button>
@@ -189,7 +196,7 @@
     </div>
 
     <div class="toolbar-actions">
-        {{-- <button type="button" id="openCitizenExportModal" class="btn-secondary">Export List</button> --}}
+        {{-- <button type="button" id="openCitizenExportModal" class="btn-secondary" data-ui-action="secondary">Export List</button> --}}
 
         <form action="{{ route('citizen.import') }}" method="POST"
               enctype="multipart/form-data" id="importForm" style="display:none;">
@@ -209,7 +216,7 @@
                 <h2 id="citizenExportTitle">Export Citizen Records</h2>
                 <p>Choose the exact details to include in your export.</p>
             </div>
-            <button type="button" id="closeCitizenExportHeader" class="citizen-export-close" aria-label="Close export options">&times;</button>
+            <button type="button" id="closeCitizenExportHeader" class="citizen-export-close" aria-label="Close export options" data-ui-action="secondary">&times;</button>
         </div>
 
         <form id="citizenExportForm" data-no-loader="true">
@@ -237,8 +244,8 @@
                 <div class="citizen-export-selection-bar">
                     <span><strong id="citizenExportSelectedCount">0</strong> fields selected</span>
                     <div>
-                        <button type="button" id="selectAllCitizenExportFields">Select all</button>
-                        <button type="button" id="clearCitizenExportFields">Clear</button>
+                        <button type="button" id="selectAllCitizenExportFields" data-ui-action="secondary">Select all</button>
+                        <button type="button" id="clearCitizenExportFields" data-ui-action="reset">Clear</button>
                     </div>
                 </div>
 
@@ -264,16 +271,16 @@
                 <div class="citizen-export-format">
                     <span>File format</span>
                     <div role="group" aria-label="Export format">
-                        <button type="button" class="active" aria-pressed="true" data-export-format="xlsx">Excel (.xlsx)</button>
-                        <button type="button" aria-pressed="false" data-export-format="pdf">PDF (.pdf)</button>
+                        <button type="button" class="active" aria-pressed="true" data-export-format="xlsx" data-ui-action="secondary">Excel (.xlsx)</button>
+                        <button type="button" aria-pressed="false" data-export-format="pdf" data-ui-action="secondary">PDF (.pdf)</button>
                     </div>
                 </div>
 
                 <input type="hidden" name="format" id="citizenExportFormat" value="xlsx">
 
                 <div class="citizen-export-actions">
-                    <button type="button" id="closeCitizenExportModal" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn-primary" id="downloadCitizenExport">Download</button>
+                    <button type="button" id="closeCitizenExportModal" class="btn-secondary" data-ui-action="secondary">Cancel</button>
+                    <button type="submit" class="btn-primary" id="downloadCitizenExport" data-ui-action="secondary">Download</button>
                 </div>
             </div>
         </form>
@@ -288,7 +295,7 @@
         <div class="citizen-status-header">
             <h2 id="citizenStatusFilterTitle">Filter Citizen Records</h2>
             <button type="button" id="closeCitizenStatusFilter"
-                    class="citizen-status-close" aria-label="Close filter">&times;</button>
+                    class="citizen-status-close" aria-label="Close filter" data-ui-action="secondary">&times;</button>
         </div>
 
         <div class="citizen-status-body">
@@ -346,8 +353,8 @@
         </div>
 
         <div class="citizen-status-footer">
-            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear">Clear All</button>
-            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply">Apply Filters</button>
+            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear" data-ui-action="reset">Clear All</button>
+            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply" data-ui-action="secondary">Apply Filters</button>
         </div>
     </div>
 </div>
@@ -447,25 +454,20 @@
                         <td>
                             @php
                                 $user = auth()->user();
-
-                                $isAssigned = $user->role !== 'bhw' ||
-                                    \App\Models\PurokSubgroup::where('user_id', $user->id)
-                                        ->where(function ($query) use ($citizen) {
-                                            $query->where('id', $citizen->subgroup_id)
-                                                ->orWhere('id', optional($citizen->family)->subgroup_id);
-                                        })->exists();
+                                $canManage = $user->role !== 'bhw' ||
+                                    app(\App\Services\BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
                             @endphp
 
                             <div class="action-group">
-                                <a href="{{ route('citizendetails', $citizen->id) }}" class="btn-primary">View</a>
+                                <a href="{{ route('citizendetails', $citizen->id) }}" class="btn-primary" data-ui-action="secondary">View</a>
 
-                                @if($isAssigned)
-                                    <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}" class="btn-primary">E-Card</a>
+                                @if($canManage)
+                                    <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}" class="btn-primary" data-ui-action="primary">E-Card</a>
 
                                     @if(auth()->user()->hasWriteAccess('citizen_password_reset'))
                                         <button type="button" class="btn-secondary resetCitizenPasswordBtn"
                                                 data-citizen-id="{{ $citizen->id }}"
-                                                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
+                                                data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}" data-ui-action="reset">
                                             Reset Password
                                         </button>
                                     @endif
@@ -475,10 +477,10 @@
                                           data-citizen-name="{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-danger">Archive</button>
+                                        <button type="submit" class="btn-danger" data-ui-action="danger">Archive</button>
                                     </form>
                                 @else
-                                    <span class="text-muted" style="font-size:11px;">View Only (Unassigned)</span>
+                                    <span class="text-muted" style="font-size:11px;">View Only (Restricted)</span>
                                 @endif
                             </div>
                         </td>
@@ -509,8 +511,8 @@
             <br>You can restore them later from the archive.
         </p>
         <div class="citizen-delete-confirm-buttons">
-            <button type="button" id="cancelCitizenDelete" class="citizen-delete-cancel">Cancel</button>
-            <button type="button" id="confirmCitizenDelete" class="citizen-delete-save">Yes, Archive</button>
+            <button type="button" id="cancelCitizenDelete" class="citizen-delete-cancel" data-ui-action="secondary">Cancel</button>
+            <button type="button" id="confirmCitizenDelete" class="citizen-delete-save" data-ui-action="danger">Yes, Archive</button>
         </div>
     </div>
 </div>
@@ -530,9 +532,12 @@
             <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
             <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
 
+            <label for="resetCitizenOwnPassword" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>Your password (to confirm this action)</label>
+            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) @hidden(! \App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
+
             <div class="citizen-password-dialog-actions">
-                <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset">Cancel</button>
-                <button type="submit" class="btn-primary">Reset Password</button>
+                <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset" data-ui-action="secondary">Cancel</button>
+                <button type="submit" class="btn-primary" data-ui-action="reset">Reset Password</button>
             </div>
         </form>
     </div>

@@ -47,7 +47,7 @@
     <a
         href="{{ route('citizenlist') }}"
         class="btn-secondary btn-page-back"
-    >
+     data-ui-action="secondary">
         ← Back
     </a>
 
@@ -99,7 +99,7 @@
                     required
                     maxlength="255"
                     value="{{ old('Citizen_FName') }}"
-                    autocomplete="given-name"
+                    autocomplete="off"
                 >
             </div>
 
@@ -124,7 +124,7 @@
                     required
                     maxlength="255"
                     value="{{ old('Citizen_LName') }}"
-                    autocomplete="family-name"
+                    autocomplete="off"
                 >
             </div>
 
@@ -155,7 +155,7 @@
                     id="contact"
                     required
                     inputmode="numeric"
-                    autocomplete="tel"
+                    autocomplete="off"
                     maxlength="11"
                     minlength="11"
                     pattern="[0-9]{11}"
@@ -172,7 +172,7 @@
                 <input type="hidden" name="family_id" id="citizenFamilyId" value="{{ old('family_id') }}">
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <input type="text" id="citizenFamilyDisplay" class="form-control" value="" placeholder="Select a family or use manual assignment" readonly>
-                    <button type="button" class="btn-secondary" id="openFamilyPicker">Select Family</button>
+                    <button type="button" class="btn-secondary" id="openFamilyPicker" data-ui-action="secondary">Select Family</button>
                 </div>
                 <small id="assignmentStatus">The citizen's Purok and subgroup will come from the selected family.</small>
             </div>
@@ -187,7 +187,7 @@
                 <label for="citizenSubgroupDisplay">Purok Subgroup</label>
                 <input type="hidden" name="subgroup_id" id="citizenSubgroup">
                 <input type="text" id="citizenSubgroupDisplay" class="form-control" placeholder="Selected from family or manual assignment" readonly>
-                <button type="button" class="btn-secondary" id="openManualAssignment">Assign without family</button>
+                <button type="button" class="btn-secondary" id="openManualAssignment" data-ui-action="secondary">Assign without family</button>
             </div>
 
             <div class="form-group photo-upload-group">
@@ -308,7 +308,7 @@
                     required
                     placeholder="resident@email.com"
                     value="{{ old('email') }}"
-                    autocomplete="email"
+                    autocomplete="off"
                 >
             </div>
 
@@ -320,8 +320,8 @@
              ========================================================= --}}
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary">Save Citizen & Create Account</button>
-            <a href="{{ route('citizenlist') }}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" data-ui-action="primary">Save Citizen & Create Account</button>
+            <a href="{{ route('citizenlist') }}" class="btn-secondary" data-ui-action="secondary">Cancel</a>
         </div>
 
 
@@ -336,8 +336,8 @@
         <h3 style="margin-top: 0; color: #111827; font-size: 18px;">Confirm Citizen Registration</h3>
         <p id="modal-message" style="color: #4b5563; font-size: 14px; margin: 15px 0;">Are you sure you want to save this record?</p>
         <div class="custom-modal-actions">
-            <button type="button" id="modal-cancel-btn" class="btn-modal-cancel">Cancel</button>
-            <button type="button" id="modal-confirm-btn" class="btn-modal-confirm">Yes, Save</button>
+            <button type="button" id="modal-cancel-btn" class="btn-modal-cancel" data-ui-action="secondary">Cancel</button>
+            <button type="button" id="modal-confirm-btn" class="btn-modal-confirm" data-ui-action="primary">Yes, Save</button>
         </div>
     </div>
 </div>
@@ -358,18 +358,18 @@
     <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="familyPickerTitle">
         <div class="family-picker-header">
             <h2 id="familyPickerTitle" style="margin:0;">Select Family</h2>
-            <button type="button" class="family-picker-close" id="closeFamilyPicker" aria-label="Close">&times;</button>
+            <button type="button" class="family-picker-close" id="closeFamilyPicker" aria-label="Close" data-ui-action="secondary">&times;</button>
         </div>
         <input type="search" id="familySearch" class="form-control" placeholder="Search family name...">
         <div class="family-picker-list" id="familyPickerList">
             @foreach($families as $family)
-                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}">
+                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
                     <span><strong>{{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
                     <span>Select</span>
                 </button>
             @endforeach
         </div>
-        <button type="button" class="btn-primary" id="openNewFamilyModal" style="margin-top:16px;">+ Add New Family</button>
+        <button type="button" class="btn-primary" id="openNewFamilyModal" style="margin-top:16px;" data-ui-action="primary">+ Add New Family</button>
     </div>
 </div>
 
@@ -377,13 +377,13 @@
     <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="manualAssignmentTitle">
         <div class="family-picker-header">
             <h2 id="manualAssignmentTitle" style="margin:0;">Choose Purok and Subgroup</h2>
-            <button type="button" class="family-picker-close" id="closeManualAssignment" aria-label="Close">&times;</button>
+            <button type="button" class="family-picker-close" id="closeManualAssignment" aria-label="Close" data-ui-action="secondary">&times;</button>
         </div>
         <div id="manualAssignmentList" class="family-picker-list">
             @foreach($puroks as $purok)
                 <strong style="margin-top:8px; color:#173b82;">{{ $purok->name }}</strong>
                 @forelse($purok->subgroups as $subgroup)
-                    <button type="button" class="family-option manual-assignment-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}">
+                    <button type="button" class="family-option manual-assignment-option" data-purok="{{ $purok->name }}" data-subgroup-id="{{ $subgroup->id }}" data-subgroup-name="{{ $subgroup->name }}" data-ui-action="secondary">
                         <span>{{ $purok->name }} / {{ $subgroup->name }}</span><span>Select</span>
                     </button>
                 @empty
@@ -398,7 +398,7 @@
     <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="newFamilyTitle">
         <div class="family-picker-header">
             <h2 id="newFamilyTitle" style="margin:0;">Register New Family</h2>
-            <button type="button" class="family-picker-close close-new-family" aria-label="Close">&times;</button>
+            <button type="button" class="family-picker-close close-new-family" aria-label="Close" data-ui-action="secondary">&times;</button>
         </div>
         <form id="quickFamilyForm" class="family-create-form" data-no-loader="true">
             @csrf
@@ -412,7 +412,7 @@
                 @endforeach
             </select>
             <div id="quickFamilyError" style="color:#b91c1c;"></div>
-            <button type="submit" class="btn-primary">Create and Select Family</button>
+            <button type="submit" class="btn-primary" data-ui-action="primary">Create and Select Family</button>
         </form>
     </div>
 </div>
@@ -425,8 +425,8 @@
             <img id="photoCropImage" alt="Photo crop preview">
         </div>
         <div class="photo-crop-actions">
-            <button type="button" id="cancelPhotoCrop" class="btn-secondary">Cancel</button>
-            <button type="button" id="confirmPhotoCrop" class="btn-primary">Use Cropped Photo</button>
+            <button type="button" id="cancelPhotoCrop" class="btn-secondary" data-ui-action="secondary">Cancel</button>
+            <button type="button" id="confirmPhotoCrop" class="btn-primary" data-ui-action="primary">Use Cropped Photo</button>
         </div>
     </div>
 </div>

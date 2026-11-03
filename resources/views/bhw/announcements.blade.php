@@ -44,7 +44,7 @@
             <h1>Announcements</h1>
             <p>Post, manage, and publish important health-related announcements for citizens.</p>
         </div>
-        <a href="{{ route('announcements.create') }}" class="btn-primary">
+        <a href="{{ route('announcements.create') }}" class="btn-primary" data-ui-action="primary">
     + Post Announcement
 </a>
     </div>
@@ -101,11 +101,11 @@
             </div>
 
             <div class="announcement-card-actions">
-                <button type="button" class="btn-secondary announcement-view-button">View Details</button>
+                <button type="button" class="btn-secondary announcement-view-button" data-ui-action="secondary">View Details</button>
                 <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Archive this announcement? You can restore it from the archive.');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-danger">Archive</button>
+                    <button type="submit" class="btn-danger" data-ui-action="danger">Archive</button>
                 </form>
             </div>
 
@@ -125,7 +125,7 @@
                 <h2 id="announcementModalTitle"></h2>
                 <div id="announcementModalMeta" class="announcement-modal-meta"></div>
             </div>
-            <button type="button" class="announcement-modal-close" aria-label="Close">&times;</button>
+            <button type="button" class="announcement-modal-close" aria-label="Close" data-ui-action="secondary">&times;</button>
         </div>
         <div id="announcementModalDescription" class="announcement-modal-description"></div>
         <div id="announcementModalImages" class="announcement-modal-images"></div>
@@ -144,8 +144,8 @@
         <p id="pictureConfirmError" class="announcement-modal-meta" style="color:#b91c1c;" hidden></p>
         <input type="file" name="image" id="pictureConfirmFile" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
         <div class="picture-confirm-actions">
-            <button type="button" class="btn-secondary" id="pictureConfirmCancel">Cancel</button>
-            <button type="submit" class="btn-primary" id="pictureConfirmSubmit">Confirm change</button>
+            <button type="button" class="btn-secondary" id="pictureConfirmCancel" data-ui-action="secondary">Cancel</button>
+            <button type="submit" class="btn-primary" id="pictureConfirmSubmit" data-ui-action="primary">Confirm change</button>
         </div>
     </form>
 </div>
@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const change = document.createElement('button');
                 change.type = 'button';
                 change.className = 'announcement-image-change';
+                change.dataset.uiAction = 'secondary';
                 change.textContent = 'Change picture';
                 change.addEventListener('click', () => startPictureChange(card.dataset.announcementId, item));
                 wrapper.append(image, change);

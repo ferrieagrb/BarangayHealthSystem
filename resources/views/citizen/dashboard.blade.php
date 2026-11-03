@@ -68,7 +68,7 @@
     margin: 0;
     color: #173b82;
     font-size: clamp(21px, 1.6vw, 25px);
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .c-panel {
@@ -723,7 +723,7 @@ body.theme-dark .c-home {
     position: relative;
     color: var(--c-primary);
     font-size: clamp(23px, 2vw, 29px);
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: -0.025em;
     line-height: 1.3;
 }
@@ -755,7 +755,7 @@ body.theme-dark .c-home {
     box-shadow: 0 3px 8px rgba(16, 43, 92, 0.14);
     color: #fff !important;
     font-size: 15px;
-    font-weight: 750;
+    font-weight: 600;
     line-height: 1.35;
     text-align: center;
     transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
@@ -826,13 +826,13 @@ body.theme-dark .c-home {
     background: rgba(255,255,255,.12);
     color: #fff;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 600;
 }
 .c-home .c-ann-cover h3 {
     margin: 0;
     color: #fff;
     font-size: clamp(19px, 2vw, 23px);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.4;
     overflow-wrap: anywhere;
 }
@@ -852,7 +852,7 @@ body.theme-dark .c-home {
     border-top: 1px solid #e5ebf3;
     color: #53657c;
     font-size: 13px;
-    font-weight: 650;
+    font-weight: 600;
 }
 .c-home .c-ann-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
 .c-home .c-ann-control-buttons { display: flex; gap: 8px; }
@@ -860,7 +860,7 @@ body.theme-dark .c-home {
 .c-home .c-ann-arrow:hover { background: #edf4ff; }
 .c-home .c-ann-arrow:disabled { opacity: .4; cursor: not-allowed; }
 .c-home .c-ann-indicator { color: #53657c; font-size: 13px; font-weight: 700; }
-.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 800; vertical-align: middle; }
+.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 600; vertical-align: middle; }
 .c-home .c-heading a {
     display: inline-flex;
     align-items: center;
@@ -1683,7 +1683,7 @@ body.theme-dark .c-home {
                 {{-- CITIZEN PHOTO --}}
                 <div class="c-photo">
                     @if($citizen->photo_path)
-                        <img src="{{ asset('storage/'.$citizen->photo_path) }}"
+                        <img src="{{ route('citizen.photo', $citizen->id) }}"
                              alt="Citizen photo">
                     @else
                         <span>
@@ -1766,7 +1766,7 @@ body.theme-dark .c-home {
         {{-- BUTTON OUTSIDE THE ID CARD --}}
         <div class="c-id-actions-outside">
             <a class="c-btn"
-               href="{{ route('citizen.ecard') }}">
+               href="{{ route('citizen.ecard') }}" data-ui-action="secondary">
                 Open Health Card & Print Options
             </a>
         </div>
@@ -1787,7 +1787,7 @@ body.theme-dark .c-home {
                 <form method="POST" action="{{ route('citizen.health-sharing.revoke') }}">
                     @csrf
                     @method('DELETE')
-                    <button class="c-btn" type="submit" style="background:#b91c1c;">Revoke sharing now</button>
+                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Revoke sharing now</button>
                 </form>
             @else
                 <p class="c-muted">
@@ -1801,7 +1801,7 @@ body.theme-dark .c-home {
                         <input type="checkbox" name="consent" value="1" required style="margin-top:4px;">
                         <span>I consent to sharing the health information described above for seven days.</span>
                     </label>
-                    <button class="c-btn" type="submit">Enable 7-day sharing</button>
+                    <button class="c-btn" type="submit" data-ui-action="primary">Enable 7-day sharing</button>
                 </form>
             @endif
             @if(session('success'))
@@ -1986,7 +1986,7 @@ body.theme-dark .c-home {
                 </div>
             </div>
     <div class="c-actions" style="padding:20px 0 0">
-        <a class="c-btn" href="{{ route('citizen.ecard') }}">View Printable Health Record</a>
+        <a class="c-btn" href="{{ route('citizen.ecard') }}" data-ui-action="secondary">View Printable Health Record</a>
     </div>
 @else <div class="c-empty">Health information will appear here once your account is linked to a citizen profile.</div>
 @endif
@@ -2006,7 +2006,7 @@ body.theme-dark .c-home {
             <h3>Talk to your Barangay Health Worker</h3>
             <p>Contact or visit the BHW so your concern can be assessed and your referral can be recorded. This page currently provides referral guidance; an online referral submission form is not yet available. For emergencies, go to the nearest emergency facility.</p>
         </div>
-        <a class="c-btn c-green" href="tel:+639587891234">Call Health Center</a>
+        <a class="c-btn c-green" href="tel:+639587891234" data-ui-action="secondary">Call Health Center</a>
     </div>
 </section>
 </div>

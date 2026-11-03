@@ -34,7 +34,7 @@
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" required>
+            <input type="password" name="password" autocomplete="new-password" required>
         </div>
 
         <div class="form-group">
@@ -46,7 +46,7 @@
             </select>
         </div>
 
-        <button type="submit">Create User</button>
+        <button type="submit" data-ui-action="primary">Create User</button>
 
     </div>
 </form>

@@ -28,10 +28,13 @@ class VaccinationEligibility
                     $code,
                     $nextDose['name'],
                     $date,
-                    includeSchedules: true,
-                    allowCatchUp: true
+                    includeSchedules: true
                 )
-                : ['eligible' => false, 'review_required' => false, 'reason' => 'All configured routine doses are already recorded or scheduled.'];
+                : [
+                    'eligible' => false,
+                    'status' => 'unavailable',
+                    'reason' => 'All configured routine doses are already recorded or scheduled.',
+                ];
 
             $options[$code] = [
                 'label' => $vaccine['label'],
@@ -39,7 +42,7 @@ class VaccinationEligibility
                 'source' => $vaccine['source'],
                 'next_dose' => $nextDose['name'] ?? null,
                 'eligible' => $result['eligible'],
-                'review_required' => $result['review_required'] ?? false,
+                'status' => $result['status'],
                 'reason' => $result['reason'],
                 'doses' => $vaccine['doses'],
             ];
@@ -56,17 +59,39 @@ class VaccinationEligibility
         bool $includeSchedules = false,
         bool $allowFutureDate = false,
         bool $checkSequence = true,
-        bool $allowCatchUp = false
+        ?string $vaccineCode = null,
+        bool $useExplicitVaccineCode = false
     ): array {
-        $code = $this->codeFor($vaccineName);
+        $administeredOn = $date instanceof CarbonInterface ? $date : Carbon::parse($date);
+        $birthDate = $citizen->Citizen_BirthDate
+            ? Carbon::parse($citizen->Citizen_BirthDate)
+            : null;
+
+        if (($birthDate && $administeredOn->lt($birthDate)) || (!$allowFutureDate && $administeredOn->isFuture())) {
+            return [
+                'eligible' => false,
+                'status' => 'unavailable',
+                'reason' => 'The administration date must be on or after birth and not in the future.',
+            ];
+        }
+
+        $code = $useExplicitVaccineCode ? $vaccineCode : ($vaccineCode ?? $this->codeFor($vaccineName));
         $vaccine = $code ? ($this->vaccines()[$code] ?? null) : null;
 
         if (!$vaccine) {
-            return ['eligible' => false, 'review_required' => false, 'reason' => 'Select a vaccine in the configured routine schedule.'];
+            return [
+                'eligible' => false,
+                'status' => 'unknown',
+                'reason' => 'No validated age rule is configured for this recognized vaccine.',
+            ];
         }
 
-        if (!$citizen->Citizen_BirthDate) {
-            return ['eligible' => false, 'review_required' => false, 'reason' => 'A valid date of birth is required to determine vaccine eligibility.'];
+        if (!$birthDate) {
+            return [
+                'eligible' => false,
+                'status' => 'unknown',
+                'reason' => 'A valid date of birth is required to determine age eligibility.',
+            ];
         }
 
         $doseIndex = null;
@@ -78,20 +103,18 @@ class VaccinationEligibility
         }
 
         if ($doseIndex === null) {
-            return ['eligible' => false, 'review_required' => false, 'reason' => 'Select a valid dose for this vaccine.'];
+            return ['eligible' => false, 'status' => 'unavailable', 'reason' => 'Select a valid dose for this vaccine.'];
         }
 
         if ($checkSequence) {
             $nextDose = $this->nextDose($citizen, $code, $includeSchedules);
             if (($nextDose['name'] ?? null) !== $doseName) {
-                return ['eligible' => false, 'review_required' => false, 'reason' => 'Doses must be recorded in sequence; select the next due dose.'];
+                return [
+                    'eligible' => false,
+                    'status' => 'unavailable',
+                    'reason' => 'Doses must be recorded in sequence; select the next due dose.',
+                ];
             }
-        }
-
-        $administeredOn = $date instanceof CarbonInterface ? $date : Carbon::parse($date);
-        $birthDate = Carbon::parse($citizen->Citizen_BirthDate);
-        if ($administeredOn->lt($birthDate) || (!$allowFutureDate && $administeredOn->isFuture())) {
-            return ['eligible' => false, 'review_required' => false, 'reason' => 'The administration date must be on or after birth and not in the future.'];
         }
 
         $dose = $vaccine['doses'][$doseIndex];
@@ -99,8 +122,6 @@ class VaccinationEligibility
         $ageMonths = $birthDate->diffInMonths($administeredOn);
         $ageYears = $birthDate->diffInYears($administeredOn);
 
-        $outsideRoutineWindow = false;
-        $minimumAgeMet = true;
         foreach ([
             'days' => $ageDays,
             'months' => $ageMonths,
@@ -109,30 +130,22 @@ class VaccinationEligibility
             $minKey = "min_{$unit}";
             $maxKey = "max_{$unit}";
             if (isset($dose[$minKey]) && $age < $dose[$minKey]) {
-                $minimumAgeMet = false;
+                return [
+                    'eligible' => false,
+                    'status' => 'unavailable',
+                    'reason' => $this->ageRangeMessage($dose, $unit),
+                ];
             }
             if (isset($dose[$maxKey]) && $age > $dose[$maxKey]) {
-                $outsideRoutineWindow = true;
+                return [
+                    'eligible' => false,
+                    'status' => 'unavailable',
+                    'reason' => $this->ageRangeMessage($dose, $unit),
+                ];
             }
         }
 
-        if ($minimumAgeMet && $outsideRoutineWindow && $allowCatchUp) {
-            return [
-                'eligible' => true,
-                'review_required' => true,
-                'reason' => 'Catch-up candidate only. Confirm the vaccine and dose schedule with the health center before recording.',
-            ];
-        }
-
-        if (!$minimumAgeMet || $outsideRoutineWindow) {
-            return [
-                'eligible' => false,
-                'review_required' => false,
-                'reason' => $this->ageRangeMessage($dose, $minimumAgeMet ? $this->firstExceededMaximumUnit($dose, $ageDays, $ageMonths, $ageYears) : $this->firstUnmetMinimumUnit($dose, $ageDays, $ageMonths, $ageYears)),
-            ];
-        }
-
-        return ['eligible' => true, 'review_required' => false, 'reason' => $vaccine['guideline']];
+        return ['eligible' => true, 'status' => 'available', 'reason' => $vaccine['guideline']];
     }
 
     public function nextDose(citizens $citizen, string $code, bool $includeSchedules = false): ?array
@@ -169,9 +182,19 @@ class VaccinationEligibility
 
     public function codeFor(string $name): ?string
     {
+        $normalize = static function (string $value): string {
+            $normalized = preg_replace('/[^\p{L}\p{N}]+/u', ' ', mb_strtolower(trim($value)));
+
+            return trim(is_string($normalized) ? $normalized : '');
+        };
+        $normalizedName = $normalize($name);
+        $aliases = config('medical_terminology.vaccine_aliases', []);
+
         foreach ($this->vaccines() as $code => $vaccine) {
-            if (strcasecmp(trim($name), trim($vaccine['label'])) === 0 || strcasecmp(trim($name), $code) === 0) {
-                return $code;
+            foreach (array_merge([$code, $vaccine['label']], $aliases[$code] ?? []) as $term) {
+                if ($normalizedName !== '' && $normalizedName === $normalize((string) $term)) {
+                    return (string) $code;
+                }
             }
         }
 
@@ -193,25 +216,4 @@ class VaccinationEligibility
         return "This dose is configured for {$range}. " . config('vaccination.outside_routine_age_message');
     }
 
-    private function firstExceededMaximumUnit(array $dose, int|float $days, int|float $months, int|float $years): string
-    {
-        foreach (['days' => $days, 'months' => $months, 'years' => $years] as $unit => $age) {
-            if (isset($dose["max_{$unit}"]) && $age > $dose["max_{$unit}"]) {
-                return $unit;
-            }
-        }
-
-        return 'years';
-    }
-
-    private function firstUnmetMinimumUnit(array $dose, int|float $days, int|float $months, int|float $years): string
-    {
-        foreach (['days' => $days, 'months' => $months, 'years' => $years] as $unit => $age) {
-            if (isset($dose["min_{$unit}"]) && $age < $dose["min_{$unit}"]) {
-                return $unit;
-            }
-        }
-
-        return 'days';
-    }
 }

@@ -1,0 +1,261 @@
+:root {
+    --bheams-font-family: "Poppins", sans-serif;
+    --bheams-font-page-title: clamp(24px, 2.5vw, 30px);
+    --bheams-font-section-title: 18px;
+    --bheams-font-subsection-title: 16px;
+    --bheams-font-body: 14px;
+    --bheams-font-control: 14px;
+    --bheams-font-table: 13px;
+    --bheams-font-label: 13px;
+    --bheams-font-kpi: clamp(24px, 3vw, 28px);
+    --bheams-weight-body: 500;
+    --bheams-weight-emphasis: 600;
+    --bheams-line-heading: 1.3;
+    --bheams-line-body: 1.5;
+}
+
+body[data-appearance-role] .main-content {
+    font-family: var(--bheams-font-family);
+    font-size: var(--bheams-font-body);
+    font-weight: var(--bheams-weight-body);
+    line-height: var(--bheams-line-body);
+}
+
+body[data-appearance-role] .main-content h1 {
+    font-size: var(--bheams-font-page-title);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: var(--bheams-line-heading);
+    letter-spacing: normal;
+    overflow-wrap: anywhere;
+}
+
+body[data-appearance-role] .main-content h2 {
+    font-size: var(--bheams-font-section-title);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.4;
+    letter-spacing: normal;
+}
+
+body[data-appearance-role] .main-content h3 {
+    font-size: var(--bheams-font-subsection-title);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.45;
+    letter-spacing: normal;
+}
+
+body[data-appearance-role] .main-content h4 {
+    font-size: var(--bheams-font-label);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.4;
+    letter-spacing: normal;
+}
+
+body[data-appearance-role] .main-content p {
+    font-size: var(--bheams-font-body);
+    font-weight: var(--bheams-weight-body);
+    line-height: var(--bheams-line-body);
+}
+
+body[data-appearance-role] .main-content :is(label, .field > span, .form-label) {
+    font-size: var(--bheams-font-label);
+    font-weight: var(--bheams-weight-body);
+    line-height: 1.4;
+}
+
+body[data-appearance-role] .main-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]), select, textarea) {
+    font-family: inherit;
+    font-size: var(--bheams-font-control);
+    font-weight: var(--bheams-weight-body);
+    line-height: 1.4;
+}
+
+body[data-appearance-role] .main-content select option {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+body[data-appearance-role] .main-content ::placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+body[data-appearance-role] .main-content :is(button:not(.close-btn):not(.close-modal-button):not(.inventory-modal-close):not(.password-visibility-toggle), a.btn, a[class*="btn"], .cs-back, .ann-back, .ecard-button, [role="button"], .qr-action-link, .c-btn) {
+    font-family: inherit;
+    font-size: var(--bheams-font-table);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.4;
+    letter-spacing: normal;
+}
+
+body[data-appearance-role] .main-content :is(input[type="button"], input[type="submit"], input[type="reset"]) {
+    font-family: inherit;
+    font-size: var(--bheams-font-table);
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.4;
+}
+
+body[data-appearance-role] .main-content table th,
+body[data-appearance-role] .main-content table td {
+    font-family: inherit;
+    line-height: 1.45;
+}
+
+body[data-appearance-role] .main-content table th {
+    font-size: 12px;
+    font-weight: var(--bheams-weight-body);
+}
+
+body[data-appearance-role] .main-content table td {
+    font-size: var(--bheams-font-table);
+    font-weight: var(--bheams-weight-body);
+}
+
+body[data-appearance-role] .sidebar .nav-item,
+body[data-appearance-role] .c-header-section-nav a {
+    font-size: var(--bheams-font-body);
+    font-weight: var(--bheams-weight-body);
+    line-height: 1.4;
+}
+
+body[data-appearance-role] .header-user {
+    font-size: var(--bheams-font-table);
+    font-weight: var(--bheams-weight-body);
+    line-height: 1.4;
+}
+
+body[data-appearance-role] .main-content :is(.summary-card > strong, .admin-metric-card h2, .analytics-stat-value, .stat-card strong, .demographics-stat strong, .disease-kpi > strong) {
+    font-size: var(--bheams-font-kpi);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+body[data-appearance-role] .main-content :is(.badge, .status-badge, .status-pill, .status-tag, .qr-verified, .c-ann-label, .c-ann-priority) {
+    font-size: 12px;
+    font-weight: var(--bheams-weight-emphasis);
+    line-height: 1.3;
+}
+
+body[data-appearance-role] .main-content :is(.alert, .notification, .toast, [role="alert"], [role="status"]) {
+    font-size: var(--bheams-font-table);
+    font-weight: var(--bheams-weight-body);
+    line-height: var(--bheams-line-body);
+}
+
+body[data-appearance-role] .main-content .apexcharts-canvas,
+body[data-appearance-role] .main-content .apexcharts-canvas text {
+    font-family: var(--bheams-font-family) !important;
+}
+
+body[data-appearance-role] .main-content :is(.apexcharts-xaxis text, .apexcharts-yaxis text, .apexcharts-legend-text) {
+    font-size: 12px !important;
+}
+
+body[data-appearance-role] .main-content .apexcharts-data-labels text {
+    font-size: 13px !important;
+}
+
+body[data-appearance-role] .main-content .apexcharts-tooltip {
+    font-family: var(--bheams-font-family) !important;
+    font-size: var(--bheams-font-table);
+}
+
+body[data-appearance-role] .main-content .apexcharts-title-text {
+    font-size: var(--bheams-font-subsection-title) !important;
+    font-weight: var(--bheams-weight-emphasis);
+}
+
+body[data-appearance-role] .main-content .print-health-record {
+    line-height: 1.45;
+}
+
+body[data-appearance-role] .main-content .print-health-record h2 {
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.25;
+}
+
+body[data-appearance-role] .main-content .print-health-record h3 {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+body[data-appearance-role] .main-content .print-health-record p {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+}
+
+body[data-appearance-role] .main-content .print-health-record table th,
+body[data-appearance-role] .main-content .print-health-record table td {
+    font-size: inherit;
+}
+
+body[data-appearance-role] .main-content .print-health-record table th {
+    font-weight: 800;
+}
+
+body[data-appearance-role] .main-content .bheams-brand h2 {
+    font-size: 29px;
+    font-weight: 900;
+    line-height: normal;
+    letter-spacing: 1px;
+}
+
+body[data-appearance-role] .main-content .bheams-brand p {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+body:not([data-appearance-role]) .hero-title {
+    font-size: clamp(1.7rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+body:not([data-appearance-role]) :is(.section-header h2, .group-header h2, .public-qr-panel h2) {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+body:not([data-appearance-role]) :is(.card-title, .announcement-title) {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+body:not([data-appearance-role]) .announcement-detail-title {
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+body:not([data-appearance-role]) .public-qr-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+body:not([data-appearance-role]) .public-qr :is(label, input, select, textarea) {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+body:not([data-appearance-role]) .public-qr :is(button, [role="button"], .public-qr-button) {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+    body[data-appearance-role] .main-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]), select, textarea) {
+        font-size: 16px;
+    }
+
+    body:not([data-appearance-role]) .public-qr :is(input, select, textarea) {
+        font-size: 16px;
+    }
+}

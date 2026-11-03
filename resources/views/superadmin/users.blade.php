@@ -65,12 +65,12 @@
 
             <div style="display:flex; gap:10px; align-items:center;">
             @if($showArchived)
-                <a href="{{ route('superadmin.users') }}" class="primary-btn" style="text-decoration:none;">
+                <a href="{{ route('superadmin.users') }}" class="primary-btn" style="text-decoration:none;" data-ui-action="secondary">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                     Active Users
                 </a>
             @else
-                <a href="{{ route('superadmin.users', ['archived' => 1]) }}" class="primary-btn" style="text-decoration:none;">
+                <a href="{{ route('superadmin.users', ['archived' => 1]) }}" class="primary-btn" style="text-decoration:none;" data-ui-action="secondary">
                     <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
                     Archive ({{ $archivedCount }})
                 </a>
@@ -79,7 +79,7 @@
                 type="button"
                 class="primary-btn"
                 id="openAddUserModal"
-            >
+             data-ui-action="primary">
                 <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                 Add New User
             </button>
@@ -126,6 +126,16 @@
                             <td>
                                 @if($showArchived)
                                     <span class="badge badge-inactive">Inactive</span>
+                                @elseif($user->isLockedOut())
+                                    <span class="badge badge-inactive">Locked{{ $user->locked_until && $user->locked_until->isFuture() ? ' until ' . $user->locked_until->format('h:i A') : '' }}</span>
+                                    <form action="{{ route('superadmin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn-action btn-edit" title="Unlock Account" aria-label="Unlock Account">
+                                            <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                                            <span>Unlock</span>
+                                        </button>
+                                    </form>
                                 @else
                                     <span class="badge badge-active">Active</span>
                                 @endif
@@ -141,7 +151,7 @@
                                         >
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn-action btn-edit" title="Set Active" aria-label="Set Active">
+                                            <button type="submit" class="btn-action btn-edit" title="Set Active" aria-label="Set Active" data-ui-action="primary">
                                                 <i class="fa-solid fa-user-check" aria-hidden="true"></i>
                                                 <span>Set Active</span>
                                             </button>
@@ -157,9 +167,21 @@
                                             data-email="{{ $user->email }}"
                                             data-username="{{ $user->username }}"
                                             data-role="{{ $user->role }}"
-                                        >
+                                         data-ui-action="secondary">
                                             <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             <span>Edit</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="btn-action btn-edit js-reset-user"
+                                            title="Reset Password"
+                                            aria-label="Reset Password"
+                                            data-id="{{ $user->id }}"
+                                            data-name="{{ $user->name }}"
+                                        >
+                                            <i class="fa-solid fa-key" aria-hidden="true"></i>
+                                            <span>Reset Password</span>
                                         </button>
 
                                         <form
@@ -175,7 +197,7 @@
                                                 class="btn-action btn-delete"
                                                 title="Set Inactive"
                                                 aria-label="Set Inactive"
-                                            >
+                                             data-ui-action="danger">
                                                 <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
                                                 <span>Set Inactive</span>
                                             </button>
@@ -230,7 +252,7 @@
                 class="close-btn"
                 data-close-modal="editModal"
                 aria-label="Close edit user modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -248,7 +270,7 @@
                         id="edit_name"
                         name="name"
                         maxlength="255"
-                        autocomplete="name"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -261,7 +283,7 @@
                         id="edit_email"
                         name="email"
                         maxlength="255"
-                        autocomplete="email"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -274,7 +296,7 @@
                         id="edit_username"
                         name="username"
                         maxlength="255"
-                        autocomplete="username"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -289,6 +311,17 @@
                         <option value="citizen">Citizen</option>
                     </select>
                 </div>
+
+                <div class="input-group" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="edit_confirm_password">Your password <small>(required only when changing the role)</small></label>
+
+                    <input
+                        type="password"
+                        id="edit_confirm_password"
+                        name="confirm_password"
+                        autocomplete="current-password"
+                    >
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -296,7 +329,7 @@
                     type="button"
                     class="secondary-btn"
                     data-close-modal="editModal"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -304,7 +337,7 @@
                     type="submit"
                     class="primary-btn"
                     id="saveEditUserButton"
-                >
+                 data-ui-action="primary">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                     Save Changes
                 </button>
@@ -312,6 +345,62 @@
         </form>
     </div>
 </div>
+
+{{-- =====================================================
+     RESET PASSWORD MODAL
+     ===================================================== --}}
+<div
+    id="resetModal"
+    class="user-management-modals modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="resetModalTitle"
+    aria-hidden="true"
+>
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="resetModalTitle">Reset Password</h3>
+
+            <button type="button" class="close-btn" data-close-modal="resetModal" aria-label="Close reset password modal">
+                &times;
+            </button>
+        </div>
+
+        <form id="resetPasswordForm" method="POST">
+            @csrf
+            @method('PATCH')
+
+            <div class="modal-body">
+                <p>A new temporary password will be generated for <strong id="reset_user_name"></strong> and shown once. They must change it at next login.</p>
+
+                <div class="input-group" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="reset_confirm_password">Your password</label>
+                    <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="secondary-btn" data-close-modal="resetModal">Cancel</button>
+                <button type="submit" class="primary-btn">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.js-reset-user').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const modal = document.getElementById('resetModal');
+            document.getElementById('resetPasswordForm').action =
+                `/superadmin/users/${encodeURIComponent(button.dataset.id)}/reset-password`;
+            document.getElementById('reset_user_name').textContent = button.dataset.name || '';
+            document.getElementById('reset_confirm_password').value = '';
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.getElementById('reset_confirm_password').focus();
+        });
+    });
+</script>
 
 {{-- =====================================================
      ADD USER MODAL
@@ -333,7 +422,7 @@
                 class="close-btn"
                 data-close-modal="addModal"
                 aria-label="Close add user modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -354,7 +443,7 @@
                         id="add_name"
                         name="name"
                         maxlength="255"
-                        autocomplete="name"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -367,7 +456,7 @@
                         id="add_email"
                         name="email"
                         maxlength="255"
-                        autocomplete="email"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -380,7 +469,7 @@
                         id="add_username"
                         name="username"
                         maxlength="255"
-                        autocomplete="username"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -414,7 +503,7 @@
                     type="button"
                     class="secondary-btn"
                     data-close-modal="addModal"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -422,7 +511,7 @@
                     type="submit"
                     class="primary-btn"
                     id="createUserButton"
-                >
+                 data-ui-action="primary">
                     <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                     Create User
                 </button>
@@ -537,6 +626,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('edit_role').value =
             button.dataset.role || 'citizen';
+
+        document.getElementById('edit_confirm_password').value = '';
 
         openModal(editModal);
     }

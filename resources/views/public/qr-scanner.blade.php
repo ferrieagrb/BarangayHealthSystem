@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
+    @include('partials.button-action-assets')
     <style>
         .public-qr { color: #172033; }
         .public-qr-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
@@ -44,6 +45,7 @@
         @media (max-width: 440px) { .public-qr-facts { grid-template-columns: 1fr; } .public-qr-actions > * { flex: 1 1 100%; } }
     </style>
 @include('partials.favicon')
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 </head>
 <body>
     @include('public.partials.header', ['activeNav' => 'qr'])

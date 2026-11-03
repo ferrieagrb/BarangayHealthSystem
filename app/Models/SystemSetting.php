@@ -19,6 +19,11 @@ class SystemSetting extends Model
         return filter_var(static::value($key, $default), FILTER_VALIDATE_BOOLEAN);
     }
 
+    public static function passwordReentryRequired(): bool
+    {
+        return static::boolean('password_reentry_required', true);
+    }
+
     public static function logoUrl(): string
     {
         $path = static::value('site_logo', 'images/amuyong.png');

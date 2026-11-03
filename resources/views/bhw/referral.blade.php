@@ -14,7 +14,7 @@
         <p>Manage and track patient referrals to hospitals and external healthcare providers.</p>
     </div>
 
-    <button type="button" class="btn-primary add-referral-btn">
+    <button type="button" class="btn-primary add-referral-btn" data-ui-action="primary">
         + Create Referral
     </button>
 </div>
@@ -78,7 +78,7 @@
             <option>Low</option>
         </select>
 
-        <button type="button" class="btn-primary search-btn">
+        <button type="button" class="btn-primary search-btn" data-ui-action="secondary">
             Search
         </button>
 
@@ -138,15 +138,15 @@
 
                     <td>
                         <div class="action-group">
-                            <button type="button" class="btn-primary">
+                            <button type="button" class="btn-primary" data-ui-action="primary">
                                 Update
                             </button>
 
-                            <button type="button" class="btn-secondary">
+                            <button type="button" class="btn-secondary" data-ui-action="secondary">
                                 View
                             </button>
 
-                            <button type="button" class="btn-danger">
+                            <button type="button" class="btn-danger" data-ui-action="danger">
                                 Cancel
                             </button>
                         </div>
@@ -176,11 +176,11 @@
 
                     <td>
                         <div class="action-group">
-                            <button type="button" class="btn-primary">
+                            <button type="button" class="btn-primary" data-ui-action="primary">
                                 Update
                             </button>
 
-                            <button type="button" class="btn-secondary">
+                            <button type="button" class="btn-secondary" data-ui-action="secondary">
                                 View
                             </button>
                         </div>
@@ -210,7 +210,7 @@
 
                     <td>
                         <div class="action-group">
-                            <button type="button" class="btn-secondary">
+                            <button type="button" class="btn-secondary" data-ui-action="secondary">
                                 View
                             </button>
                         </div>
@@ -240,7 +240,7 @@
 
                     <td>
                         <div class="action-group">
-                            <button type="button" class="btn-secondary">
+                            <button type="button" class="btn-secondary" data-ui-action="secondary">
                                 View
                             </button>
                         </div>
@@ -270,11 +270,11 @@
 
                     <td>
                         <div class="action-group">
-                            <button type="button" class="btn-primary">
+                            <button type="button" class="btn-primary" data-ui-action="primary">
                                 Update
                             </button>
 
-                            <button type="button" class="btn-secondary">
+                            <button type="button" class="btn-secondary" data-ui-action="secondary">
                                 View
                             </button>
                         </div>

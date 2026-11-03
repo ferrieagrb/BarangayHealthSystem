@@ -13,7 +13,7 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css') }}?v={{ filemtime(public_path('css/layout.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
     <script src="{{ asset('js/ui-motion.js') }}" defer></script>
 
@@ -80,9 +80,13 @@
 
     @yield('CSSown')
     @include('partials.appearance-assets')
-    <link rel="stylesheet" href="{{ asset('css/bhw/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bhw/sidebar.css') }}?v={{ filemtime(public_path('css/bhw/sidebar.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/bhw/mobile.css') }}" media="screen and (max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/sidebar-scroll.css') }}?v={{ filemtime(public_path('css/sidebar-scroll.css')) }}">
     <script src="{{ asset('js/bhw-mobile.js') }}" defer></script>
+    <script src="{{ asset('js/sidebar-navigation.js') }}?v={{ filemtime(public_path('js/sidebar-navigation.js')) }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
+    @include('partials.medical-autocomplete-assets')
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 
@@ -141,21 +145,25 @@
 </script>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" id="bhwSidebar" style="display: flex; flex-direction: column; height: 100vh;">
+    <div class="sidebar" id="bhwSidebar" role="navigation" aria-label="Primary navigation" tabindex="0" style="display: flex; flex-direction: column; height: 100vh;">
         @if(request()->routeIs('bhw.reports', 'bhw.analytics'))
             <script>
                 document.getElementById('bhwSidebar').classList.toggle('collapsed', !window.matchMedia('(max-width: 768px)').matches);
             </script>
         @endif
 
-        <!-- TOP TOGGLE -->
-        <div class="top">
-            <button type="button" class="topbutton" aria-label="Toggle sidebar" aria-controls="bhwSidebar" aria-expanded="true">
-                <i class="bx bx-sidebar"></i>
+        <div class="top sidebar-header">
+            <a class="sidebar-brand" href="/home" aria-label="BHEAMS home">
+                <img src="{{ asset('images/amuyong.png') }}" alt="">
+                <span>BHEAMS</span>
+            </a>
+            <button type="button" class="topbutton sidebar-toggle" aria-label="Toggle sidebar" aria-controls="bhwSidebar" aria-expanded="true">
+                <i class="bx bx-chevron-left" aria-hidden="true"></i>
             </button>
         </div>
 
         <!-- MAIN NAVIGATION LINKS -->
+        <div class="sidebar-nav" tabindex="0" aria-label="Navigation links">
         <ul style="flex-grow: 1; list-style: none; padding: 0; margin: 0;">
             <li>
                 <a href="/home">
@@ -180,7 +188,7 @@
 
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
-                    <div class="nav-dropdown {{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'has-active-page' : '' }}">
+                    <div class="nav-dropdown">
                         <button type="button" class="nav-dropdown-toggle" aria-label="Reports{{ request()->routeIs('bhw.analytics') ? ': Analytics selected' : (request()->routeIs('bhw.reports') ? ': Report Builder selected' : '') }}" aria-expanded="false" aria-controls="bhwReportsMenu">
                             <i class="bx bx-file"></i>
                             <span class="nav-item">Reports</span>
@@ -252,8 +260,8 @@
                 </a>
             </li>
         </ul>
+        </div>
 
-        <!-- SEPARATE BOTTOM SETTINGS SECTION -->
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
@@ -262,16 +270,8 @@
                         <span class="nav-item">Settings</span>
                     </a>
                 </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
-                        @csrf
-                        <button type="submit">
-                            <i class="bx bx-log-out"></i>
-                            <span class="nav-item">Logout</span>
-                        </button>
-                    </form>
-                </li>
             </ul>
+            @include('templates.partials.sidebar-account')
         </div>
 
     </div>
@@ -300,59 +300,6 @@
 </div>
 
 @endauth
-
-<!-- JS -->
-<script>
-const sidebar = document.querySelector(".sidebar");
-const toggleBtn = document.querySelector(".topbutton");
-
-toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-    closeReportsMenu();
-    updateSidebarToggle();
-});
-
-const sidebarMobile = window.matchMedia('(max-width: 768px)');
-function updateSidebarToggle() {
-    const collapsed = sidebar.classList.contains('collapsed');
-    toggleBtn.setAttribute('aria-expanded', String(sidebarMobile.matches ? collapsed : !collapsed));
-}
-sidebarMobile.addEventListener('change', updateSidebarToggle);
-updateSidebarToggle();
-
-function closeReportsMenu() {
-    sidebar.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
-        dropdown.classList.remove('is-open');
-        dropdown.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
-        dropdown.querySelector('.nav-dropdown-menu').inert = true;
-    });
-}
-
-sidebar.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-        // Open the full sidebar before revealing the inline submenu.
-        sidebar.classList.toggle('collapsed', sidebarMobile.matches);
-        updateSidebarToggle();
-        const dropdown = button.closest(".nav-dropdown");
-        const isOpen = dropdown.classList.toggle("is-open");
-        button.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        dropdown.querySelector('.nav-dropdown-menu').inert = !isOpen;
-    });
-});
-
-sidebar.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', (event) => {
-        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-        closeReportsMenu();
-        if (link.closest('.nav-dropdown-menu')) {
-            sidebar.classList.toggle('collapsed', !sidebarMobile.matches);
-            updateSidebarToggle();
-        }
-    });
-});
-sidebarMobile.addEventListener('change', closeReportsMenu);
-window.addEventListener('pageshow', closeReportsMenu);
-</script>
 
 @auth
 <script>

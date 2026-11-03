@@ -1,4 +1,4 @@
-@extends('templates.layout')
+@extends(request('export_format') === 'pdf' ? 'templates.report-pdf' : 'templates.layout')
 
 @section('CSSown')
 <style>
@@ -44,6 +44,26 @@
     .graphic-fill.orange { background: #f97316; }
     .graphic-fill.red { background: #dc2626; }
     .print-only { display: none; }
+    @if(request('export_format') === 'pdf')
+        @page { size: A4 landscape; margin: 14mm; }
+        body { margin: 0; color: #172033; font-family: DejaVu Sans, sans-serif; font-size: 10px; }
+        .reports-page { padding: 0; }
+        .reports-grid { display: block; }
+        .report-builder, .no-print { display: none !important; }
+        .report-panel { padding: 0; border: 0; box-shadow: none; }
+        .report-meta h1 { font-size: 20px; }
+        .report-meta p { font-size: 10px; }
+        .report-section { page-break-inside: auto; }
+        .report-section h3 { font-size: 13px; }
+        .report-table { width: 100%; font-size: 9px; page-break-inside: auto; }
+        .report-table th, .report-table td { padding: 5px; }
+        .report-table-scroll { width: 100%; overflow: visible; }
+        .report-details-table { min-width: 0; font-size: 7px; }
+        .report-table tr { page-break-inside: avoid; }
+        .report-graphic { display: block; }
+        .graphic-row { display: table; width: 100%; }
+        .print-only { display: block; }
+    @endif
     @media (max-width: 1000px) { .report-config-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 600px) {
         .reports-page { padding: 14px; }
@@ -74,7 +94,9 @@
         .print-only { display: block; }
     }
 </style>
-<link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@if(request('export_format') !== 'pdf')
+    <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+@endif
 @endsection
 
 @section('script')
@@ -140,24 +162,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const purokFilter = document.getElementById('reportPurok');
-    const purokValue = document.getElementById('reportPurokValue');
-    const subgroupValue = document.getElementById('reportSubgroupValue');
-
-    if (!purokFilter || !purokValue || !subgroupValue) return;
-
-    purokFilter.addEventListener('change', function () {
-        const value = this.value;
-
-        purokValue.value = '';
-        subgroupValue.value = '';
-
-        if (value.startsWith('purok:')) {
-            purokValue.value = value.slice('purok:'.length);
-        } else if (value.startsWith('subgroup:')) {
-            subgroupValue.value = value.slice('subgroup:'.length);
-        }
-    });
 });
 </script>
 @endsection
@@ -216,27 +220,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="report-fields">
                     <div class="report-field" data-reports="citizens,health_records,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization,diagnosis_summary,diagnosis_by_purok,referrals">
                         <label for="reportPurok">Purok</label>
-                        <select id="reportPurok" aria-label="Filter by Purok or Subgroup">
+                        <select id="reportPurok" name="location" aria-label="Filter by Purok or Subgroup">
                             <option value="">All Puroks</option>
 
                             @foreach($puroks as $purok)
                                 <optgroup label="{{ $purok->name }}">
                                     <option value="purok:{{ $purok->id }}"
-                                        {{ (string) request('purok') === (string) $purok->id && !request()->filled('subgroup') ? 'selected' : '' }}>
+                                        {{ request('location') === 'purok:'.$purok->id || (request('location') === null && (string) request('purok') === (string) $purok->id && !request()->filled('subgroup')) ? 'selected' : '' }}>
                                         All of {{ $purok->name }}
                                     </option>
                                     @foreach($purok->subgroups as $subgroup)
                                         <option value="subgroup:{{ $subgroup->id }}"
-                                            {{ (string) request('subgroup') === (string) $subgroup->id ? 'selected' : '' }}>
+                                            {{ request('location') === 'subgroup:'.$subgroup->id || (request('location') === null && (string) request('subgroup') === (string) $subgroup->id) ? 'selected' : '' }}>
                                             {{ $subgroup->name }}
                                         </option>
                                     @endforeach
                                 </optgroup>
                             @endforeach
                         </select>
-
-                        <input type="hidden" name="purok" id="reportPurokValue" value="{{ request('purok') }}">
-                        <input type="hidden" name="subgroup" id="reportSubgroupValue" value="{{ request('subgroup') }}">
                     </div>
                     <div class="report-field" data-reports="citizens,health_records,immunization,diagnosis_summary,diagnosis_by_purok">
                         <label for="reportSearch">Search citizens</label>
@@ -338,10 +339,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
                     Include graphic summaries
                 </label>
-                <button type="submit" class="btn-primary">Generate Report</button>
-                <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}">Reset Filters</a>
-                <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true">Export to Excel</button>
-                <button type="button" class="btn-secondary" onclick="window.print()">Export / Print PDF</button>
+                <button type="submit" class="btn-primary" data-ui-action="primary">Generate Report</button>
+                <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}" data-ui-action="reset">Reset Filters</a>
+                <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true" data-ui-action="secondary">Export to Excel</button>
+                <button type="submit" class="btn-secondary" name="export_format" value="pdf" data-ui-action="secondary">Export to PDF</button>
                 <p id="reportExportFeedback" class="report-export-feedback" role="alert" hidden></p>
             </div>
         </form>
@@ -362,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     @if($citizensReport->isEmpty()) <div class="report-empty">No citizens match the selected filters.</div>
                     @else <table class="report-table"><thead><tr><th>Name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
                         @foreach($citizensReport as $citizen)
-                            <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->Citizen_Age }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
+                            <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->ageForEligibility() ?? 'Not recorded' }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
                         @endforeach
                     </tbody></table>@endif
                 </section>
