@@ -73,6 +73,9 @@ class AppearancePreferencesTest extends TestCase
                     ->assertSee('data-appearance-form', false)
                     ->assertSee('css/theme.css', false)
                     ->assertSee('js/appearance.js', false)
+                    ->assertSee('css/sidebar-scroll.css', false)
+                    ->assertSee('role="navigation"', false)
+                    ->assertSee('tabindex="0"', false)
                     ->assertSee('data-theme="light"', false);
             }
             $this->assertSame('light', $user->fresh()->theme);
@@ -119,6 +122,68 @@ class AppearancePreferencesTest extends TestCase
         $this->put(route('user.preferences.update'), ['theme' => 'dark', 'font_size' => 'xl'])
             ->assertRedirect(route('login'));
         $this->assertSame('light', $user->fresh()->theme);
+    }
+
+    public function test_shared_sidebar_scroll_styles_cover_every_role_and_keep_navigation_scrollable(): void
+    {
+        $css = file_get_contents(public_path('css/sidebar-scroll.css'));
+
+        $this->assertNotFalse($css);
+        $this->assertStringContainsString('overflow-y: auto', $css);
+        $this->assertStringContainsString('scrollbar-width: none', $css);
+        $this->assertStringContainsString('-ms-overflow-style: none', $css);
+        $this->assertStringContainsString('.sidebar::-webkit-scrollbar', $css);
+        $this->assertStringContainsString('--sidebar-expanded-width: 272px', $css);
+        $this->assertStringContainsString('--sidebar-collapsed-width: 68px', $css);
+        $this->assertStringContainsString('.sidebar-flyout', $css);
+        $this->assertStringContainsString('color: #ef4444', $css);
+        $this->assertStringContainsString('flex-direction: column', $css);
+        $this->assertStringContainsString('.nav-dropdown-toggle > i:first-child', $css);
+
+        foreach (['layout', 'citizen', 'admin', 'superadmin'] as $layout) {
+            $view = file_get_contents(resource_path('views/templates/'.$layout.'.blade.php'));
+
+            $this->assertNotFalse($view);
+            $this->assertStringContainsString('css/sidebar-scroll.css', $view);
+            $this->assertStringContainsString('role="navigation"', $view);
+            $this->assertStringContainsString('tabindex="0"', $view);
+            $this->assertStringContainsString('class="sidebar-nav"', $view);
+            $this->assertStringContainsString('class="sidebar-brand"', $view);
+            $this->assertStringContainsString('class="bx bx-chevron-left"', $view);
+            $this->assertStringContainsString("templates.partials.sidebar-account", $view);
+        }
+
+        $bhwMobile = file_get_contents(public_path('js/bhw-mobile.js'));
+        $this->assertNotFalse($bhwMobile);
+        $this->assertStringContainsString('toggle.querySelector(\'i\').className', $bhwMobile);
+
+        $navigation = file_get_contents(public_path('js/sidebar-navigation.js'));
+        $this->assertNotFalse($navigation);
+        $this->assertStringContainsString('document.body.appendChild(menu)', $navigation);
+        $this->assertStringContainsString('ArrowDown', $navigation);
+        $this->assertStringContainsString('pointerenter', $navigation);
+        $this->assertStringContainsString('Escape', $navigation);
+        $this->assertStringContainsString('if (!dropdown || !menuButton || !menu) return;', $navigation);
+
+        $account = file_get_contents(resource_path('views/templates/partials/sidebar-account.blade.php'));
+        $this->assertNotFalse($account);
+        $this->assertStringContainsString('$accountUser->name', $account);
+        $this->assertStringContainsString('$accountRole', $account);
+        $this->assertStringContainsString('route(\'logout\')', $account);
+        $this->assertStringContainsString('@csrf', $account);
+        $this->assertStringContainsString('class="logout-form sidebar-account-logout"', $account);
+
+        $bhwLayout = file_get_contents(resource_path('views/templates/layout.blade.php'));
+        $this->assertNotFalse($bhwLayout);
+        $this->assertStringContainsString('id="bhwReportsMenu"', $bhwLayout);
+        $this->assertStringContainsString('route(\'bhw.analytics\')', $bhwLayout);
+        $this->assertStringContainsString('route(\'bhw.reports\')', $bhwLayout);
+        $this->assertStringNotContainsString('has-active-page', $bhwLayout);
+
+        $bhwSidebarCss = file_get_contents(public_path('css/bhw/sidebar.css'));
+        $this->assertNotFalse($bhwSidebarCss);
+        $this->assertStringNotContainsString('--bhw-rail', $bhwSidebarCss);
+        $this->assertStringNotContainsString('padding: 0 calc(', $bhwSidebarCss);
     }
 
     public function test_shared_assets_cover_representative_role_sections(): void
@@ -260,6 +325,9 @@ class AppearancePreferencesTest extends TestCase
                 }
                 $response = $this->actingAs($user)->get($path)->assertOk()
                     ->assertSee('css/theme.css')->assertSee('js/appearance.js')
+                    ->assertSee('css/sidebar-scroll.css', false)
+                    ->assertSee('role="navigation"', false)
+                    ->assertSee('tabindex="0"', false)
                     ->assertSee('data-theme="dark"', false);
                 if ($directory = getenv('BHEAMS_APPEARANCE_FIXTURES')) {
                     if (!is_dir($directory)) {

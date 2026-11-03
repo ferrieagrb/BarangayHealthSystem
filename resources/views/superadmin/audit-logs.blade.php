@@ -22,7 +22,7 @@
             <a
                 href="{{ route('superadmin.system.analytics.page') }}"
                 class="audit-back-button"
-            >
+             data-ui-action="secondary">
                 <span aria-hidden="true">&larr;</span>
                 Back to System Analytics
             </a>
@@ -157,14 +157,14 @@
             </div>
 
             <div class="audit-filter-actions">
-                <button type="submit" class="audit-filter-button">
+                <button type="submit" class="audit-filter-button" data-ui-action="secondary">
                     Filter Logs
                 </button>
 
                 <a
                     href="{{ route('superadmin.audit-logs') }}"
                     class="audit-clear-button"
-                >
+                 data-ui-action="reset">
                     Clear
                 </a>
             </div>

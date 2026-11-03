@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Middleware\SystemMaintenance;
 use App\Http\Middleware\TrackPageViews;
+use App\Http\Middleware\EnsurePasswordIsChanged;
 use App\Models\citizens;
 use App\Models\Event;
 use App\Models\HealthRecord;
@@ -34,18 +35,35 @@ class BhwDiseaseMonitoringTest extends TestCase
     {
         parent::setUp();
 
-        foreach (['purok_subgroup_user', 'referrals', 'events', 'vaccination_schedules', 'vaccinations', 'medication_records', 'maintenance_records', 'health_records', 'vaccination_records', 'supplies', 'citizens', 'families', 'purok_subgroups', 'puroks', 'user_permissions', 'users'] as $table) {
+        foreach (['system_settings', 'citizen_activity_logs', 'purok_user', 'purok_subgroup_user', 'referrals', 'events', 'vaccination_schedules', 'vaccinations', 'medication_records', 'maintenance_records', 'health_records', 'vaccination_records', 'supplies', 'citizens', 'families', 'purok_subgroups', 'puroks', 'user_permissions', 'users'] as $table) {
             Schema::dropIfExists($table);
         }
 
+        Schema::create('system_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('username')->nullable();
             $table->string('password');
             $table->string('role')->nullable();
+            $table->unsignedBigInteger('citizen_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+        Schema::create('citizen_activity_logs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('action');
+            $table->string('module');
+            $table->unsignedBigInteger('citizen_id')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
         });
         Schema::create('user_permissions', function (Blueprint $table) {
             $table->id();
@@ -57,11 +75,18 @@ class BhwDiseaseMonitoringTest extends TestCase
         Schema::create('puroks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('boundary')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+        Schema::create('purok_user', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('purok_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamps();
         });
         Schema::create('purok_subgroups', function (Blueprint $table) {
             $table->id();
@@ -244,6 +269,7 @@ class BhwDiseaseMonitoringTest extends TestCase
         foreach ($citizens as $citizen) {
             $this->createDiagnosis($citizen->id, 'Dengue', $today);
         }
+
         $this->createDiagnosis($citizens->first()->id, 'Dengue', $yesterday);
 
         $outsideCitizen = $this->createCitizen($purok, $otherSubgroup, 'Outside assignment');
@@ -306,6 +332,110 @@ class BhwDiseaseMonitoringTest extends TestCase
         );
         $this->assertSame(1, $deletedData['totalRecords']);
         $this->assertTrue($deletedData['privacySuppressed']);
+    }
+
+    public function test_unassigned_citizens_are_accessible_only_to_bhws_in_the_same_mother_purok(): void
+    {
+        $purokOne = Purok::create(['name' => 'Purok 1']);
+        $purokTwo = Purok::create(['name' => 'Purok 2']);
+        $groupOneA = PurokSubgroup::create(['purok_id' => $purokOne->id, 'name' => 'Purok 1A']);
+        $groupOneB = PurokSubgroup::create(['purok_id' => $purokOne->id, 'name' => 'Purok 1B']);
+        $groupTwoA = PurokSubgroup::create(['purok_id' => $purokTwo->id, 'name' => 'Purok 2A']);
+        $bhwOneA = $this->createBhw();
+        $bhwOneB = User::create(['name' => 'BHW 1B', 'email' => 'bhw1b@example.test', 'password' => 'password', 'role' => 'bhw']);
+        $bhwTwoA = User::create(['name' => 'BHW 2A', 'email' => 'bhw2a@example.test', 'password' => 'password', 'role' => 'bhw']);
+        $bhwOneA->assignedSubgroups()->attach($groupOneA->id);
+        $bhwOneB->assignedSubgroups()->attach($groupOneB->id);
+        $bhwTwoA->assignedSubgroups()->attach($groupTwoA->id);
+
+        $unassignedCitizen = $this->createCitizen($purokOne, $groupOneA, 'Unassigned');
+        $unassignedCitizen->update(['subgroup_id' => null]);
+        $assignedCitizen = $this->createCitizen($purokOne, $groupOneB, 'Assigned');
+        $purokTwoCitizen = $this->createCitizen($purokTwo, $groupTwoA, 'Other Purok');
+
+        $access = app(BhwCitizenAccess::class);
+        $this->assertTrue($access->canAccessCitizen($bhwOneA, $unassignedCitizen));
+        $this->assertTrue($access->canAccessCitizen($bhwOneB, $unassignedCitizen));
+        $this->assertFalse($access->canAccessCitizen($bhwTwoA, $unassignedCitizen));
+        $this->assertFalse($access->canAccessCitizen($bhwOneA, $assignedCitizen));
+        $this->assertTrue($access->canAccessCitizen($bhwOneB, $assignedCitizen));
+        $this->assertFalse($access->canAccessCitizen($bhwOneA, $purokTwoCitizen));
+        $this->assertEqualsCanonicalizing(
+            [$unassignedCitizen->id],
+            $access->scopeCitizens(citizens::query(), $bhwOneA)->pluck('id')->all()
+        );
+
+        $purokThree = Purok::create(['name' => 'Purok 3']);
+        $purokThreeCitizen = $this->createCitizen($purokThree, null, 'Direct Purok');
+        $purokThreeAssignee = User::create(['name' => 'Purok 3 owner', 'email' => 'purok3@example.test', 'password' => 'password', 'role' => 'bhw']);
+        $purokThree->update(['user_id' => $purokThreeAssignee->id]);
+        $this->assertTrue($access->canAccessCitizen($purokThreeAssignee, $purokThreeCitizen));
+        $this->assertEqualsCanonicalizing(
+            [$purokThreeCitizen->id],
+            $access->scopeCitizens(citizens::query(), $purokThreeAssignee)->pluck('id')->all()
+        );
+
+        $purokFour = Purok::create(['name' => 'Purok 4']);
+        $purokFourCitizen = $this->createCitizen($purokFour, null, 'Pivot Purok');
+        $purokFourAssignee = User::create(['name' => 'Purok 4 owner', 'email' => 'purok4@example.test', 'password' => 'password', 'role' => 'bhw']);
+        $purokFourAssignee->assignedPuroks()->attach($purokFour->id);
+        $this->assertTrue($access->canAccessCitizen($purokFourAssignee, $purokFourCitizen));
+    }
+
+    public function test_bhw_can_assign_an_unassigned_citizen_within_the_same_purok_but_not_across_puroks(): void
+    {
+        $this->withoutMiddleware([
+            SystemMaintenance::class,
+            TrackPageViews::class,
+            EnsurePasswordIsChanged::class,
+        ]);
+
+        $purokOne = Purok::create(['name' => 'Purok 1']);
+        $purokTwo = Purok::create(['name' => 'Purok 2']);
+        $groupOne = PurokSubgroup::create(['purok_id' => $purokOne->id, 'name' => 'Purok 1A']);
+        $groupTwo = PurokSubgroup::create(['purok_id' => $purokTwo->id, 'name' => 'Purok 2A']);
+        $bhw = $this->createBhw();
+        $bhw->assignedSubgroups()->attach($groupOne->id);
+        $samePurokCitizen = $this->createCitizen($purokOne, null, 'Assign');
+        $otherPurokCitizen = $this->createCitizen($purokOne, null, 'Reject');
+        $foreignCitizen = $this->createCitizen($purokTwo, null, 'Foreign');
+        $this->assertFalse(app(BhwCitizenAccess::class)->canAccessCitizen($bhw, $foreignCitizen));
+
+        $payload = [
+            'Citizen_FName' => 'Updated',
+            'Citizen_LName' => 'Citizen',
+            'Citizen_BirthDate' => '1990-01-01',
+            'Citizen_Purok' => $purokTwo->name,
+            'subgroup_id' => $groupOne->id,
+            'family_id' => null,
+        ];
+
+        $this->actingAs($bhw)
+            ->from('/citizendetails/' . $samePurokCitizen->id)
+            ->put(route('citizen.update', $samePurokCitizen->id), $payload)
+            ->assertRedirect('/citizendetails/' . $samePurokCitizen->id);
+        $this->assertSame($groupOne->id, $samePurokCitizen->fresh()->subgroup_id);
+        $this->assertSame($purokOne->name, $samePurokCitizen->fresh()->Citizen_Purok);
+        $this->assertDatabaseHas('citizen_activity_logs', [
+            'citizen_id' => $samePurokCitizen->id,
+            'action' => 'update',
+            'module' => 'citizen',
+        ]);
+        $this->assertTrue(app(BhwCitizenAccess::class)->canAccessCitizen($bhw, $samePurokCitizen->fresh()));
+
+        $this->actingAs($bhw)
+            ->from('/citizendetails/' . $otherPurokCitizen->id)
+            ->put(route('citizen.update', $otherPurokCitizen->id), array_merge($payload, [
+                'subgroup_id' => $groupTwo->id,
+            ]))
+            ->assertRedirect('/citizendetails/' . $otherPurokCitizen->id)
+            ->assertSessionHasErrors('subgroup_id');
+        $this->assertNull($otherPurokCitizen->fresh()->subgroup_id);
+
+        $this->actingAs($bhw)
+            ->put(route('citizen.update', $foreignCitizen->id), $payload)
+            ->assertRedirect(route('landing'));
+        $this->assertNull($foreignCitizen->fresh()->subgroup_id);
     }
 
     public function test_small_results_are_suppressed_from_aggregate_details(): void
@@ -418,7 +548,10 @@ class BhwDiseaseMonitoringTest extends TestCase
         $bhw->assignedSubgroups()->attach($subgroup->id);
         $this->createCitizen($purok, $subgroup, 'Excel Export');
         $youngerCitizen = $this->createCitizen($purok, $subgroup, 'Excluded by Filter');
-        $youngerCitizen->update(['Citizen_Age' => 10]);
+        $youngerCitizen->update([
+            'Citizen_Age' => 10,
+            'Citizen_BirthDate' => today()->subYears(10)->toDateString(),
+        ]);
 
         $response = $this->actingAs($bhw)->get(route('bhw.reports', [
             'report_type' => 'age_by_purok',
@@ -458,6 +591,7 @@ class BhwDiseaseMonitoringTest extends TestCase
         } finally {
             unlink($workbookPath);
         }
+
     }
 
     public function test_all_report_sections_render_and_export_the_same_filtered_data(): void
@@ -474,11 +608,24 @@ class BhwDiseaseMonitoringTest extends TestCase
         $bhw->assignedSubgroups()->attach($subgroup->id);
 
         $fourYearOld = $this->createCitizen($purok, $subgroup, 'Young One');
-        $fourYearOld->update(['Citizen_Age' => 4, 'Citizen_Sex' => 'Female', 'Citizen_Pregnant' => true]);
+        $fourYearOld->update([
+            'Citizen_Age' => 4,
+            'Citizen_BirthDate' => today()->subYears(4)->toDateString(),
+            'Citizen_Sex' => 'Female',
+            'Citizen_Pregnant' => true,
+        ]);
         $fiveYearOld = $this->createCitizen($purok, $subgroup, 'Young Two');
-        $fiveYearOld->update(['Citizen_Age' => 5, 'Citizen_Sex' => 'Male']);
+        $fiveYearOld->update([
+            'Citizen_Age' => 5,
+            'Citizen_BirthDate' => today()->subYears(5)->toDateString(),
+            'Citizen_Sex' => 'Male',
+        ]);
         $sixYearOld = $this->createCitizen($purok, $subgroup, 'Older Child');
-        $sixYearOld->update(['Citizen_Age' => 6, 'Citizen_Sex' => 'Female']);
+        $sixYearOld->update([
+            'Citizen_Age' => 6,
+            'Citizen_BirthDate' => today()->subYears(6)->toDateString(),
+            'Citizen_Sex' => 'Female',
+        ]);
 
         HealthRecord::create([
             'citizen_id' => $fourYearOld->id,
@@ -596,6 +743,122 @@ class BhwDiseaseMonitoringTest extends TestCase
             ->get(route('bhw.reports', ['report_type' => 'age_by_purok', 'purok' => $purok->id]))
             ->assertOk()
             ->assertDontSee('class="report-graphic"', false);
+    }
+
+    public function test_report_purok_filter_includes_bhw_pivot_assigned_subgroups(): void
+    {
+        $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
+
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports_demographics', 'access' => 'read']);
+
+        $selectedPurok = Purok::create(['name' => 'Purok 4']);
+        $otherPurok = Purok::create(['name' => 'Purok 5']);
+        $selectedSubgroup = PurokSubgroup::create(['purok_id' => $selectedPurok->id, 'name' => 'Purok 4A']);
+        $siblingSubgroup = PurokSubgroup::create(['purok_id' => $selectedPurok->id, 'name' => 'Purok 4B']);
+        $otherSubgroup = PurokSubgroup::create(['purok_id' => $otherPurok->id, 'name' => 'Purok 5A']);
+        $bhw->assignedSubgroups()->attach([
+            $selectedSubgroup->id,
+            $siblingSubgroup->id,
+            $otherSubgroup->id,
+        ]);
+        $selectedCitizen = $this->createCitizen($selectedPurok, $selectedSubgroup, 'Selected Purok');
+        $selectedCitizen->update([
+            'Citizen_Age' => 36,
+            'Citizen_BirthDate' => today()->subYears(7)->toDateString(),
+        ]);
+        $outOfRangeCitizen = $this->createCitizen($selectedPurok, $selectedSubgroup, 'Outside Age Range');
+        $outOfRangeCitizen->update([
+            'Citizen_Age' => 36,
+            'Citizen_BirthDate' => today()->subYears(12)->toDateString(),
+        ]);
+        $siblingCitizen = $this->createCitizen($selectedPurok, $siblingSubgroup, 'Sibling Subgroup');
+        $siblingCitizen->update(['Citizen_BirthDate' => today()->subYears(7)->toDateString()]);
+        $otherPurokCitizen = $this->createCitizen($otherPurok, $otherSubgroup, 'Other Purok');
+        $otherPurokCitizen->update(['Citizen_BirthDate' => today()->subYears(7)->toDateString()]);
+
+        $this->actingAs($bhw)
+            ->get(route('bhw.reports', [
+                'sections' => ['citizens', 'age_by_purok'],
+                'location' => 'subgroup:'.$selectedSubgroup->id,
+                'age_min' => 0,
+                'age_max' => 10,
+                'include_graphics' => 1,
+            ]))
+            ->assertOk()
+            ->assertSee('Selected Purok')
+            ->assertDontSee('Outside Age Range')
+            ->assertDontSee('Sibling Subgroup')
+            ->assertDontSee('Other Purok')
+            ->assertSee('Age: 0 to 10')
+            ->assertSee('name="location"', false)
+            ->assertSee('value="subgroup:'.$selectedSubgroup->id.'"', false)
+            ->assertSee('class="report-graphic"', false);
+
+        $this->actingAs($bhw)
+            ->get(route('bhw.reports', [
+                'report_type' => 'citizens',
+                'location' => 'purok:'.$selectedPurok->id,
+            ]))
+            ->assertOk()
+            ->assertSee('Selected Purok')
+            ->assertSee('Outside Age Range')
+            ->assertSee('Sibling Subgroup')
+            ->assertDontSee('Other Purok');
+
+        $this->actingAs($bhw)
+            ->get(route('bhw.reports', [
+                'report_type' => 'age_by_purok',
+                'location' => 'subgroup:'.$selectedSubgroup->id,
+                'age_min' => 11,
+                'age_max' => 10,
+            ]))
+            ->assertRedirect()
+            ->assertSessionHasErrors('age_max');
+
+        $response = $this->actingAs($bhw)->get(route('bhw.reports', [
+            'sections' => ['citizens', 'age_by_purok'],
+            'location' => 'subgroup:'.$selectedSubgroup->id,
+            'age_min' => 0,
+            'age_max' => 10,
+            'export_format' => 'xlsx',
+        ]));
+        $response->assertOk();
+        $workbookPath = tempnam(sys_get_temp_dir(), 'bhw-subgroup-report-');
+        $this->assertNotFalse($workbookPath);
+        file_put_contents($workbookPath, $response->streamedContent());
+
+        try {
+            $workbook = IOFactory::load($workbookPath);
+            $citizenSheet = $workbook->getSheetByName('Citizen Profiles');
+            $this->assertSame('Selected Purok Test (ID: C-0001)', $citizenSheet->getCell('A8')->getValue());
+            $this->assertSame(7, (int) $citizenSheet->getCell('B8')->getValue());
+            $this->assertSame(8, $citizenSheet->getHighestDataRow());
+
+            $ageSheet = $workbook->getSheetByName('Age-Bracket Breakdown per Purok');
+            $this->assertSame('Purok 4', $ageSheet->getCell('A8')->getValue());
+            $this->assertSame(1, (int) $ageSheet->getCell('D8')->getValue());
+            $this->assertSame(1, (int) $ageSheet->getCell('D9')->getValue());
+            $this->assertSame('Filters: Subgroup: Purok 4A | Age: 0 to 10', $citizenSheet->getCell('A5')->getValue());
+        } finally {
+            unlink($workbookPath);
+        }
+
+        $pdfResponse = $this->actingAs($bhw)->get(route('bhw.reports', [
+            'sections' => ['citizens', 'age_by_purok'],
+            'location' => 'subgroup:'.$selectedSubgroup->id,
+            'age_min' => 0,
+            'age_max' => 10,
+            'export_format' => 'pdf',
+        ]));
+        $pdfResponse->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader(
+                'content-disposition',
+                'attachment; filename=citizen-profiles-age-bracket-breakdown-per-purok-'.now()->format('Y-m-d').'.pdf'
+            );
+        $this->assertStringStartsWith('%PDF-', $pdfResponse->getContent());
     }
 
     public function test_report_filters_validate_ranges_and_ignore_inapplicable_sex_filter(): void
@@ -1038,7 +1301,7 @@ class BhwDiseaseMonitoringTest extends TestCase
         ]);
     }
 
-    private function createCitizen(Purok $purok, PurokSubgroup $subgroup, string $firstName): citizens
+    private function createCitizen(Purok $purok, ?PurokSubgroup $subgroup, string $firstName): citizens
     {
         return citizens::create([
             'Citizen_FName' => $firstName,
@@ -1047,7 +1310,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             'Citizen_ContactNo' => fake()->unique()->numerify('09#########'),
             'Citizen_Age' => 36,
             'Citizen_Purok' => $purok->name,
-            'subgroup_id' => $subgroup->id,
+            'subgroup_id' => $subgroup?->id,
         ]);
     }
 

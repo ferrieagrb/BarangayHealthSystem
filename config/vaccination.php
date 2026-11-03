@@ -2,11 +2,14 @@
 
 return [
     'policy' => 'philippines_routine',
-    'outside_routine_age_message' => 'Outside the configured routine schedule. Refer to the health center for catch-up review.',
+    'outside_routine_age_message' => 'Outside the configured routine age range. Use historical recording only when this vaccine was actually administered.',
+    'conditional_terms' => [
+        'pneumococcal',
+    ],
     'vaccines' => [
         'BCG' => [
             'label' => 'BCG',
-            'guideline' => 'Routine dose at birth. Older age requires health-center catch-up review.',
+            'guideline' => 'Routine dose at birth.',
             'source' => 'https://unicef.org/philippines/stories/routine-immunization-children-philippines',
             'doses' => [
                 ['name' => 'Single Dose', 'min_days' => 0, 'max_days' => 0],

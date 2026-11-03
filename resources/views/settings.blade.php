@@ -159,17 +159,17 @@
 
                 <div class="form-group-custom">
                     <label for="current_password">Current Password</label>
-                    <input type="password" name="current_password" id="current_password" required placeholder="Enter current password">
+                    <input type="password" name="current_password" id="current_password" autocomplete="current-password" required placeholder="Enter current password">
                 </div>
 
                 <div class="form-group-custom">
                     <label for="password">New Password</label>
-                    <input type="password" name="password" id="password" required placeholder="At least 8 characters">
+                    <input type="password" name="password" id="password" autocomplete="new-password" required placeholder="At least 8 characters">
                 </div>
 
                 <div class="form-group-custom">
                     <label for="password_confirmation">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" required placeholder="Re-enter new password">
+                    <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password" required placeholder="Re-enter new password">
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; margin-top: 25px;">

@@ -1,58 +1,11 @@
 @extends('templates.admin')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/bhw/logs.css') }}">
-<style>
-    .admin-logs-page { padding-bottom: 24px; }
-    /* Keep audit-log heading and subtitle aligned with other admin pages. */
-    .admin-logs-page > .page-top {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        gap: 6px;
-        width: 100%;
-        margin: 0 0 20px 0;
-        padding: 0;
-        text-align: left;
-    }
-    .admin-logs-page > .page-top > .page-title {
-        margin: 0;
-        padding: 0;
-        text-align: left;
-    }
-    .admin-logs-page > .page-top h1,
-    .admin-logs-page > .page-top p {
-        margin-left: 0;
-        padding-left: 0;
-        text-indent: 0;
-        transform: none;
-    }
-    .admin-logs-page > .page-top h1 { margin-top: 0; margin-bottom: 0; }
-    .admin-logs-page > .page-top p { margin-top: 6px; margin-bottom: 0; }
-    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
-    .tabs button { padding: 9px 13px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #334155; cursor: pointer; }
-    .tabs button.active { border-color: #0e42b1; background: #0e42b1; color: #fff; }
-    .tab-content { display: none; margin-top: 20px; }
-    .tab-content.active { display: block; }
-    .admin-log-table { width: 100%; border-collapse: collapse; background: #fff; }
-    .admin-log-table th, .admin-log-table td { padding: 11px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
-    .admin-log-table th, .admin-log-table td { text-align: center; }
-.admin-log-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
-    .tag { display: inline-block; padding: 4px 8px; border-radius: 6px; background: #0e42b1; color: #fff; font-size: 12px; }
-    .pagination-container { margin-top: 18px; }
-    .pagination-container nav > div:first-child { display: none; }
-    .pagination-container nav > div:last-child { display: flex; justify-content: center; }
-    .pagination-container nav ul { display: flex; gap: 5px; margin: 0; padding: 0; list-style: none; }
-    .pagination-container .page-link { display: block; padding: 7px 11px; border: 1px solid #dbe3ed; border-radius: 6px; color: #334155; background: #fff; text-decoration: none; }
-    .pagination-container .page-item.active .page-link { border-color: #0e42b1; background: #0e42b1; color: #fff; }
-    .pagination-container .page-item.disabled .page-link { color: #94a3b8; background: #f8fafc; }
-    .empty-log { padding: 22px; color: #64748b; text-align: center; }
-</style>
+<link rel="stylesheet" href="{{ asset('css/admin/record-pages.css') }}?v={{ filemtime(public_path('css/admin/record-pages.css')) }}">
 @endsection
 
 @section('content')
-<div class="admin-logs-page">
+<div class="admin-record-page admin-logs-page">
     <div class="page-top"><div class="page-title-group"><h1>System Audit Logs</h1><p>Review administrative actions and activity across system features.</p></div></div>
 
     <div class="tabs">

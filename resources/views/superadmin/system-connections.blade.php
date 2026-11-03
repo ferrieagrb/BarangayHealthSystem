@@ -22,7 +22,7 @@
             type="button"
             id="refreshConnections"
             class="connections-refresh-button"
-        >
+         data-ui-action="secondary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 aria-hidden="true">
                 <path

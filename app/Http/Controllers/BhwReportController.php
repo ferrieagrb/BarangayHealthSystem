@@ -16,6 +16,8 @@ use App\Models\UserPermission;
 use App\Models\Vaccination;
 use App\Models\VaccinationRecord;
 use App\Models\VaccinationSchedule;
+use App\Services\BhwCitizenAccess;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -80,6 +82,31 @@ class BhwReportController extends Controller
         if (! $selectedSections) {
             $selectedSections = [array_key_first($availableSections) ?: 'citizens'];
         }
+
+        if (array_key_exists('location', $request->all())) {
+            $request->validate(['location' => ['nullable', 'string', 'max:32']]);
+            $location = $request->input('location');
+            $purokId = null;
+            $subgroupId = null;
+
+            if ($location !== null && $location !== '' && $location !== 'all') {
+                if (preg_match('/^purok:(\d+)$/D', $location, $matches)) {
+                    $purokId = $matches[1];
+                } elseif (preg_match('/^subgroup:(\d+)$/D', $location, $matches)) {
+                    $subgroupId = $matches[1];
+                } else {
+                    throw ValidationException::withMessages([
+                        'location' => 'Select a valid Purok or subgroup.',
+                    ]);
+                }
+            }
+
+            $request->merge([
+                'purok' => $purokId,
+                'subgroup' => $subgroupId,
+            ]);
+        }
+
         $includeGraphics = $request->boolean('include_graphics');
 
         $citizenFilterSections = ['citizens', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok', 'immunization'];
@@ -134,19 +161,7 @@ class BhwReportController extends Controller
             $request->validate($filterRules);
         }
 
-        $citizenQuery = citizens::query();
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
-
-        if (! $canViewAll) {
-            $assignedSubgroups = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-            $citizenQuery->where(function ($query) use ($assignedSubgroups) {
-                $query->whereIn('subgroup_id', $assignedSubgroups)
-                    ->orWhereHas('family', fn ($family) => $family->whereIn('subgroup_id', $assignedSubgroups));
-            });
-        }
+        $citizenQuery = app(BhwCitizenAccess::class)->scopeCitizens(citizens::query(), $user);
 
         $purokRecord = null;
         if (array_intersect($selectedSections, $locationFilterSections) && $request->filled('purok') && $request->input('purok') !== 'all') {
@@ -195,8 +210,6 @@ class BhwReportController extends Controller
 
         $applyAgeFilters = (bool) array_intersect($selectedSections, $citizenFilterSections);
         $citizenQuery
-            ->when($applyAgeFilters && $request->filled('age_min'), fn ($query) => $query->where('Citizen_Age', '>=', $request->integer('age_min')))
-            ->when($applyAgeFilters && $request->filled('age_max'), fn ($query) => $query->where('Citizen_Age', '<=', $request->integer('age_max')))
             ->when(in_array('citizens', $selectedSections, true) && $request->input('citizen_status') === 'living', fn ($query) => $query->where('Citizen_IsDeceased', false))
             ->when(in_array('citizens', $selectedSections, true) && $request->input('citizen_status') === 'deceased', fn ($query) => $query->where('Citizen_IsDeceased', true))
             ->when(in_array('citizens', $selectedSections, true) && $request->filled('sex'), fn ($query) => $query->where('Citizen_Sex', $request->input('sex')));
@@ -207,19 +220,31 @@ class BhwReportController extends Controller
         $includeDiagnosisHistory = in_array('health_records', $selectedSections, true) || $needsDiagnosisSummary;
         $citizenRelations = ['family.purok', 'family.subgroup.purok', 'subgroup.purok'];
         $citizensReport = (clone $citizenQuery)->with($citizenRelations)->get();
+        if ($applyAgeFilters && ($request->filled('age_min') || $request->filled('age_max'))) {
+            $citizensReport = $citizensReport->filter(function ($citizen) use ($request) {
+                $age = $citizen->ageForEligibility();
+
+                return $age !== null
+                    && (! $request->filled('age_min') || $age >= $request->integer('age_min'))
+                    && (! $request->filled('age_max') || $age <= $request->integer('age_max'));
+            })->values();
+        }
         $citizenIds = $citizensReport->pluck('id');
 
         $ageByPurok = $citizensReport->groupBy(fn ($citizen) => $this->purokNameForCitizen($citizen))->map(function ($group) {
-            $validAge = fn ($age) => is_numeric($age) && (int) $age >= 0 && (int) $age <= 120;
+            $validAge = fn ($age) => $age !== null && $age >= 0 && $age <= 120;
+            $ageInRange = fn ($citizen, $minimum, $maximum) => ($age = $citizen->ageForEligibility()) !== null
+                && $age >= $minimum
+                && $age <= $maximum;
 
             return [
-                'infants' => $group->whereBetween('Citizen_Age', [0, 1])->count(),
-                'toddlers' => $group->whereBetween('Citizen_Age', [2, 4])->count(),
-                'children' => $group->whereBetween('Citizen_Age', [5, 12])->count(),
-                'teenagers' => $group->whereBetween('Citizen_Age', [13, 17])->count(),
-                'working_adults' => $group->whereBetween('Citizen_Age', [18, 59])->count(),
-                'seniors' => $group->whereBetween('Citizen_Age', [60, 120])->count(),
-                'unknown_age' => $group->filter(fn ($citizen) => ! $validAge($citizen->Citizen_Age))->count(),
+                'infants' => $group->filter(fn ($citizen) => $ageInRange($citizen, 0, 1))->count(),
+                'toddlers' => $group->filter(fn ($citizen) => $ageInRange($citizen, 2, 4))->count(),
+                'children' => $group->filter(fn ($citizen) => $ageInRange($citizen, 5, 12))->count(),
+                'teenagers' => $group->filter(fn ($citizen) => $ageInRange($citizen, 13, 17))->count(),
+                'working_adults' => $group->filter(fn ($citizen) => $ageInRange($citizen, 18, 59))->count(),
+                'seniors' => $group->filter(fn ($citizen) => $ageInRange($citizen, 60, 120))->count(),
+                'unknown_age' => $group->filter(fn ($citizen) => ! $validAge($citizen->ageForEligibility()))->count(),
             ];
         });
         $ageTotals = collect($ageByPurok->first() ? array_fill_keys(array_keys($ageByPurok->first()), 0) : [
@@ -288,7 +313,7 @@ class BhwReportController extends Controller
                     $citizen->Citizen_MName,
                     $citizen->Citizen_LName,
                 ]))),
-                'age' => is_numeric($citizen->Citizen_Age) ? (int) $citizen->Citizen_Age : 'Not recorded',
+                'age' => $citizen->ageForEligibility() ?? 'Not recorded',
                 'sex' => $citizen->Citizen_Sex ?: 'Not recorded',
                 'purok' => $this->purokNameForCitizen($citizen),
                 'subgroup' => $citizen->subgroup?->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned',
@@ -368,7 +393,7 @@ class BhwReportController extends Controller
                         $scheduleForCitizen->citizen?->Citizen_MName,
                         $scheduleForCitizen->citizen?->Citizen_LName,
                     ]))),
-                    'age' => is_numeric($scheduleForCitizen->citizen?->Citizen_Age) ? (int) $scheduleForCitizen->citizen->Citizen_Age : 'Not recorded',
+                    'age' => $scheduleForCitizen->citizen?->ageForEligibility() ?? 'Not recorded',
                     'sex' => $scheduleForCitizen->citizen?->Citizen_Sex ?: 'Not recorded',
                     'purok' => $this->purokNameForCitizen($scheduleForCitizen->citizen),
                     'subgroup' => $scheduleForCitizen->citizen?->subgroup?->name ?? $scheduleForCitizen->citizen?->family?->subgroup?->name ?? 'Not assigned',
@@ -420,7 +445,7 @@ class BhwReportController extends Controller
         $immunizationSummary = ['total' => 0, 'vaccinated' => 0, 'missing' => 0];
         if ($includeImmunization) {
             $immunization = $citizensReport
-                ->filter(fn ($citizen) => is_numeric($citizen->Citizen_Age) && (int) $citizen->Citizen_Age >= 0 && (int) $citizen->Citizen_Age <= 5)
+                ->filter(fn ($citizen) => ($age = $citizen->ageForEligibility()) !== null && $age >= 0 && $age <= 5)
                 ->keyBy('id');
             $administeredHistory = $immunizationHistory->where('status', 'Administered')
                 ->filter(fn ($record) => $immunization->has($record['citizen_id']));
@@ -479,7 +504,7 @@ class BhwReportController extends Controller
                 'citizen_name' => $citizen
                     ? trim(implode(' ', array_filter([$citizen->Citizen_FName, $citizen->Citizen_MName, $citizen->Citizen_LName])))
                     : 'Citizen unavailable',
-                'age' => is_numeric($citizen?->Citizen_Age) ? (int) $citizen->Citizen_Age : 'Not recorded',
+                'age' => $citizen?->ageForEligibility() ?? 'Not recorded',
                 'sex' => $citizen?->Citizen_Sex ?: 'Not recorded',
                 'purok' => $this->purokNameForCitizen($citizen),
                 'date' => $record->record_date ? Carbon::parse($record->record_date)->format('Y-m-d') : 'Not recorded',
@@ -614,7 +639,7 @@ class BhwReportController extends Controller
                 : null,
             'Citizen search' => $request->input('search'),
             'Age' => $request->filled('age_min') || $request->filled('age_max')
-                ? ($request->input('age_min') ?: 'Any').' to '.($request->input('age_max') ?: 'Any')
+                ? ($request->filled('age_min') ? $request->input('age_min') : 'Any').' to '.($request->filled('age_max') ? $request->input('age_max') : 'Any')
                 : null,
             'Sex' => $request->input('sex'),
             'Citizen status' => $request->input('citizen_status'),
@@ -662,7 +687,7 @@ class BhwReportController extends Controller
             );
         }
 
-        return view('bhw.reports', compact(
+        $reportData = compact(
             'availableSections', 'selectedSections', 'citizensReport', 'healthRecords', 'healthRecordDetails',
             'diagnoses', 'vaccineTypes', 'vaccinationDoseSummary', 'medicationHistory',
             'supplies', 'events', 'referrals', 'puroks', 'categories', 'ageByPurok',
@@ -670,7 +695,19 @@ class BhwReportController extends Controller
             'pregnancyTotal',
             'includeGraphics',
             'diagnosisSummary', 'diagnosisByPurok', 'reportFilterSummary'
-        ));
+        );
+
+        if ($request->input('export_format') === 'pdf') {
+            $reportTitle = collect($selectedSections)
+                ->map(fn ($section) => $availableSections[$section])
+                ->implode(' + ');
+
+            return Pdf::loadView('bhw.reports', $reportData)
+                ->setPaper('a4', 'landscape')
+                ->download(Str::slug($reportTitle).'-'.now()->format('Y-m-d').'.pdf');
+        }
+
+        return view('bhw.reports', $reportData);
     }
 
     private function matchesVaccineAlias(?string $vaccineName, array $aliases): bool
@@ -791,7 +828,7 @@ class BhwReportController extends Controller
                 'headings' => ['Name', 'Age', 'Sex', 'Purok', 'Family / Subgroup'],
                 'rows' => $citizensReport->map(fn ($citizen) => [
                     $citizen->Citizen_FName.' '.$citizen->Citizen_LName.' (ID: C-'.str_pad($citizen->id, 4, '0', STR_PAD_LEFT).')',
-                    (int) $citizen->Citizen_Age,
+                    $citizen->ageForEligibility() ?? 'Not recorded',
                     $citizen->Citizen_Sex ?: 'Not recorded',
                     $this->purokNameForCitizen($citizen),
                     ($citizen->family->family_name ?? 'No family').' / '.($citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned'),

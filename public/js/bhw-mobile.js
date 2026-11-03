@@ -27,6 +27,12 @@
 
     function syncDrawer() {
         const open = media.matches && sidebar.classList.contains('collapsed');
+        const expanded = media.matches ? open : !sidebar.classList.contains('collapsed');
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.setAttribute('aria-label', media.matches
+            ? (open ? 'Close sidebar' : 'Open sidebar')
+            : (expanded ? 'Collapse sidebar' : 'Expand sidebar'));
+        toggle.querySelector('i').className = expanded ? 'bx bx-chevron-left' : 'bx bx-chevron-right';
         if (media.matches && !backdrop) {
             backdrop = document.createElement('div');
             backdrop.className = 'bhw-mobile-backdrop';
@@ -47,18 +53,15 @@
             priorInert = main.inert;
             main.inert = true;
             locked = true;
-            toggle.setAttribute('aria-label', 'Close sidebar');
         } else if (!open && locked) {
             ['position', 'top', 'width'].forEach((property, index) => { document.body.style[property] = savedPosition[index]; });
             main.inert = priorInert;
             locked = false;
             window.scrollTo(0, savedScroll);
         }
-        if (media.matches && !open) toggle.setAttribute('aria-label', 'Open sidebar');
         if (!media.matches) {
             backdrop?.remove();
             backdrop = undefined;
-            toggle.setAttribute('aria-label', 'Toggle sidebar');
         }
     }
 

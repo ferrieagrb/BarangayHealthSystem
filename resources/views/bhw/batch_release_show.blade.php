@@ -56,7 +56,7 @@
             <h1>{{ $batchReleases->first()->event->title ?? $batchReleases->first()->batch_title }}</h1>
             <p>Dedicated batch release schedule and citizen claim status.</p>
         </div>
-        <a href="{{ route('supplies.index') }}" class="btn-secondary">Back to Supplies</a>
+        <a href="{{ route('supplies.index') }}" class="btn-secondary" data-ui-action="secondary">Back to Supplies</a>
     </div>
 
     @if(session('success'))
@@ -99,7 +99,7 @@
                             @if($release->status === 'scheduled')
                                 <form method="POST" action="{{ route('supplies.batch.release.claim', $release->id) }}">
                                     @csrf
-                                    <button type="submit" class="btn-primary" onclick="return confirm('Confirm that this citizen claimed the assigned supply?');">Mark Claimed</button>
+                                    <button type="submit" class="btn-primary" onclick="return confirm('Confirm that this citizen claimed the assigned supply?');" data-ui-action="primary">Mark Claimed</button>
                                 </form>
                             @else
                                 <small>Claimed {{ $release->claimed_at?->format('M d, Y h:i A') }}</small>

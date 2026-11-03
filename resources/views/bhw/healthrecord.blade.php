@@ -146,12 +146,12 @@
                         @endforeach
                     </select>
 
-                    <button type="button" id="openCitizenStatusFilter" class="citizen-status-filter-btn" aria-haspopup="dialog" aria-controls="citizenStatusFilterModal">
+                    <button type="button" id="openCitizenStatusFilter" class="citizen-status-filter-btn" aria-haspopup="dialog" aria-controls="citizenStatusFilterModal" data-ui-action="secondary">
                         <span>Status Filters</span>
                         <span class="status-filter-arrow" aria-hidden="true">⌄</span>
                     </button>
 
-                    <button type="submit" class="btn-primary health-record-search-submit">Search</button>
+                    <button type="submit" class="btn-primary health-record-search-submit" data-ui-action="secondary">Search</button>
                 </form>
             </div>
 
@@ -261,7 +261,7 @@
                                             <a
                                                 href="{{ route('citizen.show', $citizen->id) }}"
                                                 class="btn-primary"
-                                            >
+                                             data-ui-action="secondary">
                                                 View
                                             </a>
 
@@ -316,7 +316,7 @@
                 <h3>Disease Monitoring</h3>
                 <p>View diagnosis-record trends and aggregated illness distribution by reporting period, Purok, and subgroup.</p>
                 @if($canViewDiseaseAnalytics)
-                    <a class="btn btn-primary" href="{{ route('bhw.analytics') }}">Open disease monitoring</a>
+                    <a class="btn btn-primary" href="{{ route('bhw.analytics') }}" data-ui-action="secondary">Open disease monitoring</a>
                 @else
                     <p>Reports access is required to view aggregate disease analytics.</p>
                 @endif
@@ -409,7 +409,7 @@
     <div class="citizen-status-modal" role="dialog" aria-modal="true" aria-labelledby="citizenStatusFilterTitle">
         <div class="citizen-status-header">
             <h2 id="citizenStatusFilterTitle">Filter Citizen Records</h2>
-            <button type="button" id="closeCitizenStatusFilter" class="citizen-status-close" aria-label="Close filter">&times;</button>
+            <button type="button" id="closeCitizenStatusFilter" class="citizen-status-close" aria-label="Close filter" data-ui-action="secondary">&times;</button>
         </div>
         <div class="citizen-status-body">
             <section class="citizen-status-section">
@@ -449,8 +449,8 @@
             </section>
         </div>
         <div class="citizen-status-footer">
-            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear">Clear All</button>
-            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply">Apply Filters</button>
+            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear" data-ui-action="reset">Clear All</button>
+            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply" data-ui-action="secondary">Apply Filters</button>
         </div>
     </div>
 </div>

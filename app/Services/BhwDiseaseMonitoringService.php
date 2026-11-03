@@ -26,8 +26,9 @@ class BhwDiseaseMonitoringService
     ): array {
         $canViewAll = $this->citizenAccess->canViewAll($user);
         $assignedSubgroupIds = $this->citizenAccess->assignedSubgroupIds($user);
+        $assignedPurokIds = $this->citizenAccess->assignedPurokIds($user);
 
-        $baseQuery = fn () => $this->query($canViewAll, $assignedSubgroupIds);
+        $baseQuery = fn () => $this->query($canViewAll, $assignedSubgroupIds, $assignedPurokIds);
         $applyFilters = function (Builder $query, bool $includeDate = true) use (
             $start,
             $end,
@@ -276,7 +277,7 @@ class BhwDiseaseMonitoringService
         };
     }
 
-    private function query(bool $canViewAll, Collection $assignedSubgroupIds): Builder
+    private function query(bool $canViewAll, Collection $assignedSubgroupIds, Collection $assignedPurokIds): Builder
     {
         $query = DB::table('health_records AS hr')
             ->join('citizens AS c', 'c.id', '=', 'hr.citizen_id')
@@ -287,17 +288,30 @@ class BhwDiseaseMonitoringService
                 $join->on(DB::raw('LOWER(TRIM(text_purok.name))'), '=', DB::raw('LOWER(TRIM(c.Citizen_Purok))'));
             })
             ->leftJoin('puroks AS area_purok', function ($join) {
-                $join->on('area_purok.id', '=', DB::raw('COALESCE(csg.purok_id, fsg.purok_id, text_purok.id)'));
+                $join->on('area_purok.id', '=', DB::raw('COALESCE(csg.purok_id, fsg.purok_id, f.purok_id, text_purok.id)'));
             })
             ->whereNull('hr.deleted_at')
             ->whereNotNull('hr.diagnosis')
             ->whereRaw("TRIM(hr.diagnosis) <> ''");
 
         if (!$canViewAll) {
-            if ($assignedSubgroupIds->isEmpty()) {
+            if ($assignedSubgroupIds->isEmpty() && $assignedPurokIds->isEmpty()) {
                 $query->whereRaw('1 = 0');
             } else {
-                $query->whereIn(DB::raw('COALESCE(csg.id, fsg.id)'), $assignedSubgroupIds);
+                $query->where(function (Builder $accessQuery) use ($assignedSubgroupIds, $assignedPurokIds) {
+                    if ($assignedSubgroupIds->isNotEmpty()) {
+                        $accessQuery->whereIn(DB::raw('COALESCE(csg.id, fsg.id)'), $assignedSubgroupIds);
+                    }
+
+                    if ($assignedPurokIds->isNotEmpty()) {
+                        $accessQuery->orWhere(function (Builder $unassignedQuery) use ($assignedPurokIds) {
+                            $unassignedQuery
+                                ->whereNull('c.subgroup_id')
+                                ->whereNull('f.subgroup_id')
+                                ->whereIn('area_purok.id', $assignedPurokIds);
+                        });
+                    }
+                });
             }
         }
 

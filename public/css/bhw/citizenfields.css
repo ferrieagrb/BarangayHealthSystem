@@ -42,6 +42,15 @@
 .citizen-form-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:12px; padding-top:18px; border-top:1px solid #e2e8f0; }
 #citizenForm #saveBtn, #citizenForm #cancelBtn { min-width:115px; }
 
+/* Family details use the same stacked label and control sizing as the edit form. */
+#citizenForm > .family-info-row { grid-column:1 / -1; width:100%; min-width:0; }
+.family-info-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:end; min-width:0; margin-bottom:16px; }
+.family-info-field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+.family-info-field label { display:block; margin:0; color:#475569; font-size:12px; font-weight:500; line-height:1.5; }
+.family-info-field input { display:block; box-sizing:border-box; width:100%; min-width:0; min-height:43px; margin:0; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#0f172a; font-size:13px; line-height:1.5; outline:none; }
+.family-info-field input:disabled { border-color:#e2e8f0; background:#f8fafc; color:#64748b; cursor:not-allowed; opacity:1; }
+@media (max-width:760px) { .family-info-row { grid-template-columns:minmax(0,1fr); } }
+
 /* Immunization / vaccination dropdown form */
 .immunization-section { width:100%; min-width:0; margin:22px 0 0; padding:24px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(15,23,42,.04); }
 .immunization-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px 18px; margin:0 0 18px; }
@@ -1115,22 +1124,40 @@ body:has(.maintenance-section) .health-alert-error {
     display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px;
     width:100%; min-width:0;
 }
+.maintenance-container-box .maintenance-form-field-row {
+    display:grid;
+    grid-column:1 / -1;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));
+    gap:16px;
+    width:100%;
+    min-width:0;
+}
 .immunization-section .immunization-field,
-.maintenance-container-box .maintenance-form-field {
+.maintenance-container-box .maintenance-form-field,
+.maintenance-container-box .maintenance-form-field-row > .maintenance-form-field {
     display:flex; flex-direction:column; gap:7px; min-width:0;
 }
 .immunization-section .immunization-field label,
-.maintenance-container-box .maintenance-form-field label {
+.maintenance-container-box .maintenance-form-field label,
+.maintenance-container-box .maintenance-form-field-row > .maintenance-form-field label {
+    display:block;
+    margin:0;
     color:#334155; font-size:12px; font-weight:600;
+    line-height:1.5;
 }
 .immunization-section .immunization-field input,
 .immunization-section .immunization-field select,
 .maintenance-container-box .maintenance-form-field input,
 .maintenance-container-box .maintenance-form-field select,
-.maintenance-container-box .maintenance-form-field textarea {
+.maintenance-container-box .maintenance-form-field textarea,
+.maintenance-container-box .maintenance-form-field-row > .maintenance-form-field input,
+.maintenance-container-box .maintenance-form-field-row > .maintenance-form-field select {
     box-sizing:border-box; width:100%; min-width:0; min-height:44px;
     padding:11px 13px; border:1px solid #dbe4ef; border-radius:10px;
     background:#f8fafc; color:#0f172a; font:inherit; font-size:13px;
+}
+.maintenance-container-box .maintenance-form-field-row > .maintenance-form-field select {
+    padding-right:32px;
 }
 .maintenance-container-box .maintenance-form-field-full { grid-column:1 / -1; }
 .immunization-section .immunization-action-wrapper {

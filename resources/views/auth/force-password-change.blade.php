@@ -7,6 +7,8 @@
 
     <!-- Existing CSS -->
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    @include('partials.button-action-assets')
+    @include('partials.input-autocomplete-assets')
 
     <!-- Additional Password Reset UI Styles -->
     <style>
@@ -101,7 +103,7 @@
             margin-bottom: 12px;
             color: var(--text-color);
             font-size: 25px;
-            font-weight: 750;
+            font-weight: 600;
             line-height: 1.3;
         }
 
@@ -126,7 +128,7 @@
             margin-bottom: 9px;
             color: #334155;
             font-size: 13px;
-            font-weight: 650;
+            font-weight: 500;
         }
 
         .input-wrapper {
@@ -418,7 +420,7 @@
 @include('partials.favicon')
 </head>
 
-<body>
+<body id="appActionControls">
 
     <main class="password-page">
 
@@ -641,7 +643,7 @@
                 </div>
 
                 <!-- Original Submit Button -->
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" data-ui-action="primary">
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
