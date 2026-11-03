@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css') }}?v={{ filemtime(public_path('css/layout.css')) }}">
     <script src="{{ asset('js/ui-motion.js') }}" defer></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,6 +50,8 @@
     @yield('CSSown')
     <link rel="stylesheet" href="{{ asset('css/admin/responsive.css') }}">
     @include('partials.appearance-assets')
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar-scroll.css') }}?v={{ filemtime(public_path('css/sidebar-scroll.css')) }}">
 </head>
 
 
@@ -59,15 +61,19 @@
 <div class="dashboard">
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar" id="adminSidebar" role="navigation" aria-label="Primary navigation">
 
-        <!-- TOP TOGGLE -->
-        <div class="top">
-            <div class="topbutton">
-                <i class="bx bx-sidebar"></i>
-            </div>
+        <div class="top sidebar-header">
+            <a class="sidebar-brand" href="{{ auth()->user()->isSuperAdmin() ? route('superadmin.dashboard') : route('admin.home') }}" aria-label="BHEAMS home">
+                <img src="{{ asset('images/amuyong.png') }}" alt="">
+                <span>BHEAMS</span>
+            </a>
+            <button type="button" class="topbutton sidebar-toggle" aria-label="Collapse sidebar" aria-controls="adminSidebar" aria-expanded="true">
+                <i class="bx bx-chevron-left" aria-hidden="true"></i>
+            </button>
         </div>
 
+        <div class="sidebar-nav" tabindex="0" aria-label="Navigation links">
         <ul>
             <li>
                 <a href="{{ auth()->user()->isSuperAdmin() ? route('superadmin.dashboard') : route('admin.home') }}">
@@ -112,6 +118,7 @@
             </li>
 
         </ul>
+        </div>
 
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
@@ -121,16 +128,8 @@
                         <span class="nav-item">Settings</span>
                     </a>
                 </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                        @csrf
-                        <button type="submit">
-                            <i class="bx bx-log-out" style="font-size:20px; min-width:25px; text-align:center;"></i>
-                            <span class="nav-item">Logout</span>
-                        </button>
-                    </form>
-                </li>
             </ul>
+            @include('templates.partials.sidebar-account')
         </div>
 
     </div>
@@ -162,10 +161,24 @@
 <script>
 const sidebar = document.querySelector(".sidebar");
 const toggleBtn = document.querySelector(".topbutton");
+const sidebarMobile = window.matchMedia("(max-width: 768px)");
+
+function updateSidebarToggle() {
+    const collapsed = sidebar.classList.contains("collapsed");
+    const expanded = sidebarMobile.matches ? collapsed : !collapsed;
+    toggleBtn.setAttribute("aria-expanded", String(expanded));
+    toggleBtn.setAttribute("aria-label", sidebarMobile.matches
+        ? (expanded ? "Close sidebar" : "Open sidebar")
+        : (expanded ? "Collapse sidebar" : "Expand sidebar"));
+    toggleBtn.querySelector("i").className = expanded ? "bx bx-chevron-left" : "bx bx-chevron-right";
+}
 
 toggleBtn.addEventListener("click", () => {
     sidebar.classList.toggle("collapsed");
+    updateSidebarToggle();
 });
+sidebarMobile.addEventListener("change", updateSidebarToggle);
+updateSidebarToggle();
 </script>
 
 @auth

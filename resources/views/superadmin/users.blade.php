@@ -248,7 +248,7 @@
                         id="edit_name"
                         name="name"
                         maxlength="255"
-                        autocomplete="name"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -261,7 +261,7 @@
                         id="edit_email"
                         name="email"
                         maxlength="255"
-                        autocomplete="email"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -274,7 +274,7 @@
                         id="edit_username"
                         name="username"
                         maxlength="255"
-                        autocomplete="username"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -354,7 +354,7 @@
                         id="add_name"
                         name="name"
                         maxlength="255"
-                        autocomplete="name"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -367,7 +367,7 @@
                         id="add_email"
                         name="email"
                         maxlength="255"
-                        autocomplete="email"
+                        autocomplete="off"
                         required
                     >
                 </div>
@@ -380,7 +380,7 @@
                         id="add_username"
                         name="username"
                         maxlength="255"
-                        autocomplete="username"
+                        autocomplete="off"
                         required
                     >
                 </div>

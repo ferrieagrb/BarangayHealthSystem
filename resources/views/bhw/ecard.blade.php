@@ -102,10 +102,7 @@
                 <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
             </div>
 
-        </div>
-
-        {{-- ADDITIONAL ID DETAILS --}}
-        <div class="bheams-id-secondary-details">
+            {{-- ADDITIONAL ID DETAILS --}}
             <div class="bheams-id-field">
                 <span>SEX</span>
                 <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
@@ -301,8 +298,11 @@
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
                                         {{ $vax->vaccine_name }}
+                                        @if($vax->historical_recording)
+                                            <div class="mt-1 text-xs font-normal text-slate-600">Historical record</div>
+                                        @endif
                                         @if($vax->eligibility_review_required)
-                                            <div class="mt-1 text-xs font-normal text-amber-700">Review required: {{ $vax->eligibility_review_reason }}</div>
+                                            <div class="mt-1 text-xs font-normal text-amber-700">Clinical age eligibility not established: {{ $vax->eligibility_review_reason }}</div>
                                         @endif
                                         @if($vax->catch_up_reviewed)
                                             <div class="mt-1 text-xs font-normal text-blue-700">Catch-up schedule confirmed by health center.</div>
@@ -311,6 +311,12 @@
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}
                                         — {{ $vax->dose_number }}
+                                        @if($vax->cvx_code)
+                                            <div class="text-xs">CDC CVX {{ $vax->cvx_code }}</div>
+                                        @endif
+                                        @if($vax->vaccine_formulation)
+                                            <div class="text-xs">{{ $vax->vaccine_formulation }}</div>
+                                        @endif
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->date_administered }}
@@ -416,32 +422,66 @@
 
 @media(max-width:700px){.bhw-ecard-page{padding:20px 12px}.ecard-page-header{align-items:flex-start;flex-direction:column}.ecard-actions-top{justify-content:stretch}.ecard-actions-top button{flex:1 1 220px}.bheams-id-header{flex-wrap:wrap;padding:18px}.bheams-id-body{grid-template-columns:1fr;padding:18px}.bheams-photo{margin:0 auto}.bheams-id-secondary-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bheams-id-secondary-details .bheams-id-field{margin-bottom:8px}.bheams-id-qr-centered{grid-column:1/-1}.bheams-id-two-columns{grid-template-columns:1fr}.print-health-record{padding:14px}}
 @media print{@page{size:A4 landscape;margin:8mm}html,body,.dashboard,.main-content{background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important}body *{visibility:hidden!important}body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{visibility:visible!important}body.print-record-only .print-health-record,body.print-record-only .print-health-record *{visibility:visible!important}body.print-id-only .print-health-record,body.print-record-only .bheams-id-card{display:none!important}.top-bar,.sidebar,.sidebar-backdrop,.ecard-page-header,.ecard-actions-top{display:none!important}.main-content{margin:0!important;padding:0!important;width:100%!important}.bhw-ecard-page{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}.ecard-content-stack{max-width:none!important;width:100%!important;margin:0!important;gap:0!important}.bheams-id-card,.print-health-record{width:100%!important;max-width:100%!important;margin:0!important;box-shadow:none!important;break-inside:avoid}.bheams-id-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}.bheams-id-body{grid-template-columns:125px minmax(0,1fr) 125px!important;padding:24px!important}.print-health-record{border:1px solid #9ca3af!important;padding:14px!important}.print-health-record table{font-size:9px}.print-health-record th,.print-health-record td{padding:5px!important}
-body.print-id-only .bhw-ecard-page,body.print-id-only .ecard-content-stack{width:3.375in!important;max-width:3.375in!important;height:2.125in!important;max-height:2.125in!important;margin:0!important;padding:0!important;overflow:hidden!important}
-body.print-id-only .bheams-id-card{display:flex!important;flex-direction:column!important;width:3.375in!important;height:2.125in!important;min-height:2.125in!important;max-width:3.375in!important;max-height:2.125in!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
-body.print-id-only .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .61in!important;min-height:.61in!important;gap:.10in!important;padding:.08in .12in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
-body.print-id-only .bheams-seal{width:.39in!important;height:.39in!important;min-width:.39in!important;min-height:.39in!important;flex:0 0 .39in!important;border-width:1px!important}
+body.print-id-only .bhw-ecard-page,body.print-id-only .ecard-content-stack{width:85.60mm!important;max-width:85.60mm!important;height:53.98mm!important;max-height:53.98mm!important;margin:0!important;padding:0!important;overflow:hidden!important}
+body.print-id-only .bheams-id-card{display:flex!important;flex-direction:column!important;width:85.60mm!important;height:53.98mm!important;min-height:53.98mm!important;max-width:85.60mm!important;max-height:53.98mm!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
+body.print-id-only .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .43in!important;min-height:.43in!important;gap:.08in!important;padding:.04in .11in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
+body.print-id-only .bheams-seal{width:.31in!important;height:.31in!important;min-width:.31in!important;min-height:.31in!important;flex:0 0 .31in!important;border-width:1px!important}
 body.print-id-only .bheams-brand{min-width:0!important;flex:1!important}
-body.print-id-only .bheams-brand h2{font-size:14px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
-body.print-id-only .bheams-brand p{margin:2px 0!important;font-size:7.5px!important;line-height:1.05!important}
-body.print-id-only .bheams-brand span{font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important}
-body.print-id-only .bheams-id-body{display:grid!important;grid-template-columns:.58in minmax(0,1.15fr) minmax(0,.68fr) .62in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.11in!important;box-sizing:border-box!important} body.print-id-only .bheams-id-secondary-details{min-width:0!important;align-self:center!important} body.print-id-only .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
-body.print-id-only .bheams-photo{width:.58in!important;height:.72in!important;min-width:.58in!important;max-width:.58in!important;border-width:1px!important;box-sizing:border-box!important}
+body.print-id-only .bheams-brand h2{font-size:11px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
+body.print-id-only .bheams-brand p{margin:1px 0!important;font-size:6px!important;line-height:1.05!important}
+body.print-id-only .bheams-brand span{font-size:4px!important;line-height:1.1!important;letter-spacing:0!important}
+body.print-id-only .bheams-id-body{display:grid!important;grid-template-columns:.72in minmax(0,1fr) .96in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.07in .11in!important;box-sizing:border-box!important} body.print-id-only .bheams-id-secondary-details{min-width:0!important;align-self:center!important} body.print-id-only .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
+body.print-id-only .bheams-photo{width:.72in!important;height:.90in!important;min-width:.72in!important;max-width:.72in!important;border-width:1px!important;box-sizing:border-box!important}
 body.print-id-only .bheams-no-photo span{font-size:23px!important;line-height:1!important}
 body.print-id-only .bheams-no-photo small{font-size:5px!important}
 body.print-id-only .bheams-id-details{min-width:0!important;align-self:center!important}
-body.print-id-only .bheams-id-title{margin-bottom:5px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
-body.print-id-only .bheams-id-field{gap:1px!important;margin-bottom:4px!important}
+body.print-id-only .bheams-id-title{margin-bottom:3px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
+body.print-id-only .bheams-id-field{gap:0!important;margin-bottom:1.5px!important}
 body.print-id-only .bheams-id-field span{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
 body.print-id-only .bheams-id-field strong{font-size:7px!important;line-height:1.1!important}
 body.print-id-only .bheams-citizen-number{font-size:8px!important;line-height:1.1!important}
-body.print-id-only .bheams-id-two-columns{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}
-body.print-id-only .bheams-qr-frame{width:.58in!important;height:.58in!important;min-width:.58in!important;min-height:.58in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
+body.print-id-only .bheams-id-two-columns{grid-template-columns:1fr!important;gap:0!important}
+body.print-id-only .bheams-qr-frame{width:.96in!important;height:.96in!important;min-width:.96in!important;min-height:.96in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
 body.print-id-only .bheams-qr-frame img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}
 body.print-id-only .bheams-id-qr{gap:3px!important;min-width:0!important}
 body.print-id-only .bheams-id-qr strong{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
 body.print-id-only .bheams-id-qr small{font-size:3.8px!important;line-height:1.1!important}
 body.print-id-only .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
 body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+
+/* Standard ATM / ID-1 card preview dimensions. */
+@media screen {
+.bhw-ecard-page .bheams-id-card{display:flex!important;flex-direction:column!important;width:85.60mm!important;height:53.98mm!important;min-height:53.98mm!important;max-width:85.60mm!important;max-height:53.98mm!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
+.bhw-ecard-page .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .43in!important;min-height:.43in!important;gap:.08in!important;padding:.04in .11in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
+.bhw-ecard-page .bheams-seal{width:.31in!important;height:.31in!important;min-width:.31in!important;min-height:.31in!important;flex:0 0 .31in!important;border-width:1px!important}
+.bhw-ecard-page .bheams-brand{min-width:0!important;flex:1!important}
+.bhw-ecard-page .bheams-brand h2{font-size:11px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
+.bhw-ecard-page .bheams-brand p{margin:1px 0!important;font-size:6px!important;line-height:1.05!important}
+.bhw-ecard-page .bheams-brand span{font-size:4px!important;line-height:1.1!important;letter-spacing:0!important}
+.bhw-ecard-page .bheams-id-body{display:grid!important;grid-template-columns:.72in minmax(0,1fr) .96in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.07in .11in!important;box-sizing:border-box!important} .bhw-ecard-page .bheams-id-secondary-details{min-width:0!important;align-self:center!important} .bhw-ecard-page .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
+.bhw-ecard-page .bheams-photo{width:.72in!important;height:.90in!important;min-width:.72in!important;max-width:.72in!important;border-width:1px!important;box-sizing:border-box!important}
+.bhw-ecard-page .bheams-no-photo span{font-size:23px!important;line-height:1!important}
+.bhw-ecard-page .bheams-no-photo small{font-size:5px!important}
+.bhw-ecard-page .bheams-id-details{min-width:0!important;align-self:center!important}
+.bhw-ecard-page .bheams-id-title{margin-bottom:3px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
+.bhw-ecard-page .bheams-id-field{gap:0!important;margin-bottom:1.5px!important}
+.bhw-ecard-page .bheams-id-field span{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
+.bhw-ecard-page .bheams-id-field strong{font-size:7px!important;line-height:1.1!important}
+.bhw-ecard-page .bheams-citizen-number{font-size:8px!important;line-height:1.1!important}
+.bhw-ecard-page .bheams-id-two-columns{grid-template-columns:1fr!important;gap:0!important}
+.bhw-ecard-page .bheams-qr-frame{width:.96in!important;height:.96in!important;min-width:.96in!important;min-height:.96in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
+.bhw-ecard-page .bheams-qr-frame img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}
+.bhw-ecard-page .bheams-id-qr{gap:3px!important;min-width:0!important}
+.bhw-ecard-page .bheams-id-qr strong{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
+.bhw-ecard-page .bheams-id-qr small{font-size:3.8px!important;line-height:1.1!important}
+.bhw-ecard-page .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
+
+.bhw-ecard-page .bheams-photo{margin:0!important}
+.bhw-ecard-page .bheams-id-secondary-details{display:block!important}
+.bhw-ecard-page .bheams-id-qr-centered{grid-column:auto!important}
+.ecard-id-card-scroll{overflow-x:auto}
+.ecard-id-scroll-hint{display:none!important}
 }
 </style>
 <script>
@@ -458,7 +498,7 @@ function printCitizenSection(section) {
     citizenPrintPageRule = document.createElement('style');
     citizenPrintPageRule.id = 'citizen-print-page-size';
     citizenPrintPageRule.textContent = section === 'id'
-        ? '@page { size: 3.375in 2.125in; margin: 0; }'
+        ? '@page { size: 85.60mm 53.98mm; margin: 0; }'
         : '@page { size: A4 landscape; margin: 8mm; }';
     document.head.appendChild(citizenPrintPageRule);
 

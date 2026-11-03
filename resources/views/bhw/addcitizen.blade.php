@@ -99,7 +99,7 @@
                     required
                     maxlength="255"
                     value="{{ old('Citizen_FName') }}"
-                    autocomplete="given-name"
+                    autocomplete="off"
                 >
             </div>
 
@@ -124,7 +124,7 @@
                     required
                     maxlength="255"
                     value="{{ old('Citizen_LName') }}"
-                    autocomplete="family-name"
+                    autocomplete="off"
                 >
             </div>
 
@@ -155,7 +155,7 @@
                     id="contact"
                     required
                     inputmode="numeric"
-                    autocomplete="tel"
+                    autocomplete="off"
                     maxlength="11"
                     minlength="11"
                     pattern="[0-9]{11}"
@@ -308,7 +308,7 @@
                     required
                     placeholder="resident@email.com"
                     value="{{ old('email') }}"
-                    autocomplete="email"
+                    autocomplete="off"
                 >
             </div>
 

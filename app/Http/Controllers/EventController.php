@@ -4,11 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
-use App\Models\PurokSubgroup;
 use App\Models\Purok;
 use App\Models\SystemSetting;
-use App\Models\UserPermission;
 use App\Models\citizens;
+use App\Services\BhwCitizenAccess;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -20,19 +19,10 @@ class EventController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $citizenQuery = citizens::with(['vaccinations', 'vaccinationSchedules'])->orderBy('Citizen_LName')->orderBy('Citizen_FName');
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
-
-        if (!$canViewAll) {
-            $assignedSubgroups = PurokSubgroup::where('user_id', $user->id)->pluck('id');
-            $citizenQuery->where(function ($query) use ($assignedSubgroups) {
-                $query->whereIn('subgroup_id', $assignedSubgroups)
-                    ->orWhereHas('family', fn ($family) => $family->whereIn('subgroup_id', $assignedSubgroups));
-            });
-        }
+        $citizenQuery = app(BhwCitizenAccess::class)
+            ->scopeCitizens(citizens::with(['vaccinations', 'vaccinationSchedules']), $user)
+            ->orderBy('Citizen_LName')
+            ->orderBy('Citizen_FName');
 
         return view('bhw.calendar', [
             'calendarCitizens' => $citizenQuery->get(),

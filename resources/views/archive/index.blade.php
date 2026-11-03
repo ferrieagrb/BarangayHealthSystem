@@ -1,28 +1,17 @@
 @extends($layout)
 
-@section('content')
-<style>
-    .archive-page { padding: 8px 4px; }
-    .archive-page h1 { margin: 0 0 4px; }
-    .archive-page .archive-sub { color: #64748b; margin: 0 0 18px; }
-    .archive-alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
-    .archive-alert.ok { background: #d4edda; color: #155724; }
-    .archive-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .archive-tabs a { padding: 8px 14px; border-radius: 999px; background: #eef2f7; color: #334155; text-decoration: none; font-size: .9rem; }
-    .archive-tabs a.active { background: #2563eb; color: #fff; }
-    .archive-tabs a span { opacity: .75; margin-left: 4px; }
-    .archive-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden; }
-    .archive-table { width: 100%; border-collapse: collapse; }
-    .archive-table th, .archive-table td { padding: 12px 28px; text-align: center; border-bottom: 1px solid #eef2f7; }
-    .archive-table th:first-child, .archive-table td:first-child { text-align: left; }
-    .archive-table th { background: #f8fafc; font-size: .8rem; text-transform: uppercase; color: #64748b; }
-    .archive-restore { background: #16a34a; color: #fff; border: 0; padding: 7px 16px; border-radius: 8px; cursor: pointer; }
-    .archive-empty { padding: 30px; text-align: center; color: #64748b; }
-</style>
+@section('CSSown')
+    <link rel="stylesheet" href="{{ asset('css/admin/record-pages.css') }}?v={{ filemtime(public_path('css/admin/record-pages.css')) }}">
+@endsection
 
-<div class="archive-page">
-    <h1>Archive</h1>
-    <p class="archive-sub">Records are never deleted. Archived records are kept here and can be restored at any time.</p>
+@section('content')
+<div class="admin-record-page archive-page">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>Archive</h1>
+            <p>Records are never deleted. Archived records are kept here and can be restored at any time.</p>
+        </div>
+    </div>
 
     @if (session('success'))
         <div class="archive-alert ok">{{ session('success') }}</div>
@@ -60,7 +49,7 @@
         </table>
     </div>
 
-    <div style="margin-top: 15px;">
+    <div class="pagination-container">
         {{ $items->links('pagination::bootstrap-5') }}
     </div>
 </div>

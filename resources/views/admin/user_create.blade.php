@@ -34,7 +34,7 @@
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" required>
+            <input type="password" name="password" autocomplete="new-password" required>
         </div>
 
         <div class="form-group">

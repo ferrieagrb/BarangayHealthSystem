@@ -37,6 +37,7 @@ use App\Models\UserPermission;
 use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
 use App\Services\VaccinationEligibility;
+use App\Services\VaccinationRecording;
 use App\Traits\LogsActivity;
 
 class CitizenController extends Controller
@@ -768,8 +769,15 @@ class CitizenController extends Controller
 
         $this->authorizeCitizenEdit($citizen);
         $canEdit = $this->canEditCitizen($citizen);
-        $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
+        $access = app(BhwCitizenAccess::class);
+        $familiesQuery = Family::with(['purok', 'subgroup'])->orderBy('family_name');
         $puroks = Purok::orderedWithSubgroups();
+        if (Auth::user()?->role === 'bhw') {
+            $motherPurokId = $access->motherPurok($citizen)?->id;
+            $familiesQuery->where('purok_id', $motherPurokId ?? 0);
+            $puroks = $puroks->where('id', $motherPurokId)->values();
+        }
+        $families = $familiesQuery->get();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -820,10 +828,15 @@ class CitizenController extends Controller
         ])->findOrFail($id);
 
         $canEdit = $this->canEditCitizen($citizen);
-        $families = Family::with(['purok', 'subgroup'])
-            ->orderBy('family_name')
-            ->get();
+        $access = app(BhwCitizenAccess::class);
+        $familiesQuery = Family::with(['purok', 'subgroup'])->orderBy('family_name');
         $puroks = Purok::orderedWithSubgroups();
+        if (Auth::user()?->role === 'bhw') {
+            $motherPurokId = $access->motherPurok($citizen)?->id;
+            $familiesQuery->where('purok_id', $motherPurokId ?? 0);
+            $puroks = $puroks->where('id', $motherPurokId)->values();
+        }
+        $families = $familiesQuery->get();
 
         $availableMedicines = Supply::where('quantity', '>', 0)
             ->select('name')
@@ -877,27 +890,20 @@ class CitizenController extends Controller
             $citizen,
             $schedule->vaccine_name,
             $schedule->dose_number ?: 'Single Dose',
-            $validated['date_administered'],
-            allowCatchUp: true
+            $validated['date_administered']
         );
         if (!$eligibilityResult['eligible']) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'date_administered' => $eligibilityResult['reason'],
             ]);
         }
-        if ($eligibilityResult['review_required'] && !$schedule->catch_up_reviewed) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'date_administered' => 'Health-center confirmation is required before administering this catch-up dose.',
-            ]);
-        }
-
         VaccinationRecord::create([
             'citizen_id' => $citizen->id,
             'vaccine_name' => $schedule->vaccine_name,
             'dose_number' => $schedule->dose_number ?: 'Scheduled dose',
             'date_administered' => $validated['date_administered'],
             'administered_by' => $user->name,
-            'catch_up_reviewed' => (bool) $schedule->catch_up_reviewed,
+            'catch_up_reviewed' => false,
         ]);
 
         $schedule->update(['status' => 'completed']);
@@ -979,9 +985,9 @@ class CitizenController extends Controller
             'Citizen_LName' => 'required|string|max:255',
             'Citizen_BirthDate' => 'required|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
-            'Citizen_Purok' => 'nullable|string|max:255|required_without:family_id',
+            'Citizen_Purok' => 'nullable|string|max:255',
             'family_id' => 'nullable|exists:families,id',
-            'subgroup_id' => 'nullable|exists:purok_subgroups,id|required_without:family_id',
+            'subgroup_id' => 'nullable|exists:purok_subgroups,id',
             'Citizen_Height' => 'nullable|numeric|min:0',
             'Citizen_Weight' => 'nullable|numeric|min:0',
             'Citizen_Sex' => 'nullable|in:Male,Female',
@@ -993,18 +999,59 @@ class CitizenController extends Controller
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
-        $family = Family::with(['purok', 'subgroup'])->find($validated['family_id'] ?? $citizen->family_id);
+        $family = !empty($validated['family_id'])
+            ? Family::with(['purok', 'subgroup'])->findOrFail($validated['family_id'])
+            : null;
+        $user = Auth::user();
+        $isBhw = $user?->role === 'bhw';
+        $access = app(BhwCitizenAccess::class);
+        $motherPurok = $access->motherPurok($citizen);
+        $currentSubgroupId = $citizen->subgroup_id ?? $citizen->family?->subgroup_id;
+
         if ($family) {
+            $familySubgroupMismatch = $family->subgroup
+                && (int) $family->subgroup->purok_id !== (int) $family->purok_id;
+            if ($isBhw && (
+                !$motherPurok
+                || (int) $family->purok_id !== (int) $motherPurok->id
+                || $familySubgroupMismatch
+            )) {
+                return back()->withErrors(['family_id' => 'The selected family must belong to the citizen\'s mother Purok.'])->withInput();
+            }
+
             $validated['family_id'] = $family->id;
-            $validated['Citizen_Purok'] = $family->purok->name;
-            $validated['subgroup_id'] = $family->subgroup->id;
-        } else {
+            $validated['subgroup_id'] = $family->subgroup_id;
+            if (!$isBhw) {
+                $validated['Citizen_Purok'] = $family->purok->name;
+            }
+        } elseif (!empty($validated['subgroup_id'])) {
             $manualSubgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
-            if (!$manualSubgroup->purok || $manualSubgroup->purok->name !== $validated['Citizen_Purok']) {
+            if (!$manualSubgroup->purok
+                || ($isBhw
+                    ? (!$motherPurok || (int) $manualSubgroup->purok_id !== (int) $motherPurok->id)
+                    : $manualSubgroup->purok->name !== ($validated['Citizen_Purok'] ?? $citizen->Citizen_Purok))) {
                 return back()->withErrors(['subgroup_id' => 'The selected subgroup must belong to the selected Purok.'])->withInput();
             }
+
+            $validated['family_id'] = null;
+            if (!$isBhw) {
+                $validated['Citizen_Purok'] = $manualSubgroup->purok->name;
+            }
+        } else {
+            if ($currentSubgroupId !== null) {
+                return back()->withErrors(['subgroup_id' => 'An assigned citizen must remain assigned to a subgroup or family.'])->withInput();
+            }
+
+            $validated['family_id'] = null;
+            $validated['subgroup_id'] = null;
         }
 
+        if ($isBhw) {
+            $validated['Citizen_Purok'] = $citizen->Citizen_Purok;
+        }
+
+        $assignmentChanged = $citizen->family_id !== ($validated['family_id'] ?? null)
+            || (int) $citizen->subgroup_id !== (int) ($validated['subgroup_id'] ?? null);
         $citizen->update($validated);
 
         $citizenUser = User::where('citizen_id', $citizen->id)->first();
@@ -1012,7 +1059,12 @@ class CitizenController extends Controller
             $citizenUser->update(['username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate'], $citizenUser->id)]);
         }
 
-        $this->logActivity('update', 'citizen', $citizen->id, 'Updated citizen details');
+        $this->logActivity(
+            'update',
+            'citizen',
+            $citizen->id,
+            $assignmentChanged ? 'Updated citizen details and subgroup assignment' : 'Updated citizen details'
+        );
 
         return redirect()->back()->with('success', 'Citizen updated successfully.');
     }
@@ -1347,7 +1399,6 @@ class CitizenController extends Controller
             'schedules.*.dose_number' => 'required|string|max:100',
             'schedules.*.scheduled_date' => 'required|date|after_or_equal:today',
             'schedules.*.notes' => 'nullable|string|max:2000',
-            'schedules.*.catch_up_reviewed' => 'nullable|accepted',
         ]);
 
         DB::transaction(function () use ($validated, $user, $eligibility) {
@@ -1361,20 +1412,13 @@ class CitizenController extends Controller
                     $scheduleData['dose_number'],
                     $scheduleData['scheduled_date'],
                     includeSchedules: true,
-                    allowFutureDate: true,
-                    allowCatchUp: true
+                    allowFutureDate: true
                 );
                 if (!$eligibilityResult['eligible']) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         'schedules' => $eligibilityResult['reason'],
                     ]);
                 }
-                if ($eligibilityResult['review_required'] && empty($scheduleData['catch_up_reviewed'])) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'schedules' => 'Health-center confirmation is required before scheduling this catch-up dose.',
-                    ]);
-                }
-
                 VaccinationSchedule::create([
                     'citizen_id' => $citizen->id,
                     'vaccine_name' => $scheduleData['vaccine_name'],
@@ -1383,7 +1427,7 @@ class CitizenController extends Controller
                     'notes' => $scheduleData['notes'] ?? null,
                     'status' => 'scheduled',
                     'scheduled_by' => $user->id,
-                    'catch_up_reviewed' => (bool) ($scheduleData['catch_up_reviewed'] ?? false),
+                    'catch_up_reviewed' => false,
                 ]);
 
                 $this->logActivity('create', 'vaccination_schedule', $citizen->id, 'Scheduled ' . $scheduleData['vaccine_name'] . ' vaccination');
@@ -1445,19 +1489,18 @@ class CitizenController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function storeVaccinationRecord(Request $request, VaccinationEligibility $eligibility)
+    public function storeVaccinationRecord(Request $request, VaccinationRecording $recording)
     {
         $user = Auth::user();
         if (!$user || $user->role !== 'bhw') abort(403);
 
-        $allowedVaccineNames = array_column($eligibility->vaccines(), 'label');
         $validated = $request->validate([
             'citizen_id' => 'required|exists:citizens,id',
-            'vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedVaccineNames)],
+            'vaccine_name' => 'required|string|max:255',
             'dose_number' => 'required|string|max:100',
             'date_administered' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string|max:2000',
-            'catch_up_reviewed' => 'nullable|accepted',
+            'historical_recording' => 'sometimes|boolean',
+            'vaccine_selection_token' => 'nullable|string|max:2048',
         ]);
 
         $citizen = citizens::findOrFail($validated['citizen_id']);
@@ -1465,39 +1508,13 @@ class CitizenController extends Controller
             abort(403, 'You are not authorized to update this citizen vaccination record.');
         }
 
-        $eligibilityResult = $eligibility->evaluate(
-            $citizen,
-            $validated['vaccine_name'],
-            $validated['dose_number'],
-            $validated['date_administered'],
-            includeSchedules: true,
-            allowCatchUp: true
-        );
-        if (!$eligibilityResult['eligible']) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'vaccine_name' => $eligibilityResult['reason'],
-            ]);
-        }
-        if ($eligibilityResult['review_required'] && empty($validated['catch_up_reviewed'])) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'vaccine_name' => 'Health-center confirmation is required before recording this catch-up dose.',
-            ]);
-        }
-
-        VaccinationRecord::create([
-            'citizen_id' => $validated['citizen_id'],
-            'vaccine_name' => $validated['vaccine_name'],
-            'dose_number' => $validated['dose_number'],
-            'date_administered' => $validated['date_administered'],
-            'administered_by' => Auth::user()->name,
-            'catch_up_reviewed' => (bool) ($validated['catch_up_reviewed'] ?? false),
-        ]);
-        $this->logActivity('create', 'vaccination', $validated['citizen_id'], 'Added vaccination: ' . $validated['vaccine_name']);
+        $record = $recording->record($citizen, $user, $validated);
+        $this->logActivity('create', 'vaccination', $citizen->id, 'Added vaccination: ' . $record->vaccine_name);
 
         return back()->with('success', 'Vaccination added successfully.');
     }
 
-    public function storeVaccination(Request $request, VaccinationEligibility $eligibility, $id = null)
+    public function storeVaccination(Request $request, VaccinationRecording $recording, $id = null)
     {
         $user = Auth::user();
         if (!$user || $user->role !== 'bhw') abort(403);
@@ -1507,44 +1524,21 @@ class CitizenController extends Controller
         if (!$this->canEditCitizen($citizen) || (int) $citizen->Citizen_IsDeceased === 1) {
             abort(403, 'You are not authorized to update this citizen vaccination record.');
         }
-        $allowedVaccineNames = array_column($eligibility->vaccines(), 'label');
         $validated = $request->validate([
-            'vaccine_name' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedVaccineNames)],
+            'vaccine_name' => 'required|string|max:255',
             'dose_number' => 'required|string|max:100',
             'date_administered' => 'required|date|before_or_equal:today',
-            'catch_up_reviewed' => 'nullable|accepted',
+            'historical_recording' => 'sometimes|boolean',
+            'vaccine_selection_token' => 'nullable|string|max:2048',
         ]);
 
-        $eligibilityResult = $eligibility->evaluate(
-            $citizen,
-            $validated['vaccine_name'],
-            $validated['dose_number'],
-            $validated['date_administered'],
-            includeSchedules: true,
-            allowCatchUp: true
-        );
-        if (!$eligibilityResult['eligible']) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'vaccine_name' => $eligibilityResult['reason'],
-            ]);
-        }
-        if ($eligibilityResult['review_required'] && empty($validated['catch_up_reviewed'])) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'vaccine_name' => 'Health-center confirmation is required before recording this catch-up dose.',
-            ]);
-        }
-
-        $validated['citizen_id'] = $citizenId;
-        $validated['administered_by'] = $user->name;
-        $validated['catch_up_reviewed'] = (bool) ($validated['catch_up_reviewed'] ?? false);
-
-        VaccinationRecord::create($validated);
+        $record = $recording->record($citizen, $user, $validated);
 
         $this->logActivity(
             'create',
             'vaccination',
             $citizenId,
-            'Administered vaccine (' . $validated['vaccine_name'] . ' - ' . $validated['dose_number'] . ') to citizen ID ' . $citizenId
+            'Recorded vaccine (' . $record->vaccine_name . ' - ' . $record->dose_number . ') for citizen ID ' . $citizenId
         );
 
         return back()->with('success', 'Vaccination record added successfully.');

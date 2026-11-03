@@ -37,7 +37,9 @@
     </div>
 </header>
 
-<button class="mobile-nav-backdrop" type="button" aria-label="Close navigation menu" tabindex="-1" hidden></button>
+@include('partials.input-autocomplete-assets')
+
+<div class="mobile-nav-backdrop" aria-hidden="true" hidden></div>
 
 <script>
     (() => {
@@ -49,7 +51,7 @@
 
         if (!toggle || !toggleIcon || !navigation || !header || !backdrop) return;
 
-        const mobileNavigation = window.matchMedia('(max-width: 900px)');
+        const mobileNavigation = window.matchMedia('(max-width: 768px)');
         let isOpen = false;
 
         const updateMenuPosition = () => {

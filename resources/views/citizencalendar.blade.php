@@ -15,6 +15,8 @@
     <!-- Theme Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/citizenhome.css') }}">
     <link rel="stylesheet" href="{{ asset('css/citizencalendar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
+    @include('partials.button-action-assets')
 </head>
 <body>
 

@@ -22,7 +22,7 @@
         margin: 0;
         color: #173b82;
         font-size: clamp(25px, 3vw, 32px);
-        font-weight: 850;
+        font-weight: 600;
     }
 
     .cs-head p {
@@ -45,7 +45,7 @@
         color: #fff;
         text-decoration: none;
         font-size: 15px;
-        font-weight: 750;
+        font-weight: 600;
         cursor: pointer;
     }
 
@@ -64,7 +64,7 @@
         background: #f1f5f9;
         color: #173b82;
         font-size: 19px;
-        font-weight: 800;
+        font-weight: 600;
     }
 
     .cs-body {
@@ -80,7 +80,7 @@
         margin-bottom: 8px;
         color: #263449;
         font-size: 16px;
-        font-weight: 750;
+        font-weight: 500;
     }
 
     .cs-field input,
@@ -132,7 +132,7 @@
     }
 
     .cs-status {
-        font-weight: 800;
+        font-weight: 600;
         font-size: 15px;
     }
 

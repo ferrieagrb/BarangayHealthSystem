@@ -4,7 +4,7 @@
 <style>
     .qr-page { max-width: 1180px; margin: 0 auto; padding: 24px; color: #172033; }
     .qr-heading { margin-bottom: 22px; }
-    .qr-heading h1 { margin: 0 0 6px; font-size: 28px; font-weight: 750; }
+    .qr-heading h1 { margin: 0 0 6px; font-size: 28px; font-weight: 600; }
     .qr-heading p { margin: 0; color: #64748b; }
     .qr-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
     .qr-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; box-shadow: 0 5px 18px rgba(15, 23, 42, .05); min-width: 0; }
@@ -13,7 +13,7 @@
     #qr-reader { width: 100%; max-width: 460px; margin: 18px auto 12px; overflow: hidden; border-radius: 12px; background:#f8fafc; }
     #qr-reader video { border-radius: 10px; }
     .qr-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-    .qr-btn { border: 0; border-radius: 9px; padding: 11px 16px; font-weight: 650; cursor: pointer; }
+    .qr-btn { border: 0; border-radius: 9px; padding: 11px 16px; font-weight: 600; cursor: pointer; }
     .qr-btn-primary { background: #155eef; color: white; }
     .qr-btn-secondary { background: #eef2f7; color: #263449; }
     .qr-btn:disabled { opacity: .55; cursor: not-allowed; }
@@ -21,20 +21,20 @@
     .qr-status.error { background: #fef2f2; color: #b91c1c; }
     .qr-status.success { background: #ecfdf5; color: #047857; }
     .qr-manual { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
-    .qr-manual label { display: block; font-weight: 650; font-size: 13px; margin-bottom: 7px; }
+    .qr-manual label { display: block; font-weight: 500; font-size: 13px; margin-bottom: 7px; }
     .qr-manual input { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 9px; box-sizing: border-box; }
     .qr-results[hidden] { display: none; }
     .qr-empty { text-align: center; padding: 32px 16px; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px; }
     .qr-profile { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; border-bottom: 1px solid #e2e8f0; margin-bottom: 18px; }
     .qr-avatar { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; background: #e2e8f0; display: grid; place-items: center; color: #475569; font-size: 24px; flex: 0 0 auto; }
-    .qr-profile h3 { margin: 0 0 4px; font-size: 20px; font-weight: 750; }
+    .qr-profile h3 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
     .qr-profile-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
     .qr-detail-group { border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin:16px 0; }
     .qr-detail-group h4 { margin:0 0 14px; color:#173b82; font-size:14px; text-transform:uppercase; letter-spacing:.04em; }
     .qr-action-link { display:inline-flex; align-items:center; text-decoration:none; border-radius:9px; padding:10px 13px; font-size:13px; font-weight:700; background:#155eef; color:#fff; }
     .qr-action-link.secondary { background:#eef2f7; color:#263449; }
     .qr-diagnosis-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .qr-diagnosis-form label { display:block; font-size:13px; font-weight:650; margin-bottom:6px; }
+    .qr-diagnosis-form label { display:block; font-size:13px; font-weight:500; margin-bottom:6px; }
     .qr-diagnosis-form input,.qr-diagnosis-form textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:9px; padding:10px 11px; font:inherit; }
     .qr-diagnosis-form .full { grid-column:1/-1; }
     .qr-diagnosis-form textarea { min-height:80px; resize:vertical; }
@@ -45,7 +45,7 @@
     .qr-info-item small { display: block; color: #64748b; margin-bottom: 4px; }
     .qr-info-item strong { overflow-wrap: anywhere; }
     .qr-section { margin-top: 22px; }
-    .qr-section h3 { margin: 0 0 10px; font-size: 16px; font-weight: 750; }
+    .qr-section h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; }
     .qr-table-wrap { overflow-x: auto; }
     .qr-table { border-collapse: collapse; width: 100%; font-size: 13px; }
     .qr-table th, .qr-table td { text-align: left; padding: 10px 9px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h4>Add Diagnosis / Health Record</h4>
                 <form id="qr-diagnosis-form" class="qr-diagnosis-form">
                     <input type="hidden" name="citizen_id" value="${escapeHtml(citizen.id)}">
-                    <div><label for="qr-diagnosis">Diagnosis *</label><input id="qr-diagnosis" name="diagnosis" required maxlength="255" placeholder="Enter diagnosis"></div>
+                    <div><label for="qr-diagnosis">Diagnosis *</label><input id="qr-diagnosis" name="diagnosis" data-medical-autocomplete="diagnosis" required maxlength="255" placeholder="Enter diagnosis"></div>
                     <div><label for="qr-record-date">Record date *</label><input id="qr-record-date" name="record_date" type="date" required value="${new Date().toISOString().slice(0,10)}"></div>
                     <div class="full"><label for="qr-comments">Notes / Comments</label><textarea id="qr-comments" name="comments" placeholder="Symptoms, notes, or follow-up instructions"></textarea></div>
                     <div class="full"><button class="qr-btn qr-btn-primary" type="submit" id="qr-save-diagnosis" data-ui-action="primary">Save Diagnosis</button></div>

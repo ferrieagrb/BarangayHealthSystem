@@ -1,9 +1,11 @@
 
 @extends('templates.superadmin')
 
-@section('content')
+@section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/superadmin/superadmin_settings.css') }}">
+@endsection
 
+@section('content')
 <div class="superadmin-settings">
 
     <div class="settings-page-header">

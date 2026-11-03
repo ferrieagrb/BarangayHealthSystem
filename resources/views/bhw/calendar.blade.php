@@ -192,8 +192,6 @@ INPUTS
     margin-top: 22px;
 }
 
-<<<<<<< HEAD
-=======
 .vaccination-schedule-modal .modal-content { width: min(1080px, calc(100vw - 32px)); overflow-x: hidden; }
 .vaccination-schedule-help { margin: -10px 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
 .citizen-picker-modal .modal-content { width: min(680px, calc(100vw - 32px)); }
@@ -217,20 +215,16 @@ INPUTS
 .remove-schedule-row { width: 38px; height: 40px; border: 0; border-radius: 7px; background: #fee2e2; color: #b91c1c; cursor: pointer; font-size: 20px; }
 .add-schedule-row { margin-top: 12px; border: 1px dashed #2563eb; background: #eff6ff; color: #1d4ed8; }
 
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 @media (max-width: 640px) {
     .modal-content { padding: 22px; }
     .add-event-form-grid { grid-template-columns: 1fr; gap: 14px; }
     .add-event-field-full { grid-column: auto; }
-<<<<<<< HEAD
-=======
 }
 
 @media (max-width: 900px) {
     .vaccination-schedule-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .vaccination-schedule-row label[style] { grid-column: 1 / -1 !important; }
     .vaccination-schedule-row .remove-schedule-row { width: 100%; }
->>>>>>> 8f05883dd366c56d631103f280dc44da05bf5816
 }
 
 /* =========================================================
@@ -568,14 +562,15 @@ MOBILE
                             <input type="hidden" name="schedules[0][citizen_id]" class="schedule-citizen-id">
                             <button type="button" class="schedule-citizen-picker" data-ui-action="secondary">Choose citizen</button>
                         </label>
-                        <label>Vaccine or immunization
-                            <select name="schedules[0][vaccine_name]" class="schedule-vaccine-name" required>
+                        <div class="schedule-vaccine-field">
+                            <label for="schedule-vaccine-0">Vaccine or immunization</label>
+                            <select id="schedule-vaccine-0" name="schedules[0][vaccine_name]" class="schedule-vaccine-name" data-medical-autocomplete="vaccine" required>
                                 <option value="">Select a vaccine</option>
                                 @foreach($calendarVaccineOptions as $calendarVaccine)
-                                    <option value="{{ $calendarVaccine['label'] }}" data-code="{{ $calendarVaccine['code'] }}" disabled>{{ $calendarVaccine['label'] }} — unavailable</option>
+                                    <option value="{{ $calendarVaccine['label'] }}" data-code="{{ $calendarVaccine['code'] }}" disabled>{{ $calendarVaccine['label'] }} — Unavailable</option>
                                 @endforeach
                             </select>
-                        </label>
+                        </div>
                         <label>Dose / label
                             <select name="schedules[0][dose_number]" class="schedule-dose-number" required>
                                 <option value="">Select a dose</option>
@@ -585,10 +580,6 @@ MOBILE
                             <input type="date" name="schedules[0][scheduled_date]" class="schedule-date" min="{{ now()->format('Y-m-d') }}" required>
                         </label>
                         <small class="schedule-eligibility-message" role="status" style="grid-column:1/-1;">Choose a citizen and date to check age eligibility.</small>
-                        <label class="schedule-catch-up-review" hidden style="grid-column:1/-1;">
-                            <input type="checkbox" name="schedules[0][catch_up_reviewed]" value="1" class="schedule-catch-up-checkbox">
-                            Health center confirmed this catch-up vaccine and dose schedule
-                        </label>
                         <button type="button" class="remove-schedule-row" aria-label="Remove schedule row" disabled data-ui-action="danger">&times;</button>
                         <label style="grid-column: 1 / -2;">Notes
                             <input type="text" name="schedules[0][notes]" placeholder="Optional instructions">
@@ -936,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function vaccineOptionsMarkup() {
         return '<option value="">Select a vaccine</option>' + vaccineOptions.map(function (vaccine) {
-            return '<option value="' + vaccine.label.replace(/"/g, '&quot;') + '" data-code="' + vaccine.code + '" disabled>' + vaccine.label + ' — unavailable</option>';
+            return '<option value="' + vaccine.label.replace(/"/g, '&quot;') + '" data-code="' + vaccine.code + '" disabled>' + vaccine.label + ' — Unavailable</option>';
         }).join('');
     }
 
@@ -952,11 +943,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function scheduleRowMarkup(index) {
         return '<div class="vaccination-schedule-row" data-schedule-index="' + index + '">' +
             '<label>Citizen<input type="hidden" name="schedules[' + index + '][citizen_id]" class="schedule-citizen-id"><button type="button" class="schedule-citizen-picker" data-ui-action="secondary">Choose citizen</button></label>' +
-            '<label>Vaccine or immunization<select name="schedules[' + index + '][vaccine_name]" required>' + vaccineOptionsMarkup() + '</select></label>' +
+            '<div class="schedule-vaccine-field"><label for="schedule-vaccine-' + index + '">Vaccine or immunization</label><select id="schedule-vaccine-' + index + '" name="schedules[' + index + '][vaccine_name]" data-medical-autocomplete="vaccine" required>' + vaccineOptionsMarkup() + '</select></div>' +
             '<label>Dose / label<select name="schedules[' + index + '][dose_number]" class="schedule-dose-number" required>' + doseOptionsMarkup() + '</select></label>' +
             '<label>Scheduled date<input type="date" name="schedules[' + index + '][scheduled_date]" class="schedule-date" min="{{ now()->format('Y-m-d') }}" required></label>' +
             '<small class="schedule-eligibility-message" role="status" style="grid-column:1/-1;">Choose a citizen and date to check age eligibility.</small>' +
-            '<label class="schedule-catch-up-review" hidden style="grid-column:1/-1;"><input type="checkbox" name="schedules[' + index + '][catch_up_reviewed]" value="1" class="schedule-catch-up-checkbox"> Health center confirmed this catch-up vaccine and dose schedule</label>' +
             '<button type="button" class="remove-schedule-row" aria-label="Remove schedule row" data-ui-action="danger">&times;</button>' +
             '<label style="grid-column: 1 / -2;">Notes<input type="text" name="schedules[' + index + '][notes]" placeholder="Optional instructions"></label>' +
             '</div>';
@@ -984,14 +974,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const min = dose['min_' + unit];
             const max = dose['max_' + unit];
             return (min === undefined || age[unit] >= min) && (max === undefined || age[unit] <= max);
-        });
-    }
-
-    function doseMeetsMinimumAge(dose, age) {
-        if (!age) return false;
-        return ['days', 'months', 'years'].every(function (unit) {
-            const minimum = dose['min_' + unit];
-            return minimum === undefined || age[unit] >= minimum;
         });
     }
 
@@ -1025,44 +1007,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 .filter(function (record) { return codeForVaccine(record.vaccine) === option.dataset.code; })
                 .map(function (record) { return record.dose; });
             const nextDose = vaccine.doses.find(function (dose) { return !usedDoses.includes(dose.name); });
-            const routineEligible = Boolean(nextDose && doseMatchesAge(nextDose, age));
-            const catchUpCandidate = Boolean(nextDose && !routineEligible && doseMeetsMinimumAge(nextDose, age));
-            const ageEligible = routineEligible || catchUpCandidate;
+            const ageEligible = Boolean(nextDose && doseMatchesAge(nextDose, age));
             option.dataset.nextDose = nextDose ? nextDose.name : '';
             option.dataset.guideline = vaccine.guideline;
-            option.dataset.reviewRequired = catchUpCandidate ? '1' : '0';
             option.disabled = !ageEligible;
-            option.textContent = vaccine.label + (catchUpCandidate ? ' — catch-up review required' : (ageEligible ? '' : ' — unavailable'));
-            option.title = catchUpCandidate
-                ? 'Catch-up candidate only. Health-center confirmation is required before scheduling.'
-                : (ageEligible ? vaccine.guideline : (age ? 'Below the minimum age or outside the dose sequence.' : 'Choose a citizen and valid scheduled date.'));
+            option.textContent = vaccine.label + (ageEligible ? '' : ' — Unavailable');
+            option.title = ageEligible
+                ? vaccine.guideline
+                : (age ? 'Outside the configured age range or dose sequence.' : 'Choose a citizen and valid scheduled date.');
         }
 
         const selected = vaccineSelect.selectedOptions[0];
-        const reviewField = row.querySelector('.schedule-catch-up-review');
-        const reviewCheckbox = row.querySelector('.schedule-catch-up-checkbox');
         if (!selected || !selected.dataset.code || selected.disabled) {
             vaccineSelect.value = '';
             doseSelect.value = '';
-            reviewField.hidden = true;
-            reviewCheckbox.required = false;
-            reviewCheckbox.checked = false;
             message.textContent = age
-                ? 'No routine or catch-up candidate is available for this age and dose sequence.'
+                ? 'No Available vaccine matches the citizen age and dose sequence.'
                 : 'Choose a citizen and scheduled date to check age eligibility.';
             return;
         }
 
         doseSelect.value = selected.dataset.nextDose;
-        reviewField.hidden = selected.dataset.reviewRequired !== '1';
-        reviewCheckbox.required = selected.dataset.reviewRequired === '1';
-        if (!reviewCheckbox.required) reviewCheckbox.checked = false;
         for (const option of doseSelect.options) {
             option.disabled = option.value !== '' && option.value !== selected.dataset.nextDose;
         }
-        message.textContent = reviewCheckbox.required
-            ? 'Catch-up candidate only. Health-center confirmation is required before scheduling this dose.'
-            : selected.dataset.guideline;
+        message.textContent = 'Available — ' + selected.dataset.guideline;
     }
 
     function updateRemoveButtons() {
@@ -1082,11 +1051,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function wireScheduleRow(row) {
         row.querySelector('.schedule-dose-number').innerHTML = doseOptionsMarkup();
         row.querySelector('[name$="[vaccine_name]"]').addEventListener('change', function () {
-            row.querySelector('.schedule-catch-up-checkbox').checked = false;
+            updateScheduleEligibility(row);
+        });
+        row.querySelector('.schedule-date').addEventListener('input', function () {
             updateScheduleEligibility(row);
         });
         row.querySelector('.schedule-date').addEventListener('change', function () {
-            row.querySelector('.schedule-catch-up-checkbox').checked = false;
             updateScheduleEligibility(row);
         });
 
@@ -1151,7 +1121,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 activeScheduleRow.dataset.birthDate = option.dataset.birthDate || '';
                 activeScheduleRow.dataset.vaccinationHistory = option.dataset.vaccinationHistory || '[]';
                 activeScheduleRow.dataset.vaccinationSchedules = option.dataset.vaccinationSchedules || '[]';
-                activeScheduleRow.querySelector('.schedule-catch-up-checkbox').checked = false;
                 citizenPickerModal.style.display = 'none';
                 updateScheduleEligibility(activeScheduleRow);
             });

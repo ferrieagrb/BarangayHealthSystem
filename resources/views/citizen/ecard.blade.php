@@ -298,8 +298,11 @@
                                 <tr>
                                     <td class="border border-gray-400 p-2 font-semibold">
                                         {{ $vax->vaccine_name }}
+                                        @if($vax->historical_recording)
+                                            <div class="mt-1 text-xs font-normal text-slate-600">Historical record</div>
+                                        @endif
                                         @if($vax->eligibility_review_required)
-                                            <div class="mt-1 text-xs font-normal text-amber-700">Review required: {{ $vax->eligibility_review_reason }}</div>
+                                            <div class="mt-1 text-xs font-normal text-amber-700">Clinical age eligibility not established: {{ $vax->eligibility_review_reason }}</div>
                                         @endif
                                         @if($vax->catch_up_reviewed)
                                             <div class="mt-1 text-xs font-normal text-blue-700">Catch-up schedule confirmed by health center.</div>
@@ -308,6 +311,12 @@
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->vaccine_name }}
                                         — {{ $vax->dose_number }}
+                                        @if($vax->cvx_code)
+                                            <div class="text-xs">CDC CVX {{ $vax->cvx_code }}</div>
+                                        @endif
+                                        @if($vax->vaccine_formulation)
+                                            <div class="text-xs">{{ $vax->vaccine_formulation }}</div>
+                                        @endif
                                     </td>
                                     <td class="border border-gray-400 p-2">
                                         {{ $vax->date_administered }}

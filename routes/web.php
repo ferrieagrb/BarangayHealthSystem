@@ -12,6 +12,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\QRScannerController;
+use App\Http\Controllers\MedicalTerminologyController;
 use App\Http\Controllers\CitizenHealthShareController;
 use App\Http\Controllers\AdminAnalytics;
 use App\Http\Controllers\AdminLogController;
@@ -265,6 +266,10 @@ Route::get('/announcements/{announcement}', function (\Illuminate\Http\Request $
 
 Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
+    Route::post('/medical-terminology/search', [MedicalTerminologyController::class, 'search'])
+        ->middleware('throttle:30,1')
+        ->name('bhw.medical-terminology.search');
+
     Route::get('/home', [BhwHomeController::class, 'index'])->name('home');
 
     Route::get('/citizenlist', fn () => app(CitizenController::class)->index(request()))->name('citizenlist');
@@ -281,7 +286,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/citizen/{id}/e-card', [CitizenController::class, 'showElectronicCard'])->name('bhw.citizen.ecard');
     Route::post('/citizen/{id}/vaccination', fn ($id) => app(CitizenController::class)->storeVaccination(
         request(),
-        app(\App\Services\VaccinationEligibility::class),
+        app(\App\Services\VaccinationRecording::class),
         $id
     ))->name('citizen.vaccination.store');
     Route::delete('/citizen/{citizenId}/vaccination-record/{recordId}', [CitizenController::class, 'deleteVaccinationRecord'])->name('citizen.vaccination.delete');

@@ -44,7 +44,7 @@
         }
     </style>
 @include('partials.favicon')
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
+@include('partials.button-action-assets')
 </head>
 <body id="appActionControls">
     @if(!$citizen)

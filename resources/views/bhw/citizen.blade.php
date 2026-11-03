@@ -447,19 +447,14 @@
                         <td>
                             @php
                                 $user = auth()->user();
-
-                                $isAssigned = $user->role !== 'bhw' ||
-                                    \App\Models\PurokSubgroup::where('user_id', $user->id)
-                                        ->where(function ($query) use ($citizen) {
-                                            $query->where('id', $citizen->subgroup_id)
-                                                ->orWhere('id', optional($citizen->family)->subgroup_id);
-                                        })->exists();
+                                $canManage = $user->role !== 'bhw' ||
+                                    app(\App\Services\BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
                             @endphp
 
                             <div class="action-group">
                                 <a href="{{ route('citizendetails', $citizen->id) }}" class="btn-primary" data-ui-action="secondary">View</a>
 
-                                @if($isAssigned)
+                                @if($canManage)
                                     <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}" class="btn-primary" data-ui-action="primary">E-Card</a>
 
                                     @if(auth()->user()->hasWriteAccess('citizen_password_reset'))
@@ -478,7 +473,7 @@
                                         <button type="submit" class="btn-danger" data-ui-action="danger">Archive</button>
                                     </form>
                                 @else
-                                    <span class="text-muted" style="font-size:11px;">View Only (Unassigned)</span>
+                                    <span class="text-muted" style="font-size:11px;">View Only (Restricted)</span>
                                 @endif
                             </div>
                         </td>

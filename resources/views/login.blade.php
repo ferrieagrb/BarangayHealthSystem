@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 @include('partials.favicon')
-<link rel="stylesheet" href="{{ asset('css/action-controls.css') }}?v={{ filemtime(public_path('css/action-controls.css')) }}">
+@include('partials.button-action-assets')
+@include('partials.input-autocomplete-assets')
 </head>
 <body id="appActionControls">
 
@@ -27,7 +28,7 @@
             <p>Please enter your credentials to access your dashboard</p>
         </div>
 
-        <form action="{{ route('login.submit') }}" method="POST"> 
+        <form action="{{ route('login.submit') }}" method="POST" data-browser-autocomplete="allow">
             @csrf  
             
             @if (session('error'))
@@ -41,7 +42,7 @@
                 <label for="Username">Username or Email</label>
                 <div class="input-field-wrapper">
                     <i class="fa-regular fa-user"></i>
-                    <input type="text" id="Username" placeholder="Enter your username" name="Username" required>
+                    <input type="text" id="Username" placeholder="Enter your username" name="Username" autocomplete="username" required>
                 </div>
             </div>
 
@@ -52,7 +53,7 @@
                 </div>
                 <div class="input-field-wrapper">
                     <i class="fa-lock fa-solid"></i>
-                    <input type="password" id="Password" placeholder="Enter your password" name="Password" required>
+                    <input type="password" id="Password" placeholder="Enter your password" name="Password" autocomplete="current-password" required>
                 </div>
             </div>
 

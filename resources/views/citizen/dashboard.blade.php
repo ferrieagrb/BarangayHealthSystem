@@ -68,7 +68,7 @@
     margin: 0;
     color: #173b82;
     font-size: clamp(21px, 1.6vw, 25px);
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .c-panel {
@@ -723,7 +723,7 @@ body.theme-dark .c-home {
     position: relative;
     color: var(--c-primary);
     font-size: clamp(23px, 2vw, 29px);
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: -0.025em;
     line-height: 1.3;
 }
@@ -755,7 +755,7 @@ body.theme-dark .c-home {
     box-shadow: 0 3px 8px rgba(16, 43, 92, 0.14);
     color: #fff !important;
     font-size: 15px;
-    font-weight: 750;
+    font-weight: 600;
     line-height: 1.35;
     text-align: center;
     transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
@@ -826,13 +826,13 @@ body.theme-dark .c-home {
     background: rgba(255,255,255,.12);
     color: #fff;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 600;
 }
 .c-home .c-ann-cover h3 {
     margin: 0;
     color: #fff;
     font-size: clamp(19px, 2vw, 23px);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.4;
     overflow-wrap: anywhere;
 }
@@ -852,7 +852,7 @@ body.theme-dark .c-home {
     border-top: 1px solid #e5ebf3;
     color: #53657c;
     font-size: 13px;
-    font-weight: 650;
+    font-weight: 600;
 }
 .c-home .c-ann-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
 .c-home .c-ann-control-buttons { display: flex; gap: 8px; }
@@ -860,7 +860,7 @@ body.theme-dark .c-home {
 .c-home .c-ann-arrow:hover { background: #edf4ff; }
 .c-home .c-ann-arrow:disabled { opacity: .4; cursor: not-allowed; }
 .c-home .c-ann-indicator { color: #53657c; font-size: 13px; font-weight: 700; }
-.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 800; vertical-align: middle; }
+.c-home .c-ann-priority { display: inline-block; margin: 0 0 10px 7px; padding: 4px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 600; vertical-align: middle; }
 .c-home .c-heading a {
     display: inline-flex;
     align-items: center;

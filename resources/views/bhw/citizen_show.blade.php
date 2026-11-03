@@ -28,7 +28,7 @@
         @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
             <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()" data-ui-action="secondary">Edit</button>
         @elseif(!$canEdit && !(bool) $citizen->Citizen_IsDeceased)
-            <span class="text-muted" style="font-weight: bold; font-size: 13px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #475569;">Read Only (Unassigned)</span>
+            <span class="text-muted" style="font-weight: bold; font-size: 13px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #475569;">View Only (Restricted)</span>
         @else
             <span class="text-danger" style="font-weight: bold; font-size: 13px; background: #fee2e2; padding: 8px 12px; border-radius: 6px; color: #991b1b;">Record Locked (Deceased)</span>
         @endif
@@ -37,8 +37,9 @@
 
 <div class="info-card">
     <div class="card">
-        <form id="vaccinationForm" method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}">
+        <form id="vaccinationForm" method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}" data-citizen-birth-date="{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('Y-m-d') : '' }}">
             @csrf
+            <input type="hidden" id="vaccineSelectionToken" name="vaccine_selection_token" value="">
         </form>
 
         <form method="POST"
@@ -439,7 +440,7 @@
                     <div class="immunization-form-grid edit-gated-form" id="vaccinationEntryForm" style="display:none;">
                         <div class="immunization-field">
                             <label for="vaccine_name">Vaccine Name</label>
-                            <select id="vaccine_name" name="vaccine_name" form="vaccinationForm" required>
+                            <select id="vaccine_name" name="vaccine_name" form="vaccinationForm" data-medical-autocomplete="vaccine" required>
                                 <option value="" disabled selected>-- Select Vaccine --</option>
                                 @foreach ($vaccinationEligibilityOptions as $vaccineCode => $vaccine)
                                     <option value="{{ $vaccine['label'] }}"
@@ -448,11 +449,11 @@
                                             data-next-dose="{{ $vaccine['next_dose'] }}"
                                             data-guideline="{{ $vaccine['guideline'] }}"
                                             data-reason="{{ $vaccine['reason'] }}"
-                                            data-review-required="{{ $vaccine['review_required'] ? '1' : '0' }}"
+                                            data-eligibility-status="{{ $vaccine['status'] }}"
                                             title="{{ $vaccine['eligible'] ? $vaccine['guideline'] : $vaccine['reason'] }}"
                                             @disabled(!$vaccine['eligible'])
                                             @selected(old('vaccine_name') === $vaccine['label'] && $vaccine['eligible'])>
-                                        {{ $vaccine['label'] }}{{ $vaccine['review_required'] ? ' — catch-up review required' : ($vaccine['eligible'] ? '' : ' — unavailable') }}
+                                        {{ $vaccine['label'] }}{{ $vaccine['eligible'] ? '' : ' — Unavailable' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -465,17 +466,21 @@
                                 @foreach($vaccineDoseOptions as $doseName)
                                     <option value="{{ $doseName }}">{{ $doseName }}</option>
                                 @endforeach
+                                <option value="Booster">Booster</option>
+                                <option value="Dose not specified">Dose not specified</option>
                             </select>
                         </div>
 
                         <div class="immunization-field">
                             <label for="date_administered">Date Administered</label>
-                            <input type="date" id="date_administered" name="date_administered" value="{{ old('date_administered', now()->format('Y-m-d')) }}" form="vaccinationForm" required>
+                            <input type="date" id="date_administered" name="date_administered" value="{{ old('date_administered', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" form="vaccinationForm" required>
                         </div>
 
-                        <label id="catchUpReviewField" hidden>
-                            <input type="checkbox" id="catch_up_reviewed" name="catch_up_reviewed" value="1" form="vaccinationForm">
-                            Health center confirmed this catch-up vaccine and dose schedule
+                        <label class="immunization-field historical-vaccination-option" style="grid-column: 1 / -1;">
+                            <span>
+                                <input type="checkbox" id="historical_recording" name="historical_recording" value="1" form="vaccinationForm">
+                                Record a vaccine that was already administered (clinical age eligibility not confirmed)
+                            </span>
                         </label>
 
                         <input type="hidden" id="administered_by" name="administered_by" value="{{ auth()->user()->name ?? 'BHW' }}" form="vaccinationForm">
@@ -486,7 +491,7 @@
                         </div>
                     </div>
                     <p id="vaccinationEligibilityMessage" class="immunization-preview-note" role="status" aria-live="polite">
-                        Vaccine options are limited to the configured Philippine routine schedule. Out-of-window doses require health-center review.
+                        Available status uses configured vaccine-specific age rules on the administration date. Other recognized vaccines require historical recording.
                     </p>
                 @elseif((int) $citizen->Citizen_IsDeceased === 1)
                     <p class="immunization-preview-note">This record is deceased and locked for updates.</p>
@@ -528,14 +533,23 @@
                                         <div class="diagnosis-history-title">
                                             {{ $vaccination->vaccine_name }}
                                             <span class="diagnosis-pill">{{ $vaccination->dose_number ?: 'Dose recorded' }}</span>
+                                            @if($vaccination->cvx_code)
+                                                <span class="diagnosis-pill">CVX {{ $vaccination->cvx_code }}</span>
+                                            @endif
+                                            @if($vaccination->historical_recording)
+                                                <span class="diagnosis-pill">Historical record</span>
+                                            @endif
                                         </div>
+                                        @if($vaccination->vaccine_formulation)
+                                            <small>{{ $vaccination->vaccine_formulation }}</small>
+                                        @endif
                                         <div class="diagnosis-meta">
                                             Administered Date: {{ $vaccination->date_administered ? \Carbon\Carbon::parse($vaccination->date_administered)->format('M d, Y') : '—' }}
                                             · Administered by {{ $vaccination->administered_by ?: '—' }}
                                         </div>
                                         @if($vaccination->eligibility_review_required)
                                             <p class="health-alert health-alert-error" role="status">
-                                                Historical record retained for review: {{ $vaccination->eligibility_review_reason }}
+                                                Clinical age eligibility was not established: {{ $vaccination->eligibility_review_reason }}
                                             </p>
                                         @endif
                                     </div>
@@ -655,7 +669,7 @@
         <div class="maintenance-form-grid">
             <div class="maintenance-form-field">
                 <label for="maintenance_medicine_name">Medicine Name</label>
-                <input type="text" name="medicine_name" id="maintenance_medicine_name" class="maintenance-field" value="{{ old('medicine_name') }}" placeholder="Enter medicine name" maxlength="255" required>
+                <input type="text" name="medicine_name" id="maintenance_medicine_name" class="maintenance-field" data-medical-autocomplete="medicine" value="{{ old('medicine_name') }}" placeholder="Enter medicine name" maxlength="255" required>
             </div>
             <div class="maintenance-form-field">
                 <label for="maintenance_quantity">Quantity</label>
@@ -768,7 +782,7 @@
  <form id="diagnosisForm" method="POST" action="{{ route('health.record.store') }}">@csrf
  <input type="hidden" name="citizen_id" value="{{ $citizen->id }}">
  <div class="diagnosis-form-grid">
-  <div class="diagnosis-field full"><label for="diagnosisInput">Primary Diagnosis <span style="color:#ef4444">*</span></label><textarea name="diagnosis" id="diagnosisInput" required rows="2" placeholder="e.g. Mild Seasonal Upper Respiratory Infection"></textarea></div>
+  <div class="diagnosis-field full"><label for="diagnosisInput">Primary Diagnosis <span style="color:#ef4444">*</span></label><textarea name="diagnosis" id="diagnosisInput" data-medical-autocomplete="diagnosis" required rows="2" placeholder="e.g. Mild Seasonal Upper Respiratory Infection"></textarea></div>
   <div class="diagnosis-field"><label for="severityInput">Severity / Status</label><select name="severity" id="severityInput"><option>Low / Mild</option><option>Moderate</option><option>High / Severe</option><option>Critical</option><option>Resolved</option></select></div>
   <div class="diagnosis-field"><label for="recordDateInput">Assessment Date <span style="color:#ef4444">*</span></label><input type="date" name="record_date" id="recordDateInput" required value="{{ now()->format('Y-m-d') }}"></div>
  </div>
@@ -1326,115 +1340,7 @@ setEditGatedState(false);
 
 @section('scripts')
 
-<script>
-(function () {
-    const vaccineSelect = document.getElementById('vaccine_name');
-    const doseSelect = document.getElementById('dose_number');
-    const administeredDate = document.getElementById('date_administered');
-    const birthDate = document.getElementById('Citizen_BirthDate');
-    const message = document.getElementById('vaccinationEligibilityMessage');
-    if (!vaccineSelect || !doseSelect || !administeredDate || !birthDate || !message) return;
-
-    function ageAt(birth, date) {
-        const birthParts = birth.split('-').map(Number);
-        const dateParts = date.split('-').map(Number);
-        const birthValue = new Date(birthParts[0], birthParts[1] - 1, birthParts[2]);
-        const dateValue = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-        if (Number.isNaN(birthValue.getTime()) || Number.isNaN(dateValue.getTime()) || dateValue < birthValue) return null;
-
-        const days = Math.floor((dateValue - birthValue) / 86400000);
-        let months = (dateParts[0] - birthParts[0]) * 12 + dateParts[1] - birthParts[1];
-        if (dateParts[2] < birthParts[2]) months--;
-        let years = dateParts[0] - birthParts[0];
-        if (dateParts[1] < birthParts[1] || (dateParts[1] === birthParts[1] && dateParts[2] < birthParts[2])) years--;
-        return { days: days, months: months, years: years };
-    }
-
-    function doseMatches(dose, age) {
-        if (!age) return false;
-        for (const unit of ['days', 'months', 'years']) {
-            const min = dose['min_' + unit];
-            const max = dose['max_' + unit];
-            if (min !== undefined && age[unit] < min) return false;
-            if (max !== undefined && age[unit] > max) return false;
-        }
-        return true;
-    }
-
-    function doseMeetsMinimumAge(dose, age) {
-        if (!age) return false;
-        return ['days', 'months', 'years'].every(function (unit) {
-            const minimum = dose['min_' + unit];
-            return minimum === undefined || age[unit] >= minimum;
-        });
-    }
-
-    function updateEligibility() {
-        const age = birthDate.value && administeredDate.value ? ageAt(birthDate.value, administeredDate.value) : null;
-        for (const option of vaccineSelect.options) {
-            if (!option.dataset.code) continue;
-            const doses = JSON.parse(option.dataset.doses);
-            const nextDose = option.dataset.nextDose;
-            const dose = doses.find(function (item) { return item.name === nextDose; });
-            const routineEligible = Boolean(dose && doseMatches(dose, age));
-            const catchUpCandidate = Boolean(dose && !routineEligible && doseMeetsMinimumAge(dose, age));
-            const eligible = routineEligible || catchUpCandidate;
-            option.disabled = !eligible;
-            option.dataset.reviewRequired = catchUpCandidate ? '1' : '0';
-            option.textContent = option.dataset.label + (catchUpCandidate ? ' — catch-up review required' : (eligible ? '' : ' — unavailable'));
-            option.title = catchUpCandidate
-                ? 'Catch-up candidate only. Health-center confirmation is required before recording.'
-                : (eligible ? option.dataset.guideline : (age ? "Below the minimum age for this dose." : 'Enter a valid date of birth and administration date.'));
-        }
-
-        const selectedOption = vaccineSelect.selectedOptions[0];
-        const reviewField = document.getElementById('catchUpReviewField');
-        const reviewCheckbox = document.getElementById('catch_up_reviewed');
-        if (!selectedOption || !selectedOption.dataset.code || selectedOption.disabled) {
-            vaccineSelect.value = '';
-            doseSelect.value = '';
-            reviewField.hidden = true;
-            reviewCheckbox.required = false;
-            reviewCheckbox.checked = false;
-            const unavailable = Array.from(vaccineSelect.options)
-                .filter(function (option) { return option.dataset.code && option.disabled; })
-                .map(function (option) { return option.textContent.trim() + ': ' + (age ? 'outside the routine age window or dose sequence; health-center review required' : 'date of birth is required'); });
-            message.textContent = unavailable.length
-                ? unavailable.join(' · ')
-                : 'Select an enabled vaccine and dose.';
-            return;
-        }
-
-        doseSelect.value = selectedOption.dataset.nextDose;
-        reviewField.hidden = selectedOption.dataset.reviewRequired !== '1';
-        reviewCheckbox.required = selectedOption.dataset.reviewRequired === '1';
-        if (!reviewCheckbox.required) reviewCheckbox.checked = false;
-        for (const doseOption of doseSelect.options) {
-            doseOption.disabled = doseOption.value !== '' && doseOption.value !== selectedOption.dataset.nextDose;
-        }
-        message.textContent = reviewCheckbox.required
-            ? 'Catch-up candidate only. Health-center confirmation is required before recording this dose.'
-            : selectedOption.dataset.guideline;
-    }
-
-    for (const option of vaccineSelect.options) {
-        if (option.dataset.code) option.dataset.label = option.textContent.trim().replace(/ — (catch-up review required|unavailable)$/, '');
-    }
-    vaccineSelect.addEventListener('change', function () {
-        document.getElementById('catch_up_reviewed').checked = false;
-        updateEligibility();
-    });
-    administeredDate.addEventListener('change', function () {
-        document.getElementById('catch_up_reviewed').checked = false;
-        updateEligibility();
-    });
-    birthDate.addEventListener('change', function () {
-        document.getElementById('catch_up_reviewed').checked = false;
-        updateEligibility();
-    });
-    updateEligibility();
-})();
-</script>
+<script src="{{ asset('js/vaccination-eligibility.js') }}?v={{ filemtime(public_path('js/vaccination-eligibility.js')) }}" defer></script>
 
 <script>
 
