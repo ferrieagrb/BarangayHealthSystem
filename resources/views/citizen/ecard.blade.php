@@ -49,7 +49,7 @@
         <div class="bheams-photo">
             @if($citizen->photo_path)
                 <img
-                    src="{{ asset('storage/' . $citizen->photo_path) }}"
+                    src="{{ route('citizen.photo', $citizen->id) }}"
                     alt="Citizen Photo"
                 >
             @else

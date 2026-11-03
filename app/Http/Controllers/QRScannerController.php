@@ -9,6 +9,7 @@ use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
 use App\Models\UserPermission;
 use App\Services\BhwCitizenAccess;
+use App\Services\CitizenAccessAuditor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -49,6 +50,7 @@ class QRScannerController extends Controller
         }
 
         abort_unless($this->canAccessCitizen($citizen), 403, 'You are not assigned to this citizen record.');
+        app(CitizenAccessAuditor::class)->recordView($citizen->id, 'QR scan');
 
         return response()->json([
             'citizen' => [
@@ -71,7 +73,7 @@ class QRScannerController extends Controller
                 'in_pills' => $citizen->Citizen_InPills ? 'Yes' : 'No',
                 'is_deceased' => $citizen->Citizen_IsDeceased ? 'Deceased' : 'Active',
                 'photo_url' => $citizen->photo_path
-                    ? asset('storage/' . ltrim($citizen->photo_path, '/'))
+                    ? route('citizen.photo', $citizen->id)
                     : null,
             ],
             'vaccinations' => $citizen->vaccinations->map(fn ($record) => [

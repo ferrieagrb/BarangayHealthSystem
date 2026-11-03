@@ -288,7 +288,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/vaccination-schedules', [CitizenController::class, 'scheduleVaccination'])->name('citizen.vaccination.schedule');
     Route::post('/citizen/{id}/vaccination-schedule/{scheduleId}/administer', [CitizenController::class, 'administerVaccinationSchedule'])->name('citizen.vaccination.schedule.administer');
     Route::post('/citizen/{id}/medication', [CitizenController::class, 'storeMedication'])->name('citizen.medication.store');
-    Route::post('/citizen/{id}/password-reset', [CitizenController::class, 'resetCitizenPassword'])->name('citizen.password.reset');
+    Route::post('/citizen/{id}/password-reset', [CitizenController::class, 'resetCitizenPassword'])->middleware('throttle:5,1')->name('citizen.password.reset');
 
     Route::get('/citizen/{id}', fn ($id) => app(CitizenController::class)->show($id))->name('citizen.show');
     Route::get('/citizendetails/{id}', fn ($id) => app(CitizenController::class)->citizendetails($id))->name('citizendetails');
@@ -353,8 +353,8 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
-    Route::get('/citizen-export', [CitizenController::class,'export'])->name('citizen.export');
-    Route::get('/citizen-export/pdf', [CitizenController::class, 'exportPdf'])->name('citizen.export.pdf');
+    Route::get('/citizen-export', [CitizenController::class,'export'])->middleware(['throttle:5,1', 'password.confirm:password.confirm,300'])->name('citizen.export');
+    Route::get('/citizen-export/pdf', [CitizenController::class, 'exportPdf'])->middleware(['throttle:5,1', 'password.confirm:password.confirm,300'])->name('citizen.export.pdf');
 });
 
 Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name('bhw.')->group(function () {
@@ -420,6 +420,7 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::put('/permissions/{user}', [AdminPermissionController::class, 'update'])->name('permissions.update');
 
     Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
+    Route::patch('/users/{id}/reset-password', [AdminUserManagementController::class, 'resetPassword'])->middleware('throttle:5,1')->name('users.reset-password');
 });
 
 /*
@@ -436,6 +437,7 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::get('/referrals/{referral}/download', [ReferralController::class, 'download'])->name('referrals.download');
 
     Route::post('/vaccination/store', [CitizenController::class, 'storeVaccinationRecord'])->name('vaccination.store');
+    Route::get('/citizen-photo/{id}', [CitizenController::class, 'photo'])->whereNumber('id')->name('citizen.photo');
 });
 
 /*
@@ -473,9 +475,10 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
 
     Route::get('/system-settings', [SuperAdminController::class, 'systemSettings'])->name('system.settings');
     Route::put('/system-settings', [SuperAdminController::class, 'updateSystemSettings'])->name('system.settings.update');
-    Route::get('/system-settings/backup', [SuperAdminController::class, 'downloadBackup'])->name('system.settings.backup');
+    Route::get('/system-settings/backup', [SuperAdminController::class, 'downloadBackup'])->middleware(['throttle:3,1', 'password.confirm:password.confirm,300'])->name('system.settings.backup');
 
     Route::patch('/users/{id}/unlock', [AdminUserManagementController::class, 'unlockAccount'])->name('users.unlock');
+    Route::patch('/users/{id}/reset-password', [AdminUserManagementController::class, 'resetPassword'])->middleware('throttle:5,1')->name('users.reset-password');
 });
 
 
@@ -489,6 +492,8 @@ Route::middleware(['auth', 'feature.write:supplies', 'password.changed'])->group
 
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
+    Route::get('/confirm-password', [\App\Http\Controllers\ConfirmPasswordController::class, 'show'])->name('password.confirm');
+    Route::post('/confirm-password', [\App\Http\Controllers\ConfirmPasswordController::class, 'store'])->middleware('throttle:5,1')->name('password.confirm.store');
     Route::get('/force-password-change', [ForcePasswordChangeController::class, 'show'])->name('password.force-change');
     Route::post('/force-password-change', [ForcePasswordChangeController::class, 'update'])->name('password.force-update');
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');

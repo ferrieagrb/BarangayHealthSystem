@@ -202,6 +202,7 @@ class HealthRecordController extends Controller
         ])->findOrFail($id);
         $canEdit = $citizenAccess->canAccessCitizen(Auth::user(), $citizen);
         abort_unless($canEdit || $citizenAccess->canViewAll(Auth::user()), 403);
+        app(\App\Services\CitizenAccessAuditor::class)->recordView($citizen->id, 'health record');
         $families = Family::with(['purok', 'subgroup'])->orderBy('family_name')->get();
         $puroks = Purok::with('subgroups')->get();
 

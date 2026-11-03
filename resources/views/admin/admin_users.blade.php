@@ -112,7 +112,8 @@
 
                 <td>@if($showArchived)
                     <span class="badge bg-secondary">Inactive</span>
-                @elseif($user->is_locked)
+                @elseif($user->isLockedOut())
+                    <span class="badge bg-warning text-dark">Locked{{ $user->locked_until && $user->locked_until->isFuture() ? ' until ' . $user->locked_until->format('h:i A') : '' }}</span>
                     <form action="{{ route('admin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -135,6 +136,10 @@
                         @else
                         <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')">
                             Edit
+                        </button>
+
+                        <button type="button" class="btn-primary" data-reset-user="{{ $user->id }}" data-reset-name="{{ $user->name }}" onclick="openResetModal(this)">
+                            Reset Password
                         </button>
 
                         <form action="{{ route('admin.users.delete', $user->id) }}"
@@ -233,6 +238,10 @@
                         <option value="citizen">Citizen</option>
                     </select>
                 </div>
+                <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="edit_confirm_password">Your password <small>(required only when changing the role)</small></label>
+                    <input type="password" id="edit_confirm_password" name="confirm_password" autocomplete="current-password" style="width: 100%;">
+                </div>
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
                 <button type="button" class="secondary-btn" onclick="closeEditModal()">Cancel</button>
@@ -242,7 +251,41 @@
     </div>
 </div>
 
+<!-- Reset Password Modal -->
+<div id="resetModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+    <div class="modal-card" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>Reset Password</h3>
+            <button type="button" class="close-btn" onclick="closeResetModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;">&times;</button>
+        </div>
+        <form id="resetPasswordForm" method="POST">
+            @csrf
+            @method('PATCH')
+            <p style="margin-bottom: 12px;">A new temporary password will be generated for <strong id="reset_user_name"></strong> and shown once. They must change it at next login.</p>
+            <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                <label for="reset_confirm_password">Your password</label>
+                <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password" style="width: 100%;">
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                <button type="button" class="secondary-btn" onclick="closeResetModal()">Cancel</button>
+                <button type="submit" class="primary-btn">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    function openResetModal(button) {
+        document.getElementById('resetPasswordForm').action = `/admin/users/${button.dataset.resetUser}/reset-password`;
+        document.getElementById('reset_user_name').textContent = button.dataset.resetName;
+        document.getElementById('reset_confirm_password').value = '';
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    function closeResetModal() {
+        document.getElementById('resetModal').style.display = 'none';
+    }
+
     function openAddModal() {
         document.getElementById('addModal').style.display = 'flex';
     }
@@ -262,6 +305,7 @@
         document.getElementById('edit_email').value = email;
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_role').value = role;
+        document.getElementById('edit_confirm_password').value = '';
         
         modal.style.display = 'flex';
     }

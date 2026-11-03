@@ -100,8 +100,15 @@ class SupplyController extends Controller
         ));
     }
 
+    private function requireSupplyWrite(): void
+    {
+        abort_unless(auth()->user()->hasWriteAccess('supplies'), 403, 'Unauthorized action. Your account has read-only access to supplies.');
+    }
+
     public function deposit(Request $request)
     {
+        $this->requireSupplyWrite();
+
         $request->validate([
             'name' => 'required|string',
             'packs' => 'required|array|min:1', // Updated from 'batches' to 'packs'
@@ -148,6 +155,8 @@ class SupplyController extends Controller
 
     public function release(Request $request)
     {
+        $this->requireSupplyWrite();
+
         $request->validate([
             'id' => 'required',
             'quantity' => 'required|integer|min:1',
@@ -212,6 +221,8 @@ class SupplyController extends Controller
 
     public function withdrawBatch(Request $request)
     {
+        $this->requireSupplyWrite();
+
         $request->validate([
             'supply_id' => 'required|exists:supplies,id',
             'quantity' => 'required|integer|min:1',
@@ -249,6 +260,8 @@ class SupplyController extends Controller
 
     public function destroy($id)
     {
+        $this->requireSupplyWrite();
+
         $supply = Supply::findOrFail($id);
 
         SupplyLog::create([

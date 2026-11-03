@@ -11,14 +11,15 @@ class CheckFeaturePermission
     {
         $user = $request->user();
 
-        if ($user->role === 'admin') {
+        if (!$user) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($user->role === 'admin' || $user->role === 'superadmin') {
             return $next($request);
         }
 
-        // Check if user has 'write' permission for this specific feature
-        $hasWriteAccess = false;
-
-        if (!$hasWriteAccess) {
+        if (!$user->hasWriteAccess($feature)) {
             abort(403, 'Unauthorized action. Your account has read-only access to this feature.');
         }
 

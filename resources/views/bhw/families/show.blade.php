@@ -100,12 +100,12 @@
                         <td class="family-actions-cell">
                             <div class="family-actions">
                                 @if(auth()->user()->hasWriteAccess('family'))
-                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                <button type="button" class="btn-sm" data-family="{{ json_encode($fam) }}" onclick="openFamilyModal(this)">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.8 4.2 15.8 8.2M4 16l3.6-.8 8.9-8.9a1.8 1.8 0 0 0-2.6-2.6L5 12.6 4 16Z"/></svg>
                                     Manage / Edit
                                 </button>
                                 @else
-                                <button type="button" class="btn-sm" data-family='{!! json_encode($fam) !!}' onclick="openFamilyModal(this)">
+                                <button type="button" class="btn-sm" data-family="{{ json_encode($fam) }}" onclick="openFamilyModal(this)">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10s2.8-5 8-5 8 5 8 5-2.8 5-8 5-8-5-8-5Z"/><circle cx="10" cy="10" r="2"/></svg>
                                     View
                                 </button>
@@ -281,7 +281,7 @@
 <!-- Modal Controller Script -->
 <script>
     // Flatten puroks and subgroups into a clean searchable array for the picker
-    const rawPuroks = {!! json_encode($puroks ?? []) !!};
+    const rawPuroks = {{ \Illuminate\Support\Js::from($puroks ?? []) }};
     let flattenedSubgroups = [];
     rawPuroks.forEach(purok => {
         if (purok.subgroups && purok.subgroups.length > 0) {
@@ -302,7 +302,7 @@
     let filteredSubgroups = [...flattenedSubgroups];
 
     // Citizen data arrays
-    const allAvailableCitizens = {!! json_encode($availableCitizens ?? []) !!};
+    const allAvailableCitizens = {{ \Illuminate\Support\Js::from($availableCitizens ?? []) }};
     let currentCitizenPage = 1;
     const citizenPageSize = 5;
     let filteredCitizens = [...allAvailableCitizens];

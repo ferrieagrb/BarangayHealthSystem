@@ -36,6 +36,7 @@ use App\Models\PurokSubgroup;
 use App\Models\UserPermission;
 use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
+use App\Services\CitizenAccessAuditor;
 use App\Services\VaccinationEligibility;
 use App\Traits\LogsActivity;
 
@@ -62,6 +63,27 @@ class CitizenController extends Controller
         }
 
         return app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
+    }
+
+    public function photo($id)
+    {
+        $citizen = citizens::findOrFail($id);
+        $user = auth()->user();
+
+        $allowed = match ($user->role) {
+            'admin', 'superadmin' => true,
+            'bhw' => app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen),
+            'citizen' => (int) $user->citizen_id === (int) $citizen->id,
+            default => false,
+        };
+
+        abort_unless($allowed && $citizen->photo_path, 404);
+
+        $path = ltrim($citizen->photo_path, '/');
+        $disk = Storage::disk('local')->exists($path) ? 'local' : 'public';
+        abort_unless(Storage::disk($disk)->exists($path), 404);
+
+        return Storage::disk($disk)->response($path, null, ['Cache-Control' => 'private, max-age=3600']);
     }
 
     private function restrictToAssignedCitizens($query)
@@ -422,7 +444,7 @@ class CitizenController extends Controller
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
         $photoPath = $request->hasFile('photo')
-            ? $request->file('photo')->store('citizen-photos', 'public')
+            ? $request->file('photo')->store('citizen-photos', 'local')
             : null;
 
         try {
@@ -462,7 +484,7 @@ class CitizenController extends Controller
             });
         } catch (\Throwable $e) {
             if ($photoPath) {
-                Storage::disk('public')->delete($photoPath);
+                Storage::disk('local')->delete($photoPath);
             }
 
             throw $e;
@@ -782,6 +804,7 @@ class CitizenController extends Controller
         $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
 
         $this->logActivity('view', 'citizen', $citizen->id, 'Viewed citizen health record');
+        app(CitizenAccessAuditor::class)->recordView($citizen->id, 'health record');
 
         HealthRecordActivityLog::create([
             'action' => 'view',
@@ -837,6 +860,7 @@ class CitizenController extends Controller
             $citizen->id,
             'Viewed citizen details page'
         );
+        app(CitizenAccessAuditor::class)->recordView($citizen->id, 'details page');
 
         $vaccinationSchedulingEnabled = SystemSetting::boolean('vaccination_scheduling_enabled', true);
         $vaccinationEligibilityOptions = app(VaccinationEligibility::class)->optionsFor($citizen);
@@ -922,6 +946,12 @@ class CitizenController extends Controller
 
         $validated = $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'confirm_password' => \App\Models\SystemSetting::passwordReentryRequired()
+                ? ['required', 'string', 'current_password']
+                : ['nullable'],
+        ], [
+            'confirm_password.required' => 'Enter your own password to reset a citizen password.',
+            'confirm_password.current_password' => 'Your password is incorrect.',
         ]);
 
         $citizenAccount = User::where('citizen_id', $citizen->id)
@@ -1245,6 +1275,7 @@ class CitizenController extends Controller
     {
         $selectedFields = $this->selectedExportFields($request);
         $this->logAdminActivity('citizens.exported', 'Exported citizen records to Excel.', 'data');
+        app(CitizenAccessAuditor::class)->recordExport('Excel', $this->exportCitizenQuery($request)->count());
 
         return Excel::download(
             new CitizensExport($this->exportCitizenQuery($request), $this->exportFilterSummary($request), $selectedFields, $this->exportFieldDefinitions()),
@@ -1260,6 +1291,7 @@ class CitizenController extends Controller
         $selectedFields = $this->selectedExportFields($request);
 
         $this->logAdminActivity('citizens.exported_pdf', 'Exported citizen records to PDF.', 'data');
+        app(CitizenAccessAuditor::class)->recordExport('PDF', $citizens->count());
 
         return Pdf::loadView('exports.citizens-pdf', compact('citizens', 'filterSummary', 'fieldDefinitions', 'selectedFields'))
             ->setPaper('a4', 'landscape')
@@ -1322,6 +1354,7 @@ class CitizenController extends Controller
         ])->findOrFail($id);
 
         $this->authorizeCitizenEdit($citizen);
+        app(CitizenAccessAuditor::class)->recordView($citizen->id, 'e-card');
         $qrImage = $this->makeCitizenQrImage($citizen);
 
         return view('bhw.ecard', [
@@ -1402,6 +1435,7 @@ class CitizenController extends Controller
             'healthRecords',
             'maintenanceRecords' => fn ($query) => $query->latest(),
         ])->where('qr_token', $token)->firstOrFail();
+        app(CitizenAccessAuditor::class)->recordView($citizen->id, 'e-card via QR link');
         $qrImage = $this->makeCitizenQrImage($citizen);
 
         return view('bhw.ecard', [

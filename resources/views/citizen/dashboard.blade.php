@@ -1683,7 +1683,7 @@ body.theme-dark .c-home {
                 {{-- CITIZEN PHOTO --}}
                 <div class="c-photo">
                     @if($citizen->photo_path)
-                        <img src="{{ asset('storage/'.$citizen->photo_path) }}"
+                        <img src="{{ route('citizen.photo', $citizen->id) }}"
                              alt="Citizen photo">
                     @else
                         <span>

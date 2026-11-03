@@ -40,6 +40,13 @@
 <div class="bhw-citizen-page">
 
 {{-- SUCCESS POPUP --}}
+@if($errors->has('confirm_password') || $errors->has('password'))
+<div role="alert" style="margin:0 0 14px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;">
+    @foreach($errors->all() as $error)
+        <div>{{ $error }}</div>
+    @endforeach
+</div>
+@endif
 @if(session('success'))
 <div id="citizen-success-popup"
      style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;">
@@ -529,6 +536,9 @@
 
             <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
             <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
+
+            <label for="resetCitizenOwnPassword" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>Your password (to confirm this action)</label>
+            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) @hidden(! \App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
 
             <div class="citizen-password-dialog-actions">
                 <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset">Cancel</button>

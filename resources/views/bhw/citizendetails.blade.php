@@ -670,7 +670,7 @@
             </div>
             
             {{-- Dosage, Frequency (Times), and Period side by side in one row --}}
-            <div class="maintenance-form-field" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+            <div class="maintenance-form-field maintenance-frequency-fields">
                 <div>
                     <label for="maintenance_dosage">Dosage (Number only)</label>
                     <input type="number" name="dosage" id="maintenance_dosage" class="maintenance-field" value="{{ old('dosage') }}" placeholder="e.g. 500" min="0.01" max="10000" step="any" required>
