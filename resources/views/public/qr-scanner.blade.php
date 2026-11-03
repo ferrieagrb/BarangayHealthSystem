@@ -136,7 +136,7 @@
 
                 try {
                     const url = new URL(value, window.location.origin);
-                    const match = url.pathname.match(/\/health-id\/([0-9a-f-]{36})(?:\/|$)/i);
+                    const match = url.pathname.match(/\/(?:health-id|citizen\/qr)\/([0-9a-f-]{36})(?:\/|$)/i);
                     return match && uuidPattern.test(match[1]) ? match[1] : null;
                 } catch (error) {
                     return null;

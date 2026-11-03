@@ -66,6 +66,18 @@ Route::get('/health-id/{token}/summary', [QRScannerController::class, 'publicHea
 Route::view('/public/qr-scanner', 'public.qr-scanner')
     ->name('public.qr-scanner');
 
+// Legacy QR links printed before the public Health ID existed. Signed-in BHWs keep the
+// internal view; everyone else lands on the public Health ID instead of the login page.
+Route::get('/citizen/qr/{token}', function (string $token) {
+    $user = Auth::user();
+
+    if ($user && strtolower(trim($user->role)) === 'bhw' && ! $user->must_change_password) {
+        return app(CitizenController::class)->showElectronicCardByToken($token);
+    }
+
+    return redirect()->route('health-id.public', ['token' => $token]);
+})->whereUuid('token')->middleware('throttle:60,1')->name('bhw.citizen.qr');
+
 Route::get('/', function () {
     $recentEvents = Event::latest()->take(5)->get();
     $recentAnnouncements = Announcement::with('images')
@@ -351,10 +363,6 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::post('/qr-scanner/diagnosis', [QRScannerController::class, 'storeDiagnosis'])
         ->name('qr.scanner.diagnosis.store');
 
-    // Legacy authenticated route retained for existing QR links/bookmarks.
-    Route::get('/citizen/qr/{token}', [CitizenController::class, 'showElectronicCardByToken'])
-        ->whereUuid('token')
-        ->name('bhw.citizen.qr');
     // Excel
     Route::post('/citizen-import', [CitizenController::class, 'import'])->name('citizen.import');
 
