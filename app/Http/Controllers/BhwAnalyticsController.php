@@ -64,45 +64,29 @@ class BhwAnalyticsController extends Controller
         $previousCount = $previousDiagnosisCount + $previousMaintenanceCount + $previousVaccinationCount;
         $change = $previousCount > 0 ? round((($currentCount - $previousCount) / $previousCount) * 100, 1) : null;
 
-        $forecast = max(0, $currentCount + ($currentCount - $previousCount));
+        $minimumForecastRecords = 10;
+        $forecastAvailable = ($currentCount + $previousCount) >= $minimumForecastRecords;
+        $forecast = $forecastAvailable ? max(0, $currentCount + ($currentCount - $previousCount)) : null;
+        $forecastStatusLabel = $forecastAvailable ? 'Trend estimate available' : 'Waiting for sufficient data';
+        $forecastStatusMessage = $forecastAvailable
+            ? 'This projection uses the latest 14-day activity trend and is enabled because at least 10 record entries were created. This minimum does not establish predictive reliability.'
+            : 'This forecast is enabled only after at least 10 valid health activity records are recorded across the current and previous 14-day windows. The estimate counts entries by creation date, regardless of when care occurred.';
 
-        $citizenActivity = CitizenActivityLog::where('module', 'citizen')
+        $citizenActivity = CitizenActivityLog::whereIn('citizen_id', $citizenIds)->where('module', 'citizen')
             ->whereBetween('created_at', [$currentStart, now()]);
         $citizenAdditions = (clone $citizenActivity)->whereIn('action', ['create', 'import'])->count();
         $citizenDetailEdits = (clone $citizenActivity)->where('action', 'update')->count();
 
-        $children = (clone $citizenQuery)->where('Citizen_Age', '<=', 5)->with('vaccinations')->get();
-        $immunizationRisk = $children->filter(function ($citizen) {
-            $vaccines = $citizen->vaccinations->pluck('vaccine_name')->map(fn ($name) => strtolower((string) $name));
-            $has = fn ($terms) => $vaccines->contains(fn ($name) => collect($terms)->contains(fn ($term) => str_contains($name, $term)));
-
-            return !$has(['bcg']) || !$has(['polio']) || !$has(['measles', 'mmr']);
-        })->count();
-
-        $medicineUseCases = [
-            'Fever, flu symptoms, or pain' => ['biogesic', 'paracetamol', 'fever', 'flu', 'pain'],
-            'Colds or nasal congestion' => ['neozep', 'cold', 'colds', 'nasal', 'congestion'],
-            'Cough or phlegm' => ['solmux', 'lagundi', 'cough', 'phlegm'],
-            'Dehydration or diarrhea support' => ['oral rehydration', 'ors', 'loperamide', 'dehydration', 'diarrhea'],
-        ];
-
-        $supplyRecommendations = Supply::query()->get()->map(function ($supply) use ($medicineUseCases) {
+        $supplyRecommendations = Supply::query()->get()->map(function ($supply) use ($currentStart) {
             $recentWithdrawals = SupplyLog::where('supply_id', $supply->id)
                 ->whereIn('action', ['release', 'withdraw'])
-                ->where('created_at', '>=', now()->subDays(14))
+                ->whereBetween('created_at', [$currentStart, now()])
                 ->get(['quantity', 'notes']);
             $withdrawnLast14Days = $recentWithdrawals->sum('quantity');
             $dailyUsage = $withdrawnLast14Days / 14;
             $daysRemaining = $dailyUsage > 0 ? (int) floor($supply->quantity / $dailyUsage) : null;
-            $medicineContext = strtolower($supply->name . ' ' . $recentWithdrawals->pluck('notes')->filter()->implode(' '));
-            $purpose = collect($medicineUseCases)->search(
-                fn ($keywords) => collect($keywords)->contains(fn ($keyword) => str_contains($medicineContext, $keyword))
-            );
-            $purpose = $purpose === false ? 'Other medicine or supply' : $purpose;
-
             return [
                 'name' => $supply->name,
-                'purpose' => $purpose,
                 'quantity' => (int) $supply->quantity,
                 'min_stock' => (int) $supply->min_stock,
                 'daily_usage' => round($dailyUsage, 1),
@@ -114,7 +98,7 @@ class BhwAnalyticsController extends Controller
             ];
         })->sortBy(function ($supply) {
             return $supply['days_remaining'] ?? 999999;
-        })->take(8)->values();
+        })->values();
 
         $filters = $request->validate([
             'disease_period' => ['nullable', Rule::in(['today', 'last7', 'last30', 'this_month', 'previous_month', 'this_year', 'custom'])],
@@ -156,6 +140,9 @@ class BhwAnalyticsController extends Controller
         );
 
         return view('bhw.analytics', compact(
+            'currentStart',
+            'previousStart',
+            'previousEnd',
             'currentCount',
             'previousCount',
             'change',
@@ -165,15 +152,17 @@ class BhwAnalyticsController extends Controller
             'currentVaccinationCount',
             'citizenAdditions',
             'citizenDetailEdits',
-            'immunizationRisk',
-            'children',
             'supplyRecommendations',
             'diseaseMonitoringData',
             'period',
             'periodStart',
             'periodEnd',
             'periodLabel',
-            'filters'
+            'filters',
+            'forecastAvailable',
+            'forecastStatusLabel',
+            'forecastStatusMessage',
+            'minimumForecastRecords'
         ));
     }
 }

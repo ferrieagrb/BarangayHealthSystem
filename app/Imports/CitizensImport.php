@@ -111,6 +111,16 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             }
         }
 
+        $contactInput = $this->text($row['contact_number'] ?? $row['contact_no'] ?? $row['contact'] ?? $row['contactnumber'] ?? $row['Contact Number'] ?? '');
+        $contact = '';
+        if ($contactInput !== '') {
+            $contact = $this->normalizeContact($contactInput);
+            if ($contact === null) {
+                $contact = '';
+                $this->ignoreValue("{$entry}: Contact number \"{$contactInput}\" must be a valid mobile number (e.g. 09123456789) and was left blank");
+            }
+        }
+
         $subPurokInput = $this->text($row['sub_purok'] ?? $row['subpurok'] ?? $row['Sub Purok'] ?? $row['SubPurok'] ?? $row['subgroup'] ?? '');
         $subgroup = null;
         if ($purok && $subPurokInput !== '') {
@@ -131,14 +141,14 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
 
         $purokName = $purok?->name;
 
-        return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sex, $purokName, $subgroup) {
+        return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sex, $purokName, $subgroup, $contact) {
             $citizen = citizens::create([
                 'Citizen_FName'     => $firstName,
                 'Citizen_MName'     => $middleName,
                 'Citizen_LName'     => $lastName,
                 'Citizen_BirthDate' => $birthDate,
                 'Citizen_Age'       => $age,
-                'Citizen_ContactNo' => '',
+                'Citizen_ContactNo' => $contact,
                 'Citizen_Sex'       => $sex,
                 'Citizen_Purok'     => $purokName,
                 'subgroup_id'       => $subgroup?->id,
@@ -176,6 +186,22 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         }
 
         return trim((string) preg_replace('/\s+/u', ' ', (string) $value));
+    }
+
+    // Accepts 09XXXXXXXXX, 9XXXXXXXXX (Excel drops the leading zero), 639XXXXXXXXX and +639XXXXXXXXX, with spaces, dashes or parentheses.
+    private function normalizeContact(string $value): ?string
+    {
+        if (!preg_match('/^\+?[\d\s\-().]+$/', $value)) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $value);
+
+        if (preg_match('/^63(9\d{9})$/', $digits, $m) || preg_match('/^0?(9\d{9})$/', $digits, $m)) {
+            return '0' . $m[1];
+        }
+
+        return null;
     }
 
     // Heuristic for keyboard mashing such as "asdfgh", "xqzvk" or "aBcDeF".

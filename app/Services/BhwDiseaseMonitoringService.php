@@ -56,7 +56,7 @@ class BhwDiseaseMonitoringService
         $totalRecords = (clone $recordsQuery)->count('hr.id');
         $uniqueCitizens = (clone $recordsQuery)->distinct()->count('hr.citizen_id');
 
-        $periodDays = $start->diffInDays($end) + 1;
+        $periodDays = (int) $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
         $previousEnd = $start->copy()->subDay();
         $previousStart = $previousEnd->copy()->subDays($periodDays - 1);
         $previousQuery = $applyFilters($baseQuery(), false)
