@@ -37,6 +37,13 @@
                     <span>{{ session('error') }}</span>
                 </div>
             @endif
+
+            @if (session('status'))
+                <div class="alert-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>{{ session('status') }}</span>
+                </div>
+            @endif
             
             <div class="input-group">
                 <label for="Username">Username or Email</label>
@@ -49,7 +56,7 @@
             <div class="input-group">
                 <div class="password-label">
                     <label for="Password">Password</label>
-                    <a href="#" class="forgot-password">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" class="forgot-password">Forgot password?</a>
                 </div>
                 <div class="input-field-wrapper">
                     <i class="fa-lock fa-solid"></i>

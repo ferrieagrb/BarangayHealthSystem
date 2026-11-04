@@ -105,6 +105,11 @@ Route::get('/publicannouncements/{announcement}', [AnnouncementController::class
 Route::get('/contactdirectory', fn () => view('citizencontactdirectory'))->name('contactdirectory');
 
 Route::get('/login', fn () => view('login'))->name('login');
+
+Route::get('/forgot-password', [\App\Http\Controllers\PasswordResetController::class, 'showRequestForm'])->name('password.request');
+Route::post('/forgot-password', [\App\Http\Controllers\PasswordResetController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');
+Route::get('/reset-password/{token}', [\App\Http\Controllers\PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [\App\Http\Controllers\PasswordResetController::class, 'reset'])->middleware('throttle:5,1')->name('password.update');
 Route::get('/site-logo', [PublicAssetController::class, 'logo'])->name('site.logo');
 Route::get('/site-favicon.png', [PublicAssetController::class, 'favicon'])->name('site.favicon');
 Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announcementImage'])
