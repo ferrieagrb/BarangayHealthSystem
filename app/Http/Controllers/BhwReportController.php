@@ -138,6 +138,7 @@ class BhwReportController extends Controller
         if (in_array('citizens', $selectedSections, true)) {
             $filterRules['citizen_status'] = ['nullable', Rule::in(['living', 'deceased'])];
             $filterRules['sex'] = ['nullable', Rule::in(['Male', 'Female'])];
+            $filterRules['age_sort'] = ['nullable', Rule::in(['youngest', 'oldest'])];
         }
         if (array_intersect($selectedSections, $dateFilterSections)) {
             $filterRules['start_date'] = ['nullable', 'date_format:Y-m-d'];
@@ -229,6 +230,26 @@ class BhwReportController extends Controller
                 return $age !== null
                     && (! $request->filled('age_min') || $age >= $request->integer('age_min'))
                     && (! $request->filled('age_max') || $age <= $request->integer('age_max'));
+            })->values();
+        }
+        if (in_array('citizens', $selectedSections, true) && $request->filled('age_sort')) {
+            $descendingAge = $request->input('age_sort') === 'oldest';
+            $citizensReport = $citizensReport->sort(function ($left, $right) use ($descendingAge) {
+                $leftAge = $left->ageForEligibility();
+                $rightAge = $right->ageForEligibility();
+
+                if ($leftAge === null || $rightAge === null) {
+                    if ($leftAge === $rightAge) {
+                        return $left->id <=> $right->id;
+                    }
+
+                    return $leftAge === null ? 1 : -1;
+                }
+
+                $ageComparison = $leftAge <=> $rightAge;
+
+                return ($descendingAge ? -$ageComparison : $ageComparison)
+                    ?: ($left->id <=> $right->id);
             })->values();
         }
         $citizenIds = $citizensReport->pluck('id');
@@ -685,6 +706,11 @@ class BhwReportController extends Controller
             'Age' => $request->filled('age_min') || $request->filled('age_max')
                 ? ($request->filled('age_min') ? $request->input('age_min') : 'Any').' to '.($request->filled('age_max') ? $request->input('age_max') : 'Any')
                 : null,
+            'Age order' => match ($request->input('age_sort')) {
+                'youngest' => 'Youngest to oldest',
+                'oldest' => 'Oldest to youngest',
+                default => null,
+            },
             'Sex' => $request->input('sex'),
             'Citizen status' => $request->input('citizen_status'),
             'Diagnosis' => $request->input('diagnosis'),

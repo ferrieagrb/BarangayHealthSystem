@@ -1,5 +1,6 @@
 @extends('templates.citizen')
 @section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/health-card.css') }}">
 <style>
 /* =========================================================
    CITIZEN DASHBOARD
@@ -55,6 +56,7 @@
 #health-information .c-record h3 { font-size: 17px; }
 #health-information .c-table { font-size: 15px; }
 #health-information .c-table th, #health-information .c-table td { padding: 13px 14px; }
+.c-home .bheams-id-card p { line-height: normal; }
 
 .c-heading {
     display: flex;
@@ -1661,107 +1663,11 @@ body.theme-dark .c-home {
 
     @if($citizen)
         {{-- ACTUAL ID CARD --}}
-        <div class="c-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="citizen-card-scroll-hint" tabindex="0">
-        <div class="c-panel c-id-card">
-
-            {{-- BLUE HEADER --}}
-            <div class="c-id-header">
-                <img src="{{ asset('images/amuyong.png') }}"
-                     alt="Barangay Amuyong Logo">
-
-                <div class="c-id-header-text">
-                    <h3>BHEAMS</h3>
-                    <strong>BARANGAY AMUYONG</strong>
-                    <small>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</small>
-                </div>
-
-            </div>
-
-            {{-- ID BODY --}}
-            <div class="c-id-body">
-
-                {{-- CITIZEN PHOTO --}}
-                <div class="c-photo">
-                    @if($citizen->photo_path)
-                        <img src="{{ route('citizen.photo', $citizen->id) }}"
-                             alt="Citizen photo">
-                    @else
-                        <span>
-                            {{ strtoupper(substr($citizen->Citizen_FName ?? 'C', 0, 1).substr($citizen->Citizen_LName ?? 'I', 0, 1)) }}
-                        </span>
-                        <small>NO PHOTO</small>
-                    @endif
-                </div>
-
-                {{-- CITIZEN DETAILS --}}
-                <div class="c-id-details">
-                    <h3>CITIZEN HEALTH ID</h3>
-
-                    <div class="c-id-field">
-                        <span>FULL NAME</span>
-                        <strong>
-                            {{ strtoupper($citizen->Citizen_LName) }},
-                            {{ strtoupper($citizen->Citizen_FName) }}
-                        </strong>
-                    </div>
-
-                    <div class="c-id-field">
-                        <span>CITIZEN IDENTIFICATION NUMBER</span>
-                        <strong class="c-id-number">
-                            C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}
-                        </strong>
-                    </div>
-
-                    <div class="c-id-details-grid">
-                        <div class="c-id-field">
-                            <span>DATE OF BIRTH</span>
-                            <strong>
-                                {{ $citizen->Citizen_BirthDate
-                                    ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y')
-                                    : 'N/A' }}
-                            </strong>
-                        </div>
-
-                        <div class="c-id-field">
-                            <span>ADDRESS / PUROK</span>
-                            <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- SECONDARY DETAILS, MATCHING THE CITIZEN E-CARD VIEW --}}
-                <div class="c-id-secondary-details">
-                    <div class="c-id-field">
-                        <span>SEX</span>
-                        <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
-                    </div>
-                    <div class="c-id-field">
-                        <span>AGE</span>
-                        <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age : ($citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A') }}</strong>
-                    </div>
-                    <div class="c-id-field">
-                        <span>CONTACT NUMBER</span>
-                        <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
-                    </div>
-                </div>
-
-            {{-- CENTERED QR CODE, MATCHING THE MY HEALTH CARD PAGE --}}
-            <div class="c-id-qr c-id-qr-centered">
-                <div class="c-id-qr-frame">
-                    <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
-                </div>
-                <span>SCAN TO VERIFY</span>
-            </div>
-            </div>
-
-            {{-- FOOTER AT THE BOTTOM OF THE ID --}}
-            <div class="c-id-footer">
-                <span>BARANGAY AMUYONG</span>
-                <span>OFFICIAL CITIZEN IDENTIFICATION</span>
+        <div class="bhw-ecard-page ecard-dashboard-card">
+            <div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" data-ecard-fit>
+                @include('partials.health-card', ['citizen' => $citizen, 'qrImage' => $qrImage])
             </div>
         </div>
-        </div>
-        <p class="c-id-scroll-hint" id="citizen-card-scroll-hint">Swipe horizontally to view the full card.</p>
 
         {{-- BUTTON OUTSIDE THE ID CARD --}}
         <div class="c-id-actions-outside">
@@ -1843,6 +1749,10 @@ body.theme-dark .c-home {
                         <div class="c-stat">
                             <span>Age</span>
                             <strong>{{ $citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age . ' years old' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Sex</span>
+                            <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
                         </div>
                         <div class="c-stat">
                             <span>Height</span>
@@ -2147,6 +2057,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const nav = document.getElementById('citizenSectionNav');
     if (!nav) return;
 
+    const navTrack = nav.querySelector('.c-header-section-track');
     const links = [...nav.querySelectorAll('a[href^="#"]')];
 
     const sections = links
@@ -2157,8 +2068,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!sections.length) return;
     let pendingNavigationSection = null;
+    let activeSection = null;
+    let updateScheduled = false;
+    let swipeStart = null;
+    let suppressSwipeClick = false;
+    let swipeClickTimer = null;
+
+    function centerActiveLink() {
+        if (!navTrack || !nav.clientWidth) return;
+
+        const activeLink = links.find(link => link.classList.contains('active'));
+        if (!activeLink) return;
+
+        const offset = nav.clientWidth / 2
+            - activeLink.offsetLeft
+            - activeLink.offsetWidth / 2;
+        navTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+    }
 
     function setActive(section) {
+        const changed = activeSection !== section;
+        activeSection = section;
+
         links.forEach(link => {
             const active =
                 link.getAttribute('href') === '#' + section.id;
@@ -2171,6 +2102,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 link.removeAttribute('aria-current');
             }
         });
+
+        if (changed) centerActiveLink();
     }
 
     function getSectionFromHash() {
@@ -2224,8 +2157,47 @@ document.addEventListener('DOMContentLoaded', function () {
         setActive(current);
     }
 
+    function scheduleActiveTabUpdate() {
+        if (updateScheduled) return;
+        updateScheduled = true;
+        window.requestAnimationFrame(function () {
+            updateScheduled = false;
+            updateActiveTab();
+        });
+    }
+
+    function navigateToSection(target) {
+        pendingNavigationSection = target;
+        const targetHash = '#' + target.id;
+        if (window.location.hash !== targetHash) {
+            window.history.pushState(null, '', targetHash);
+        }
+        setActive(target);
+
+        const header = document.querySelector('.top-bar');
+        const headerHeight = header ? header.offsetHeight : 0;
+        const targetY =
+            target.getBoundingClientRect().top +
+            window.scrollY -
+            headerHeight -
+            12;
+
+        window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth'
+        });
+    }
+
     links.forEach(link => {
         link.addEventListener('click', function (event) {
+            if (suppressSwipeClick && event.detail !== 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                suppressSwipeClick = false;
+                window.clearTimeout(swipeClickTimer);
+                return;
+            }
+
             const target = document.getElementById(
                 this.getAttribute('href').substring(1)
             );
@@ -2233,34 +2205,84 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!target) return;
 
             event.preventDefault();
-            pendingNavigationSection = target;
-            const targetHash = '#' + target.id;
-            if (window.location.hash !== targetHash) {
-                window.history.pushState(null, '', targetHash);
-            }
-            setActive(target);
-
-            const header = document.querySelector('.top-bar');
-            const headerHeight = header ? header.offsetHeight : 0;
-
-            const targetY =
-                target.getBoundingClientRect().top +
-                window.scrollY -
-                headerHeight -
-                12;
-
-            window.scrollTo({
-                top: Math.max(0, targetY),
-                behavior: 'smooth'
-            });
+            navigateToSection(target);
         });
     });
 
-    window.addEventListener('scroll', updateActiveTab, {
+    nav.addEventListener('pointerdown', function (event) {
+        if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        swipeStart = { x: event.clientX, y: event.clientY };
+    });
+
+    nav.addEventListener('pointerup', function (event) {
+        if (!swipeStart) return;
+
+        const deltaX = event.clientX - swipeStart.x;
+        const deltaY = event.clientY - swipeStart.y;
+        swipeStart = null;
+
+        if (Math.abs(deltaX) < 40 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+        const activeIndex = links.findIndex(link => link.classList.contains('active'));
+        const nextIndex = Math.max(0, Math.min(
+            links.length - 1,
+            activeIndex + (deltaX < 0 ? 1 : -1)
+        ));
+        if (nextIndex === activeIndex) return;
+
+        suppressSwipeClick = true;
+        window.clearTimeout(swipeClickTimer);
+        swipeClickTimer = window.setTimeout(function () {
+            suppressSwipeClick = false;
+        }, 500);
+        navigateToSection(sections[nextIndex]);
+    });
+
+    nav.addEventListener('pointercancel', function () {
+        swipeStart = null;
+    });
+
+    nav.addEventListener('keydown', function (event) {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+        const activeIndex = links.findIndex(link => link.classList.contains('active'));
+        const nextIndex = Math.max(0, Math.min(
+            links.length - 1,
+            activeIndex + (event.key === 'ArrowRight' ? 1 : -1)
+        ));
+        if (nextIndex === activeIndex) return;
+
+        event.preventDefault();
+        links[nextIndex].focus();
+        navigateToSection(sections[nextIndex]);
+    });
+
+    window.addEventListener('scroll', scheduleActiveTabUpdate, {
         passive: true
     });
 
-    window.addEventListener('resize', updateActiveTab);
+    window.addEventListener('resize', function () {
+        centerActiveLink();
+        scheduleActiveTabUpdate();
+    });
+
+    function cancelPendingNavigation() {
+        if (!pendingNavigationSection) return;
+        pendingNavigationSection = null;
+        scheduleActiveTabUpdate();
+    }
+
+    window.addEventListener('wheel', cancelPendingNavigation, { passive: true });
+    window.addEventListener('touchstart', cancelPendingNavigation, { passive: true });
+    window.addEventListener('pointerdown', function (event) {
+        if (!nav.contains(event.target)) cancelPendingNavigation();
+    });
+
+    if ('ResizeObserver' in window) {
+        const sectionResizeObserver = new ResizeObserver(scheduleActiveTabUpdate);
+        sections.forEach(section => sectionResizeObserver.observe(section));
+    }
+
     function restoreSectionFromHistory() {
         const target = getSectionFromHash();
         if (target) {
@@ -2277,10 +2299,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('hashchange', restoreSectionFromHistory);
     window.addEventListener('popstate', restoreSectionFromHistory);
-    window.addEventListener('pageshow', updateActiveTab);
+    window.addEventListener('pageshow', scheduleActiveTabUpdate);
+    window.addEventListener('load', scheduleActiveTabUpdate);
 
     updateActiveTab();
     window.requestAnimationFrame(updateActiveTab);
+    centerActiveLink();
+    window.requestAnimationFrame(function () {
+        nav.classList.add('is-ready');
+        centerActiveLink();
+    });
     if (getSectionFromHash()) {
         window.requestAnimationFrame(restoreSectionFromHistory);
     }
@@ -2436,4 +2464,5 @@ window.addEventListener('pageshow', () => {
 }
 </style>
 
+<script src="{{ asset('js/ecard-fit.js') }}?v={{ filemtime(public_path('js/ecard-fit.js')) }}"></script>
 @endsection

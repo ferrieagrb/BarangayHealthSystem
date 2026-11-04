@@ -715,6 +715,149 @@ body,
     }
 }
 
+@media (max-width: 900px) {
+    .c-header-section-nav {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+        align-items: stretch;
+        gap: 5px;
+        overflow: visible;
+    }
+
+    .c-header-section-nav a {
+        min-width: 0;
+        min-height: 40px;
+        padding: 5px 8px;
+        font-size: clamp(10px, 1.7vw, 13px);
+        line-height: 1.25;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 520px) {
+    .c-header-section-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Keep the citizen menu at the far left while the section navigation stays centered. */
+.top-bar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+.c-header-brand {
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    align-items: center;
+    justify-self: start;
+    gap: 12px;
+    min-width: 0;
+}
+.c-header-brand .c-header-logo {
+    grid-column: auto;
+}
+.c-header-section-nav,
+.c-header-page-spacer {
+    grid-column: 2;
+    grid-row: 1;
+}
+.c-header-section-nav {
+    justify-self: center;
+}
+.top-bar .citizen-menu-button {
+    flex-shrink: 0;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 7px 10px;
+}
+.top-bar .citizen-menu-button i {
+    font-size: 23px;
+}
+@media (max-width: 900px) {
+    .top-bar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .c-header-brand {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .c-header-section-nav,
+    .c-header-page-spacer {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .c-header-section-nav {
+        justify-self: stretch;
+    }
+}
+@media (max-width: 480px) {
+    .c-header-brand {
+        gap: 9px;
+    }
+    .top-bar .citizen-menu-button {
+        min-width: 40px;
+        min-height: 40px;
+    }
+}
+
+.c-header-section-nav {
+    display: block !important;
+    position: relative;
+    width: clamp(270px, 42vw, 460px);
+    max-width: calc(100vw - 250px);
+    min-width: 0;
+    height: 52px;
+    padding: 0;
+    overflow: hidden;
+    justify-self: center;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.c-header-section-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    height: 100%;
+    will-change: transform;
+}
+.c-header-section-nav.is-ready .c-header-section-track {
+    transition: transform .42s cubic-bezier(.22, .61, .36, 1);
+}
+.c-header-section-nav a {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.c-header-section-nav a.active {
+    background: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(29, 78, 216, .18);
+}
+@media (max-width: 900px) {
+    .c-header-section-nav {
+        grid-column: 1;
+        grid-row: 2;
+        width: min(460px, 100%);
+        max-width: calc(100vw - 28px);
+        height: 48px;
+        margin-inline: auto;
+    }
+}
+@media (max-width: 480px) {
+    .c-header-section-nav a {
+        min-height: 38px;
+        padding: 0 11px;
+        font-size: 12px;
+    }
+}
+
 </style>
         <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
     @include('partials.appearance-assets')
@@ -800,7 +943,7 @@ body,
             <img src="{{ asset('images/amuyong.png') }}" alt="">
             <span>BHEAMS</span>
         </a>
-        <button type="button" class="topbutton sidebar-toggle" id="citizenMenuClose" aria-label="Close navigation menu">
+        <button type="button" class="topbutton sidebar-toggle" id="citizenMenuClose" aria-label="Close navigation menu" aria-expanded="false">
             <i class="bx bx-chevron-left" aria-hidden="true"></i>
         </button>
     </div>
@@ -855,29 +998,30 @@ body,
 <!-- MAIN -->
 <div class="main-content">
     <div class="top-bar">
-        <a class="c-header-logo" href="{{ route('citizen.dashboard') }}" aria-label="Citizen dashboard">
-            <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong logo">
-        </a>
+        <div class="c-header-brand">
+            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
+                <i class="bx bx-menu" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
+            <a class="c-header-logo" href="{{ route('citizen.dashboard') }}" aria-label="Citizen dashboard">
+                <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong logo">
+            </a>
+        </div>
         
 
         @if(request()->routeIs('citizen.dashboard'))
             <nav class="c-header-section-nav" id="citizenSectionNav" aria-label="Citizen page sections">
-                <a href="#announcements" class="active">Announcement</a>
-                <a href="#citizen-card">Healthcard</a>
-                <a href="#health-information">Health Information</a>
-                <a href="#request-referral">Referral</a>
+                <div class="c-header-section-track">
+                    <a href="#announcements" class="active">Announcement</a>
+                    <a href="#citizen-card">HealthCard</a>
+                    <a href="#health-information">Health Information</a>
+                    <a href="#request-referral">Referral</a>
+                </div>
             </nav>
         @else
             <div class="c-header-page-spacer" aria-hidden="true"></div>
         @endif
 
-        <div class="c-header-actions">
-            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
-                <i class="bx bx-menu" aria-hidden="true"></i>
-                <span>Menu</span>
-            </button>
-            <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
-        </div>
     </div>
     @yield('content')
 </div>
@@ -958,6 +1102,7 @@ body,
             sidebar.setAttribute('aria-hidden', 'false');
             backdrop.setAttribute('aria-hidden', 'false');
             openButton.setAttribute('aria-expanded', 'true');
+            closeButton.setAttribute('aria-expanded', 'true');
             document.body.classList.add('citizen-sidebar-open');
             closeButton.focus();
             document.body.style.overflow = 'hidden';
@@ -970,6 +1115,7 @@ body,
             sidebar.setAttribute('aria-hidden', 'true');
             backdrop.setAttribute('aria-hidden', 'true');
             openButton.setAttribute('aria-expanded', 'false');
+            closeButton.setAttribute('aria-expanded', 'false');
             document.body.classList.remove('citizen-sidebar-open');
             document.body.style.overflow = previousBodyOverflow;
             document.documentElement.style.overflow = previousHtmlOverflow;
