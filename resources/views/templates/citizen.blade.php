@@ -10,7 +10,7 @@
     <head>
         <meta charset="UTF-8">
         <title>Citizen Dashboard</title>
-        <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/layout.css') }}?v={{ filemtime(public_path('css/layout.css')) }}">
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         @include('partials.favicon')
@@ -89,7 +89,7 @@ body {
     text-decoration: none;
     white-space: nowrap;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 500;
     transition: background .18s ease, color .18s ease, box-shadow .18s ease;
 }
 .c-header-section-nav a:hover {
@@ -329,7 +329,7 @@ body {
     border-radius: 5px;
     background: rgba(255,255,255,.2);
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: .6px;
     text-transform: uppercase;
 }
@@ -338,7 +338,7 @@ body {
     color: white;
     font-size: clamp(17px, 1.5vw, 22px);
     line-height: 1.3;
-    font-weight: 800;
+    font-weight: 600;
     overflow-wrap: anywhere;
 }
 .c-ann-body {
@@ -718,6 +718,8 @@ body,
 </style>
         <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
     @include('partials.appearance-assets')
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/sidebar-scroll.css') }}?v={{ filemtime(public_path('css/sidebar-scroll.css')) }}">
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
     @yield('scripts')
@@ -792,14 +794,17 @@ body,
             });
         })();
 </script><!-- SIDEBAR -->
-<div class="sidebar" id="citizenSidebar" aria-label="Citizen navigation" aria-hidden="true">
-    <!-- CLOSE MENU -->
-    <div class="top">
-        <button type="button" class="topbutton" id="citizenMenuClose" aria-label="Close navigation menu" style="border:0;background:transparent;color:white;">
-            <i class="bx bx-x" aria-hidden="true">
-            </i>
+<div class="sidebar" id="citizenSidebar" role="navigation" aria-label="Citizen navigation" aria-hidden="true" tabindex="0">
+    <div class="top sidebar-header">
+        <a class="sidebar-brand" href="{{ route('citizen.dashboard') }}" aria-label="BHEAMS home">
+            <img src="{{ asset('images/amuyong.png') }}" alt="">
+            <span>BHEAMS</span>
+        </a>
+        <button type="button" class="topbutton sidebar-toggle" id="citizenMenuClose" aria-label="Close navigation menu">
+            <i class="bx bx-chevron-left" aria-hidden="true"></i>
         </button>
     </div>
+    <div class="sidebar-nav" tabindex="0" aria-label="Navigation links">
     <ul>
         <!-- Dashboard announcement section -->
         <li>
@@ -832,6 +837,7 @@ body,
             </a>
         </li>
     </ul>
+    </div>
     <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
         <ul style="list-style: none; padding: 0; margin: 0;">
             <li>
@@ -841,6 +847,7 @@ body,
                 </a>
             </li>
         </ul>
+        @include('templates.partials.sidebar-account')
     </div>
 </div>
 <div class="sidebar-backdrop" id="citizenSidebarBackdrop" aria-hidden="true">
@@ -870,11 +877,6 @@ body,
                 <span>Menu</span>
             </button>
             <a class="c-settings-link" href="{{ auth()->user()->isCitizen() ? route('citizen.settings') : route('settings') }}">Settings</a>
-            
-            <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                @csrf
-                <button type="submit" class="btn-logout">Logout</button>
-            </form>
         </div>
     </div>
     @yield('content')
@@ -1041,5 +1043,6 @@ body,
         });
 </script>@endauth
 
+<script src="{{ asset('js/password-toggle.js') . '?v=1793722773' }}"></script>
 </body>
 </html>

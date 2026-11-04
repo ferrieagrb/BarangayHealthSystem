@@ -44,4 +44,20 @@ return [
         'key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyBBb3WrQ40r3wzE1NKWVQFYtock7GASNJs'),
     ],
 
+    'rxnorm' => [
+        'approximate_url' => env('RXNORM_APPROXIMATE_URL', 'https://rxnav.nlm.nih.gov/REST/approximateTerm.json'),
+    ],
+
+    'cdc_cvx' => [
+        'url' => env('CDC_CVX_URL', 'https://www2a.cdc.gov/vaccines/iis/iisstandards/XML2.asp?rpt=cvx'),
+    ],
+
+    'who_icd' => [
+        'client_id' => env('WHO_ICD_CLIENT_ID'),
+        'client_secret' => env('WHO_ICD_CLIENT_SECRET'),
+        'token_url' => env('WHO_ICD_TOKEN_URL', 'https://icdaccessmanagement.who.int/connect/token'),
+        'api_url' => env('WHO_ICD_API_URL', 'https://id.who.int'),
+        'release' => env('WHO_ICD_RELEASE', '2026-01'),
+    ],
+
 ];

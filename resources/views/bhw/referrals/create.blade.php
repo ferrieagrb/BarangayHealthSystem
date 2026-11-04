@@ -106,7 +106,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" data-ui-action="primary">
                     Generate Referral
                 </button>
             </div>

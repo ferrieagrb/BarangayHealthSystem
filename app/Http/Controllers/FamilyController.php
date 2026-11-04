@@ -6,6 +6,8 @@ use App\Models\Family;
 use App\Models\Purok;
 use App\Models\PurokSubgroup;
 use App\Models\citizens;
+use App\Models\CitizenActivityLog;
+use App\Services\BhwCitizenAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +32,7 @@ class FamilyController extends Controller
             return;
         }
 
-        if ((int) $subgroup->user_id !== (int) $user->id) {
+        if (!app(BhwCitizenAccess::class)->assignedSubgroupIds($user)->contains($subgroup->id)) {
             abort(403, 'You can only manage families assigned to your subgroup.');
         }
     }
@@ -57,15 +59,19 @@ class FamilyController extends Controller
         $puroksQuery = Purok::with('subgroups');
 
         if ($user->role === 'bhw') {
-            $familiesQuery->whereHas('subgroup', fn ($query) => $query->where('user_id', $user->id));
+            $assignedSubgroupIds = app(BhwCitizenAccess::class)->assignedSubgroupIds($user);
+            $familiesQuery->whereHas('subgroup', fn ($query) => $query->whereIn('id', $assignedSubgroupIds));
             $puroksQuery
-                ->whereHas('subgroups', fn ($query) => $query->where('user_id', $user->id))
-                ->with(['subgroups' => fn ($query) => $query->where('user_id', $user->id)]);
+                ->whereHas('subgroups', fn ($query) => $query->whereIn('id', $assignedSubgroupIds))
+                ->with(['subgroups' => fn ($query) => $query->whereIn('id', $assignedSubgroupIds)]);
         }
 
         $families = $familiesQuery->latest()->get();
         $puroks = $puroksQuery->get();
-        $availableCitizens = citizens::whereNull('family_id')->get();
+        $availableCitizens = app(BhwCitizenAccess::class)
+            ->scopeCitizens(citizens::query(), $user)
+            ->whereNull('family_id')
+            ->get();
 
         return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens'));
     }
@@ -115,8 +121,20 @@ class FamilyController extends Controller
     {
         $this->authorizeFamily($family);
         $family->load('members', 'purok', 'subgroup');
-        $availableCitizens = citizens::whereNull('family_id')->get();
-        $puroks = Purok::with('subgroups')->get();
+        $user = Auth::user();
+        $citizenAccess = app(BhwCitizenAccess::class);
+        $availableCitizens = $citizenAccess
+            ->scopeCitizens(citizens::query(), $user)
+            ->whereNull('family_id')
+            ->where(function ($query) use ($family) {
+                $query->where('Citizen_Purok', $family->purok?->name)
+                    ->orWhereHas('subgroup', fn ($subgroup) => $subgroup->where('purok_id', $family->purok_id));
+            })
+            ->get();
+        $assignedSubgroupIds = $citizenAccess->assignedSubgroupIds($user);
+        $puroks = Purok::with(['subgroups' => fn ($query) => $query->whereIn('id', $assignedSubgroupIds)])
+            ->whereHas('subgroups', fn ($query) => $query->whereIn('id', $assignedSubgroupIds))
+            ->get();
 
         return view('bhw.families.show', compact('family', 'availableCitizens', 'puroks'));
     }
@@ -130,11 +148,33 @@ class FamilyController extends Controller
         $this->authorizeFamily($family);
 
         $family->load(['purok', 'subgroup']);
-        citizens::where('id', $request->citizen_id)->update([
+        $citizen = citizens::findOrFail($request->citizen_id);
+        $user = Auth::user();
+        $access = app(BhwCitizenAccess::class);
+        if ($user->role === 'bhw') {
+            abort_unless(
+                !$family->subgroup || (int) $family->subgroup->purok_id === (int) $family->purok_id,
+                403,
+                'The family subgroup must belong to its mother Purok.'
+            );
+            abort_unless($access->canAccessCitizen($user, $citizen), 403, 'You are not assigned to this citizen record.');
+            abort_unless(
+                (int) $access->motherPurok($citizen)?->id === (int) $family->purok_id,
+                403,
+                'The family must belong to the citizen\'s mother Purok.'
+            );
+        }
+
+        $previousFamilyId = $citizen->family_id;
+        $previousSubgroupId = $citizen->subgroup_id;
+        $citizen->update([
             'family_id' => $family->id,
             'Citizen_Purok' => $family->purok->name,
-            'subgroup_id' => $family->subgroup->id,
+            'subgroup_id' => $family->subgroup?->id,
         ]);
+        if ($previousFamilyId !== $citizen->family_id || $previousSubgroupId !== $citizen->subgroup_id) {
+            $this->logAssignmentChange($citizen, 'Assigned citizen to family ' . $family->family_name);
+        }
 
         return back()->with('success', 'Citizen added to family.');
     }
@@ -144,6 +184,14 @@ class FamilyController extends Controller
         $this->authorizeFamilyWrite();
 
         $citizen = citizens::with('family.subgroup')->findOrFail($citizenId);
+        $user = Auth::user();
+        if ($user->role === 'bhw') {
+            abort_unless(
+                app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen),
+                403,
+                'You are not assigned to this citizen record.'
+            );
+        }
 
         if ($citizen->family) {
             $this->authorizeFamily($citizen->family);
@@ -176,7 +224,13 @@ class FamilyController extends Controller
 
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
         $this->authorizeSubgroup($subgroup);
+        if (Auth::user()->role === 'bhw' && (int) $subgroup->purok_id !== (int) $family->purok_id) {
+            abort(403, 'You cannot move a family to another mother Purok.');
+        }
 
+        $memberIds = $family->members()->pluck('id');
+        $assignmentChanged = (int) $family->subgroup_id !== (int) $subgroup->id
+            || (int) $family->purok_id !== (int) $subgroup->purok_id;
         $family->update([
             'family_name' => $request->family_name,
             'subgroup_id' => $request->subgroup_id,
@@ -188,6 +242,26 @@ class FamilyController extends Controller
             'subgroup_id' => $subgroup->id,
         ]);
 
+        if ($assignmentChanged) {
+            foreach ($memberIds as $citizenId) {
+                $citizen = citizens::find($citizenId);
+                if ($citizen) {
+                    $this->logAssignmentChange($citizen, 'Updated family subgroup assignment to ' . $subgroup->name);
+                }
+            }
+        }
+
         return back()->with('success', 'Family updated successfully.');
+    }
+
+    private function logAssignmentChange(citizens $citizen, string $description): void
+    {
+        CitizenActivityLog::create([
+            'user_id' => Auth::id() ?? 0,
+            'action' => 'update',
+            'module' => 'citizen',
+            'citizen_id' => $citizen->id,
+            'description' => $description,
+        ]);
     }
 }

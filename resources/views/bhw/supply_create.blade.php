@@ -56,8 +56,8 @@
 
         <!-- ACTIONS -->
         <div class="form-actions">
-            <button type="submit" class="btn-primary">Save Item</button>
-            <a href="{{ url('/supplies') }}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" data-ui-action="primary">Save Item</button>
+            <a href="{{ url('/supplies') }}" class="btn-secondary" data-ui-action="secondary">Cancel</a>
         </div>
 
     </form>
@@ -85,14 +85,14 @@
             <button
                 type="button"
                 id="cancelSupplyConfirm"
-                class="confirm-cancel">
+                class="confirm-cancel" data-ui-action="secondary">
                 Cancel
             </button>
 
             <button
                 type="button"
                 id="saveSupplyConfirm"
-                class="confirm-save">
+                class="confirm-save" data-ui-action="primary">
                 Yes, Save
             </button>
 

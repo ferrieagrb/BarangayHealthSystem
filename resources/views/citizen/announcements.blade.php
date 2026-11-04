@@ -4,9 +4,9 @@
 <style>
 .announcements-page{max-width:1100px;margin:0 auto;padding:clamp(18px,3vw,36px);color:#172033}
 .announcements-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-.announcements-top h1{margin:0;color:#173b82;font-size:clamp(24px,3vw,32px);font-weight:800}
+.announcements-top h1{margin:0;color:#173b82;font-size:clamp(24px,3vw,32px);font-weight:600}
 .announcements-top p{margin:8px 0 0;color:#475569;line-height:1.6;font-size:16px}
-.ann-back{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 17px;border-radius:9px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:750}
+.ann-back{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:11px 17px;border-radius:9px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:600}
 .ann-list{display:grid;gap:18px}
 .ann-card{padding:clamp(18px,2.5vw,26px);border:1px solid #dbe3ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px #0f172a0a}
 .ann-card{display:block;color:inherit;text-align:left;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}

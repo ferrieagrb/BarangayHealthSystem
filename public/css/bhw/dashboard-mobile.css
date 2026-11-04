@@ -1,0 +1,102 @@
+/* Dashboard-only adjustments. Desktop presentation remains in home.css. */
+@media (max-width: 1024px) {
+    .bhw-home { min-width: 0; line-height: 1.5; }
+    .bhw-home :is(.home-grid, .summary-cards) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .bhw-home :is(.home-card, .summary-card, .home-card-header > div, .home-list-item > div) {
+        min-width: 0;
+    }
+    .bhw-home :is(.page-title-group, .summary-card, .home-card-header, .home-list-item, .home-empty) {
+        overflow-wrap: anywhere;
+    }
+    .bhw-home .home-card-wide { grid-column: 1 / -1; }
+    .bhw-home .home-card-header { flex-wrap: wrap; align-items: flex-start; }
+    .bhw-home .home-card-header > div { flex: 1 1 220px; }
+    .bhw-home .home-card-header a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        max-width: 100%;
+        white-space: normal;
+        font-size: 14px;
+    }
+    .bhw-home .home-list { grid-template-columns: minmax(0, 1fr); }
+    .bhw-home .home-list-item { min-width: 0; flex-wrap: wrap; align-items: flex-start; gap: 10px; }
+    .bhw-home .home-list-item time { max-width: 100%; white-space: normal; }
+    .bhw-home .home-list-item > div { flex: 1 1 200px; }
+    .bhw-home .home-list-item strong { font-size: 14px; }
+    .bhw-home :is(.home-list-item small, .home-list-item time, .summary-card > small) { font-size: 14px; }
+    .bhw-home .home-status {
+        display: inline-block;
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+    }
+    .bhw-home .dashboard-card-trend {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+    .bhw-home .dashboard-card-trend :is(b, small) { font-size: 12px; }
+    .bhw-home .heatmap-legend { flex-wrap: wrap; gap: 8px 16px; }
+
+    /* Override the shared mobile table minimum; keep headers available to
+       assistive technology while showing a label beside each stacked value. */
+    .main-content .bhw-home .home-table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        background: transparent;
+    }
+    .bhw-home .home-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .bhw-home .home-table tbody { display: grid; gap: 14px; }
+    .bhw-home .home-table tr {
+        display: block;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--bhw-border, #dce4ee);
+        border-radius: 9px;
+    }
+    .bhw-home .home-table td {
+        display: block;
+        min-width: 0;
+        padding: 8px 0;
+        border: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .bhw-home .home-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+    }
+    body.theme-dark .bhw-home .home-table tr { border-color: var(--theme-border); }
+    body.theme-dark .bhw-home .home-table td[data-label]::before { color: var(--theme-muted); }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .bhw-home .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+    .bhw-home .home-card { padding: 14px; }
+    .bhw-home .home-card-header { flex-direction: column; gap: 6px; }
+    .bhw-home .home-card-header > div { flex: 0 1 auto; }
+    .bhw-home .home-list-item { flex-direction: column; }
+    .bhw-home .home-list-item > div { flex: 0 1 auto; width: 100%; }
+    .bhw-home .home-map { height: 300px; }
+}

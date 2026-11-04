@@ -14,7 +14,7 @@
         <p>Create a new barangay announcement</p>
     </div>
 
-    <a href="{{ route('announcements') }}" class="btn-secondary">
+    <a href="{{ route('announcements') }}" class="btn-secondary" data-ui-action="secondary">
         ← Back
     </a>
 </div>
@@ -108,14 +108,14 @@
                 type="button"
                 id="openModalBtn"
                 class="btn-primary"
-            >
+             data-ui-action="primary">
                 Post Announcement
             </button>
 
             <a
                 href="{{ route('announcements') }}"
                 class="btn-secondary"
-            >
+             data-ui-action="secondary">
                 Cancel
             </a>
 
@@ -211,7 +211,7 @@
                 type="button"
                 id="cancelAnnouncementConfirmation"
                 class="announcement-confirm-cancel"
-            >
+             data-ui-action="secondary">
                 Cancel
             </button>
 
@@ -220,7 +220,7 @@
                 type="button"
                 id="confirmAnnouncementSubmission"
                 class="announcement-confirm-save"
-            >
+             data-ui-action="secondary">
                 Yes, Post Announcement
             </button>
 

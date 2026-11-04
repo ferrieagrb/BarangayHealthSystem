@@ -40,7 +40,7 @@
                 type="button"
                 onclick="openCategoryModal()"
                 class="inventory-button inventory-button-secondary"
-            >
+             data-ui-action="secondary">
                 Manage Categories
             </button>
 
@@ -49,7 +49,7 @@
                     type="button"
                     onclick="openCatalogModal()"
                     class="btn-primary"
-                >
+                 data-ui-action="primary">
                     + New Catalog Item
                 </button>
             @endif
@@ -159,7 +159,7 @@
                         type="button"
                         onclick="openDepositModalForItem(@js($name))"
                         class="inventory-button inventory-button-deposit"
-                    >
+                     data-ui-action="secondary">
                         + Deposit Stock For This Item
                     </button>
 
@@ -239,7 +239,7 @@
                 onclick="closeCategoryModal()"
                 class="inventory-modal-close"
                 aria-label="Close category modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -287,7 +287,7 @@
                     type="submit"
                     id="category_submit_btn"
                     class="inventory-button inventory-button-primary"
-                >
+                 data-ui-action="primary">
                     Add
                 </button>
 
@@ -297,7 +297,7 @@
                     onclick="resetCategoryForm()"
                     class="inventory-button inventory-button-secondary"
                     hidden
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
@@ -330,7 +330,7 @@
                                             @js($cat->name)
                                         )"
                                         class="inventory-link-button"
-                                    >
+                                     data-ui-action="secondary">
                                         Edit
                                     </button>
 
@@ -345,7 +345,7 @@
                                         <button
                                             type="submit"
                                             class="inventory-link-button inventory-link-danger"
-                                        >
+                                         data-ui-action="danger">
                                             Archive
                                         </button>
                                     </form>
@@ -379,7 +379,7 @@
                 type="button"
                 onclick="closeCategoryModal()"
                 class="inventory-button inventory-button-secondary"
-            >
+             data-ui-action="secondary">
                 Close
             </button>
         </div>
@@ -403,7 +403,7 @@
                 onclick="closeCatalogModal()"
                 class="inventory-modal-close"
                 aria-label="Close catalog modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -452,14 +452,14 @@
                     type="button"
                     onclick="closeCatalogModal()"
                     class="inventory-button inventory-button-secondary"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
                 <button
                     type="submit"
                     class="inventory-button inventory-button-primary"
-                >
+                 data-ui-action="primary">
                     Save
                 </button>
 
@@ -486,7 +486,7 @@
                 onclick="closeDepositModal()"
                 class="inventory-modal-close"
                 aria-label="Close deposit modal"
-            >
+             data-ui-action="secondary">
                 &times;
             </button>
         </div>
@@ -590,7 +590,7 @@
                                     class="inventory-remove-row removeRowBtn"
                                     disabled
                                     aria-label="Remove row"
-                                >
+                                 data-ui-action="secondary">
                                     &times;
                                 </button>
                             </td>
@@ -605,7 +605,7 @@
                 type="button"
                 id="addRowBtn"
                 class="inventory-button inventory-button-secondary inventory-add-row"
-            >
+             data-ui-action="primary">
                 + Add Another Row
             </button>
 
@@ -615,14 +615,14 @@
                     type="button"
                     onclick="closeDepositModal()"
                     class="inventory-button inventory-button-secondary"
-                >
+                 data-ui-action="secondary">
                     Cancel
                 </button>
 
                 <button
                     type="submit"
                     class="inventory-button inventory-button-primary"
-                >
+                 data-ui-action="primary">
                     Confirm Deposit
                 </button>
 
@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     type="button"
                     class="inventory-remove-row removeRowBtn"
                     aria-label="Remove row"
-                >
+                 data-ui-action="secondary">
                     &times;
                 </button>
             </td>

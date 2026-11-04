@@ -13,7 +13,7 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css') }}?v={{ filemtime(public_path('css/layout.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
     <script src="{{ asset('js/ui-motion.js') }}" defer></script>
 
@@ -80,6 +80,13 @@
 
     @yield('CSSown')
     @include('partials.appearance-assets')
+    <link rel="stylesheet" href="{{ asset('css/bhw/sidebar.css') }}?v={{ filemtime(public_path('css/bhw/sidebar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/bhw/mobile.css') }}" media="screen and (max-width: 768px)">
+    <link rel="stylesheet" href="{{ asset('css/sidebar-scroll.css') }}?v={{ filemtime(public_path('css/sidebar-scroll.css')) }}">
+    <script src="{{ asset('js/bhw-mobile.js') }}" defer></script>
+    <script src="{{ asset('js/sidebar-navigation.js') }}?v={{ filemtime(public_path('js/sidebar-navigation.js')) }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
+    @include('partials.medical-autocomplete-assets')
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 
@@ -138,16 +145,25 @@
 </script>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">
+    <div class="sidebar" id="bhwSidebar" role="navigation" aria-label="Primary navigation" tabindex="0" style="display: flex; flex-direction: column; height: 100vh;">
+        @if(request()->routeIs('bhw.reports', 'bhw.analytics'))
+            <script>
+                document.getElementById('bhwSidebar').classList.toggle('collapsed', !window.matchMedia('(max-width: 768px)').matches);
+            </script>
+        @endif
 
-        <!-- TOP TOGGLE -->
-        <div class="top">
-            <div class="topbutton">
-                <i class="bx bx-sidebar"></i>
-            </div>
+        <div class="top sidebar-header">
+            <a class="sidebar-brand" href="/home" aria-label="BHEAMS home">
+                <img src="{{ asset('images/amuyong.png') }}" alt="">
+                <span>BHEAMS</span>
+            </a>
+            <button type="button" class="topbutton sidebar-toggle" aria-label="Toggle sidebar" aria-controls="bhwSidebar" aria-expanded="true">
+                <i class="bx bx-chevron-left" aria-hidden="true"></i>
+            </button>
         </div>
 
         <!-- MAIN NAVIGATION LINKS -->
+        <div class="sidebar-nav" tabindex="0" aria-label="Navigation links">
         <ul style="flex-grow: 1; list-style: none; padding: 0; margin: 0;">
             <li>
                 <a href="/home">
@@ -172,21 +188,23 @@
 
             @if(auth()->user()->hasReadAccess('reports'))
                 <li>
-                    <div class="nav-dropdown {{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'is-open' : '' }}">
-                        <button type="button" class="nav-dropdown-toggle" aria-expanded="{{ request()->routeIs('bhw.reports', 'bhw.analytics') ? 'true' : 'false' }}" aria-controls="bhwReportsMenu">
+                    <div class="nav-dropdown">
+                        <button type="button" class="nav-dropdown-toggle" aria-label="Reports{{ request()->routeIs('bhw.analytics') ? ': Analytics selected' : (request()->routeIs('bhw.reports') ? ': Report Builder selected' : '') }}" aria-expanded="false" aria-controls="bhwReportsMenu">
                             <i class="bx bx-file"></i>
                             <span class="nav-item">Reports</span>
                             <i class="bx bx-chevron-down nav-chevron"></i>
                         </button>
-                        <div class="nav-dropdown-menu" id="bhwReportsMenu">
-                            <a href="{{ route('bhw.analytics') }}">
+                        <div class="nav-dropdown-menu" id="bhwReportsMenu" inert>
+                            <div class="nav-dropdown-inner">
+                            <a href="{{ route('bhw.analytics') }}" @if(request()->routeIs('bhw.analytics')) class="active" aria-current="page" @endif>
                                 <i class="bx bx-line-chart"></i>
                                 <span class="nav-item">Analytics</span>
                             </a>
-                            <a href="{{ route('bhw.reports') }}">
+                            <a href="{{ route('bhw.reports') }}" @if(request()->routeIs('bhw.reports')) class="active" aria-current="page" @endif>
                                 <i class="bx bx-file-blank"></i>
                                 <span class="nav-item">Report Builder</span>
                             </a>
+                            </div>
                         </div>
                     </div>
                 </li>
@@ -242,8 +260,8 @@
                 </a>
             </li>
         </ul>
+        </div>
 
-        <!-- SEPARATE BOTTOM SETTINGS SECTION -->
         <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li>
@@ -252,16 +270,8 @@
                         <span class="nav-item">Settings</span>
                     </a>
                 </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" class="logout-form" data-no-loader="true">
-                        @csrf
-                        <button type="submit">
-                            <i class="bx bx-log-out"></i>
-                            <span class="nav-item">Logout</span>
-                        </button>
-                    </form>
-                </li>
             </ul>
+            @include('templates.partials.sidebar-account')
         </div>
 
     </div>
@@ -291,24 +301,6 @@
 
 @endauth
 
-<!-- JS -->
-<script>
-const sidebar = document.querySelector(".sidebar");
-const toggleBtn = document.querySelector(".topbutton");
-
-toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
-
-document.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-        const dropdown = button.closest(".nav-dropdown");
-        const isOpen = dropdown.classList.toggle("is-open");
-        button.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    });
-});
-</script>
-
 @auth
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -334,5 +326,6 @@ document.querySelectorAll(".nav-dropdown-toggle").forEach((button) => {
 </script>
 @endauth
 
+<script src="{{ asset('js/password-toggle.js') . '?v=1793722773' }}"></script>
 </body>
 </html>

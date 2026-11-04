@@ -7,8 +7,8 @@ use App\Models\CitizenHealthShare;
 use App\Models\CitizenActivityLog;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
-use App\Models\UserPermission;
 use App\Services\BhwCitizenAccess;
+use App\Services\CitizenAccessAuditor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -48,7 +48,9 @@ class QRScannerController extends Controller
             ], 404);
         }
 
-        abort_unless($this->canAccessCitizen($citizen), 403, 'You are not assigned to this citizen record.');
+        $user = Auth::user();
+        $canViewAll = $user && app(BhwCitizenAccess::class)->canViewAll($user);
+        abort_unless($canViewAll || $this->canAccessCitizen($citizen), 403, 'You are not assigned to this citizen record.');
 
         return response()->json([
             'citizen' => [
@@ -71,7 +73,7 @@ class QRScannerController extends Controller
                 'in_pills' => $citizen->Citizen_InPills ? 'Yes' : 'No',
                 'is_deceased' => $citizen->Citizen_IsDeceased ? 'Deceased' : 'Active',
                 'photo_url' => $citizen->photo_path
-                    ? asset('storage/' . ltrim($citizen->photo_path, '/'))
+                    ? route('citizen.photo', $citizen->id)
                     : null,
             ],
             'vaccinations' => $citizen->vaccinations->map(fn ($record) => [
@@ -146,20 +148,7 @@ class QRScannerController extends Controller
             return false;
         }
 
-        $canViewAll = UserPermission::where('user_id', $user->id)
-            ->where('feature', 'view_all_citizens')
-            ->where('access', '!=', 'none')
-            ->exists();
-
-        if ($canViewAll) {
-            return true;
-        }
-
-        $assignedSubgroupIds = app(BhwCitizenAccess::class)->assignedSubgroupIds($user);
-        $familySubgroupId = $citizen->family?->subgroup_id;
-
-        return $assignedSubgroupIds->contains($citizen->subgroup_id)
-            || $assignedSubgroupIds->contains($familySubgroupId);
+        return app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
     }
 
     /**

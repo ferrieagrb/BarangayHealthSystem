@@ -62,17 +62,9 @@ class ReferralController extends Controller
         $pdf = Pdf::loadView('bhw.referrals.pdf', compact('referral'));
 
         $fileName = 'referral_' . $referral->id . '_' . time() . '.pdf';
-        $filePath = 'storage/referrals/' . $fileName;
+        $filePath = 'referrals/' . $fileName;
 
-        // Ensure directory exists and save PDF
-        if (!file_exists(public_path('storage/referrals'))) {
-            mkdir(public_path('storage/referrals'), 0755, true);
-        }
-
-        file_put_contents(
-            public_path('storage/referrals/' . $fileName),
-            $pdf->output()
-        );
+        Storage::disk('local')->put($filePath, $pdf->output());
 
         $referral->update([
             'file_path' => $filePath,
@@ -110,8 +102,19 @@ class ReferralController extends Controller
     {
         if (!Auth::check() || Auth::user()->role !== 'bhw') abort(403);
 
-        return response()->download(
-            public_path($referral->file_path)
-        );
+        $path = (string) $referral->file_path;
+        $disk = Storage::disk('local');
+
+        // Legacy referrals were saved under public/storage/referrals.
+        if ($path !== '' && !$disk->exists($path)) {
+            $legacy = public_path('storage/referrals/' . basename($path));
+            if (is_file($legacy)) {
+                return response()->download($legacy);
+            }
+        }
+
+        abort_unless($path !== '' && $disk->exists($path), 404);
+
+        return $disk->download($path, basename($path));
     }
 }
