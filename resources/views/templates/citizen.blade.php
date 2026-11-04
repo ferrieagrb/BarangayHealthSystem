@@ -715,6 +715,33 @@ body,
     }
 }
 
+@media (max-width: 900px) {
+    .c-header-section-nav {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+        align-items: stretch;
+        gap: 5px;
+        overflow: visible;
+    }
+
+    .c-header-section-nav a {
+        min-width: 0;
+        min-height: 40px;
+        padding: 5px 8px;
+        font-size: clamp(10px, 1.7vw, 13px);
+        line-height: 1.25;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 520px) {
+    .c-header-section-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 </style>
         <link rel="stylesheet" href="{{ asset('css/citizen/citizen-theme.css') }}">
     @include('partials.appearance-assets')

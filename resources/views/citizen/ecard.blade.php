@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
+<div class="bhw-ecard-page citizen-ecard-page mx-auto max-w-7xl px-4 py-8">
     <div class="ecard-page-header print:hidden">
         <h1>Citizen ID & Electronic Health Card</h1>
         <a href="{{ route('citizen.dashboard') }}" class="ecard-button ecard-button-secondary" data-ui-action="secondary">Back to Dashboard</a>
@@ -15,7 +15,7 @@
         <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
     </div>
     <div class="ecard-content-stack">
-<div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="ecard-id-scroll-hint" tabindex="0">
+<div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0">
 <section class="bheams-id-card">
 
     {{-- DECORATIVE BACKGROUND --}}
@@ -99,10 +99,6 @@
                 <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
             </div>
 
-        </div>
-
-        {{-- ADDITIONAL ID DETAILS --}}
-        <div class="bheams-id-secondary-details">
             <div class="bheams-id-field">
                 <span>SEX</span>
                 <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
@@ -140,7 +136,6 @@
 
 </section>
 </div>
-<p class="ecard-id-scroll-hint" id="ecard-id-scroll-hint">Swipe horizontally to view the full card.</p>
 <section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
 
             <div class="mb-5 border-b-2 border-gray-800 pb-3">
@@ -424,30 +419,109 @@
 @media print{@page{size:A4 landscape;margin:8mm}html,body,.dashboard,.main-content{background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important}body *{visibility:hidden!important}body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{visibility:visible!important}body.print-record-only .print-health-record,body.print-record-only .print-health-record *{visibility:visible!important}body.print-id-only .print-health-record,body.print-record-only .bheams-id-card{display:none!important}.top-bar,.sidebar,.sidebar-backdrop,.ecard-page-header,.ecard-actions-top{display:none!important}.main-content{margin:0!important;padding:0!important;width:100%!important}.bhw-ecard-page{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}.ecard-content-stack{max-width:none!important;width:100%!important;margin:0!important;gap:0!important}.bheams-id-card,.print-health-record{width:100%!important;max-width:100%!important;margin:0!important;box-shadow:none!important;break-inside:avoid}.bheams-id-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}.bheams-id-body{grid-template-columns:125px minmax(0,1fr) 125px!important;padding:24px!important}.print-health-record{border:1px solid #9ca3af!important;padding:14px!important}.print-health-record table{font-size:9px}.print-health-record th,.print-health-record td{padding:5px!important}
 body.print-id-only .bhw-ecard-page,body.print-id-only .ecard-content-stack{width:3.375in!important;max-width:3.375in!important;height:2.125in!important;max-height:2.125in!important;margin:0!important;padding:0!important;overflow:hidden!important}
 body.print-id-only .bheams-id-card{display:flex!important;flex-direction:column!important;width:3.375in!important;height:2.125in!important;min-height:2.125in!important;max-width:3.375in!important;max-height:2.125in!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
-body.print-id-only .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .61in!important;min-height:.61in!important;gap:.10in!important;padding:.08in .12in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
-body.print-id-only .bheams-seal{width:.39in!important;height:.39in!important;min-width:.39in!important;min-height:.39in!important;flex:0 0 .39in!important;border-width:1px!important}
+body.print-id-only .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .43in!important;min-height:.43in!important;gap:.08in!important;padding:.04in .11in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
+body.print-id-only .bheams-seal{width:.31in!important;height:.31in!important;min-width:.31in!important;min-height:.31in!important;flex:0 0 .31in!important;border-width:1px!important}
 body.print-id-only .bheams-brand{min-width:0!important;flex:1!important}
-body.print-id-only .bheams-brand h2{font-size:14px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
-body.print-id-only .bheams-brand p{margin:2px 0!important;font-size:7.5px!important;line-height:1.05!important}
-body.print-id-only .bheams-brand span{font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important}
-body.print-id-only .bheams-id-body{display:grid!important;grid-template-columns:.58in minmax(0,1.15fr) minmax(0,.68fr) .62in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.11in!important;box-sizing:border-box!important} body.print-id-only .bheams-id-secondary-details{min-width:0!important;align-self:center!important} body.print-id-only .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
-body.print-id-only .bheams-photo{width:.58in!important;height:.72in!important;min-width:.58in!important;max-width:.58in!important;border-width:1px!important;box-sizing:border-box!important}
+body.print-id-only .bheams-brand h2{font-size:11px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
+body.print-id-only .bheams-brand p{margin:1px 0!important;font-size:6px!important;line-height:1.05!important}
+body.print-id-only .bheams-brand span{font-size:4px!important;line-height:1.1!important;letter-spacing:0!important}
+body.print-id-only .bheams-id-body{display:grid!important;grid-template-columns:.72in minmax(0,1fr) .96in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.07in .11in!important;box-sizing:border-box!important} body.print-id-only .bheams-id-secondary-details{min-width:0!important;align-self:center!important} body.print-id-only .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
+body.print-id-only .bheams-photo{width:.72in!important;height:.90in!important;min-width:.72in!important;max-width:.72in!important;border-width:1px!important;box-sizing:border-box!important}
 body.print-id-only .bheams-no-photo span{font-size:23px!important;line-height:1!important}
 body.print-id-only .bheams-no-photo small{font-size:5px!important}
 body.print-id-only .bheams-id-details{min-width:0!important;align-self:center!important}
-body.print-id-only .bheams-id-title{margin-bottom:5px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
-body.print-id-only .bheams-id-field{gap:1px!important;margin-bottom:4px!important}
+body.print-id-only .bheams-id-title{margin-bottom:3px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
+body.print-id-only .bheams-id-field{gap:0!important;margin-bottom:1.5px!important}
 body.print-id-only .bheams-id-field span{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
 body.print-id-only .bheams-id-field strong{font-size:7px!important;line-height:1.1!important}
 body.print-id-only .bheams-citizen-number{font-size:8px!important;line-height:1.1!important}
-body.print-id-only .bheams-id-two-columns{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}
-body.print-id-only .bheams-qr-frame{width:.58in!important;height:.58in!important;min-width:.58in!important;min-height:.58in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
+body.print-id-only .bheams-id-two-columns{grid-template-columns:1fr!important;gap:0!important}
+body.print-id-only .bheams-qr-frame{width:.96in!important;height:.96in!important;min-width:.96in!important;min-height:.96in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
 body.print-id-only .bheams-qr-frame img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}
 body.print-id-only .bheams-id-qr{gap:3px!important;min-width:0!important}
 body.print-id-only .bheams-id-qr strong{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
 body.print-id-only .bheams-id-qr small{font-size:3.8px!important;line-height:1.1!important}
 body.print-id-only .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
 body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+
+@media screen {
+    .citizen-ecard-page .ecard-id-card-scroll {
+        width: 100%;
+        max-width: 85.60mm;
+        overflow: visible;
+        container-type: inline-size;
+    }
+
+    .citizen-ecard-page .bheams-id-card {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-width: 85.60mm !important;
+        max-height: none !important;
+        aspect-ratio: 85.60 / 53.98;
+    }
+
+    .citizen-ecard-page .bheams-id-header {
+        flex: 0 0 12.7cqi !important;
+        min-height: 12.7cqi !important;
+        gap: 2.35cqi !important;
+        padding: 1.17cqi 3.23cqi !important;
+    }
+
+    .citizen-ecard-page .bheams-seal {
+        width: 9.1cqi !important;
+        height: 9.1cqi !important;
+        min-width: 9.1cqi !important;
+        min-height: 9.1cqi !important;
+        flex-basis: 9.1cqi !important;
+    }
+
+    .citizen-ecard-page .bheams-brand h2 { font-size: 3.4cqi !important; }
+    .citizen-ecard-page .bheams-brand p { margin: .3cqi 0 !important; font-size: 1.86cqi !important; }
+    .citizen-ecard-page .bheams-brand span { font-size: 1.24cqi !important; }
+
+    .citizen-ecard-page .bheams-id-body {
+        grid-template-columns: 21.2cqi minmax(0, 1fr) 28.2cqi !important;
+        gap: 2.05cqi !important;
+        padding: 2.05cqi 3.23cqi !important;
+    }
+
+    .citizen-ecard-page .bheams-photo {
+        width: 21.2cqi !important;
+        height: 26.5cqi !important;
+    }
+
+    .citizen-ecard-page .bheams-no-photo span { font-size: 7.1cqi !important; }
+    .citizen-ecard-page .bheams-no-photo small { font-size: 1.55cqi !important; }
+    .citizen-ecard-page .bheams-id-title { margin-bottom: .93cqi !important; font-size: 2.01cqi !important; }
+    .citizen-ecard-page .bheams-id-field { gap: 0 !important; margin-bottom: .46cqi !important; }
+    .citizen-ecard-page .bheams-id-field span { font-size: 1.49cqi !important; }
+    .citizen-ecard-page .bheams-id-field strong { font-size: 2.17cqi !important; }
+    .citizen-ecard-page .bheams-citizen-number { font-size: 2.48cqi !important; }
+    .citizen-ecard-page .bheams-id-two-columns { grid-template-columns: 1fr !important; gap: 0 !important; }
+
+    .citizen-ecard-page .bheams-qr-frame {
+        width: 28.2cqi !important;
+        height: 28.2cqi !important;
+        min-width: 28.2cqi !important;
+        min-height: 28.2cqi !important;
+        padding: 1.65cqi !important;
+    }
+
+    .citizen-ecard-page .bheams-qr-frame img { width: 100% !important; height: 100% !important; }
+    .citizen-ecard-page .bheams-id-qr { gap: .93cqi !important; }
+    .citizen-ecard-page .bheams-id-qr strong { font-size: 1.49cqi !important; }
+    .citizen-ecard-page .bheams-id-qr small { font-size: 1.18cqi !important; }
+    .citizen-ecard-page .bheams-id-footer {
+        flex: 0 0 6.5cqi !important;
+        min-height: 6.5cqi !important;
+        gap: .93cqi !important;
+        padding: 0 3.5cqi !important;
+        font-size: 1.36cqi !important;
+    }
+
+    .citizen-ecard-page .ecard-id-scroll-hint { display: none !important; }
 }
 
 </style>

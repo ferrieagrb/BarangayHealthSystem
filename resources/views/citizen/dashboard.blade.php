@@ -1661,107 +1661,81 @@ body.theme-dark .c-home {
 
     @if($citizen)
         {{-- ACTUAL ID CARD --}}
-        <div class="c-id-card-scroll" role="region" aria-label="Citizen Health Card" aria-describedby="citizen-card-scroll-hint" tabindex="0">
-        <div class="c-panel c-id-card">
-
-            {{-- BLUE HEADER --}}
-            <div class="c-id-header">
-                <img src="{{ asset('images/amuyong.png') }}"
-                     alt="Barangay Amuyong Logo">
-
-                <div class="c-id-header-text">
-                    <h3>BHEAMS</h3>
-                    <strong>BARANGAY AMUYONG</strong>
-                    <small>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</small>
+        <div class="c-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0">
+        <section class="bheams-id-card">
+            <div class="bheams-id-decoration"></div>
+            <div class="bheams-id-header">
+                <div class="bheams-seal">
+                    <img src="{{ asset('images/amuyong.png') }}" alt="BHEAMS Logo" class="bheams-logo">
                 </div>
-
+                <div class="bheams-brand">
+                    <h2>BHEAMS</h2>
+                    <p>BARANGAY AMUYONG</p>
+                    <span>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</span>
+                </div>
             </div>
 
-            {{-- ID BODY --}}
-            <div class="c-id-body">
-
-                {{-- CITIZEN PHOTO --}}
-                <div class="c-photo">
+            <div class="bheams-id-body">
+                <div class="bheams-photo">
                     @if($citizen->photo_path)
-                        <img src="{{ asset('storage/'.$citizen->photo_path) }}"
-                             alt="Citizen photo">
+                        <img src="{{ asset('storage/'.$citizen->photo_path) }}" alt="Citizen photo">
                     @else
-                        <span>
-                            {{ strtoupper(substr($citizen->Citizen_FName ?? 'C', 0, 1).substr($citizen->Citizen_LName ?? 'I', 0, 1)) }}
-                        </span>
-                        <small>NO PHOTO</small>
+                        <div class="bheams-no-photo">
+                            <span>{{ strtoupper(substr($citizen->Citizen_FName ?? 'C', 0, 1).substr($citizen->Citizen_LName ?? 'I', 0, 1)) }}</span>
+                            <small>NO PHOTO</small>
+                        </div>
                     @endif
                 </div>
 
-                {{-- CITIZEN DETAILS --}}
-                <div class="c-id-details">
-                    <h3>CITIZEN HEALTH ID</h3>
-
-                    <div class="c-id-field">
+                <div class="bheams-id-details">
+                    <div class="bheams-id-title">CITIZEN HEALTH ID</div>
+                    <div class="bheams-id-field">
                         <span>FULL NAME</span>
-                        <strong>
-                            {{ strtoupper($citizen->Citizen_LName) }},
-                            {{ strtoupper($citizen->Citizen_FName) }}
-                        </strong>
+                        <strong>{{ strtoupper($citizen->Citizen_LName) }}, {{ strtoupper($citizen->Citizen_FName) }}</strong>
                     </div>
-
-                    <div class="c-id-field">
+                    <div class="bheams-id-field">
                         <span>CITIZEN IDENTIFICATION NUMBER</span>
-                        <strong class="c-id-number">
-                            C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}
-                        </strong>
+                        <strong class="bheams-citizen-number">C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</strong>
                     </div>
-
-                    <div class="c-id-details-grid">
-                        <div class="c-id-field">
+                    <div class="bheams-id-two-columns">
+                        <div class="bheams-id-field">
                             <span>DATE OF BIRTH</span>
-                            <strong>
-                                {{ $citizen->Citizen_BirthDate
-                                    ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y')
-                                    : 'N/A' }}
-                            </strong>
-                        </div>
-
-                        <div class="c-id-field">
-                            <span>ADDRESS / PUROK</span>
-                            <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
+                            <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y') : 'N/A' }}</strong>
                         </div>
                     </div>
-                </div>
-
-                {{-- SECONDARY DETAILS, MATCHING THE CITIZEN E-CARD VIEW --}}
-                <div class="c-id-secondary-details">
-                    <div class="c-id-field">
+                    <div class="bheams-id-field">
+                        <span>ADDRESS / PUROK</span>
+                        <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
+                    </div>
+                    <div class="bheams-id-field">
                         <span>SEX</span>
                         <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
                     </div>
-                    <div class="c-id-field">
+                    <div class="bheams-id-field">
                         <span>AGE</span>
                         <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age : ($citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A') }}</strong>
                     </div>
-                    <div class="c-id-field">
+                    <div class="bheams-id-field">
                         <span>CONTACT NUMBER</span>
                         <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
                     </div>
                 </div>
 
-            {{-- CENTERED QR CODE, MATCHING THE MY HEALTH CARD PAGE --}}
-            <div class="c-id-qr c-id-qr-centered">
-                <div class="c-id-qr-frame">
-                    <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
+                <div class="bheams-id-qr bheams-id-qr-centered">
+                    <div class="bheams-qr-frame">
+                        <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
+                    </div>
+                    <strong>SCAN TO VERIFY</strong>
+                    <small>Citizen Record Verification</small>
                 </div>
-                <span>SCAN TO VERIFY</span>
-            </div>
             </div>
 
-            {{-- FOOTER AT THE BOTTOM OF THE ID --}}
-            <div class="c-id-footer">
+            <div class="bheams-id-footer">
                 <span>BARANGAY AMUYONG</span>
                 <span>OFFICIAL CITIZEN IDENTIFICATION</span>
             </div>
+        </section>
         </div>
-        </div>
-        <p class="c-id-scroll-hint" id="citizen-card-scroll-hint">Swipe horizontally to view the full card.</p>
 
         {{-- BUTTON OUTSIDE THE ID CARD --}}
         <div class="c-id-actions-outside">
@@ -2305,134 +2279,133 @@ window.addEventListener('pageshow', () => {
 </script>
 
 <style>
-/* Only the dashboard health card is styled here; other dashboard sections are untouched. */
 .c-home .c-id-card-scroll {
     width: 100%;
-    max-width: 1000px;
+    max-width: 85.60mm;
     margin: 0 auto;
+    container-type: inline-size;
 }
-.c-home .c-id-card {
-    width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-    overflow: hidden;
-}
-.c-home .c-id-body {
-    display: grid;
-    grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
-    align-items: center;
-    gap: 22px;
-    padding: clamp(22px, 3vw, 32px);
-}
-.c-home .c-id-details { min-width: 0; }
-.c-home .c-id-details-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-}
-.c-home .c-id-secondary-details {
-    min-width: 0;
-    align-self: center;
-}
-.c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
-.c-home .c-id-body > .c-id-qr-centered {
-    grid-column: 4;
-    grid-row: 1;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    align-self: center;
-    justify-self: end;
+.c-home .bheams-id-card {
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 85.60mm;
+    aspect-ratio: 85.60 / 53.98;
+    margin: 0 auto;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: .08in;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+    color: #1f2937;
+}
+.c-home .bheams-id-decoration {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, rgba(29,78,216,.06), transparent 45%, rgba(22,101,52,.05));
+}
+.c-home .bheams-id-header {
+    display: flex;
+    align-items: center;
+    flex: 0 0 12.7cqi;
+    min-height: 12.7cqi;
+    gap: 2.35cqi;
+    padding: 1.17cqi 3.23cqi;
+    box-sizing: border-box;
+    border-bottom: 2px solid #bfdbfe;
+    background: linear-gradient(110deg, #102b78, #17469a);
+    color: #fff;
+}
+.c-home .bheams-seal {
+    display: flex;
+    flex: 0 0 9.1cqi;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    gap: 6px;
-}
-.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
-    padding: 6px;
-    border: 1px solid #dbeafe;
-    border-radius: 8px;
+    width: 9.1cqi;
+    height: 9.1cqi;
+    min-width: 9.1cqi;
+    min-height: 9.1cqi;
+    overflow: hidden;
+    border: 1px solid #fff;
+    border-radius: 50%;
     background: #fff;
 }
-.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-    display: block;
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
+.c-home .bheams-logo { width: 100%; height: 100%; object-fit: contain; }
+.c-home .bheams-brand { flex: 1; min-width: 0; }
+.c-home .bheams-brand h2 { margin: 0; color: #fff; font-size: 3.4cqi; font-weight: 900; line-height: 1.05; }
+.c-home .bheams-brand p { margin: .3cqi 0; color: #fff; font-size: 1.86cqi; font-weight: 800; line-height: 1.05; }
+.c-home .bheams-brand span { display: block; color: #dbeafe; font-size: 1.24cqi; font-weight: 700; line-height: 1.1; }
+.c-home .bheams-id-body {
+    display: grid;
+    grid-template-columns: 21.2cqi minmax(0, 1fr) 28.2cqi;
+    align-items: center;
+    gap: 2.05cqi;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 2.05cqi 3.23cqi;
+    box-sizing: border-box;
 }
-.c-home .c-id-body > .c-id-qr-centered > span {
-    color: #173b82;
-    font-size: 9px;
+.c-home .bheams-photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 21.2cqi;
+    height: 26.5cqi;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    background: #f1f5f9;
+    color: #64748b;
+}
+.c-home .bheams-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.c-home .bheams-no-photo { display: flex; flex-direction: column; align-items: center; gap: 1.5cqi; }
+.c-home .bheams-no-photo span { font-size: 7.1cqi; font-weight: 900; line-height: 1; }
+.c-home .bheams-no-photo small { font-size: 1.55cqi; }
+.c-home .bheams-id-details { min-width: 0; align-self: center; }
+.c-home .bheams-id-title { margin-bottom: .93cqi; color: #173b82; font-size: 2.01cqi; font-weight: 900; letter-spacing: .3px; line-height: 1.1; }
+.c-home .bheams-id-field { display: flex; flex-direction: column; gap: 0; min-width: 0; margin-bottom: .46cqi; overflow-wrap: anywhere; }
+.c-home .bheams-id-field span { color: #64748b; font-size: 1.49cqi; font-weight: 800; letter-spacing: 0; line-height: 1.1; }
+.c-home .bheams-id-field strong { color: #172554; font-size: 2.17cqi; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; }
+.c-home .bheams-citizen-number { color: #17469a; font-size: 2.48cqi; letter-spacing: 1px; }
+.c-home .bheams-id-two-columns { display: grid; grid-template-columns: 1fr; gap: 0; }
+.c-home .bheams-id-qr { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .93cqi; min-width: 0; text-align: center; }
+.c-home .bheams-qr-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28.2cqi;
+    height: 28.2cqi;
+    min-width: 28.2cqi;
+    min-height: 28.2cqi;
+    padding: 1.65cqi;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    background: #fff;
+}
+.c-home .bheams-qr-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.c-home .bheams-id-qr strong { color: #173b82; font-size: 1.49cqi; font-weight: 900; letter-spacing: 0; line-height: 1.1; }
+.c-home .bheams-id-qr small { color: #64748b; font-size: 1.18cqi; line-height: 1.1; }
+.c-home .bheams-id-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 6.5cqi;
+    min-height: 6.5cqi;
+    gap: .93cqi;
+    padding: 0 3.5cqi;
+    box-sizing: border-box;
+    border-top: 1px solid #dbeafe;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 1.36cqi;
     font-weight: 800;
-    letter-spacing: .5px;
-}
-.c-home .c-id-scroll-hint {
-    display: none;
-}
-@media (max-width: 760px) {
-    .c-home .c-id-card-scroll {
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
-    }
-    .c-home .c-id-body {
-        grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
-        align-items: center;
-        gap: 22px;
-        padding: 22px;
-    }
-    .c-home .c-id-card {
-        width: 760px;
-        max-width: none;
-    }
-    .c-home .c-id-header {
-        min-height: 116px;
-        gap: 16px;
-        padding: 18px 24px;
-    }
-    .c-home .c-id-header > img {
-        flex-basis: 70px;
-        width: 70px;
-        height: 70px;
-    }
-    .c-home .c-id-header-text h3 { font-size: 27px; }
-    .c-home .c-id-header-text strong { font-size: 13px; }
-    .c-home .c-id-header-text small { font-size: 10px; }
-    .c-home .c-id-body .c-photo {
-        grid-column: auto;
-        grid-row: auto;
-        width: 132px;
-        height: 164px;
-    }
-    .c-home .c-id-details {
-        grid-column: auto;
-        grid-row: auto;
-    }
-    .c-home .c-id-secondary-details {
-        display: block;
-        grid-column: auto;
-        grid-row: auto;
-    }
-    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
-    .c-home .c-id-body > .c-id-qr-centered {
-        grid-column: 4;
-        grid-row: 1;
-        justify-self: end;
-        align-items: center;
-    }
-    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
-        width: 100px;
-        height: 100px;
-    }
-    .c-home .c-id-scroll-hint {
-        display: block;
-        margin: 6px 0 0;
-        color: #52657e;
-        font-size: 12px;
-        text-align: center;
-    }
+    letter-spacing: 0;
+    line-height: 1.1;
 }
 </style>
 
