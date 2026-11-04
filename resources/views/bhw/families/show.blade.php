@@ -281,7 +281,7 @@
 <!-- Modal Controller Script -->
 <script>
     // Flatten puroks and subgroups into a clean searchable array for the picker
-    const rawPuroks = {!! json_encode($puroks ?? []) !!};
+    const rawPuroks = {{ \Illuminate\Support\Js::from($puroks ?? []) }};
     let flattenedSubgroups = [];
     rawPuroks.forEach(purok => {
         if (purok.subgroups && purok.subgroups.length > 0) {
@@ -302,7 +302,7 @@
     let filteredSubgroups = [...flattenedSubgroups];
 
     // Citizen data arrays
-    const allAvailableCitizens = {!! json_encode($availableCitizens ?? []) !!};
+    const allAvailableCitizens = {{ \Illuminate\Support\Js::from($availableCitizens ?? []) }};
     let currentCitizenPage = 1;
     const citizenPageSize = 5;
     let filteredCitizens = [...allAvailableCitizens];

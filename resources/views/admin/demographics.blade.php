@@ -322,7 +322,6 @@
 @section('scripts')
 <script src="{{ asset('js/admin/demographics.js') }}"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initDemographicsMap" async defer></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const mapElement = document.getElementById('purokLocationMap');

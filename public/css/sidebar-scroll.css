@@ -66,7 +66,7 @@
 .sidebar .sidebar-toggle {
     position: absolute;
     top: 12px;
-    right: 9px;
+    right: 10px;
     z-index: 2;
     display: inline-flex;
     align-items: center;
@@ -81,7 +81,7 @@
     background: rgba(255, 255, 255, .1);
     color: #fff;
     cursor: pointer;
-    transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+    transition: background-color .18s ease, border-color .18s ease;
 }
 
 .sidebar .sidebar-toggle:hover {
@@ -558,7 +558,7 @@ body.theme-dark .sidebar-flyout a.active {
     }
 
     .sidebar:not(#citizenSidebar) .sidebar-toggle {
-        right: 8px;
+        right: 12px;
     }
 
     .sidebar:not(#citizenSidebar).collapsed .sidebar-brand {
@@ -570,7 +570,7 @@ body.theme-dark .sidebar-flyout a.active {
     }
 
     .sidebar:not(#citizenSidebar).collapsed .sidebar-toggle {
-        right: 7px;
+        right: 12px;
     }
 
     .sidebar:not(#citizenSidebar).collapsed .sidebar-nav > ul > li > a,
@@ -703,6 +703,10 @@ body.theme-dark .sidebar-flyout a.active {
         width: min(272px, 85vw) !important;
         min-width: 0 !important;
         max-width: 85vw !important;
+    }
+
+    .sidebar:not(#citizenSidebar).collapsed .sidebar-toggle {
+        right: 9px;
     }
 
     .sidebar:not(#citizenSidebar) ~ .main-content,

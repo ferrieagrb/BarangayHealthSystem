@@ -27,9 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => CheckRole::class,
             'feature.write' => \App\Http\Middleware\CheckFeaturePermission::class,
             'password.changed' => \App\Http\Middleware\EnsurePasswordIsChanged::class,
+            'password.confirm' => \App\Http\Middleware\RequirePasswordWhenEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['confirm_password']);
         $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, \Illuminate\Http\Request $request) {
             if (in_array($response->getStatusCode(), [401, 419], true) && ! $request->expectsJson()) {
                 return redirect()->route('login');

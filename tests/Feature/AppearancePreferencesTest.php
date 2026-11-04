@@ -34,6 +34,7 @@ class AppearancePreferencesTest extends TestCase
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('must_change_password')->default(false);
             $table->boolean('is_locked')->default(false);
+            $table->timestamp('locked_until')->nullable();
             $table->integer('failed_login_attempts')->default(0);
             $table->rememberToken();
             $table->timestamps();

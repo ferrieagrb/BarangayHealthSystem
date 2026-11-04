@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\SystemSetting;
 use App\Traits\LogsActivity;
@@ -14,6 +15,8 @@ use App\Traits\LogsActivity;
 class UserController extends Controller
 {
     use LogsActivity;
+
+    private const LOCKOUT_MINUTES = 15;
     public function login(Request $request)
     {
         // Trim inputs
@@ -48,53 +51,53 @@ class UserController extends Controller
         }
 
         // 2. Find user by email/username
+        $maxFailedAttempts = max(3, (int) SystemSetting::value('max_failed_login_attempts', 10));
         $user = User::where('email', $username)->orWhere('username', $username)->first();
 
         if (!$user) {
-            RateLimiter::hit($throttleKey, 60); // Count failed attempt against the rate limiter
-            $this->logAuditEvent('login.failed', "Login failed for unknown identifier {$username}.");
-            return back()->with('error', 'Incorrect username or password.');
+            return $this->failUnknownIdentifier($username, $password, $throttleKey, $maxFailedAttempts);
         }
 
-        // 3. Check if the database account is permanently locked by an admin
-        if ($user->is_locked) {
+        // 3. A temporary lockout clears itself once it has expired.
+        if ($user->locked_until && $user->locked_until->isPast()) {
+            $user->update(['locked_until' => null, 'failed_login_attempts' => 0]);
+        }
+
+        if ($user->isLockedOut()) {
             $this->logAuditEvent('login.blocked', "Login blocked for locked account {$user->email}.", $user->id);
-            return back()->with('error', 'Your account has been locked due to excessive failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.');
+            return back()->with('error', $this->lockedMessage($user->locked_until?->getTimestamp()));
         }
 
         // 4. Verify password
         if (!Hash::check($password, $user->password)) {
-            // Hit the temporary rate limiter (blocks for 60 seconds after threshold)
             RateLimiter::hit($throttleKey, 60);
 
-            // Increment permanent database counter
             $user->increment('failed_login_attempts');
 
-            $maxFailedAttempts = max(3, (int) SystemSetting::value('max_failed_login_attempts', 10));
-
-            // Check if permanent lockout threshold has been reached
             if ($user->failed_login_attempts >= $maxFailedAttempts) {
-                $user->update(['is_locked' => true]);
-                $this->logAuditEvent('account.locked', "Account {$user->email} was locked after repeated failed logins.", $user->id);
-                
-                return back()->with('error', "Your account has been locked after {$maxFailedAttempts} failed login attempts. Please contact an Administrator or SuperAdmin to unlock it.");
+                $until = now()->addMinutes(self::LOCKOUT_MINUTES);
+                $user->update(['locked_until' => $until]);
+                $this->logAuditEvent('account.locked', "Account {$user->email} was temporarily locked until {$until->toDateTimeString()} after repeated failed logins.", $user->id);
+
+                return back()->with('error', $this->lockedMessage($until->getTimestamp()));
             }
 
             $attemptsLeft = $maxFailedAttempts - $user->failed_login_attempts;
             $this->logAuditEvent('login.failed', "Failed password login for {$user->email}; {$attemptsLeft} attempts remaining.", $user->id);
-            return back()->with('error', "Incorrect username or password. You have {$attemptsLeft} attempt(s) left before your account is locked.");
+            return back()->with('error', $this->attemptsLeftMessage($attemptsLeft));
         }
 
         // 5. Successful Login: Clear temporary rate limiter and reset database lock/attempt counters
         RateLimiter::clear($throttleKey);
         $user->update([
             'failed_login_attempts' => 0,
-            'is_locked' => false
+            'is_locked' => false,
+            'locked_until' => null,
         ]);
-
         // Login user
         Auth::login($user);
         $request->session()->regenerate();
+        $request->session()->forget('auth.password_confirmed_at');
         $this->logAuditEvent('login.success', "Successful login for {$user->email}.", $user->id);
 
         // First-login password reset check
@@ -110,6 +113,51 @@ class UserController extends Controller
             'citizen' => redirect()->route('citizen.dashboard'),
             default => redirect()->route('landing'),
         };
+    }
+
+    private function lockedMessage(?int $untilTimestamp): string
+    {
+        if (!$untilTimestamp) {
+            return 'Too many failed sign-in attempts. Please ask an Administrator to unlock your account.';
+        }
+
+        $minutes = max(1, (int) ceil(($untilTimestamp - time()) / 60));
+
+        return "Too many failed sign-in attempts. Please try again in {$minutes} minute(s), or ask an Administrator to unlock your account.";
+    }
+
+    private function attemptsLeftMessage(int $attemptsLeft): string
+    {
+        return "Incorrect username or password. You have {$attemptsLeft} attempt(s) left before your account is temporarily locked.";
+    }
+
+    // Unknown identifiers get the same counting, wording and timing as real accounts so accounts cannot be enumerated.
+    private function failUnknownIdentifier(string $username, string $password, string $throttleKey, int $maxFailedAttempts)
+    {
+        Hash::make($password);
+        RateLimiter::hit($throttleKey, 60);
+
+        $key = 'login-unknown:' . sha1(Str::lower($username));
+        $lockedUntil = (int) Cache::get($key . ':until', 0);
+
+        if ($lockedUntil > time()) {
+            return back()->with('error', $this->lockedMessage($lockedUntil));
+        }
+
+        $ttl = now()->addMinutes(self::LOCKOUT_MINUTES);
+        Cache::add($key, 0, $ttl);
+        $attempts = Cache::increment($key);
+
+        $this->logAuditEvent('login.failed', "Login failed for unknown identifier {$username}.");
+
+        if ($attempts >= $maxFailedAttempts) {
+            Cache::put($key . ':until', $ttl->getTimestamp(), $ttl);
+            Cache::forget($key);
+
+            return back()->with('error', $this->lockedMessage($ttl->getTimestamp()));
+        }
+
+        return back()->with('error', $this->attemptsLeftMessage($maxFailedAttempts - $attempts));
     }
 
     public function logout()

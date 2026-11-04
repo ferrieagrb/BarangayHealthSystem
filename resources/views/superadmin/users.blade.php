@@ -126,6 +126,16 @@
                             <td>
                                 @if($showArchived)
                                     <span class="badge badge-inactive">Inactive</span>
+                                @elseif($user->isLockedOut())
+                                    <span class="badge badge-inactive">Locked{{ $user->locked_until && $user->locked_until->isFuture() ? ' until ' . $user->locked_until->format('h:i A') : '' }}</span>
+                                    <form action="{{ route('superadmin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn-action btn-edit" title="Unlock Account" aria-label="Unlock Account">
+                                            <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                                            <span>Unlock</span>
+                                        </button>
+                                    </form>
                                 @else
                                     <span class="badge badge-active">Active</span>
                                 @endif
@@ -160,6 +170,18 @@
                                          data-ui-action="secondary">
                                             <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                             <span>Edit</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="btn-action btn-edit js-reset-user"
+                                            title="Reset Password"
+                                            aria-label="Reset Password"
+                                            data-id="{{ $user->id }}"
+                                            data-name="{{ $user->name }}"
+                                        >
+                                            <i class="fa-solid fa-key" aria-hidden="true"></i>
+                                            <span>Reset Password</span>
                                         </button>
 
                                         <form
@@ -289,6 +311,17 @@
                         <option value="citizen">Citizen</option>
                     </select>
                 </div>
+
+                <div class="input-group" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="edit_confirm_password">Your password <small>(required only when changing the role)</small></label>
+
+                    <input
+                        type="password"
+                        id="edit_confirm_password"
+                        name="confirm_password"
+                        autocomplete="current-password"
+                    >
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -312,6 +345,62 @@
         </form>
     </div>
 </div>
+
+{{-- =====================================================
+     RESET PASSWORD MODAL
+     ===================================================== --}}
+<div
+    id="resetModal"
+    class="user-management-modals modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="resetModalTitle"
+    aria-hidden="true"
+>
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="resetModalTitle">Reset Password</h3>
+
+            <button type="button" class="close-btn" data-close-modal="resetModal" aria-label="Close reset password modal">
+                &times;
+            </button>
+        </div>
+
+        <form id="resetPasswordForm" method="POST">
+            @csrf
+            @method('PATCH')
+
+            <div class="modal-body">
+                <p>A new temporary password will be generated for <strong id="reset_user_name"></strong> and shown once. They must change it at next login.</p>
+
+                <div class="input-group" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="reset_confirm_password">Your password</label>
+                    <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="secondary-btn" data-close-modal="resetModal">Cancel</button>
+                <button type="submit" class="primary-btn">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.js-reset-user').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const modal = document.getElementById('resetModal');
+            document.getElementById('resetPasswordForm').action =
+                `/superadmin/users/${encodeURIComponent(button.dataset.id)}/reset-password`;
+            document.getElementById('reset_user_name').textContent = button.dataset.name || '';
+            document.getElementById('reset_confirm_password').value = '';
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.getElementById('reset_confirm_password').focus();
+        });
+    });
+</script>
 
 {{-- =====================================================
      ADD USER MODAL
@@ -537,6 +626,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('edit_role').value =
             button.dataset.role || 'citizen';
+
+        document.getElementById('edit_confirm_password').value = '';
 
         openModal(editModal);
     }

@@ -7,11 +7,24 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use App\Traits\LogsActivity;
 
 class AdminUserManagementController extends Controller
 {
     use LogsActivity;
+
+    private function assignableRoles(): array
+    {
+        return auth()->user()->isSuperAdmin() ? ['superadmin', 'admin', 'bhw', 'citizen'] : ['admin', 'bhw', 'citizen'];
+    }
+
+    private function guardTarget(User $user): void
+    {
+        abort_if($user->role === 'superadmin' && !auth()->user()->isSuperAdmin(), 403, 'Only a super admin can manage super admin accounts.');
+    }
+
     public function index(Request $request)
 {
     $showArchived = $request->boolean('archived');
@@ -51,15 +64,17 @@ class AdminUserManagementController extends Controller
 
     public function show($id)
     {
-        return view('admin.user-view', [
-            'user' => User::findOrFail($id)
-        ]);
+        $user = User::findOrFail($id);
+        $this->guardTarget($user);
+
+        return view('admin.user-view', ['user' => $user]);
     }
 
     // Marking a user inactive archives them: they can no longer sign in until restored.
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+        $this->guardTarget($user);
 
         if ((int) $user->id === (int) auth()->id()) {
             return back()->withErrors(['user' => 'You cannot mark your own account as inactive.']);
@@ -75,6 +90,7 @@ class AdminUserManagementController extends Controller
     public function restore($id)
     {
         $user = User::onlyTrashed()->findOrFail($id);
+        $this->guardTarget($user);
 
         $user->restore();
         $user->forceFill([
@@ -104,7 +120,7 @@ public function store(Request $request)
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
         'username' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', 'unique:users,username'],
-        'role' => 'required'
+        'role' => ['required', Rule::in($this->assignableRoles())],
     ]);
 
     // Define the uniform default temporary password for all new users
@@ -127,16 +143,29 @@ public function store(Request $request)
 public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
+    $this->guardTarget($user);
 
     $data = $request->validate([
         'name' => 'required|string|max:255',
         'email' => ['required', 'email', 'unique:users,email,' . $user->id],
         'username' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', 'unique:users,username,' . $user->id],
-        'role' => 'required',
+        'role' => ['required', Rule::in($this->assignableRoles())],
     ]);
 
+    if ((int) $user->id === (int) auth()->id() && $data['role'] !== $user->role) {
+        return back()->withErrors(['role' => 'You cannot change your own role.']);
+    }
+
+    if ($data['role'] !== $user->role && \App\Models\SystemSetting::passwordReentryRequired()) {
+        $request->validate([
+            'confirm_password' => ['required', 'string', 'current_password'],
+        ], [
+            'confirm_password.required' => 'Enter your own password to change a user\'s role.',
+            'confirm_password.current_password' => 'Your password is incorrect.',
+        ]);
+    }
+
     $user->update([
-        'name' => $data['name'],
         'email' => $data['email'],
         'username' => !empty($data['username']) ? trim($data['username']) : null,
         'role' => $data['role'],
@@ -150,14 +179,51 @@ public function update(Request $request, $id)
 public function unlockAccount($id)
 {
     $user = \App\Models\User::findOrFail($id);
+    $this->guardTarget($user);
 
     $user->update([
         'failed_login_attempts' => 0,
         'is_locked' => false,
+        'locked_until' => null,
     ]);
 
     $this->logAdminActivity('account.unlocked', "Unlocked account for {$user->name}.", 'security', $user);
 
     return back()->with('success', "User {$user->name}'s account has been unlocked successfully.");
+}
+
+public function resetPassword(Request $request, $id)
+{
+    $request->validate([
+        'confirm_password' => \App\Models\SystemSetting::passwordReentryRequired()
+            ? ['required', 'string', 'current_password']
+            : ['nullable'],
+    ], [
+        'confirm_password.required' => 'Enter your own password to reset another user\'s password.',
+        'confirm_password.current_password' => 'Your password is incorrect.',
+    ]);
+
+    $user = User::findOrFail($id);
+    $this->guardTarget($user);
+
+    if ((int) $user->id === (int) auth()->id()) {
+        return back()->withErrors(['user' => 'Use your account settings to change your own password.']);
+    }
+
+    $temporaryPassword = Str::password(12, symbols: false);
+
+    $user->forceFill([
+        'password' => Hash::make($temporaryPassword),
+        'must_change_password' => true,
+        'failed_login_attempts' => 0,
+        'is_locked' => false,
+        'locked_until' => null,
+    ])->save();
+
+    $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name}; a password change is required at next login.", 'security', $user);
+
+    $loginIdentifier = filled($user->username) ? $user->username : $user->email;
+
+    return back()->with('success', "Password for {$user->name} was reset. Log in using {$loginIdentifier}. Temporary password (shown once): {$temporaryPassword}. They must change it at next login.");
 }
 }

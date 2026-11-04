@@ -112,7 +112,8 @@
 
                 <td>@if($showArchived)
                     <span class="badge bg-secondary">Inactive</span>
-                @elseif($user->is_locked)
+                @elseif($user->isLockedOut())
+                    <span class="badge bg-warning text-dark">Locked{{ $user->locked_until && $user->locked_until->isFuture() ? ' until ' . $user->locked_until->format('h:i A') : '' }}</span>
                     <form action="{{ route('admin.users.unlock', $user->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('PATCH')
@@ -233,12 +234,31 @@
                         <option value="citizen">Citizen</option>
                     </select>
                 </div>
+                <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="edit_confirm_password">Your password <small>(required only when changing the role)</small></label>
+                    <input type="password" id="edit_confirm_password" name="confirm_password" autocomplete="current-password" style="width: 100%;">
+                </div>
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
                 <button type="button" class="secondary-btn" onclick="closeEditModal()" data-ui-action="secondary">Cancel</button>
                 <button type="submit" class="primary-btn" data-ui-action="primary">Save Changes</button>
             </div>
         </form>
+        <div style="border-top: 1px solid #e5e7eb; margin-top: 18px; padding-top: 14px;">
+            <h4 style="margin: 0 0 8px;">Reset Password</h4>
+            <p style="margin-bottom: 12px;">Generate a temporary password for <strong id="reset_user_name"></strong>. It will be shown once, and the user must change it at next login.</p>
+            <form id="resetPasswordForm" method="POST" onsubmit="return confirm('Reset this password?');">
+                @csrf
+                @method('PATCH')
+                <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
+                    <label for="reset_confirm_password">Your password</label>
+                    <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password" style="width: 100%;">
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="primary-btn">Reset Password</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -257,11 +277,15 @@
         
         // Target standard admin route update path
         form.action = `/admin/users/${id}`;
+        document.getElementById('resetPasswordForm').action = `/admin/users/${id}/reset-password`;
+        document.getElementById('reset_user_name').textContent = name;
+        document.getElementById('reset_confirm_password').value = '';
         
         document.getElementById('edit_name').value = name;
         document.getElementById('edit_email').value = email;
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_role').value = role;
+        document.getElementById('edit_confirm_password').value = '';
         
         modal.style.display = 'flex';
     }

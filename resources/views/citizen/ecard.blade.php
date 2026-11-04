@@ -2,6 +2,8 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/ecard.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/health-card.css') }}">
 @endsection
 
 @section('content')
@@ -15,128 +17,10 @@
         <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
     </div>
     <div class="ecard-content-stack">
-<div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0">
-<section class="bheams-id-card">
-
-    {{-- DECORATIVE BACKGROUND --}}
-    <div class="bheams-id-decoration"></div>
-
-    
-    {{-- OFFICIAL-STYLE HEADER --}}
-    <div class="bheams-id-header">
-
-        <div class="bheams-seal">
-            <img
-                src="{{ asset('images/amuyong.png') }}"
-                alt="BHEAMS Logo"
-                class="bheams-logo"
-            >
+<div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0" data-ecard-fit>
+            @include('partials.health-card', ['citizen' => $citizen, 'qrImage' => $qrImage])
         </div>
-
-        <div class="bheams-brand">
-            <h2>BHEAMS</h2>
-            <p>BARANGAY AMUYONG</p>
-            <span>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</span>
-        </div>
-
-    </div>
-
-
-    {{-- ID BODY --}}
-    <div class="bheams-id-body">
-
-        {{-- CITIZEN PHOTO --}}
-        <div class="bheams-photo">
-            @if($citizen->photo_path)
-                <img
-                    src="{{ asset('storage/' . $citizen->photo_path) }}"
-                    alt="Citizen Photo"
-                >
-            @else
-                <div class="bheams-no-photo">
-                    <span>
-                        {{ strtoupper(substr($citizen->Citizen_FName, 0, 1) . substr($citizen->Citizen_LName, 0, 1)) }}
-                    </span>
-                    <small>NO PHOTO</small>
-                </div>
-            @endif
-        </div>
-
-        {{-- CITIZEN INFORMATION --}}
-        <div class="bheams-id-details">
-
-            <div class="bheams-id-title">CITIZEN HEALTH ID</div>
-
-            <div class="bheams-id-field">
-                <span>FULL NAME</span>
-                <strong>
-                    {{ strtoupper($citizen->Citizen_LName) }},
-                    {{ strtoupper($citizen->Citizen_FName) }}
-                </strong>
-            </div>
-
-            <div class="bheams-id-field">
-                <span>CITIZEN IDENTIFICATION NUMBER</span>
-                <strong class="bheams-citizen-number">
-                    C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}
-                </strong>
-            </div>
-
-            <div class="bheams-id-two-columns">
-                <div class="bheams-id-field">
-                    <span>DATE OF BIRTH</span>
-                    <strong>
-                        {{ $citizen->Citizen_BirthDate
-                            ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y')
-                            : 'N/A' }}
-                    </strong>
-                </div>
-
-            </div>
-
-            <div class="bheams-id-field">
-                <span>ADDRESS / PUROK</span>
-                <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
-            </div>
-
-            <div class="bheams-id-field">
-                <span>SEX</span>
-                <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
-            </div>
-            <div class="bheams-id-field">
-                <span>AGE</span>
-                <strong>{{ $citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A' }}</strong>
-            </div>
-            <div class="bheams-id-field">
-                <span>CONTACT NUMBER</span>
-                <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
-            </div>
-        </div>
-
-    {{-- CENTERED QR VERIFICATION --}}
-    <div class="bheams-id-qr bheams-id-qr-centered">
-        <div class="bheams-qr-frame">
-            @if(!empty($qrImage))
-                <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
-            @else
-                <span>QR code unavailable</span>
-            @endif
-        </div>
-        <strong>SCAN TO VERIFY</strong>
-        <small>Citizen Record Verification</small>
-    </div>
-
-    </div>
-
-    {{-- ID FOOTER --}}
-    <div class="bheams-id-footer">
-        <span>BARANGAY AMUYONG</span>
-        <span>OFFICIAL CITIZEN IDENTIFICATION</span>
-    </div>
-
-</section>
-</div>
-<section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
+        <section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
 
             <div class="mb-5 border-b-2 border-gray-800 pb-3">
                 <h2 class="text-2xl font-black uppercase text-gray-900">
@@ -379,153 +263,18 @@
 </section>
     </div>
 </div>
-<style>
-.bhw-ecard-page{max-width:1280px;margin:0 auto;padding:32px 24px;color:#172554;font-family:Arial,Helvetica,sans-serif}
-.ecard-page-header{display:flex;align-items:center;justify-content:space-between;gap:18px;max-width:1000px;margin:0 auto 20px}.ecard-page-header h1{margin:0;color:#0f172a;font-size:24px;font-weight:800}
-.ecard-button{display:inline-flex;align-items:center;justify-content:center;padding:10px 15px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;border:0;cursor:pointer}.ecard-button-secondary{background:#64748b;color:#fff}
-.ecard-actions-top{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:12px;max-width:1000px;margin:0 auto 18px}.ecard-print-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border:0;border-radius:7px;background:#1d4ed8;color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.12)}.ecard-print-record{background:#166534}
-.ecard-content-stack{display:grid;grid-template-columns:1fr;gap:24px;max-width:1000px;margin:0 auto}
-.ecard-id-card-scroll{width:100%;max-width:1000px;margin:0 auto}
-.ecard-id-scroll-hint{display:none}
-.bheams-id-card{position:relative;isolation:isolate;overflow:hidden;width:100%;max-width:1000px;margin:0 auto;border:1px solid #d1d5db;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.12);color:#1f2937}
-.bheams-id-decoration{position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,rgba(29,78,216,.06),transparent 45%,rgba(22,101,52,.05))}
-.bheams-id-header{display:flex;align-items:center;gap:18px;padding:20px 26px;background:linear-gradient(110deg,#102b78,#17469a);color:#fff;border-bottom:4px solid #bfdbfe}.bheams-seal{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:72px;height:72px;overflow:hidden;border:2px solid #fff;border-radius:50%;background:#fff}.bheams-logo{width:100%;height:100%;object-fit:contain}.bheams-brand{min-width:0;flex:1}.bheams-brand h2{margin:0;color:#fff;font-size:29px;font-weight:900;letter-spacing:1px}.bheams-brand p{margin:4px 0;color:#fff;font-size:16px;font-weight:800}.bheams-brand span{display:block;color:#dbeafe;font-size:9px;font-weight:700;letter-spacing:.5px}
-.bheams-id-body{display:grid;grid-template-columns:125px minmax(0,1.25fr) minmax(0,.8fr) 125px;align-items:center;gap:22px;padding:24px}.bheams-photo{display:flex;align-items:center;justify-content:center;width:125px;height:155px;overflow:hidden;border:2px solid #d1d5db;border-radius:5px;background:#f1f5f9;color:#64748b}.bheams-photo img{display:block;width:100%;height:100%;object-fit:cover}.bheams-no-photo{display:flex;flex-direction:column;align-items:center;gap:5px}.bheams-no-photo span{font-size:38px;font-weight:900}.bheams-no-photo small{font-size:10px}.bheams-id-details{min-width:0}.bheams-id-secondary-details{min-width:0;align-self:center}.bheams-id-secondary-details .bheams-id-field{margin-bottom:18px}.bheams-id-title{margin-bottom:10px;color:#173b82;font-size:12px;font-weight:900;letter-spacing:1px}.bheams-id-field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;overflow-wrap:anywhere}.bheams-id-field span{color:#64748b;font-size:9px;font-weight:800;letter-spacing:.6px}.bheams-id-field strong{color:#172554;font-size:13px;font-weight:800}.bheams-citizen-number{color:#17469a!important;font-size:15px!important;letter-spacing:1px}.bheams-id-two-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.bheams-id-qr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center}.bheams-qr-frame{display:flex;align-items:center;justify-content:center;width:118px;height:118px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}.bheams-qr-frame img{display:block;width:100px;height:100px;object-fit:contain}.bheams-id-qr strong{color:#173b82;font-size:10px;font-weight:900;letter-spacing:.5px}.bheams-id-qr small{color:#64748b;font-size:9px}.bheams-id-footer{display:flex;justify-content:space-between;gap:12px;padding:11px 26px;background:#f8fafc;border-top:1px solid #dbeafe;color:#475569;font-size:9px;font-weight:800;letter-spacing:.5px}
-.print-health-record{width:100%;min-width:0;box-sizing:border-box;border:2px solid #d1d5db;border-radius:12px;background:#fff;padding:22px;color:#1f2937;box-shadow:0 5px 16px rgba(15,23,42,.08);font-family:Arial,Helvetica,sans-serif;line-height:1.45}
-.print-health-record *{box-sizing:border-box}
-.print-health-record h2{margin:0;color:#111827;font-size:24px;font-weight:900;line-height:1.25}
-.print-health-record h3{margin:0 0 8px;border:1px solid #d1d5db;background:#f3f4f6;padding:8px;font-size:13px;font-weight:800;text-transform:uppercase;color:#374151}
-/* Explicitly define the information grids so the layout remains correct even if Tailwind utilities are unavailable. */
-.print-health-record > div.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;row-gap:14px;align-items:start;width:100%;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #d1d5db}
-.print-health-record > div.grid > div{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;line-height:1.4;overflow-wrap:anywhere}
-.print-health-record > div.grid > div > span:first-child{display:block;width:100%;margin:0;color:#64748b;font-size:11px;font-weight:700;line-height:1.35}
-.print-health-record > div.grid > div > span:nth-child(2){display:block;width:100%;margin:0;color:#1f2937;font-size:13px;font-weight:700;line-height:1.45;overflow-wrap:anywhere}
-.print-health-record table{width:100%;border-collapse:collapse;table-layout:auto}
-.print-health-record th,.print-health-record td{border:1px solid #9ca3af;padding:8px;text-align:left;vertical-align:top;overflow-wrap:anywhere;line-height:1.4}
-.print-health-record th{background:#e5e7eb;color:#1f2937;font-weight:800}
-.print-health-record .overflow-x-auto{width:100%;max-width:100%;overflow-x:auto}
-.print-health-record .mb-6{margin-bottom:22px}
-.print-health-record .mb-5{margin-bottom:18px}
-.print-health-record .mt-1{margin-top:5px}
-.print-health-record .pb-3{padding-bottom:12px}
-.print-health-record .border-b-2{border-bottom:2px solid #1f2937}
-.print-health-record .text-xs{font-size:11px}
-.print-health-record .text-sm{font-size:13px}
-.print-health-record .p-2{padding:8px}
-@media(max-width:700px){.print-health-record > div.grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:12px}.print-health-record{padding:14px}}
 
-@media(max-width:700px){.bhw-ecard-page{padding:20px 12px}.ecard-page-header{align-items:flex-start;flex-direction:column}.ecard-actions-top{justify-content:stretch}.ecard-actions-top button{flex:1 1 220px}.bheams-id-header{flex-wrap:wrap;padding:18px}.bheams-id-body{grid-template-columns:1fr;padding:18px}.bheams-photo{margin:0 auto}.bheams-id-secondary-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bheams-id-secondary-details .bheams-id-field{margin-bottom:8px}.bheams-id-qr-centered{grid-column:1/-1}.bheams-id-two-columns{grid-template-columns:1fr}.print-health-record{padding:14px}}
-@media(max-width:700px){.ecard-id-card-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}.ecard-id-card-scroll .bheams-id-card{width:760px;max-width:none}.ecard-id-card-scroll .bheams-id-header{flex-wrap:nowrap;gap:18px;padding:20px 26px}.ecard-id-card-scroll .bheams-id-body{grid-template-columns:125px minmax(0,1.25fr) minmax(0,.8fr) 125px;align-items:center;gap:22px;padding:24px}.ecard-id-card-scroll .bheams-photo{margin:0}.ecard-id-card-scroll .bheams-id-secondary-details{display:block}.ecard-id-card-scroll .bheams-id-secondary-details .bheams-id-field{margin-bottom:18px}.ecard-id-card-scroll .bheams-id-qr-centered{grid-column:auto}.ecard-id-card-scroll .bheams-id-two-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.ecard-id-scroll-hint{display:block;margin:6px 0 0;color:#52657e;font-size:12px;text-align:center}}
-@media print{@page{size:A4 landscape;margin:8mm}html,body,.dashboard,.main-content{background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important}body *{visibility:hidden!important}body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{visibility:visible!important}body.print-record-only .print-health-record,body.print-record-only .print-health-record *{visibility:visible!important}body.print-id-only .print-health-record,body.print-record-only .bheams-id-card{display:none!important}.top-bar,.sidebar,.sidebar-backdrop,.ecard-page-header,.ecard-actions-top{display:none!important}.main-content{margin:0!important;padding:0!important;width:100%!important}.bhw-ecard-page{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}.ecard-content-stack{max-width:none!important;width:100%!important;margin:0!important;gap:0!important}.bheams-id-card,.print-health-record{width:100%!important;max-width:100%!important;margin:0!important;box-shadow:none!important;break-inside:avoid}.bheams-id-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}.bheams-id-body{grid-template-columns:125px minmax(0,1fr) 125px!important;padding:24px!important}.print-health-record{border:1px solid #9ca3af!important;padding:14px!important}.print-health-record table{font-size:9px}.print-health-record th,.print-health-record td{padding:5px!important}
-body.print-id-only .bhw-ecard-page,body.print-id-only .ecard-content-stack{width:3.375in!important;max-width:3.375in!important;height:2.125in!important;max-height:2.125in!important;margin:0!important;padding:0!important;overflow:hidden!important}
-body.print-id-only .bheams-id-card{display:flex!important;flex-direction:column!important;width:3.375in!important;height:2.125in!important;min-height:2.125in!important;max-width:3.375in!important;max-height:2.125in!important;margin:0!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:.08in!important;overflow:hidden!important;box-sizing:border-box!important;break-inside:avoid!important;background:#fff!important}
-body.print-id-only .bheams-id-header{display:flex!important;align-items:center!important;flex:0 0 .43in!important;min-height:.43in!important;gap:.08in!important;padding:.04in .11in!important;border-bottom:2px solid #bfdbfe!important;flex-wrap:nowrap!important;box-sizing:border-box!important}
-body.print-id-only .bheams-seal{width:.31in!important;height:.31in!important;min-width:.31in!important;min-height:.31in!important;flex:0 0 .31in!important;border-width:1px!important}
-body.print-id-only .bheams-brand{min-width:0!important;flex:1!important}
-body.print-id-only .bheams-brand h2{font-size:11px!important;line-height:1.05!important;letter-spacing:.2px!important;margin:0!important}
-body.print-id-only .bheams-brand p{margin:1px 0!important;font-size:6px!important;line-height:1.05!important}
-body.print-id-only .bheams-brand span{font-size:4px!important;line-height:1.1!important;letter-spacing:0!important}
-body.print-id-only .bheams-id-body{display:grid!important;grid-template-columns:.72in minmax(0,1fr) .96in!important;align-items:center!important;gap:.07in!important;flex:1 1 auto!important;min-height:0!important;padding:.07in .11in!important;box-sizing:border-box!important} body.print-id-only .bheams-id-secondary-details{min-width:0!important;align-self:center!important} body.print-id-only .bheams-id-secondary-details .bheams-id-field{margin-bottom:5px!important}
-body.print-id-only .bheams-photo{width:.72in!important;height:.90in!important;min-width:.72in!important;max-width:.72in!important;border-width:1px!important;box-sizing:border-box!important}
-body.print-id-only .bheams-no-photo span{font-size:23px!important;line-height:1!important}
-body.print-id-only .bheams-no-photo small{font-size:5px!important}
-body.print-id-only .bheams-id-details{min-width:0!important;align-self:center!important}
-body.print-id-only .bheams-id-title{margin-bottom:3px!important;font-size:6.5px!important;line-height:1.1!important;letter-spacing:.3px!important}
-body.print-id-only .bheams-id-field{gap:0!important;margin-bottom:1.5px!important}
-body.print-id-only .bheams-id-field span{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
-body.print-id-only .bheams-id-field strong{font-size:7px!important;line-height:1.1!important}
-body.print-id-only .bheams-citizen-number{font-size:8px!important;line-height:1.1!important}
-body.print-id-only .bheams-id-two-columns{grid-template-columns:1fr!important;gap:0!important}
-body.print-id-only .bheams-qr-frame{width:.96in!important;height:.96in!important;min-width:.96in!important;min-height:.96in!important;padding:2px!important;border-radius:2px!important;box-sizing:border-box!important}
-body.print-id-only .bheams-qr-frame img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}
-body.print-id-only .bheams-id-qr{gap:3px!important;min-width:0!important}
-body.print-id-only .bheams-id-qr strong{font-size:4.8px!important;line-height:1.1!important;letter-spacing:0!important}
-body.print-id-only .bheams-id-qr small{font-size:3.8px!important;line-height:1.1!important}
-body.print-id-only .bheams-id-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;flex:0 0 .22in!important;min-height:.22in!important;gap:3px!important;padding:0 .12in!important;font-size:4.4px!important;line-height:1.1!important;letter-spacing:0!important;box-sizing:border-box!important}
-body.print-id-only .bheams-id-card,body.print-id-only .bheams-id-card *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-}
-
-@media screen {
-    .citizen-ecard-page .ecard-id-card-scroll {
-        width: 100%;
-        max-width: 85.60mm;
-        overflow: visible;
-        container-type: inline-size;
-    }
-
-    .citizen-ecard-page .bheams-id-card {
-        width: 100% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-width: 85.60mm !important;
-        max-height: none !important;
-        aspect-ratio: 85.60 / 53.98;
-    }
-
-    .citizen-ecard-page .bheams-id-header {
-        flex: 0 0 12.7cqi !important;
-        min-height: 12.7cqi !important;
-        gap: 2.35cqi !important;
-        padding: 1.17cqi 3.23cqi !important;
-    }
-
-    .citizen-ecard-page .bheams-seal {
-        width: 9.1cqi !important;
-        height: 9.1cqi !important;
-        min-width: 9.1cqi !important;
-        min-height: 9.1cqi !important;
-        flex-basis: 9.1cqi !important;
-    }
-
-    .citizen-ecard-page .bheams-brand h2 { font-size: 3.4cqi !important; }
-    .citizen-ecard-page .bheams-brand p { margin: .3cqi 0 !important; font-size: 1.86cqi !important; }
-    .citizen-ecard-page .bheams-brand span { font-size: 1.24cqi !important; }
-
-    .citizen-ecard-page .bheams-id-body {
-        grid-template-columns: 21.2cqi minmax(0, 1fr) 28.2cqi !important;
-        gap: 2.05cqi !important;
-        padding: 2.05cqi 3.23cqi !important;
-    }
-
-    .citizen-ecard-page .bheams-photo {
-        width: 21.2cqi !important;
-        height: 26.5cqi !important;
-    }
-
-    .citizen-ecard-page .bheams-no-photo span { font-size: 7.1cqi !important; }
-    .citizen-ecard-page .bheams-no-photo small { font-size: 1.55cqi !important; }
-    .citizen-ecard-page .bheams-id-title { margin-bottom: .93cqi !important; font-size: 2.01cqi !important; }
-    .citizen-ecard-page .bheams-id-field { gap: 0 !important; margin-bottom: .46cqi !important; }
-    .citizen-ecard-page .bheams-id-field span { font-size: 1.49cqi !important; }
-    .citizen-ecard-page .bheams-id-field strong { font-size: 2.17cqi !important; }
-    .citizen-ecard-page .bheams-citizen-number { font-size: 2.48cqi !important; }
-    .citizen-ecard-page .bheams-id-two-columns { grid-template-columns: 1fr !important; gap: 0 !important; }
-
-    .citizen-ecard-page .bheams-qr-frame {
-        width: 28.2cqi !important;
-        height: 28.2cqi !important;
-        min-width: 28.2cqi !important;
-        min-height: 28.2cqi !important;
-        padding: 1.65cqi !important;
-    }
-
-    .citizen-ecard-page .bheams-qr-frame img { width: 100% !important; height: 100% !important; }
-    .citizen-ecard-page .bheams-id-qr { gap: .93cqi !important; }
-    .citizen-ecard-page .bheams-id-qr strong { font-size: 1.49cqi !important; }
-    .citizen-ecard-page .bheams-id-qr small { font-size: 1.18cqi !important; }
-    .citizen-ecard-page .bheams-id-footer {
-        flex: 0 0 6.5cqi !important;
-        min-height: 6.5cqi !important;
-        gap: .93cqi !important;
-        padding: 0 3.5cqi !important;
-        font-size: 1.36cqi !important;
-    }
-
-    .citizen-ecard-page .ecard-id-scroll-hint { display: none !important; }
-}
-
-</style>
 <script>
+// Label each table cell with its column heading so tables can stack on small screens.
+document.querySelectorAll('.print-health-record table').forEach(function (table) {
+    var labels = Array.from(table.querySelectorAll('thead th')).map(function (th) { return th.textContent.trim(); });
+    table.classList.add('ecard-stack');
+    table.querySelectorAll('tbody tr').forEach(function (row) {
+        Array.from(row.children).forEach(function (cell, index) {
+            if (labels[index]) { cell.setAttribute('data-label', labels[index]); }
+        });
+    });
+});
 let citizenPrintPageRule = null;
 function printCitizenSection(section) {
     document.body.classList.remove('print-id-only', 'print-record-only');
@@ -539,7 +288,7 @@ function printCitizenSection(section) {
     citizenPrintPageRule = document.createElement('style');
     citizenPrintPageRule.id = 'citizen-print-page-size';
     citizenPrintPageRule.textContent = section === 'id'
-        ? '@page { size: 3.375in 2.125in; margin: 0; }'
+        ? '@page { size: 85.60mm 53.98mm; margin: 0; }'
         : '@page { size: A4 landscape; margin: 8mm; }';
     document.head.appendChild(citizenPrintPageRule);
 
@@ -553,4 +302,6 @@ window.addEventListener('afterprint', function() {
     }
 });
 </script>
+<script src="{{ asset('js/ecard-preview.js') }}?v={{ filemtime(public_path('js/ecard-preview.js')) }}"></script>
+<script src="{{ asset('js/ecard-fit.js') }}?v={{ filemtime(public_path('js/ecard-fit.js')) }}"></script>
 @endsection

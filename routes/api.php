@@ -19,4 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/superadmin/user-analytics', [UserAnalyticsController::class, 'index']);
+Route::middleware(['auth:sanctum', 'role:superadmin'])
+    ->get('/superadmin/user-analytics', [UserAnalyticsController::class, 'index']);

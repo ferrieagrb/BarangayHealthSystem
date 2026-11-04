@@ -1030,11 +1030,14 @@ body:has(.maintenance-section) .health-alert-error {
 .maintenance-form-field { min-width:0; }
 .maintenance-form-field-full { grid-column:1 / -1; }
 .maintenance-form-field label { display:block; margin:12px 0 6px; color:#334155; font-size:12px; font-weight:600; }
+.maintenance-frequency-fields { grid-column:1 / -1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; align-items:start; }
+.maintenance-frequency-fields > div { display:flex; flex-direction:column; min-width:0; }
+.maintenance-frequency-fields label { min-height:36px; line-height:18px; }
 .maintenance-form .maintenance-field { display:block; width:100%; min-width:0; min-height:42px; margin:0 0 12px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#1e293b; font:400 12px/1.5 'Poppins',sans-serif; box-sizing:border-box; }
 .maintenance-form .maintenance-field:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.10); outline:none; }
 .maintenance-form textarea.maintenance-field { min-height:76px; resize:vertical; }
 @media (max-width:700px) { .maintenance-form-grid { grid-template-columns:minmax(0,1fr); } .maintenance-form-field-full { grid-column:auto; } }
-@media(max-width:380px) { .main { padding:16px 10px; } .info-card { padding:15px 12px; } .right { gap:8px; } .main .btn-primary, .main .btn-secondary { padding:9px 11px; font-size:12px; } }
+@media(max-width:380px) { .main { padding:16px 10px; } .info-card { padding:15px 12px; } .right { gap:8px; } .main .btn-primary, .main .btn-secondary { padding:9px 11px; font-size:12px; } .maintenance-frequency-fields label { min-height:54px; } }
 @media(prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
 
 

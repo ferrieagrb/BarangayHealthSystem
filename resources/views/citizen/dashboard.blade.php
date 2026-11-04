@@ -1,5 +1,6 @@
 @extends('templates.citizen')
 @section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/bhw/health-card.css') }}">
 <style>
 /* =========================================================
    CITIZEN DASHBOARD
@@ -55,6 +56,7 @@
 #health-information .c-record h3 { font-size: 17px; }
 #health-information .c-table { font-size: 15px; }
 #health-information .c-table th, #health-information .c-table td { padding: 13px 14px; }
+.c-home .bheams-id-card p { line-height: normal; }
 
 .c-heading {
     display: flex;
@@ -1661,80 +1663,10 @@ body.theme-dark .c-home {
 
     @if($citizen)
         {{-- ACTUAL ID CARD --}}
-        <div class="c-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0">
-        <section class="bheams-id-card">
-            <div class="bheams-id-decoration"></div>
-            <div class="bheams-id-header">
-                <div class="bheams-seal">
-                    <img src="{{ asset('images/amuyong.png') }}" alt="BHEAMS Logo" class="bheams-logo">
-                </div>
-                <div class="bheams-brand">
-                    <h2>BHEAMS</h2>
-                    <p>BARANGAY AMUYONG</p>
-                    <span>BARANGAY HEALTH AND EMERGENCY MANAGEMENT SYSTEM</span>
-                </div>
+        <div class="bhw-ecard-page ecard-dashboard-card">
+            <div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" data-ecard-fit>
+                @include('partials.health-card', ['citizen' => $citizen, 'qrImage' => $qrImage])
             </div>
-
-            <div class="bheams-id-body">
-                <div class="bheams-photo">
-                    @if($citizen->photo_path)
-                        <img src="{{ asset('storage/'.$citizen->photo_path) }}" alt="Citizen photo">
-                    @else
-                        <div class="bheams-no-photo">
-                            <span>{{ strtoupper(substr($citizen->Citizen_FName ?? 'C', 0, 1).substr($citizen->Citizen_LName ?? 'I', 0, 1)) }}</span>
-                            <small>NO PHOTO</small>
-                        </div>
-                    @endif
-                </div>
-
-                <div class="bheams-id-details">
-                    <div class="bheams-id-title">CITIZEN HEALTH ID</div>
-                    <div class="bheams-id-field">
-                        <span>FULL NAME</span>
-                        <strong>{{ strtoupper($citizen->Citizen_LName) }}, {{ strtoupper($citizen->Citizen_FName) }}</strong>
-                    </div>
-                    <div class="bheams-id-field">
-                        <span>CITIZEN IDENTIFICATION NUMBER</span>
-                        <strong class="bheams-citizen-number">C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</strong>
-                    </div>
-                    <div class="bheams-id-two-columns">
-                        <div class="bheams-id-field">
-                            <span>DATE OF BIRTH</span>
-                            <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y') : 'N/A' }}</strong>
-                        </div>
-                    </div>
-                    <div class="bheams-id-field">
-                        <span>ADDRESS / PUROK</span>
-                        <strong>{{ $citizen->Citizen_Purok ?: 'N/A' }}</strong>
-                    </div>
-                    <div class="bheams-id-field">
-                        <span>SEX</span>
-                        <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
-                    </div>
-                    <div class="bheams-id-field">
-                        <span>AGE</span>
-                        <strong>{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->age : ($citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age : 'N/A') }}</strong>
-                    </div>
-                    <div class="bheams-id-field">
-                        <span>CONTACT NUMBER</span>
-                        <strong>{{ $citizen->Citizen_ContactNo ?: 'N/A' }}</strong>
-                    </div>
-                </div>
-
-                <div class="bheams-id-qr bheams-id-qr-centered">
-                    <div class="bheams-qr-frame">
-                        <img src="{{ $qrImage }}" alt="Citizen Verification QR Code">
-                    </div>
-                    <strong>SCAN TO VERIFY</strong>
-                    <small>Citizen Record Verification</small>
-                </div>
-            </div>
-
-            <div class="bheams-id-footer">
-                <span>BARANGAY AMUYONG</span>
-                <span>OFFICIAL CITIZEN IDENTIFICATION</span>
-            </div>
-        </section>
         </div>
 
         {{-- BUTTON OUTSIDE THE ID CARD --}}
@@ -1817,6 +1749,10 @@ body.theme-dark .c-home {
                         <div class="c-stat">
                             <span>Age</span>
                             <strong>{{ $citizen->Citizen_Age !== null && $citizen->Citizen_Age !== '' ? $citizen->Citizen_Age . ' years old' : 'N/A' }}</strong>
+                        </div>
+                        <div class="c-stat">
+                            <span>Sex</span>
+                            <strong>{{ $citizen->Citizen_Sex ?: 'N/A' }}</strong>
                         </div>
                         <div class="c-stat">
                             <span>Height</span>
@@ -2121,6 +2057,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const nav = document.getElementById('citizenSectionNav');
     if (!nav) return;
 
+    const navTrack = nav.querySelector('.c-header-section-track');
     const links = [...nav.querySelectorAll('a[href^="#"]')];
 
     const sections = links
@@ -2131,8 +2068,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!sections.length) return;
     let pendingNavigationSection = null;
+    let activeSection = null;
+    let updateScheduled = false;
+    let swipeStart = null;
+    let suppressSwipeClick = false;
+    let swipeClickTimer = null;
+
+    function centerActiveLink() {
+        if (!navTrack || !nav.clientWidth) return;
+
+        const activeLink = links.find(link => link.classList.contains('active'));
+        if (!activeLink) return;
+
+        const offset = nav.clientWidth / 2
+            - activeLink.offsetLeft
+            - activeLink.offsetWidth / 2;
+        navTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+    }
 
     function setActive(section) {
+        const changed = activeSection !== section;
+        activeSection = section;
+
         links.forEach(link => {
             const active =
                 link.getAttribute('href') === '#' + section.id;
@@ -2145,6 +2102,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 link.removeAttribute('aria-current');
             }
         });
+
+        if (changed) centerActiveLink();
     }
 
     function getSectionFromHash() {
@@ -2198,8 +2157,47 @@ document.addEventListener('DOMContentLoaded', function () {
         setActive(current);
     }
 
+    function scheduleActiveTabUpdate() {
+        if (updateScheduled) return;
+        updateScheduled = true;
+        window.requestAnimationFrame(function () {
+            updateScheduled = false;
+            updateActiveTab();
+        });
+    }
+
+    function navigateToSection(target) {
+        pendingNavigationSection = target;
+        const targetHash = '#' + target.id;
+        if (window.location.hash !== targetHash) {
+            window.history.pushState(null, '', targetHash);
+        }
+        setActive(target);
+
+        const header = document.querySelector('.top-bar');
+        const headerHeight = header ? header.offsetHeight : 0;
+        const targetY =
+            target.getBoundingClientRect().top +
+            window.scrollY -
+            headerHeight -
+            12;
+
+        window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: 'smooth'
+        });
+    }
+
     links.forEach(link => {
         link.addEventListener('click', function (event) {
+            if (suppressSwipeClick && event.detail !== 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                suppressSwipeClick = false;
+                window.clearTimeout(swipeClickTimer);
+                return;
+            }
+
             const target = document.getElementById(
                 this.getAttribute('href').substring(1)
             );
@@ -2207,34 +2205,84 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!target) return;
 
             event.preventDefault();
-            pendingNavigationSection = target;
-            const targetHash = '#' + target.id;
-            if (window.location.hash !== targetHash) {
-                window.history.pushState(null, '', targetHash);
-            }
-            setActive(target);
-
-            const header = document.querySelector('.top-bar');
-            const headerHeight = header ? header.offsetHeight : 0;
-
-            const targetY =
-                target.getBoundingClientRect().top +
-                window.scrollY -
-                headerHeight -
-                12;
-
-            window.scrollTo({
-                top: Math.max(0, targetY),
-                behavior: 'smooth'
-            });
+            navigateToSection(target);
         });
     });
 
-    window.addEventListener('scroll', updateActiveTab, {
+    nav.addEventListener('pointerdown', function (event) {
+        if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        swipeStart = { x: event.clientX, y: event.clientY };
+    });
+
+    nav.addEventListener('pointerup', function (event) {
+        if (!swipeStart) return;
+
+        const deltaX = event.clientX - swipeStart.x;
+        const deltaY = event.clientY - swipeStart.y;
+        swipeStart = null;
+
+        if (Math.abs(deltaX) < 40 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+        const activeIndex = links.findIndex(link => link.classList.contains('active'));
+        const nextIndex = Math.max(0, Math.min(
+            links.length - 1,
+            activeIndex + (deltaX < 0 ? 1 : -1)
+        ));
+        if (nextIndex === activeIndex) return;
+
+        suppressSwipeClick = true;
+        window.clearTimeout(swipeClickTimer);
+        swipeClickTimer = window.setTimeout(function () {
+            suppressSwipeClick = false;
+        }, 500);
+        navigateToSection(sections[nextIndex]);
+    });
+
+    nav.addEventListener('pointercancel', function () {
+        swipeStart = null;
+    });
+
+    nav.addEventListener('keydown', function (event) {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+        const activeIndex = links.findIndex(link => link.classList.contains('active'));
+        const nextIndex = Math.max(0, Math.min(
+            links.length - 1,
+            activeIndex + (event.key === 'ArrowRight' ? 1 : -1)
+        ));
+        if (nextIndex === activeIndex) return;
+
+        event.preventDefault();
+        links[nextIndex].focus();
+        navigateToSection(sections[nextIndex]);
+    });
+
+    window.addEventListener('scroll', scheduleActiveTabUpdate, {
         passive: true
     });
 
-    window.addEventListener('resize', updateActiveTab);
+    window.addEventListener('resize', function () {
+        centerActiveLink();
+        scheduleActiveTabUpdate();
+    });
+
+    function cancelPendingNavigation() {
+        if (!pendingNavigationSection) return;
+        pendingNavigationSection = null;
+        scheduleActiveTabUpdate();
+    }
+
+    window.addEventListener('wheel', cancelPendingNavigation, { passive: true });
+    window.addEventListener('touchstart', cancelPendingNavigation, { passive: true });
+    window.addEventListener('pointerdown', function (event) {
+        if (!nav.contains(event.target)) cancelPendingNavigation();
+    });
+
+    if ('ResizeObserver' in window) {
+        const sectionResizeObserver = new ResizeObserver(scheduleActiveTabUpdate);
+        sections.forEach(section => sectionResizeObserver.observe(section));
+    }
+
     function restoreSectionFromHistory() {
         const target = getSectionFromHash();
         if (target) {
@@ -2251,10 +2299,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('hashchange', restoreSectionFromHistory);
     window.addEventListener('popstate', restoreSectionFromHistory);
-    window.addEventListener('pageshow', updateActiveTab);
+    window.addEventListener('pageshow', scheduleActiveTabUpdate);
+    window.addEventListener('load', scheduleActiveTabUpdate);
 
     updateActiveTab();
     window.requestAnimationFrame(updateActiveTab);
+    centerActiveLink();
+    window.requestAnimationFrame(function () {
+        nav.classList.add('is-ready');
+        centerActiveLink();
+    });
     if (getSectionFromHash()) {
         window.requestAnimationFrame(restoreSectionFromHistory);
     }
@@ -2279,134 +2333,136 @@ window.addEventListener('pageshow', () => {
 </script>
 
 <style>
+/* Only the dashboard health card is styled here; other dashboard sections are untouched. */
 .c-home .c-id-card-scroll {
     width: 100%;
-    max-width: 85.60mm;
+    max-width: 1000px;
     margin: 0 auto;
-    container-type: inline-size;
 }
-.c-home .bheams-id-card {
-    position: relative;
-    isolation: isolate;
+.c-home .c-id-card {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+.c-home .c-id-body {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
+    align-items: center;
+    gap: 22px;
+    padding: clamp(22px, 3vw, 32px);
+}
+.c-home .c-id-details { min-width: 0; }
+.c-home .c-id-details-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+.c-home .c-id-secondary-details {
+    min-width: 0;
+    align-self: center;
+}
+.c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
+.c-home .c-id-body > .c-id-qr-centered {
+    grid-column: 4;
+    grid-row: 1;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    align-self: center;
+    justify-self: end;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 85.60mm;
-    aspect-ratio: 85.60 / 53.98;
-    margin: 0 auto;
-    overflow: hidden;
-    box-sizing: border-box;
-    border: 1px solid #d1d5db;
-    border-radius: .08in;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
-    color: #1f2937;
-}
-.c-home .bheams-id-decoration {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(135deg, rgba(29,78,216,.06), transparent 45%, rgba(22,101,52,.05));
-}
-.c-home .bheams-id-header {
-    display: flex;
-    align-items: center;
-    flex: 0 0 12.7cqi;
-    min-height: 12.7cqi;
-    gap: 2.35cqi;
-    padding: 1.17cqi 3.23cqi;
-    box-sizing: border-box;
-    border-bottom: 2px solid #bfdbfe;
-    background: linear-gradient(110deg, #102b78, #17469a);
-    color: #fff;
-}
-.c-home .bheams-seal {
-    display: flex;
-    flex: 0 0 9.1cqi;
     align-items: center;
     justify-content: center;
-    width: 9.1cqi;
-    height: 9.1cqi;
-    min-width: 9.1cqi;
-    min-height: 9.1cqi;
-    overflow: hidden;
-    border: 1px solid #fff;
-    border-radius: 50%;
+    text-align: center;
+    gap: 6px;
+}
+.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame {
+    padding: 6px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
     background: #fff;
 }
-.c-home .bheams-logo { width: 100%; height: 100%; object-fit: contain; }
-.c-home .bheams-brand { flex: 1; min-width: 0; }
-.c-home .bheams-brand h2 { margin: 0; color: #fff; font-size: 3.4cqi; font-weight: 900; line-height: 1.05; }
-.c-home .bheams-brand p { margin: .3cqi 0; color: #fff; font-size: 1.86cqi; font-weight: 800; line-height: 1.05; }
-.c-home .bheams-brand span { display: block; color: #dbeafe; font-size: 1.24cqi; font-weight: 700; line-height: 1.1; }
-.c-home .bheams-id-body {
-    display: grid;
-    grid-template-columns: 21.2cqi minmax(0, 1fr) 28.2cqi;
-    align-items: center;
-    gap: 2.05cqi;
-    flex: 1 1 auto;
-    min-height: 0;
-    padding: 2.05cqi 3.23cqi;
-    box-sizing: border-box;
+.c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
+    display: block;
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
 }
-.c-home .bheams-photo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 21.2cqi;
-    height: 26.5cqi;
-    overflow: hidden;
-    box-sizing: border-box;
-    border: 1px solid #d1d5db;
-    border-radius: 5px;
-    background: #f1f5f9;
-    color: #64748b;
-}
-.c-home .bheams-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.c-home .bheams-no-photo { display: flex; flex-direction: column; align-items: center; gap: 1.5cqi; }
-.c-home .bheams-no-photo span { font-size: 7.1cqi; font-weight: 900; line-height: 1; }
-.c-home .bheams-no-photo small { font-size: 1.55cqi; }
-.c-home .bheams-id-details { min-width: 0; align-self: center; }
-.c-home .bheams-id-title { margin-bottom: .93cqi; color: #173b82; font-size: 2.01cqi; font-weight: 900; letter-spacing: .3px; line-height: 1.1; }
-.c-home .bheams-id-field { display: flex; flex-direction: column; gap: 0; min-width: 0; margin-bottom: .46cqi; overflow-wrap: anywhere; }
-.c-home .bheams-id-field span { color: #64748b; font-size: 1.49cqi; font-weight: 800; letter-spacing: 0; line-height: 1.1; }
-.c-home .bheams-id-field strong { color: #172554; font-size: 2.17cqi; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; }
-.c-home .bheams-citizen-number { color: #17469a; font-size: 2.48cqi; letter-spacing: 1px; }
-.c-home .bheams-id-two-columns { display: grid; grid-template-columns: 1fr; gap: 0; }
-.c-home .bheams-id-qr { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .93cqi; min-width: 0; text-align: center; }
-.c-home .bheams-qr-frame {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28.2cqi;
-    height: 28.2cqi;
-    min-width: 28.2cqi;
-    min-height: 28.2cqi;
-    padding: 1.65cqi;
-    border: 1px solid #cbd5e1;
-    border-radius: 3px;
-    background: #fff;
-}
-.c-home .bheams-qr-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.c-home .bheams-id-qr strong { color: #173b82; font-size: 1.49cqi; font-weight: 900; letter-spacing: 0; line-height: 1.1; }
-.c-home .bheams-id-qr small { color: #64748b; font-size: 1.18cqi; line-height: 1.1; }
-.c-home .bheams-id-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 0 0 6.5cqi;
-    min-height: 6.5cqi;
-    gap: .93cqi;
-    padding: 0 3.5cqi;
-    box-sizing: border-box;
-    border-top: 1px solid #dbeafe;
-    background: #f8fafc;
-    color: #475569;
-    font-size: 1.36cqi;
+.c-home .c-id-body > .c-id-qr-centered > span {
+    color: #173b82;
+    font-size: 9px;
     font-weight: 800;
-    letter-spacing: 0;
-    line-height: 1.1;
+    letter-spacing: .5px;
+}
+.c-home .c-id-scroll-hint {
+    display: none;
+}
+@media (max-width: 760px) {
+    .c-home .c-id-card-scroll {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    .c-home .c-id-body {
+        grid-template-columns: 132px minmax(0, 1.25fr) minmax(0, .8fr) 125px;
+        align-items: center;
+        gap: 22px;
+        padding: 22px;
+    }
+    .c-home .c-id-card {
+        width: 760px;
+        max-width: none;
+    }
+    .c-home .c-id-header {
+        min-height: 116px;
+        gap: 16px;
+        padding: 18px 24px;
+    }
+    .c-home .c-id-header > img {
+        flex-basis: 70px;
+        width: 70px;
+        height: 70px;
+    }
+    .c-home .c-id-header-text h3 { font-size: 27px; }
+    .c-home .c-id-header-text strong { font-size: 13px; }
+    .c-home .c-id-header-text small { font-size: 10px; }
+    .c-home .c-id-body .c-photo {
+        grid-column: auto;
+        grid-row: auto;
+        width: 132px;
+        height: 164px;
+    }
+    .c-home .c-id-details {
+        grid-column: auto;
+        grid-row: auto;
+    }
+    .c-home .c-id-secondary-details {
+        display: block;
+        grid-column: auto;
+        grid-row: auto;
+    }
+    .c-home .c-id-secondary-details .c-id-field { margin-bottom: 14px; }
+    .c-home .c-id-body > .c-id-qr-centered {
+        grid-column: 4;
+        grid-row: 1;
+        justify-self: end;
+        align-items: center;
+    }
+    .c-home .c-id-body > .c-id-qr-centered .c-id-qr-frame img {
+        width: 100px;
+        height: 100px;
+    }
+    .c-home .c-id-scroll-hint {
+        display: block;
+        margin: 6px 0 0;
+        color: #52657e;
+        font-size: 12px;
+        text-align: center;
+    }
 }
 </style>
 
+<script src="{{ asset('js/ecard-fit.js') }}?v={{ filemtime(public_path('js/ecard-fit.js')) }}"></script>
 @endsection
