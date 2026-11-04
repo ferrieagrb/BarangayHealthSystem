@@ -34,6 +34,7 @@ class BhwDiseaseMonitoringTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
 
         foreach (['system_settings', 'citizen_activity_logs', 'purok_user', 'purok_subgroup_user', 'referrals', 'events', 'vaccination_schedules', 'vaccinations', 'medication_records', 'maintenance_records', 'health_records', 'vaccination_records', 'supplies', 'citizens', 'families', 'purok_subgroups', 'puroks', 'user_permissions', 'users'] as $table) {
             Schema::dropIfExists($table);
@@ -218,6 +219,10 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->timestamps();
             $table->softDeletes();
         });
+        foreach (['users', 'puroks', 'purok_subgroups', 'families', 'citizens', 'supplies', 'health_records', 'maintenance_records', 'vaccination_records', 'medication_records', 'events'] as $tableName) {
+            Schema::table($tableName, fn (Blueprint $table) => $table->softDeletes());
+        }
+
         Schema::create('referrals', function (Blueprint $table) {
             $table->id();
             $table->date('date_of_referral');
