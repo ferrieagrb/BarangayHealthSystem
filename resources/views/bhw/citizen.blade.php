@@ -522,18 +522,12 @@
      role="dialog" aria-modal="true" aria-labelledby="citizenPasswordResetTitle">
     <div class="citizen-password-dialog">
         <h2 id="citizenPasswordResetTitle">Reset Citizen Password</h2>
-        <p>Set a temporary password for <strong id="resetCitizenName"></strong>. The citizen will be required to change it at the next login.</p>
+        <p>This resets the password of <strong id="resetCitizenName"></strong> to the default password (<strong>Barangay123!</strong>). The citizen will be required to change it at the next login.</p>
 
         <form method="POST" id="citizenPasswordResetForm">
             @csrf
-            <label for="resetCitizenPassword">Temporary password</label>
-            <input type="password" id="resetCitizenPassword" name="password" minlength="8" required autocomplete="new-password">
-
-            <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
-            <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
-
-            <label for="resetCitizenOwnPassword" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>Your password (to confirm this action)</label>
-            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) @hidden(! \App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
+            <label for="resetCitizenOwnPassword">Your password (to confirm this action)</label>
+            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" required autocomplete="current-password">
 
             <div class="citizen-password-dialog-actions">
                 <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset" data-ui-action="secondary">Cancel</button>
@@ -662,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('citizenPasswordResetModal');
     const form = document.getElementById('citizenPasswordResetForm');
     const nameElement = document.getElementById('resetCitizenName');
-    const passwordInput = document.getElementById('resetCitizenPassword');
+    const passwordInput = document.getElementById('resetCitizenOwnPassword');
     const cancelButton = document.getElementById('cancelCitizenPasswordReset');
 
     if (!modal || !form || !nameElement || !passwordInput || !cancelButton) return;

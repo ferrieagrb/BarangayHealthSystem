@@ -86,6 +86,25 @@
             </div>
         </div>
 
+        <form method="GET" action="{{ route('superadmin.users') }}" class="users-search-form">
+            @if($showArchived)
+                <input type="hidden" name="archived" value="1">
+            @endif
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Search name, email or username..." aria-label="Search users">
+            <select name="role" aria-label="Filter by role">
+                @foreach(['all' => 'All roles', 'superadmin' => 'Super Admin', 'admin' => 'Admin', 'bhw' => 'Barangay Health Worker', 'citizen' => 'Citizen'] as $value => $label)
+                    <option value="{{ $value }}" @selected(request('role', 'all') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="primary-btn" data-ui-action="primary">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                Search
+            </button>
+            @if(request()->filled('search') || (request()->filled('role') && request('role') !== 'all'))
+                <a href="{{ route('superadmin.users', $showArchived ? ['archived' => 1] : []) }}" class="primary-btn" style="text-decoration:none;" data-ui-action="secondary">Clear</a>
+            @endif
+        </form>
+
         <div class="table-responsive">
             <table>
                 <thead>
@@ -229,6 +248,12 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($users->hasPages())
+            <div class="users-pagination">
+                {{ $users->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     </section>
 </div>
 
@@ -371,7 +396,7 @@
             @method('PATCH')
 
             <div class="modal-body">
-                <p>A new temporary password will be generated for <strong id="reset_user_name"></strong> and shown once. They must change it at next login.</p>
+                <p>The password of <strong id="reset_user_name"></strong> will be reset to the default (TemporaryPassword123! for staff, Barangay123! for citizens). They must change it at next login.</p>
 
                 <div class="input-group" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
                     <label for="reset_confirm_password">Your password</label>

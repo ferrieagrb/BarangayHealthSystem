@@ -152,6 +152,7 @@ class SecurityControlsTest extends TestCase
         $target->refresh();
         $this->assertNotSame($oldHash, $target->password);
         $this->assertTrue((bool) $target->must_change_password);
+        $this->assertTrue(Hash::check('TemporaryPassword123!', $target->password));
     }
 
     public function test_admin_cannot_reset_a_superadmin_password(): void

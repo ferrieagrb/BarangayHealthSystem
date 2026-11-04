@@ -99,50 +99,60 @@
 @endif
 @endsection
 
-@section('script')
+@section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const reportForm = document.getElementById('reportBuilder');
-    const excelButton = reportForm?.querySelector('button[name="export_format"][value="xlsx"]');
+    const exportButtons = reportForm ? Array.from(reportForm.querySelectorAll('button[name="export_format"]')) : [];
     const exportFeedback = document.getElementById('reportExportFeedback');
+    const exportTypes = {
+        xlsx: { label: 'Excel', mime: 'spreadsheetml', fallback: 'custom-report.xlsx' },
+        pdf: { label: 'PDF', mime: 'pdf', fallback: 'custom-report.pdf' }
+    };
     let exportInProgress = false;
 
     reportForm?.addEventListener('submit', async function (event) {
-        if (event.submitter !== excelButton || !excelButton || exportInProgress) return;
+        const excelButton = event.submitter;
+        const type = exportTypes[excelButton?.value];
+        if (!type || !exportButtons.includes(excelButton) || exportInProgress) {
+            if (type) event.preventDefault();
+            return;
+        }
 
         event.preventDefault();
         exportInProgress = true;
         exportFeedback.hidden = true;
         exportFeedback.textContent = '';
-        excelButton.disabled = true;
+        exportButtons.forEach((button) => { button.disabled = true; });
         excelButton.setAttribute('aria-busy', 'true');
         const originalLabel = excelButton.textContent;
-        excelButton.textContent = 'Preparing Excel...';
+        excelButton.textContent = 'Preparing ' + type.label + '...';
+        if (window.showLoader) window.showLoader();
 
         try {
             const requestUrl = new URL(reportForm.action, window.location.href);
             const query = new URLSearchParams(new FormData(reportForm));
-            query.set('export_format', 'xlsx');
+            query.set('export_format', excelButton.value);
             requestUrl.search = query.toString();
 
             const response = await fetch(requestUrl, {
                 credentials: 'same-origin',
-                headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+                headers: { Accept: '*/*' }
             });
             const contentType = response.headers.get('Content-Type') || '';
-            if (!response.ok || !contentType.includes('spreadsheetml')) {
+            if (!response.ok || !contentType.includes(type.mime)) {
                 const responseText = await response.text();
                 const errorDocument = new DOMParser().parseFromString(responseText, 'text/html');
                 const validationMessage = errorDocument.querySelector('.report-validation-errors, .alert-danger, .errors')?.textContent.trim();
                 throw new Error(response.redirected
                     ? 'Your session may have expired. Reload the page and sign in before exporting.'
-                    : validationMessage || 'The server did not return an Excel workbook. Check the report filters and try again.');
+                    : validationMessage || 'The server did not return a ' + type.label + ' file. Check the report filters and try again.');
             }
 
             const filenameMatch = response.headers.get('Content-Disposition')?.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
             const filename = filenameMatch
                 ? decodeURIComponent(filenameMatch[1] || filenameMatch[2])
-                : 'custom-report.xlsx';
+                : type.fallback;
             const fileUrl = URL.createObjectURL(await response.blob());
             const downloadLink = document.createElement('a');
             downloadLink.href = fileUrl;
@@ -152,13 +162,14 @@ document.addEventListener('DOMContentLoaded', function () {
             downloadLink.remove();
             window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
         } catch (error) {
-            exportFeedback.textContent = error instanceof Error ? error.message : 'Excel export failed. Please try again.';
+            exportFeedback.textContent = error instanceof Error ? error.message : type.label + ' export failed. Please try again.';
             exportFeedback.hidden = false;
         } finally {
             exportInProgress = false;
-            excelButton.disabled = false;
+            exportButtons.forEach((button) => { button.disabled = false; });
             excelButton.removeAttribute('aria-busy');
             excelButton.textContent = originalLabel;
+            if (window.hideLoader) window.hideLoader();
         }
     });
 
@@ -181,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? request('report_type')
                 : ($selectedSections[0] ?? array_key_first($availableSections));
             $reportGroups = [
-                'General Reports' => ['citizens', 'health_records', 'supplies', 'events', 'referrals'],
+                'General Reports' => ['citizens', 'households', 'health_records', 'supplies', 'events', 'referrals'],
                 'Demographic Reports' => ['age_by_purok', 'sex_by_purok', 'pregnancy_by_purok'],
                 'Health Reports' => ['immunization', 'diagnosis_summary', 'diagnosis_by_purok'],
             ];
@@ -218,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
 
                 <div class="report-fields">
-                    <div class="report-field" data-reports="citizens,health_records,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization,diagnosis_summary,diagnosis_by_purok,referrals">
+                    <div class="report-field" data-reports="citizens,households,health_records,age_by_purok,sex_by_purok,pregnancy_by_purok,immunization,diagnosis_summary,diagnosis_by_purok,referrals">
                         <label for="reportPurok">Purok</label>
                         <select id="reportPurok" name="location" aria-label="Filter by Purok or Subgroup">
                             <option value="">All Puroks</option>
@@ -342,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <button type="submit" class="btn-primary" data-ui-action="primary">Generate Report</button>
                 <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}" data-ui-action="reset">Reset Filters</a>
                 <button type="submit" class="btn-secondary" name="export_format" value="xlsx" data-no-loader="true" data-ui-action="secondary">Export to Excel</button>
-                <button type="submit" class="btn-secondary" name="export_format" value="pdf" data-ui-action="secondary">Export to PDF</button>
+                <button type="submit" class="btn-secondary" name="export_format" value="pdf" data-no-loader="true" data-ui-action="secondary">Export to PDF</button>
                 <p id="reportExportFeedback" class="report-export-feedback" role="alert" hidden></p>
             </div>
         </form>
@@ -366,6 +377,64 @@ document.addEventListener('DOMContentLoaded', function () {
                             <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->ageForEligibility() ?? 'Not recorded' }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
                         @endforeach
                     </tbody></table>@endif
+                </section>
+            @endif
+
+            @if(in_array('households', $selectedSections))
+                <section class="report-section">
+                    <h3>Household Profiles ({{ $households->count() }})</h3>
+                    @if($households->isEmpty()) <div class="report-empty">No households match the selected filters.</div>
+                    @else
+                        <style>
+                            .household-table tr.household-purok-row td { background: #eef2ff; color: #173b82; font-weight: 700; }
+                            .household-table tr.household-subgroup-row td { background: #f8fafc; color: #334155; font-weight: 600; }
+                            .household-table tr.is-head td { font-weight: 700; }
+                            .household-badge { display: inline-block; color: #173b82; font-weight: 700; }
+                        </style>
+                        @php
+                            $householdsByPurok = $households->groupBy(fn ($f) => $f->subgroup?->purok?->name ?? $f->purok?->name ?? 'Unassigned');
+                        @endphp
+                        <table class="report-table household-table">
+                            <thead><tr><th>Family ID</th><th>Family Name</th><th>Family Head</th><th>Member</th><th>Role</th><th>Age</th><th>Sex</th><th>Purok / Subgroup</th></tr></thead>
+                            <tbody>
+                            @foreach($householdsByPurok as $purokName => $purokFamilies)
+                                <tr class="household-purok-row"><td colspan="8">{{ $purokName }} &mdash; Qty: {{ $purokFamilies->count() }}</td></tr>
+                                @foreach($purokFamilies->groupBy(fn ($f) => $f->subgroup?->name ?? 'No subgroup') as $subgroupName => $subgroupFamilies)
+                                    @php $subgroupLabel = \App\Support\FamilyCode::subgroupLabel($purokName, $subgroupFamilies->first()->subgroup?->name); @endphp
+                                    <tr class="household-subgroup-row"><td colspan="8">{{ $subgroupLabel }} &bull; Qty: {{ $subgroupFamilies->count() }}</td></tr>
+                                    @foreach($subgroupFamilies as $family)
+                                        @php
+                                            $rowCount = max(1, $family->sorted_members->count());
+                                            $location = $purokName.' / '.$subgroupLabel;
+                                        @endphp
+                                        @forelse($family->sorted_members as $member)
+                                            <tr class="{{ $member->id === $family->head_id ? 'is-head' : '' }}">
+                                                @if($loop->first)
+                                                    <td class="family-cell" rowspan="{{ $rowCount }}">{{ $family->family_code ?: 'F-'.str_pad($family->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                                    <td class="family-cell" rowspan="{{ $rowCount }}">{{ $family->family_name }}</td>
+                                                    <td class="family-cell" rowspan="{{ $rowCount }}">{{ $family->head_name }}</td>
+                                                @endif
+                                                <td>{{ $member->Citizen_FName }} {{ $member->Citizen_LName }}</td>
+                                                <td>@if($member->id === $family->head_id)<span class="household-badge">Head</span>@else Member @endif</td>
+                                                <td>{{ $member->ageForEligibility() ?? 'Not recorded' }}</td>
+                                                <td>{{ $member->Citizen_Sex ?: 'Not recorded' }}</td>
+                                                <td>{{ $location }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td class="family-cell">{{ $family->family_code ?: 'F-'.str_pad($family->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                                <td class="family-cell">{{ $family->family_name }}</td>
+                                                <td class="family-cell">{{ $family->head_name }}</td>
+                                                <td colspan="4">No members</td>
+                                                <td>{{ $location }}</td>
+                                            </tr>
+                                        @endforelse
+                                    @endforeach
+                                @endforeach
+                            @endforeach
+                            </tbody>
+                        </table>
+                    @endif
                 </section>
             @endif
 

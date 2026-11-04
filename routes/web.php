@@ -378,6 +378,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->prefix('bhw')->name
     Route::post('/families/quick-store', [FamilyController::class, 'storeQuick'])->name('families.quick.store');
     Route::get('/families/{family}', [FamilyController::class, 'show'])->name('families.show');
     Route::post('/families/{family}/members', [FamilyController::class, 'addMember'])->name('families.members.add');
+    Route::put('/families/{family}/head', [FamilyController::class, 'setHead'])->name('families.head.set');
     Route::delete('/families/members/{citizenId}', [FamilyController::class, 'removeMember'])->name('families.members.remove');
     Route::delete('/families/{family}', [FamilyController::class, 'archive'])->name('families.archive');
     Route::put('/families/{family}', [FamilyController::class, 'update'])->name('families.update');

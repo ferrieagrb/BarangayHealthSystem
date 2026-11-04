@@ -816,6 +816,38 @@ dialog.family-modal .modal-body td:last-child {
     text-align: right;
 }
 
+dialog.family-modal .modal-body th:last-child {
+    text-align: right;
+}
+
+dialog.family-modal .member-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+dialog.family-modal .member-actions form {
+    margin: 0;
+}
+
+dialog.family-modal .member-actions .btn-sm {
+    min-height: 28px;
+    padding: 5px 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #334155;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+dialog.family-modal .member-actions .btn-sm:hover {
+    background: #eef2f7;
+}
+
 dialog.family-modal .empty-members-message {
     height: 78px;
     color: #94a3b8 !important;

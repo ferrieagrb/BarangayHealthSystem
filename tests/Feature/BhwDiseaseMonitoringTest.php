@@ -109,6 +109,8 @@ class BhwDiseaseMonitoringTest extends TestCase
         Schema::create('families', function (Blueprint $table) {
             $table->id();
             $table->string('family_name')->nullable();
+            $table->string('family_code')->nullable();
+            $table->unsignedBigInteger('head_id')->nullable();
             $table->unsignedBigInteger('purok_id')->nullable();
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->timestamps();
@@ -220,7 +222,7 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->softDeletes();
         });
         foreach (['users', 'puroks', 'purok_subgroups', 'families', 'citizens', 'supplies', 'health_records', 'maintenance_records', 'vaccination_records', 'medication_records', 'events'] as $tableName) {
-            Schema::table($tableName, fn (Blueprint $table) => $table->softDeletes());
+            Schema::hasColumn($tableName, 'deleted_at') || Schema::table($tableName, fn (Blueprint $table) => $table->softDeletes());
         }
 
         Schema::create('referrals', function (Blueprint $table) {
@@ -748,6 +750,67 @@ class BhwDiseaseMonitoringTest extends TestCase
             ->get(route('bhw.reports', ['report_type' => 'age_by_purok', 'purok' => $purok->id]))
             ->assertOk()
             ->assertDontSee('class="report-graphic"', false);
+    }
+
+    public function test_household_profiles_report_is_ordered_by_purok_and_filterable(): void
+    {
+        $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
+
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+
+        $purok1 = Purok::create(['name' => 'Purok 1']);
+        $purok2 = Purok::create(['name' => 'Purok 2']);
+        $sub1 = PurokSubgroup::create(['purok_id' => $purok1->id, 'name' => 'Purok 1A']);
+        $sub2 = PurokSubgroup::create(['purok_id' => $purok2->id, 'name' => 'Purok 2A']);
+        $bhw->assignedSubgroups()->attach([$sub1->id, $sub2->id]);
+
+        foreach ([
+            ['Zeta', $purok2, $sub2, 'F2A-0001'],
+            ['Beta', $purok1, $sub1, 'F1A-0002'],
+            ['Alpha', $purok1, $sub1, 'F1A-0001'],
+        ] as [$name, $purok, $sub, $code]) {
+            $family = \App\Models\Family::create([
+                'family_name' => $name,
+                'purok_id' => $purok->id,
+                'subgroup_id' => $sub->id,
+                'family_code' => $code,
+            ]);
+            if ($name === 'Alpha') {
+                $alphaMember = $this->createCitizen($purok, $sub, 'Alpha Head Person');
+                $alphaMember->update(['family_id' => $family->id]);
+                $family->update(['head_id' => $alphaMember->id]);
+            }
+        }
+
+        $this->actingAs($bhw)
+            ->get(route('bhw.reports', ['report_type' => 'households']))
+            ->assertOk()
+            ->assertSee('household-badge', false)
+            ->assertSeeInOrder(['F1A-0001', 'F1A-0002', 'F2A-0001']);
+
+        $this->actingAs($bhw)
+            ->get(route('bhw.reports', ['report_type' => 'households', 'location' => 'purok:'.$purok2->id]))
+            ->assertOk()
+            ->assertSee('F2A-0001')
+            ->assertDontSee('F1A-0001');
+
+        $response = $this->actingAs($bhw)
+            ->get(route('bhw.reports', ['report_type' => 'households', 'export_format' => 'xlsx']));
+        $response->assertOk();
+        $path = tempnam(sys_get_temp_dir(), 'bhw-households-');
+        file_put_contents($path, $response->streamedContent());
+
+        try {
+            $sheet = IOFactory::load($path)->getSheetByName('Household Profiles');
+            $this->assertNotNull($sheet);
+            $values = collect($sheet->toArray())->flatten()->filter()->values()->all();
+            $this->assertContains('Head', $values);
+            $titles = array_values(array_filter($values, fn ($v) => str_starts_with((string) $v, 'F1A-') || str_starts_with((string) $v, 'F2A-')));
+            $this->assertSame(['F1A-0001', 'F1A-0002', 'F2A-0001'], $titles);
+        } finally {
+            unlink($path);
+        }
     }
 
     public function test_report_purok_filter_includes_bhw_pivot_assigned_subgroups(): void
