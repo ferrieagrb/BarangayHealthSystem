@@ -223,6 +223,8 @@ public function resetPassword(Request $request, $id)
 
     $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name} to the default; a password change is required at next login.", 'security', $user);
 
-    return back()->with('success', "Password for {$user->name} was reset to the default password ({$defaultPassword}). They must change it at next login.");
+    $loginIdentifier = filled($user->username) ? $user->username : $user->email;
+
+    return back()->with('success', "Password for {$user->name} was reset. Log in using {$loginIdentifier}. Temporary password (shown once): {$temporaryPassword}. They must change it at next login.");
 }
 }

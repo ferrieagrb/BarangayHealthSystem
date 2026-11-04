@@ -13,6 +13,30 @@
     .report-field[hidden] { display: none; }
     .report-field label { color: #334155; font-size: 12px; font-weight: 700; }
     .report-field input, .report-field select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 7px; box-sizing: border-box; background: #fff; color: #172033; font: inherit; }
+    .report-field #reportType { cursor: pointer; }
+    .report-field #reportType:focus-visible { border-color: #2563eb; outline: 3px solid rgba(37, 99, 235, .18); outline-offset: 1px; }
+    .report-field #reportType optgroup { background: #f1f5f9; color: #334155; font-weight: 700; }
+    .report-field #reportType option { padding: 8px 12px; background: #fff; color: #172033; font-weight: 400; }
+    .report-field #reportType option:checked { background: #dbeafe; color: #173b82; font-weight: 600; }
+    .report-type-field.is-open { position: relative; z-index: 20; }
+    .report-type-picker { position: relative; min-width: 0; }
+    .report-type-native { position: absolute !important; width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+    .report-type-trigger { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #172033; font: inherit; text-align: left; cursor: pointer; }
+    .report-type-trigger:focus-visible { border-color: #2563eb; outline: 3px solid rgba(37, 99, 235, .18); outline-offset: 1px; }
+    .report-type-current { min-width: 0; overflow-wrap: anywhere; }
+    .report-type-chevron { flex: 0 0 8px; width: 8px; height: 8px; margin: -4px 3px 0 0; border-right: 1.5px solid #475569; border-bottom: 1.5px solid #475569; transform: rotate(45deg); transition: transform .16s ease; }
+    .report-type-trigger[aria-expanded="true"] .report-type-chevron { margin-top: 4px; transform: rotate(225deg); }
+    .report-type-options { position: absolute; top: calc(100% + 5px); right: 0; left: 0; z-index: 1100; max-height: min(320px, calc(100dvh - 24px)); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(15, 23, 42, .16); }
+    .report-type-options.opens-up { top: auto; bottom: calc(100% + 5px); }
+    .report-type-options[hidden] { display: none; }
+    .report-type-group + .report-type-group { border-top: 1px solid #cbd5e1; }
+    .report-type-group-label { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; background: #f1f5f9; color: #334155; font-size: 11px; font-weight: 700; line-height: 1.35; text-transform: uppercase; }
+    .report-type-option { min-height: 40px; padding: 9px 12px 9px 24px; color: #172033; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; cursor: pointer; }
+    .report-type-option + .report-type-option { border-top: 1px solid #f1f5f9; }
+    .report-type-option:hover, .report-type-option.is-active { background: #f1f5f9; }
+    .report-type-option[aria-selected="true"] { background: #dbeafe; color: #173b82; font-weight: 600; }
+    .report-type-option:focus { outline: none; }
+    @media (prefers-reduced-motion: reduce) { .report-type-chevron { transition: none; } }
     .report-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e8edf4; }
     .report-actions button { border: 0; cursor: pointer; }
     .report-actions .btn-primary, .report-actions .btn-secondary { min-height: 40px; padding: 10px 16px; border-radius: 7px; font: inherit; font-weight: 600; }
@@ -213,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <div class="report-config-row">
                 <div class="report-field">
-                    <label for="reportType">Select Report Type</label>
+                    <label for="reportType" id="reportTypeLabel">Select Report Type</label>
                     <select id="reportType" name="report_type" required>
                         @foreach($reportGroups as $groupLabel => $sectionKeys)
                             @php $groupSections = array_intersect_key(array_flip($sectionKeys), $availableSections); @endphp
@@ -276,6 +300,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             <option value="">All</option>
                             <option value="Male" {{ request('sex') === 'Male' ? 'selected' : '' }}>Male</option>
                             <option value="Female" {{ request('sex') === 'Female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                    </div>
+                    <div class="report-field" data-reports="citizens">
+                        <label for="citizenAgeSort">Sort by age</label>
+                        <select id="citizenAgeSort" name="age_sort">
+                            <option value="">Default order</option>
+                            <option value="youngest" {{ request('age_sort') === 'youngest' ? 'selected' : '' }}>Youngest to oldest</option>
+                            <option value="oldest" {{ request('age_sort') === 'oldest' ? 'selected' : '' }}>Oldest to youngest</option>
                         </select>
                     </div>
                     <div class="report-field" data-reports="health_records,events,referrals,diagnosis_summary,diagnosis_by_purok,immunization">
@@ -637,6 +669,233 @@ document.addEventListener('DOMContentLoaded', function () {
         const reportType = document.getElementById('reportType');
         const filterFields = document.querySelectorAll('.report-field[data-reports]');
         const graphicsToggle = document.querySelector('.report-graphics-toggle');
+        const reportTypeField = reportType.closest('.report-field');
+        const reportTypeLabel = document.getElementById('reportTypeLabel');
+        const picker = document.createElement('div');
+        picker.className = 'report-type-picker';
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.id = 'reportTypeTrigger';
+        trigger.className = 'report-type-trigger';
+        trigger.setAttribute('role', 'combobox');
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.setAttribute('aria-controls', 'reportTypeOptions');
+        trigger.setAttribute('aria-labelledby', 'reportTypeLabel reportTypeCurrent');
+        trigger.setAttribute('aria-required', reportType.required ? 'true' : 'false');
+
+        const currentLabel = document.createElement('span');
+        currentLabel.id = 'reportTypeCurrent';
+        currentLabel.className = 'report-type-current';
+        const chevron = document.createElement('span');
+        chevron.className = 'report-type-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        trigger.append(currentLabel, chevron);
+
+        const listbox = document.createElement('div');
+        listbox.id = 'reportTypeOptions';
+        listbox.className = 'report-type-options';
+        listbox.setAttribute('role', 'listbox');
+        listbox.setAttribute('aria-labelledby', 'reportTypeLabel');
+        listbox.hidden = true;
+
+        const reportOptions = [];
+        [...reportType.querySelectorAll('optgroup')].forEach((group, groupIndex) => {
+            const groupElement = document.createElement('div');
+            groupElement.className = 'report-type-group';
+            groupElement.setAttribute('role', 'group');
+            groupElement.setAttribute('aria-label', group.label);
+
+            const groupLabel = document.createElement('div');
+            groupLabel.className = 'report-type-group-label';
+            groupLabel.setAttribute('role', 'presentation');
+            groupLabel.textContent = group.label;
+            groupElement.appendChild(groupLabel);
+
+            [...group.querySelectorAll('option')].forEach((option, optionIndex) => {
+                const optionElement = document.createElement('div');
+                optionElement.id = `reportTypeOption-${groupIndex}-${optionIndex}`;
+                optionElement.className = 'report-type-option';
+                optionElement.setAttribute('role', 'option');
+                optionElement.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+                optionElement.textContent = option.textContent.trim();
+                optionElement.addEventListener('pointermove', () => setActiveOption(optionElement));
+                optionElement.addEventListener('click', () => selectOption(option));
+                groupElement.appendChild(optionElement);
+                reportOptions.push({ option, element: optionElement });
+            });
+
+            listbox.appendChild(groupElement);
+        });
+
+        reportType.parentNode.insertBefore(picker, reportType.nextSibling);
+        picker.append(trigger, listbox);
+        reportType.classList.add('report-type-native');
+        reportType.setAttribute('aria-hidden', 'true');
+        reportType.tabIndex = -1;
+        reportTypeField.classList.add('report-type-field');
+
+        let activeOptionIndex = Math.max(0, reportOptions.findIndex(item => item.option.selected));
+        let typeahead = '';
+        let typeaheadTimer;
+
+        function syncReportTypeControl() {
+            const selectedItem = reportOptions.find(item => item.option.value === reportType.value);
+            if (!selectedItem) return;
+
+            currentLabel.textContent = selectedItem.option.textContent.trim();
+            reportOptions.forEach(item => {
+                item.element.setAttribute('aria-selected', item === selectedItem ? 'true' : 'false');
+            });
+        }
+
+        function setActiveOption(optionElement) {
+            const index = reportOptions.findIndex(item => item.element === optionElement);
+            if (index < 0) return;
+
+            activeOptionIndex = index;
+            reportOptions.forEach(item => item.element.classList.toggle('is-active', item.element === optionElement));
+            trigger.setAttribute('aria-activedescendant', optionElement.id);
+            optionElement.scrollIntoView({ block: 'nearest' });
+        }
+
+        function positionListbox() {
+            const bounds = trigger.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - bounds.bottom - 8;
+            const spaceAbove = bounds.top - 8;
+            const estimatedHeight = Math.min(320, listbox.scrollHeight);
+            const opensUp = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+            const availableHeight = Math.max(0, opensUp ? spaceAbove : spaceBelow);
+
+            listbox.classList.toggle('opens-up', opensUp);
+            listbox.style.maxHeight = `${Math.min(320, availableHeight)}px`;
+        }
+
+        function openListbox(index = activeOptionIndex) {
+            if (!reportOptions.length) return;
+
+            listbox.hidden = false;
+            trigger.setAttribute('aria-expanded', 'true');
+            reportTypeField.classList.add('is-open');
+            positionListbox();
+            setActiveOption(reportOptions[Math.max(0, Math.min(reportOptions.length - 1, index))].element);
+        }
+
+        function closeListbox(restoreFocus = false) {
+            listbox.hidden = true;
+            trigger.setAttribute('aria-expanded', 'false');
+            trigger.removeAttribute('aria-activedescendant');
+            reportTypeField.classList.remove('is-open');
+            listbox.classList.remove('opens-up');
+            listbox.style.maxHeight = '';
+            reportOptions.forEach(item => item.element.classList.remove('is-active'));
+            if (restoreFocus) trigger.focus();
+        }
+
+        function selectOption(option) {
+            reportType.value = option.value;
+            syncReportTypeControl();
+            activeOptionIndex = reportOptions.findIndex(item => item.option === option);
+            reportType.dispatchEvent(new Event('change', { bubbles: true }));
+            closeListbox(true);
+        }
+
+        function findTypeaheadMatch(character) {
+            typeahead += character.toLocaleLowerCase();
+            window.clearTimeout(typeaheadTimer);
+            typeaheadTimer = window.setTimeout(() => { typeahead = ''; }, 700);
+            const startIndex = Math.max(0, activeOptionIndex + 1);
+            for (let offset = 0; offset < reportOptions.length; offset += 1) {
+                const index = (startIndex + offset) % reportOptions.length;
+                if (reportOptions[index].option.textContent.trim().toLocaleLowerCase().startsWith(typeahead)) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+
+        trigger.addEventListener('click', () => {
+            if (listbox.hidden) openListbox();
+            else closeListbox();
+        });
+        trigger.addEventListener('keydown', event => {
+            const open = !listbox.hidden;
+            if (event.key === 'Tab') {
+                closeListbox();
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                if (open) {
+                    event.preventDefault();
+                    closeListbox();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                if (!open) {
+                    const selectedIndex = reportOptions.findIndex(item => item.option.selected);
+                    openListbox(Math.max(0, selectedIndex + (event.key === 'ArrowDown' ? 1 : -1)));
+                } else {
+                    setActiveOption(reportOptions[Math.max(
+                        0,
+                        Math.min(reportOptions.length - 1, activeOptionIndex + direction)
+                    )].element);
+                }
+                return;
+            }
+
+            if (event.key === 'Home' || event.key === 'End') {
+                event.preventDefault();
+                if (!open) openListbox(event.key === 'Home' ? 0 : reportOptions.length - 1);
+                else setActiveOption(reportOptions[event.key === 'Home' ? 0 : reportOptions.length - 1].element);
+                return;
+            }
+
+            if (event.key === 'PageDown' || event.key === 'PageUp') {
+                event.preventDefault();
+                const direction = event.key === 'PageDown' ? 5 : -5;
+                if (!open) openListbox();
+                else setActiveOption(reportOptions[Math.max(
+                    0,
+                    Math.min(reportOptions.length - 1, activeOptionIndex + direction)
+                )].element);
+                return;
+            }
+
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                if (!open) openListbox();
+                else selectOption(reportOptions[activeOptionIndex].option);
+                return;
+            }
+
+            if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                const matchIndex = findTypeaheadMatch(event.key);
+                if (matchIndex >= 0) {
+                    event.preventDefault();
+                    if (!open) openListbox(matchIndex);
+                    else setActiveOption(reportOptions[matchIndex].element);
+                }
+            }
+        });
+
+        reportTypeLabel.addEventListener('click', event => {
+            event.preventDefault();
+            trigger.focus();
+            openListbox();
+        });
+        document.addEventListener('pointerdown', event => {
+            if (!picker.contains(event.target) && !reportTypeLabel.contains(event.target)) closeListbox();
+        });
+        window.addEventListener('resize', () => {
+            if (!listbox.hidden) positionListbox();
+        });
+        reportType.addEventListener('change', syncReportTypeControl);
+        syncReportTypeControl();
 
         const updateReportFields = () => {
             filterFields.forEach((field) => {

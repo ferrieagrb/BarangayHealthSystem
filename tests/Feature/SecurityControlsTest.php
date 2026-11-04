@@ -155,6 +155,29 @@ class SecurityControlsTest extends TestCase
         $this->assertTrue(Hash::check('TemporaryPassword123!', $target->password));
     }
 
+    public function test_temporary_password_from_admin_reset_can_log_in_as_the_target_user(): void
+    {
+        $admin = $this->makeUser('admin');
+        $target = $this->makeUser('citizen', ['username' => 'citizen_0101']);
+
+        $response = $this->actingAs($admin)->patch(route('admin.users.reset-password', $target->id), [
+            'confirm_password' => 'password',
+        ]);
+        $response->assertSessionHas('success');
+
+        $successMessage = $response->getSession()->get('success');
+        $this->assertStringContainsString("Log in using {$target->username}.", $successMessage);
+        preg_match('/Temporary password \(shown once\): ([A-Za-z0-9]+)\./', $successMessage, $matches);
+        $this->assertArrayHasKey(1, $matches);
+
+        $this->post(route('login.submit'), [
+            'Username' => $target->username,
+            'Password' => $matches[1],
+        ])->assertRedirect(route('password.force-change'));
+
+        $this->assertAuthenticatedAs($target);
+    }
+
     public function test_admin_cannot_reset_a_superadmin_password(): void
     {
         $admin = $this->makeUser('admin');
