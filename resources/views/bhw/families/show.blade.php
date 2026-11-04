@@ -16,6 +16,11 @@
             <button type="button" class="family-alert-close" aria-label="Dismiss notification" onclick="document.getElementById('familyPageAlert').remove()" data-ui-action="secondary">&times;</button>
         </div>
     @endif
+    @if(session('error'))
+        <div class="family-container-alert" role="alert" style="background:#fef2f2;border-color:#fecaca;color:#991b1b">
+            <div class="family-alert-content"><span>{{ session('error') }}</span></div>
+        </div>
+    @endif
 
     <header class="family-page-header">
         <div>
