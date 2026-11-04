@@ -35,12 +35,15 @@
 
         .announcement-detail-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
             gap: 14px;
             margin-bottom: 32px;
         }
 
-        .announcement-detail-gallery button {
+        .announcement-detail-gallery button.gallery-trigger {
+            display: block;
+            width: 100%;
+            height: auto;
             border: 0;
             padding: 0;
             cursor: zoom-in;
@@ -49,12 +52,40 @@
             overflow: hidden;
         }
 
+        .announcement-detail-gallery:has(> button:only-child) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .announcement-detail-gallery:has(> button:only-child) img {
+            aspect-ratio: auto;
+            max-height: 560px;
+            object-fit: contain;
+            background: #e2e8f0;
+        }
+
         .announcement-detail-gallery img {
             display: block;
             width: 100%;
+            height: auto;
             aspect-ratio: 4 / 3;
             object-fit: cover;
             transition: transform .2s ease;
+        }
+
+        body.announcement-page {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.announcement-page > main {
+            flex: 1 0 auto;
+            width: 100%;
+        }
+
+        body.announcement-page > footer {
+            flex-shrink: 0;
         }
 
         .announcement-detail-gallery button:hover img {
@@ -165,7 +196,7 @@
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 @include('partials.favicon')
 </head>
-<body>
+<body class="announcement-page">
     @include('public.partials.header', ['activeNav' => 'announcements'])
 
     <main class="container announcement-detail">

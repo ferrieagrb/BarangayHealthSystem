@@ -129,7 +129,7 @@ class AdminAnalytics extends Controller
             ->groupBy(fn ($referral) => ucfirst($referral->status ?: 'unknown'))
             ->map->count();
         $recentSupplyActivity = SupplyLog::latest()->with(['supply', 'citizen'])->take(8)->get();
-        $recentEvents = Event::whereDate('start', '>=', today())->orderBy('start')->take(5)->get();
+        $recentEvents = Event::whereDate('start', '>=', today()->subWeeks(2))->orderByDesc('start')->take(5)->get();
 
         $pageViewsToday = DB::getSchemaBuilder()->hasTable('page_views')
             ? DB::table('page_views')->whereDate('created_at', today())->count()

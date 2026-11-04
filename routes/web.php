@@ -81,7 +81,7 @@ Route::get('/citizen/qr/{token}', function (string $token) {
 })->whereUuid('token')->middleware('throttle:60,1')->name('bhw.citizen.qr');
 
 Route::get('/', function () {
-    $recentEvents = Event::latest()->take(5)->get();
+    $recentEvents = Event::whereDate('start', '>=', now()->subWeeks(2))->orderByDesc('start')->take(5)->get();
     $recentAnnouncements = Announcement::with('images')
         ->whereHas('images')
         ->latest()
