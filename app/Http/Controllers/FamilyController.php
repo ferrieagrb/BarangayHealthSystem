@@ -8,6 +8,7 @@ use App\Models\PurokSubgroup;
 use App\Models\citizens;
 use App\Models\CitizenActivityLog;
 use App\Services\BhwCitizenAccess;
+use App\Services\FamilyCodeGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -98,11 +99,7 @@ class FamilyController extends Controller
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
         $this->authorizeSubgroup($subgroup);
 
-        Family::create([
-            'family_name' => $request->family_name,
-            'subgroup_id' => $request->subgroup_id,
-            'purok_id' => $subgroup->purok_id,
-        ]);
+        app(FamilyCodeGenerator::class)->create($request->family_name, $subgroup);
 
         return back()->with('success', 'Family created successfully.');
     }
@@ -118,11 +115,7 @@ class FamilyController extends Controller
 
         $subgroup = PurokSubgroup::findOrFail($validated['subgroup_id']);
         $this->authorizeSubgroup($subgroup);
-        $family = Family::create([
-            'family_name' => $validated['family_name'],
-            'subgroup_id' => $subgroup->id,
-            'purok_id' => $subgroup->purok_id,
-        ]);
+        $family = app(FamilyCodeGenerator::class)->create($validated['family_name'], $subgroup);
 
         return response()->json($family->load(['purok', 'subgroup']));
     }
@@ -215,9 +208,30 @@ class FamilyController extends Controller
             $this->authorizeFamily($citizen->family);
         }
 
+        if ($citizen->family && (int) $citizen->family->head_id === (int) $citizen->id) {
+            $citizen->family->update(['head_id' => null]);
+        }
+
         $citizen->update(['family_id' => null]);
 
         return back()->with('success', 'Citizen removed from family.');
+    }
+
+    public function setHead(Request $request, Family $family)
+    {
+        $this->authorizeFamilyWrite();
+        $this->authorizeFamily($family);
+
+        $validated = $request->validate(['citizen_id' => 'required|integer']);
+        $member = $family->members()->find($validated['citizen_id']);
+
+        if (! $member) {
+            return back()->with('error', 'The selected citizen is not a member of this family.');
+        }
+
+        $family->update(['head_id' => $member->id]);
+
+        return back()->with('success', trim($member->Citizen_FName.' '.$member->Citizen_LName).' is now the head of this family.');
     }
 
     public function archive(Family $family)

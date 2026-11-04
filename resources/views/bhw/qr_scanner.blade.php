@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="qr-info-item"><small>Sex</small><strong>${escapeHtml(citizen.sex)}</strong></div>
                 <div class="qr-info-item"><small>Contact number</small><strong>${escapeHtml(citizen.contact_number)}</strong></div>
                 <div class="qr-info-item"><small>Purok</small><strong>${escapeHtml(citizen.purok)}</strong></div>
-                <div class="qr-info-item"><small>Family ID</small><strong>${escapeHtml(citizen.family_id)}</strong></div>
+                <div class="qr-info-item"><small>Family ID</small><strong>${escapeHtml(citizen.family_code || 'None')}</strong></div>
             </div></div>
             <div class="qr-detail-group"><h4>Health & Household Profile</h4><div class="qr-info-grid">
                 <div class="qr-info-item"><small>Height</small><strong>${escapeHtml(citizen.height)}${citizen.height && citizen.height !== 'N/A' ? ' cm' : ''}</strong></div>

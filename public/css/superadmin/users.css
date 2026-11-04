@@ -816,3 +816,20 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Search */
+.users-search-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 0 14px 14px; }
+.users-search-form input[type="search"] { flex: 1 1 260px; min-width: 0; padding: 9px 12px; border: 1px solid var(--users-border); border-radius: 8px; color: var(--users-text); background: var(--users-surface); font-size: 13px; }
+.users-search-form select { padding: 9px 12px; border: 1px solid var(--users-border); border-radius: 8px; color: var(--users-text); background: var(--users-surface); font-size: 13px; }
+
+/* Pagination (the bootstrap-5 view is used without Bootstrap's CSS) */
+.users-pagination { padding: 16px 14px; }
+.users-pagination nav { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.users-pagination nav > div:first-child { display: none; }
+.users-pagination nav > div:last-child { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.users-pagination nav p { margin: 0; color: var(--users-muted); font-size: 13px; }
+.users-pagination nav ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.users-pagination .page-link { display: block; padding: 7px 11px; border: 1px solid var(--users-border); border-radius: 6px; color: var(--users-text); background: var(--users-surface); font-size: 13px; text-decoration: none; }
+.users-pagination .page-link:hover { background: var(--users-border-light); }
+.users-pagination .page-item.active .page-link { border-color: var(--users-primary); background: var(--users-primary); color: #fff; }
+.users-pagination .page-item.disabled .page-link { color: #94a3b8; background: var(--users-page); }

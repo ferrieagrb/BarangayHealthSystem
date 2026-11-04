@@ -261,7 +261,7 @@
         <form id="resetPasswordForm" method="POST">
             @csrf
             @method('PATCH')
-            <p style="margin-bottom: 12px;">A new temporary password will be generated for <strong id="reset_user_name"></strong> and shown once. They must change it at next login.</p>
+            <p style="margin-bottom: 12px;">The password of <strong id="reset_user_name"></strong> will be reset to the default (TemporaryPassword123! for staff, Barangay123! for citizens). They must change it at next login.</p>
             <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
                 <label for="reset_confirm_password">Your password</label>
                 <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password" style="width: 100%;">

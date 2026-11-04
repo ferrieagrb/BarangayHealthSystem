@@ -951,10 +951,7 @@ class CitizenController extends Controller
         $this->authorizeCitizenEdit($citizen);
 
         $validated = $request->validate([
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'confirm_password' => \App\Models\SystemSetting::passwordReentryRequired()
-                ? ['required', 'string', 'current_password']
-                : ['nullable'],
+            'confirm_password' => ['required', 'string', 'current_password'],
         ], [
             'confirm_password.required' => 'Enter your own password to reset a citizen password.',
             'confirm_password.current_password' => 'Your password is incorrect.',
@@ -965,7 +962,7 @@ class CitizenController extends Controller
             ->firstOrFail();
 
         $citizenAccount->update([
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make('Barangay123!'),
             'must_change_password' => true,
             'failed_login_attempts' => 0,
             'is_locked' => false,
@@ -975,10 +972,10 @@ class CitizenController extends Controller
             'password_reset',
             'citizen',
             $citizen->id,
-            'Reset citizen account password; citizen must change it at next login'
+            'Reset citizen account password to the default; citizen must change it at next login'
         );
 
-        return back()->with('success', 'Citizen password reset successfully. The citizen must change it at next login.');
+        return back()->with('success', 'Citizen password was reset to the default password (Barangay123!). The citizen must change it at next login.');
     }
 
     /*

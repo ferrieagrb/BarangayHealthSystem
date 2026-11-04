@@ -33,7 +33,8 @@ class AdminUserManagementController extends Controller
     if ($request->filled('search')) {
         $query->where(function ($q) use ($request) {
             $q->where('name', 'like', "%{$request->search}%")
-              ->orWhere('email', 'like', "%{$request->search}%");
+              ->orWhere('email', 'like', "%{$request->search}%")
+              ->orWhere('username', 'like', "%{$request->search}%");
         });
     }
 
@@ -210,18 +211,18 @@ public function resetPassword(Request $request, $id)
         return back()->withErrors(['user' => 'Use your account settings to change your own password.']);
     }
 
-    $temporaryPassword = Str::password(12, symbols: false);
+    $defaultPassword = $user->role === 'citizen' ? 'Barangay123!' : 'TemporaryPassword123!';
 
     $user->forceFill([
-        'password' => Hash::make($temporaryPassword),
+        'password' => Hash::make($defaultPassword),
         'must_change_password' => true,
         'failed_login_attempts' => 0,
         'is_locked' => false,
         'locked_until' => null,
     ])->save();
 
-    $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name}; a password change is required at next login.", 'security', $user);
+    $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name} to the default; a password change is required at next login.", 'security', $user);
 
-    return back()->with('success', "Password for {$user->name} was reset. Temporary password (shown once): {$temporaryPassword}. They must change it at next login.");
+    return back()->with('success', "Password for {$user->name} was reset to the default password ({$defaultPassword}). They must change it at next login.");
 }
 }

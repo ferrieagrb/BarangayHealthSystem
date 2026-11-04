@@ -68,6 +68,7 @@ class QRScannerController extends Controller
                 'height' => $citizen->Citizen_Height,
                 'weight' => $citizen->Citizen_Weight,
                 'family_id' => $citizen->family_id,
+                'family_code' => $citizen->family?->family_code,
                 'housing_status' => $citizen->Citizen_HousingStatus,
                 'pregnant' => $citizen->Citizen_Pregnant ? 'Yes' : 'No',
                 'in_pills' => $citizen->Citizen_InPills ? 'Yes' : 'No',

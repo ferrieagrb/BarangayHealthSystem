@@ -107,12 +107,22 @@
         const loader = document.getElementById('global-loader');
         if (!loader) return;
 
+        // Native <dialog> modals use the top layer, so the loader is promoted to it as a popover.
+        const supportsPopover = typeof loader.showPopover === 'function';
+        if (supportsPopover) loader.setAttribute('popover', 'manual');
+
         window.showLoader = function() {
             loader.classList.add('active');
+            if (supportsPopover) {
+                try { if (!loader.matches(':popover-open')) loader.showPopover(); } catch (e) {}
+            }
         };
 
         window.hideLoader = function() {
             loader.classList.remove('active');
+            if (supportsPopover) {
+                try { if (loader.matches(':popover-open')) loader.hidePopover(); } catch (e) {}
+            }
         };
 
         document.addEventListener('submit', function(e) {

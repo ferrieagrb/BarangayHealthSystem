@@ -228,7 +228,7 @@
                     @endif
                 @endif
                 <div><span class="block text-xs text-gray-500">Deceased Status</span><span class="font-semibold">{{ !empty($citizen->Citizen_IsDeceased) ? 'Deceased' : 'Living' }}</span></div>
-                <div><span class="block text-xs text-gray-500">Family ID</span><span class="font-semibold">{{ $citizen->family?->id ?? 'None' }}</span></div>
+                <div><span class="block text-xs text-gray-500">Family ID</span><span class="font-semibold">{{ $citizen->family?->family_code ?? 'None' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Family Name</span><span class="font-semibold">{{ $citizen->family?->family_name ?: 'No family assigned' }}</span></div>
                 <div><span class="block text-xs text-gray-500">Subgroup</span><span class="font-semibold">{{ $citizen->subgroup?->name ?: ($citizen->family?->subgroup?->name ?: 'Not assigned') }}</span></div>
             </div>
