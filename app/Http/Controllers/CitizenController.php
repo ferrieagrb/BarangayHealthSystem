@@ -1362,7 +1362,8 @@ class CitizenController extends Controller
 
         try {
             $file = $request->file('file');
-            $import = new CitizensImport();
+            $firstSheet = Excel::toArray(new \App\Imports\RawSheetImport(), $file)[0] ?? [];
+            $import = new CitizensImport(CitizensImport::detectHeadingRow($firstSheet));
             Excel::import($import, $file);
 
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');
