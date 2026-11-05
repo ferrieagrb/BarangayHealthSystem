@@ -162,7 +162,7 @@
 
             <div class="family-info-field">
                 <label for="displayFamilyId">Family ID</label>
-                <input type="text" id="displayFamilyId" value="{{ $citizen->family->id ?? 'None' }}" disabled>
+                <input type="text" id="displayFamilyId" value="{{ $citizen->family->family_code ?? 'None' }}" disabled>
             </div>
 
             <div class="family-info-field" id="displayFamilyNameField">
@@ -839,9 +839,9 @@
 
             @foreach ($families as $family)
 
-                <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
+                <button type="button" class="edit-assignment-option edit-family-option" data-family-id="{{ $family->id }}" data-family-code="{{ $family->family_code }}" data-family-name="{{ $family->family_name }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup-id="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
 
-                    <span><strong>F-{{ str_pad($family->id, 4, '0', STR_PAD_LEFT) }} · {{ $family->family_name }}</strong><br><small>{{$family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
+                    <span><strong>{{ $family->family_code }} · {{ $family->family_name }}</strong><br><small>{{$family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span><span>Select</span>
 
                 </button>
 
@@ -909,7 +909,9 @@
 
 let originalData = {};
 
-let originalFamilyId = @json((string) ($citizen->family_id ?? ''));
+let originalFamilyDatabaseId = @json((string) ($citizen->family_id ?? ''));
+
+let originalFamilyCode = @json($citizen->family->family_code ?? '');
 
 let originalFamilyName = @json($citizen->family->family_name ?? 'No Family Assigned');
 
@@ -962,7 +964,7 @@ function enableEdit() {
 
     document.getElementById('openEditManualPicker').style.display = 'inline-block';
 
-    document.getElementById('openEditManualPicker').disabled = Boolean(originalFamilyId);
+    document.getElementById('openEditManualPicker').disabled = Boolean(originalFamilyDatabaseId);
 
     document.getElementById('saveBtn').style.display = 'inline-block';
 
@@ -1000,9 +1002,9 @@ function disableEdit() {
 
     document.getElementById('displayDeceasedStatus').value = document.getElementById('Citizen_IsDeceased').value === '1' ? 'Deceased' : 'Living';
 
-    document.getElementById('familySelect').value = originalFamilyId;
+    document.getElementById('familySelect').value = originalFamilyDatabaseId;
 
-    document.getElementById('displayFamilyId').value = originalFamilyId || 'None';
+    document.getElementById('displayFamilyId').value = originalFamilyCode || 'None';
 
     document.getElementById('displayFamilyName').value = originalFamilyName;
 
@@ -1145,7 +1147,7 @@ document.querySelectorAll('.edit-family-option').forEach(option => option.addEve
 
     document.getElementById('Citizen_Subgroup').value = option.dataset.subgroupName;
 
-    document.getElementById('displayFamilyId').value = `F-${String(option.dataset.familyId).padStart(4, '0')}`;
+    document.getElementById('displayFamilyId').value = option.dataset.familyCode;
 
     document.getElementById('displayFamilyName').value = option.dataset.familyName;
 

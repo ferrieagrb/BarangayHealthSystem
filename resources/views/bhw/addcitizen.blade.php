@@ -363,8 +363,8 @@
         <input type="search" id="familySearch" class="form-control" placeholder="Search family name...">
         <div class="family-picker-list" id="familyPickerList">
             @foreach($families as $family)
-                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
-                    <span><strong>{{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
+                <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_code }} · {{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
+                    <span><strong>{{ $family->family_code }} · {{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
                     <span>Select</span>
                 </button>
             @endforeach

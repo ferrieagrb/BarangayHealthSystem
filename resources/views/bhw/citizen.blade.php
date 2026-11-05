@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}?v={{ filemtime(public_path('css/bhw/citizen.css')) }}">
 
     <style>
         .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
@@ -91,46 +91,46 @@
     <div class="summary-cards">
         <div class="summary-card">
             <span>Total Citizens</span>
-            <strong>{{ $totalCitizens }}</strong>
+            <strong>{{ number_format($totalCitizens) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['total']['state'] }}">
                 <span>{{ $citizenTrends['total']['icon'] }} {{ $citizenTrends['total']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Kids</span>
-            <strong>{{ $kids }}</strong>
+            <span>Children <small>0–17 years</small></span>
+            <strong>{{ number_format($kids) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['kids']['state'] }}">
                 <span>{{ $citizenTrends['kids']['icon'] }} {{ $citizenTrends['kids']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Adults</span>
-            <strong>{{ $adults }}</strong>
+            <span>Adults <small>18–59 years</small></span>
+            <strong>{{ number_format($adults) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['adults']['state'] }}">
                 <span>{{ $citizenTrends['adults']['icon'] }} {{ $citizenTrends['adults']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
 
         <div class="summary-card">
-            <span>Seniors</span>
-            <strong>{{ $seniors }}</strong>
+            <span>Seniors <small>60+ years</small></span>
+            <strong>{{ number_format($seniors) }}</strong>
             <div class="summary-card-trend trend-{{ $citizenTrends['seniors']['state'] }}">
                 <span>{{ $citizenTrends['seniors']['icon'] }} {{ $citizenTrends['seniors']['value'] }}</span>
-                <small>vs previous 14 days</small>
+                <small>new records vs prior 14 days</small>
             </div>
         </div>
     </div>
 
     <div class="chart-card">
         <div class="chart-header">
-            <h3>Demographics Breakdown</h3>
+            <h3>Residents by age group</h3><p>All registered residents · independent of list filters</p>
         </div>
-        <div id="demographicsApexChart"></div>
+        <div id="demographicsApexChart" role="img" aria-label="Residents by age group; counts shown in the summary cards"></div>
     </div>
 </div>
 
@@ -141,7 +141,8 @@
               class="citizen-filter-form" id="citizenFilterForm">
 
             {{-- SEARCH --}}
-            <div class="search-box">
+            <div class="search-box citizen-filter-field">
+                <label for="citizenSearchInput" class="citizen-control-label">Search residents</label>
                 <input type="search" name="search" id="citizenSearchInput"
                        value="{{ request('search') }}"
                        placeholder="Search citizen name or ID"
@@ -150,7 +151,8 @@
             </div>
 
             {{-- GROUPED PUROK AND SUBGROUP FILTER --}}
-            <div class="filter-box purok-filter-box">
+            <div class="filter-box purok-filter-box citizen-filter-field">
+                <label for="purokFilter" class="citizen-control-label">Purok / subgroup</label>
                 <select id="purokFilter" aria-label="Filter by Purok or Subgroup">
                     <option value="">All Puroks</option>
 
@@ -178,14 +180,16 @@
             </div>
 
             {{-- AGE FILTER --}}
-            <div class="filter-box">
-                <input type="text" name="age"
+            <div class="filter-box citizen-filter-field">
+                <label for="citizenAgeFilter" class="citizen-control-label">Age or age range</label>
+                <input type="text" name="age" id="citizenAgeFilter"
                        value="{{ request('age') }}"
-                       placeholder="Age or range (e.g. 8 or 4-10)">
+                       placeholder="e.g. 8 or 4-10">
             </div>
 
             {{-- STATUS FILTER --}}
-            <div class="filter-box">
+            <div class="filter-box citizen-filter-field">
+                <label for="openCitizenStatusFilter" class="citizen-control-label">Additional filters</label>
                 <button type="button" id="openCitizenStatusFilter"
                         class="citizen-status-filter-btn" data-ui-action="secondary">
                     <span>Status & Filters</span>
@@ -413,13 +417,11 @@
             }
         @endphp
 
-        <div id="citizen-results-summary" class="citizen-results-highlight"
-             style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:8px 12px;border:1px solid #bbf7d0;border-radius:8px;background:#f0fdf4;color:#166534;font-size:13px;font-weight:500;line-height:1.5;">
-            <strong style="font-weight:700;">Showing {{ $citizens->total() }} results</strong>
-
+        <div id="citizen-results-summary" class="citizen-results-highlight" role="status" aria-live="polite">
+            <strong>{{ number_format($citizens->total()) }} {{ $citizens->total() === 1 ? 'resident' : 'residents' }} found</strong>
             @if(count($activeFilters) > 0)
-                <span aria-hidden="true" style="color:#86a98e;font-weight:700;">·</span>
-                <span id="active-citizen-filters">{{ implode(', ', $activeFilters) }}</span>
+                <span id="active-citizen-filters">{{ implode(' · ', $activeFilters) }}</span>
+                <a href="{{ route('citizenlist') }}" class="citizen-clear-filters">Clear filters</a>
             @endif
         </div>
 
@@ -433,7 +435,7 @@
                     <th>Contact</th>
                     <th>Purok</th>
                     <th>Subgroup</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -441,7 +443,7 @@
                 @forelse($citizens as $citizen)
                     <tr>
                         <td>
-                            <span class="record-name">{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}</span>
+                            <span class="record-name">{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_MName }} {{ $citizen->Citizen_LName }}</span>
                             <span class="record-sub">ID: {{ $citizenDisplayIds[$citizen->id] ?? 'Unassigned' }}</span>
                         </td>
 
@@ -488,7 +490,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="empty-text" style="text-align:center;padding:20px;">
-                            No citizen records found.
+                            No residents match your search or filters. Try a different name, ID, or age range.
                         </td>
                     </tr>
                 @endforelse
@@ -496,8 +498,8 @@
         </table>
         </div>
 
-        <div style="margin-top:15px;">
-            {{ $citizens->appends(request()->query())->links('pagination::bootstrap-5') }}
+        <div class="citizen-pagination">
+            {{ $citizens->appends(request()->query())->links('partials.citizen-pagination') }}
         </div>
     </div>
 </div>
@@ -522,18 +524,12 @@
      role="dialog" aria-modal="true" aria-labelledby="citizenPasswordResetTitle">
     <div class="citizen-password-dialog">
         <h2 id="citizenPasswordResetTitle">Reset Citizen Password</h2>
-        <p>Set a temporary password for <strong id="resetCitizenName"></strong>. The citizen will be required to change it at the next login.</p>
+        <p>This resets the password of <strong id="resetCitizenName"></strong> to the default password (<strong>Barangay123!</strong>). The citizen will be required to change it at the next login.</p>
 
         <form method="POST" id="citizenPasswordResetForm">
             @csrf
-            <label for="resetCitizenPassword">Temporary password</label>
-            <input type="password" id="resetCitizenPassword" name="password" minlength="8" required autocomplete="new-password">
-
-            <label for="resetCitizenPasswordConfirmation">Confirm temporary password</label>
-            <input type="password" id="resetCitizenPasswordConfirmation" name="password_confirmation" minlength="8" required autocomplete="new-password">
-
-            <label for="resetCitizenOwnPassword" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>Your password (to confirm this action)</label>
-            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) @hidden(! \App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password">
+            <label for="resetCitizenOwnPassword">Your password (to confirm this action)</label>
+            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" required autocomplete="current-password">
 
             <div class="citizen-password-dialog-actions">
                 <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset" data-ui-action="secondary">Cancel</button>
@@ -662,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('citizenPasswordResetModal');
     const form = document.getElementById('citizenPasswordResetForm');
     const nameElement = document.getElementById('resetCitizenName');
-    const passwordInput = document.getElementById('resetCitizenPassword');
+    const passwordInput = document.getElementById('resetCitizenOwnPassword');
     const cancelButton = document.getElementById('cancelCitizenPasswordReset');
 
     if (!modal || !form || !nameElement || !passwordInput || !cancelButton) return;
@@ -790,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         legend: { show: false },
         xaxis: {
-            categories: ['Kids', 'Adults', 'Seniors'],
+            categories: ['Children (0–17)', 'Adults (18–59)', 'Seniors (60+)'],
             axisBorder: { show: false },
             axisTicks: { show: false },
             labels: {

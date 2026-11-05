@@ -147,11 +147,15 @@ class SecurityControlsTest extends TestCase
             ->assertSessionHasErrors('confirm_password');
         $this->assertSame($oldHash, $target->fresh()->password);
 
-        $this->actingAs($admin)->patch(route('admin.users.reset-password', $target->id), ['confirm_password' => 'password'])
+        $response = $this->actingAs($admin)->patch(route('admin.users.reset-password', $target->id), ['confirm_password' => 'password'])
             ->assertSessionHas('success');
         $target->refresh();
         $this->assertNotSame($oldHash, $target->password);
         $this->assertTrue((bool) $target->must_change_password);
+        $successMessage = $response->getSession()->get('success');
+        preg_match('/Temporary password \(shown once\): ([A-Za-z0-9]+)\./', $successMessage, $matches);
+        $this->assertArrayHasKey(1, $matches);
+        $this->assertTrue(Hash::check($matches[1], $target->password));
     }
 
     public function test_temporary_password_from_admin_reset_can_log_in_as_the_target_user(): void

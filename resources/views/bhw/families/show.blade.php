@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}?v={{ filemtime(public_path('css/bhw/families.css')) }}">
 @endsection
 
 @section('content')
@@ -14,6 +14,11 @@
                 <span>{{ session('success') }}</span>
             </div>
             <button type="button" class="family-alert-close" aria-label="Dismiss notification" onclick="document.getElementById('familyPageAlert').remove()" data-ui-action="secondary">&times;</button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="family-container-alert" role="alert" style="background:#fef2f2;border-color:#fecaca;color:#991b1b">
+            <div class="family-alert-content"><span>{{ session('error') }}</span></div>
         </div>
     @endif
 
@@ -50,10 +55,6 @@
                         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
                     </span>
                 </label>
-                <button type="button" class="btn btn-secondary register-browse-button" onclick="openSubgroupPicker('register')" data-ui-action="secondary">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    Browse Puroks
-                </button>
             </div>
             <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -80,6 +81,7 @@
                 <tr>
                     <th>Family ID</th>
                     <th>Family Name</th>
+                    <th>Family Head</th>
                     <th>Purok & Subgroup</th>
                     <th>Members Count</th>
                     <th>Actions</th>
@@ -88,8 +90,10 @@
             <tbody id="familiesTableBody">
                 @forelse($families as $fam)
                     <tr class="family-row" data-subgroup-id="{{ $fam->subgroup_id }}">
-                        <td><strong>F-{{ str_pad($fam->id, 4, '0', STR_PAD_LEFT) }}</strong></td>
+                        <td><strong>{{ $fam->family_code }}</strong></td>
                         <td><strong>{{ $fam->family_name }}</strong></td>
+                        @php($head = $fam->members->firstWhere('id', $fam->head_id))
+                        <td>{{ $head ? trim($head->Citizen_FName.' '.$head->Citizen_LName) : 'Not assigned' }}</td>
                         <td>
                             {{ $fam->purok->name ?? 'N/A' }} 
                             @if($fam->subgroup)
@@ -115,7 +119,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #7f8c8d; font-style: italic;">No families registered yet.</td>
+                        <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">No families registered yet.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -204,11 +208,12 @@
                         <tr>
                             <th>Name</th>
                             <th>Age</th>
+                            <th>Role</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="modalMembersList">
-                        <tr><td colspan="3" class="empty-members-message">No members added to this family yet.</td></tr>
+                        <tr><td colspan="4" class="empty-members-message">No members added to this family yet.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -311,7 +316,7 @@
         const family = JSON.parse(button.getAttribute('data-family'));
         const modal = document.getElementById('familyModal');
         
-        document.getElementById('modalTitle').textContent = `F-${String(family.id).padStart(4, '0')} · ${family.family_name}`;
+        document.getElementById('modalTitle').textContent = `${family.family_code} · ${family.family_name}`;
         document.getElementById('modalMemberCount').textContent = `${(family.members || []).length} member(s)`;
         document.getElementById('modalFamilyName').value = family.family_name;
         
@@ -339,7 +344,14 @@
                 nameCell.textContent = `${member.Citizen_FName} ${member.Citizen_LName}`;
                 const ageCell = document.createElement('td');
                 ageCell.textContent = member.Citizen_Age ?? 'N/A';
+                const roleCell = document.createElement('td');
+                const isHead = String(family.head_id) === String(member.id);
+                roleCell.textContent = isHead ? 'Family Head' : 'Member';
+                if (isHead) roleCell.style.fontWeight = '600';
                 const actionCell = document.createElement('td');
+                const memberActions = document.createElement('div');
+                memberActions.className = 'member-actions';
+                actionCell.appendChild(memberActions);
                 const form = document.createElement('form');
                 form.action = `/bhw/families/members/${member.id}`;
                 form.method = 'POST';
@@ -356,6 +368,31 @@
                 form.append(csrfInput, methodInput);
 
                 @if(auth()->user()->hasWriteAccess('family'))
+                if (!isHead) {
+                    const headForm = document.createElement('form');
+                    headForm.action = `/bhw/families/${family.id}/head`;
+                    headForm.method = 'POST';
+                    headForm.style.display = 'inline';
+                    const headToken = document.createElement('input');
+                    headToken.type = 'hidden';
+                    headToken.name = '_token';
+                    headToken.value = @json(csrf_token());
+                    const headMethod = document.createElement('input');
+                    headMethod.type = 'hidden';
+                    headMethod.name = '_method';
+                    headMethod.value = 'PUT';
+                    const headCitizen = document.createElement('input');
+                    headCitizen.type = 'hidden';
+                    headCitizen.name = 'citizen_id';
+                    headCitizen.value = member.id;
+                    const headButton = document.createElement('button');
+                    headButton.type = 'submit';
+                    headButton.className = 'btn-sm';
+                    headButton.dataset.uiAction = 'secondary';
+                    headButton.textContent = 'Make Head';
+                    headForm.append(headToken, headMethod, headCitizen, headButton);
+                    memberActions.appendChild(headForm);
+                }
                 const removeButton = document.createElement('button');
                 removeButton.type = 'submit';
                 removeButton.className = 'btn-danger';
@@ -369,14 +406,14 @@
                 form.appendChild(readOnly);
                 @endif
 
-                actionCell.appendChild(form);
-                tr.append(nameCell, ageCell, actionCell);
+                memberActions.appendChild(form);
+                tr.append(nameCell, ageCell, roleCell, actionCell);
                 membersListContainer.appendChild(tr);
             });
         } else {
             membersListContainer.innerHTML = `
                 <tr>
-                    <td colspan="3" class="empty-members-message">No members added to this family yet.</td>
+                    <td colspan="4" class="empty-members-message">No members added to this family yet.</td>
                 </tr>
             `;
         }

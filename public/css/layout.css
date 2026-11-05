@@ -708,6 +708,12 @@ body.font-xl {
     left: 0;
     width: 100vw;
     height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(4px);
     display: flex;

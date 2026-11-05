@@ -8,6 +8,7 @@ use App\Models\PurokSubgroup;
 use App\Models\citizens;
 use App\Models\CitizenActivityLog;
 use App\Services\BhwCitizenAccess;
+use App\Services\FamilyCodeGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,11 +25,18 @@ class FamilyController extends Controller
         );
     }
 
-    private function authorizeSubgroup(PurokSubgroup $subgroup): void
+    private function canMoveAcrossPuroks(): bool
     {
         $user = Auth::user();
 
-        if ($user->role !== 'bhw') {
+        return $user && $user->role === 'bhw' && $user->hasWriteAccess('family_move_purok');
+    }
+
+    private function authorizeSubgroup(PurokSubgroup $subgroup, bool $allowOverride = false): void
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'bhw' || ($allowOverride && $this->canMoveAcrossPuroks())) {
             return;
         }
 
@@ -64,6 +72,9 @@ class FamilyController extends Controller
             $puroksQuery
                 ->whereHas('subgroups', fn ($query) => $query->whereIn('id', $assignedSubgroupIds))
                 ->with(['subgroups' => fn ($query) => $query->whereIn('id', $assignedSubgroupIds)]);
+            if ($this->canMoveAcrossPuroks()) {
+                $puroksQuery = Purok::with('subgroups');
+            }
         }
 
         $families = $familiesQuery->latest()->get();
@@ -88,11 +99,7 @@ class FamilyController extends Controller
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
         $this->authorizeSubgroup($subgroup);
 
-        Family::create([
-            'family_name' => $request->family_name,
-            'subgroup_id' => $request->subgroup_id,
-            'purok_id' => $subgroup->purok_id,
-        ]);
+        app(FamilyCodeGenerator::class)->create($request->family_name, $subgroup);
 
         return back()->with('success', 'Family created successfully.');
     }
@@ -108,11 +115,7 @@ class FamilyController extends Controller
 
         $subgroup = PurokSubgroup::findOrFail($validated['subgroup_id']);
         $this->authorizeSubgroup($subgroup);
-        $family = Family::create([
-            'family_name' => $validated['family_name'],
-            'subgroup_id' => $subgroup->id,
-            'purok_id' => $subgroup->purok_id,
-        ]);
+        $family = app(FamilyCodeGenerator::class)->create($validated['family_name'], $subgroup);
 
         return response()->json($family->load(['purok', 'subgroup']));
     }
@@ -132,9 +135,11 @@ class FamilyController extends Controller
             })
             ->get();
         $assignedSubgroupIds = $citizenAccess->assignedSubgroupIds($user);
-        $puroks = Purok::with(['subgroups' => fn ($query) => $query->whereIn('id', $assignedSubgroupIds)])
-            ->whereHas('subgroups', fn ($query) => $query->whereIn('id', $assignedSubgroupIds))
-            ->get();
+        $puroks = $this->canMoveAcrossPuroks()
+            ? Purok::with('subgroups')->get()
+            : Purok::with(['subgroups' => fn ($query) => $query->whereIn('id', $assignedSubgroupIds)])
+                ->whereHas('subgroups', fn ($query) => $query->whereIn('id', $assignedSubgroupIds))
+                ->get();
 
         return view('bhw.families.show', compact('family', 'availableCitizens', 'puroks'));
     }
@@ -146,6 +151,7 @@ class FamilyController extends Controller
         $request->validate(['citizen_id' => 'required|exists:citizens,id']);
 
         $this->authorizeFamily($family);
+        $this->syncFamilyPurok($family);
 
         $family->load(['purok', 'subgroup']);
         $citizen = citizens::findOrFail($request->citizen_id);
@@ -157,12 +163,17 @@ class FamilyController extends Controller
                 403,
                 'The family subgroup must belong to its mother Purok.'
             );
-            abort_unless($access->canAccessCitizen($user, $citizen), 403, 'You are not assigned to this citizen record.');
             abort_unless(
-                (int) $access->motherPurok($citizen)?->id === (int) $family->purok_id,
+                $access->canViewAll($user) || $access->canAccessCitizen($user, $citizen),
                 403,
-                'The family must belong to the citizen\'s mother Purok.'
+                'You are not assigned to this citizen record.'
             );
+
+            // A purok mismatch is a user mistake, not a permission problem, so report it on the page.
+            $citizenPurokId = $access->motherPurok($citizen)?->id;
+            if ($citizenPurokId !== null && (int) $citizenPurokId !== (int) $family->purok_id) {
+                return back()->with('error', 'This citizen belongs to a different purok than the family, so they cannot be added.');
+            }
         }
 
         $previousFamilyId = $citizen->family_id;
@@ -197,9 +208,30 @@ class FamilyController extends Controller
             $this->authorizeFamily($citizen->family);
         }
 
+        if ($citizen->family && (int) $citizen->family->head_id === (int) $citizen->id) {
+            $citizen->family->update(['head_id' => null]);
+        }
+
         $citizen->update(['family_id' => null]);
 
         return back()->with('success', 'Citizen removed from family.');
+    }
+
+    public function setHead(Request $request, Family $family)
+    {
+        $this->authorizeFamilyWrite();
+        $this->authorizeFamily($family);
+
+        $validated = $request->validate(['citizen_id' => 'required|integer']);
+        $member = $family->members()->find($validated['citizen_id']);
+
+        if (! $member) {
+            return back()->with('error', 'The selected citizen is not a member of this family.');
+        }
+
+        $family->update(['head_id' => $member->id]);
+
+        return back()->with('success', trim($member->Citizen_FName.' '.$member->Citizen_LName).' is now the head of this family.');
     }
 
     public function archive(Family $family)
@@ -213,19 +245,31 @@ class FamilyController extends Controller
         return redirect()->route('bhw.families.index')->with('success', "Family {$name} archived. You can restore it from the archive.");
     }
 
+    // A family's purok must follow its subgroup. Older records can disagree, so repair them instead of rejecting the request.
+    private function syncFamilyPurok(Family $family): void
+    {
+        $family->loadMissing('subgroup');
+
+        if ($family->subgroup && (int) $family->subgroup->purok_id !== (int) $family->purok_id) {
+            $family->update(['purok_id' => $family->subgroup->purok_id]);
+            $family->load('purok');
+        }
+    }
+
     public function update(Request $request, Family $family)
     {
         $this->authorizeFamilyWrite();
         $this->authorizeFamily($family);
+        $this->syncFamilyPurok($family);
         $request->validate([
             'family_name' => 'required|string|max:255',
             'subgroup_id' => 'required|exists:purok_subgroups,id',
         ]);
 
         $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
-        $this->authorizeSubgroup($subgroup);
-        if (Auth::user()->role === 'bhw' && (int) $subgroup->purok_id !== (int) $family->purok_id) {
-            abort(403, 'You cannot move a family to another mother Purok.');
+        $this->authorizeSubgroup($subgroup, true);
+        if (Auth::user()->role === 'bhw' && !$this->canMoveAcrossPuroks() && (int) $subgroup->purok_id !== (int) $family->purok_id) {
+            return back()->with('error', 'You cannot move a family to another mother Purok.');
         }
 
         $memberIds = $family->members()->pluck('id');

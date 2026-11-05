@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\CustomReportExport;
 use App\Models\citizens;
 use App\Models\Event;
+use App\Models\Family;
 use App\Models\HealthRecord;
 use App\Models\MaintenanceRecord;
 use App\Models\MedicationRecord;
@@ -32,6 +33,7 @@ class BhwReportController extends Controller
     {
         $availableSections = [
             'citizens' => 'Citizen Profiles',
+            'households' => 'Household Profiles',
             'health_records' => 'Health Records',
             'supplies' => 'Supply Inventory',
             'events' => 'Events and Schedules',
@@ -58,7 +60,7 @@ class BhwReportController extends Controller
 
         if ($granularReportAccess->isNotEmpty()) {
             $sectionGroups = [
-                'reports_demographics' => ['citizens', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok'],
+                'reports_demographics' => ['citizens', 'households', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok'],
                 'reports_health' => ['health_records', 'immunization', 'diagnosis_summary', 'diagnosis_by_purok'],
                 'reports_operations' => ['supplies', 'events', 'referrals'],
             ];
@@ -111,7 +113,7 @@ class BhwReportController extends Controller
 
         $citizenFilterSections = ['citizens', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok', 'immunization'];
         $locationFilterSections = [
-            'citizens', 'health_records', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok',
+            'citizens', 'households', 'health_records', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok',
             'immunization', 'diagnosis_summary', 'diagnosis_by_purok', 'referrals',
         ];
         $dateFilterSections = ['health_records', 'events', 'referrals', 'immunization', 'diagnosis_summary', 'diagnosis_by_purok'];
@@ -627,6 +629,48 @@ class BhwReportController extends Controller
                 ->values();
         }
 
+        $households = collect();
+        if (in_array('households', $selectedSections, true)) {
+            $householdQuery = Family::with(['purok', 'subgroup.purok', 'members']);
+            $access = app(BhwCitizenAccess::class);
+            if (! $access->canViewAll($user)) {
+                $assignedSubgroupIds = $access->assignedSubgroupIds($user);
+                $householdQuery->whereIn('subgroup_id', $assignedSubgroupIds);
+            }
+            if ($request->filled('subgroup') && $request->input('subgroup') !== 'all') {
+                $householdQuery->where('subgroup_id', $request->input('subgroup'));
+            } elseif ($purokRecord) {
+                // The subgroup is authoritative; family.purok_id is only a fallback for families without one.
+                $householdQuery->where(function ($query) use ($purokRecord) {
+                    $query->whereHas('subgroup', fn ($subgroup) => $subgroup->where('purok_id', $purokRecord->id))
+                        ->orWhere(fn ($legacy) => $legacy->whereNull('subgroup_id')->where('purok_id', $purokRecord->id));
+                });
+            }
+
+            $purokNumber = function ($family) {
+                $name = $family->subgroup?->purok?->name ?? $family->purok?->name ?? '';
+
+                return preg_match('/\d+/', $name, $m) ? (int) $m[0] : PHP_INT_MAX;
+            };
+            $households = $householdQuery->get()
+                ->sort(function ($a, $b) use ($purokNumber) {
+                    return $purokNumber($a) <=> $purokNumber($b)
+                        ?: strnatcasecmp((string) $a->subgroup?->name, (string) $b->subgroup?->name)
+                        ?: strnatcasecmp((string) $a->family_code, (string) $b->family_code)
+                        ?: $a->id <=> $b->id;
+                })
+                ->values()
+                ->each(function ($family) {
+                    $family->sorted_members = $family->members
+                        ->sortBy(fn ($member) => [$member->id === $family->head_id ? 0 : 1, strtolower($member->Citizen_LName.' '.$member->Citizen_FName)])
+                        ->values();
+                    $head = $family->members->firstWhere('id', $family->head_id);
+                    $family->head_name = $head
+                        ? trim($head->Citizen_FName.' '.$head->Citizen_LName)
+                        : 'Not assigned';
+                });
+        }
+
         $puroks = Purok::with('subgroups')->orderBy('name')->get();
         $categories = Supply::query()->select('category')->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
         $diagnoses = HealthRecord::query()
@@ -706,7 +750,8 @@ class BhwReportController extends Controller
                         $medicationHistory,
                         $supplies,
                         $events,
-                        $referrals
+                        $referrals,
+                        $households
                     )
                 ),
                 Str::slug($reportTitle).'-'.now()->format('Y-m-d').'.xlsx'
@@ -716,7 +761,7 @@ class BhwReportController extends Controller
         $reportData = compact(
             'availableSections', 'selectedSections', 'citizensReport', 'healthRecords', 'healthRecordDetails',
             'diagnoses', 'vaccineTypes', 'vaccinationDoseSummary', 'medicationHistory',
-            'supplies', 'events', 'referrals', 'puroks', 'categories', 'ageByPurok',
+            'supplies', 'events', 'referrals', 'households', 'puroks', 'categories', 'ageByPurok',
             'ageTotals', 'immunization', 'immunizationSummary', 'sexByPurok', 'sexTotals', 'pregnancyByPurok',
             'pregnancyTotal',
             'includeGraphics',
@@ -844,9 +889,41 @@ class BhwReportController extends Controller
         $medicationHistory,
         $supplies,
         $events,
-        $referrals
+        $referrals,
+        $households = null
     ): array {
         $sections = [];
+
+        if (in_array('households', $selectedSections, true)) {
+            $sections[] = [
+                'type' => 'households',
+                'title' => 'Household Profiles',
+                'groups' => collect($households)
+                    ->groupBy(fn ($family) => $family->subgroup?->purok?->name ?? $family->purok?->name ?? 'Unassigned')
+                    ->map(fn ($purokFamilies, $purokName) => [
+                        'name' => $purokName,
+                        'count' => $purokFamilies->count(),
+                        'subgroups' => $purokFamilies
+                            ->groupBy(fn ($family) => $family->subgroup?->name ?? 'No subgroup')
+                            ->map(fn ($subgroupFamilies, $subgroupName) => [
+                                'raw_name' => $subgroupFamilies->first()->subgroup?->name,
+                                'name' => \App\Support\FamilyCode::subgroupLabel($purokName, $subgroupFamilies->first()->subgroup?->name),
+                                'count' => $subgroupFamilies->count(),
+                                'families' => $subgroupFamilies->map(fn ($family) => [
+                                    'code' => $family->family_code ?: 'F-'.str_pad($family->id, 4, '0', STR_PAD_LEFT),
+                                    'name' => $family->family_name,
+                                    'head' => $family->head_name,
+                                    'members' => $family->sorted_members->map(fn ($member) => [
+                                        'name' => trim($member->Citizen_FName.' '.$member->Citizen_LName),
+                                        'is_head' => $member->id === $family->head_id,
+                                        'age' => $member->ageForEligibility() ?? 'Not recorded',
+                                        'sex' => $member->Citizen_Sex ?: 'Not recorded',
+                                    ])->all(),
+                                ])->values()->all(),
+                            ])->values()->all(),
+                    ])->values()->all(),
+            ];
+        }
 
         if (in_array('citizens', $selectedSections, true)) {
             $sections[] = [

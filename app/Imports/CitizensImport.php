@@ -21,6 +21,8 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     private const NAME_PATTERN = '/^[\p{L}\p{M}][\p{L}\p{M}\s.\'\-]*$/u';
     private const DATE_FORMATS = ['Y-m-d', 'Y/m/d', 'n/j/Y', 'n-j-Y', 'n.j.Y', 'F j, Y', 'F j Y', 'M j, Y', 'M j Y', 'j F Y', 'j M Y'];
     private const MAX_ISSUES = 25;
+    private const PUROK_PATTERN = '/^(purok\s*)?\d+$/i';
+    private const SUBGROUP_PATTERN = '/^\d+\s*[a-z]$/i';
 
     public int $createdAccounts = 0;
     public int $skippedRows = 0;
@@ -42,7 +44,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         $lastName   = $this->text($row['last_name'] ?? $row['Last Name'] ?? $row['LAST_NAME'] ?? '');
         $purokInput = $this->text($row['purok'] ?? $row['Purok'] ?? $row['PUROK'] ?? '');
 
-        if ($firstName === '' || $lastName === '' || $purokInput === '' || strcasecmp($firstName, 'first_name') === 0) {
+        if ($firstName === '' || $lastName === '' || strcasecmp($firstName, 'first_name') === 0) {
             return null;
         }
 
@@ -50,21 +52,35 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         $entry = "Entry {$this->entryNumber} ({$firstName} {$lastName})";
 
         // Required values must be valid, otherwise the row cannot be imported at all.
-        foreach (['First name' => $firstName, 'Last name' => $lastName] as $label => $value) {
-            if (!$this->validName($value)) {
+        $middleName = $this->text($row['middle_name'] ?? $row['Middle Name'] ?? $row['MIDDLE_NAME'] ?? '');
+        foreach (['First name' => $firstName, 'Middle name' => $middleName, 'Last name' => $lastName] as $label => $value) {
+            if ($value === '') {
+                continue;
+            }
+            if ($this->looksJumbled($value)) {
+                $this->skipRow("{$entry}: {$label} \"{$value}\" looks like jumbled letters");
+                return null;
+            }
+            if ($label !== 'Middle name' && !$this->validName($value)) {
                 $this->skipRow("{$entry}: {$label} \"{$value}\" has an invalid format");
                 return null;
             }
         }
 
-        $purok = $this->findPurok($purokInput);
-        if (!$purok) {
-            $this->skipRow("{$entry}: Purok \"{$purokInput}\" does not match any existing purok");
-            return null;
+        // Purok must look like "Purok 3" and exist; otherwise the citizen is still imported without a purok or subgroup.
+        $purok = null;
+        if ($purokInput === '') {
+            $this->ignoreValue("{$entry}: Purok is empty; imported with no purok or subgroup");
+        } elseif (!preg_match(self::PUROK_PATTERN, $purokInput)) {
+            $this->ignoreValue("{$entry}: Purok \"{$purokInput}\" must be \"Purok [number]\" or just the number; imported with no purok or subgroup");
+        } else {
+            $purok = $this->findPurok($purokInput);
+            if (!$purok) {
+                $this->ignoreValue("{$entry}: Purok \"{$purokInput}\" does not exist; imported with no purok or subgroup");
+            }
         }
 
         // Optional values: a wrongly formatted value is dropped, the rest of the row is still imported.
-        $middleName = $this->text($row['middle_name'] ?? $row['Middle Name'] ?? $row['MIDDLE_NAME'] ?? '');
         if ($middleName !== '' && !$this->validName($middleName)) {
             $this->ignoreValue("{$entry}: Middle name \"{$middleName}\" has an invalid format and was left blank");
             $middleName = '';
@@ -95,28 +111,44 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             }
         }
 
-        $subPurokInput = $this->text($row['sub_purok'] ?? $row['subpurok'] ?? $row['Sub Purok'] ?? $row['SubPurok'] ?? $row['subgroup'] ?? '');
-        $subgroup = null;
-        if ($subPurokInput !== '') {
-            $subgroup = $this->findSubgroup($purok, $subPurokInput);
-            if (!$subgroup) {
-                $this->ignoreValue("{$entry}: Sub purok \"{$subPurokInput}\" was not found under {$purok->name} and was left blank");
+        $contactInput = $this->text($row['contact_number'] ?? $row['contact_no'] ?? $row['contact'] ?? $row['contactnumber'] ?? $row['Contact Number'] ?? '');
+        $contact = '';
+        if ($contactInput !== '') {
+            $contact = $this->normalizeContact($contactInput);
+            if ($contact === null) {
+                $contact = '';
+                $this->ignoreValue("{$entry}: Contact number \"{$contactInput}\" must be a valid mobile number (e.g. 09123456789) and was left blank");
             }
-        } else {
-            // Fallback to the first available subgroup of the purok if not specified
-            $subgroup = $purok->subgroups->first();
         }
 
-        $purokName = $purok->name;
+        $subPurokInput = $this->text($row['sub_purok'] ?? $row['subpurok'] ?? $row['Sub Purok'] ?? $row['SubPurok'] ?? $row['subgroup'] ?? '');
+        $subgroup = null;
+        if ($purok && $subPurokInput !== '') {
+            if (!preg_match(self::SUBGROUP_PATTERN, $subPurokInput)) {
+                $this->ignoreValue("{$entry}: Sub purok \"{$subPurokInput}\" must be a number followed by a letter (e.g. 3a) and was left blank");
+            } else {
+                $subgroup = $this->findSubgroup($purok, $subPurokInput);
+                if (!$subgroup) {
+                    $this->ignoreValue("{$entry}: Sub purok \"{$subPurokInput}\" does not exist under {$purok->name} and was left blank");
+                }
+            }
+        } elseif ($purok) {
+            // Fallback to the first available subgroup of the purok if not specified
+            $subgroup = $purok->subgroups->first();
+        } elseif ($subPurokInput !== '') {
+            $this->ignoreValue("{$entry}: Sub purok \"{$subPurokInput}\" was left blank because the purok is missing");
+        }
 
-        return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sex, $purokName, $subgroup) {
+        $purokName = $purok?->name;
+
+        return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sex, $purokName, $subgroup, $contact) {
             $citizen = citizens::create([
                 'Citizen_FName'     => $firstName,
                 'Citizen_MName'     => $middleName,
                 'Citizen_LName'     => $lastName,
                 'Citizen_BirthDate' => $birthDate,
                 'Citizen_Age'       => $age,
-                'Citizen_ContactNo' => '',
+                'Citizen_ContactNo' => $contact,
                 'Citizen_Sex'       => $sex,
                 'Citizen_Purok'     => $purokName,
                 'subgroup_id'       => $subgroup?->id,
@@ -154,6 +186,56 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         }
 
         return trim((string) preg_replace('/\s+/u', ' ', (string) $value));
+    }
+
+    // Accepts 09XXXXXXXXX, 9XXXXXXXXX (Excel drops the leading zero), 639XXXXXXXXX and +639XXXXXXXXX, with spaces, dashes or parentheses.
+    private function normalizeContact(string $value): ?string
+    {
+        if (!preg_match('/^\+?[\d\s\-().]+$/', $value)) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $value);
+
+        if (preg_match('/^63(9\d{9})$/', $digits, $m) || preg_match('/^0?(9\d{9})$/', $digits, $m)) {
+            return '0' . $m[1];
+        }
+
+        return null;
+    }
+
+    // Heuristic for keyboard mashing such as "asdfgh", "xqzvk" or "aBcDeF".
+    private function looksJumbled(string $value): bool
+    {
+        foreach (preg_split('/[\s.\'\-]+/u', mb_strtolower($value), -1, PREG_SPLIT_NO_EMPTY) as $word) {
+            $letters = preg_replace('/[^a-z]/', '', $word);
+            if ($letters === '') {
+                continue;
+            }
+            if (mb_strlen($letters) >= 4 && !preg_match('/[aeiouy]/', $letters)) {
+                return true;
+            }
+            if (preg_match('/[^aeiou]{5,}/', $letters) || preg_match('/(.)\1{2,}/', $letters)) {
+                return true;
+            }
+            foreach (['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as $row) {
+                for ($i = 0; $i + 4 <= strlen($row); $i++) {
+                    $run = substr($row, $i, 4);
+                    if (str_contains($letters, $run) || str_contains($letters, strrev($run))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // More than one capital inside a word (allows "McDonald" but not "aBcDeF").
+        foreach (preg_split('/[\s.\'\-]+/u', $value, -1, PREG_SPLIT_NO_EMPTY) as $word) {
+            if (preg_match_all('/\p{Ll}\p{Lu}/u', $word) > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function validName(string $value): bool
@@ -199,17 +281,16 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     {
         $this->puroks ??= Purok::with('subgroups')->get();
         $puroks = $this->puroks;
-        $needle = mb_strtolower($input);
+        $needle = 'purok ' . ltrim(preg_replace('/\D/', '', $input), '0');
 
-        return $puroks->first(fn (Purok $purok) => mb_strtolower($purok->name) === $needle)
-            ?? $puroks->first(fn (Purok $purok) => mb_strtolower($purok->name) === 'purok ' . $needle);
+        return $puroks->first(fn (Purok $purok) => mb_strtolower(preg_replace('/\s+/', ' ', trim($purok->name))) === $needle);
     }
 
     private function findSubgroup(Purok $purok, string $input): ?PurokSubgroup
     {
-        $needle = mb_strtolower($input);
+        $needle = mb_strtolower(preg_replace('/\s+/', '', $input));
 
-        return $purok->subgroups->first(fn (PurokSubgroup $subgroup) => mb_strtolower($subgroup->name) === $needle);
+        return $purok->subgroups->first(fn (PurokSubgroup $subgroup) => mb_strtolower(preg_replace('/\s+/', '', $subgroup->name)) === $needle);
     }
 
     private function skipRow(string $message): void

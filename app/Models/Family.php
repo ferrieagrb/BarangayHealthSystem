@@ -8,7 +8,7 @@ class Family extends Model
 {
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
-    protected $fillable = ['family_name', 'purok_id', 'subgroup_id'];
+    protected $fillable = ['family_name', 'purok_id', 'subgroup_id', 'family_code', 'head_id'];
 
     protected static function booted(): void
     {

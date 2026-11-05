@@ -10,8 +10,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $alreadyApplied = Schema::hasColumn('vaccination_records', 'eligibility_review_required');
-
         Schema::table('vaccination_records', function (Blueprint $table) {
             if (!Schema::hasColumn('vaccination_records', 'eligibility_review_required')) {
                 $table->boolean('eligibility_review_required')->default(false);
@@ -28,10 +26,6 @@ return new class extends Migration
             Schema::table('vaccination_schedules', function (Blueprint $table) {
                 $table->boolean('catch_up_reviewed')->default(false);
             });
-        }
-
-        if ($alreadyApplied) {
-            return;
         }
 
         $eligibility = app(VaccinationEligibility::class);

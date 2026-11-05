@@ -16,12 +16,14 @@ class CustomReportExport implements WithMultipleSheets
     public function sheets(): array
     {
         return array_map(
-            fn (array $section) => new CustomReportSheet(
-                $this->reportTitle,
-                $this->generatedAt,
-                $this->filterSummary,
-                $section
-            ),
+            fn (array $section) => ($section['type'] ?? null) === 'households'
+                ? new HouseholdProfilesSheet($this->reportTitle, $this->generatedAt, $this->filterSummary, $section)
+                : new CustomReportSheet(
+                    $this->reportTitle,
+                    $this->generatedAt,
+                    $this->filterSummary,
+                    $section
+                ),
             $this->sections
         );
     }
