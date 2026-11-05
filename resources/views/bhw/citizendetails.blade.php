@@ -979,7 +979,7 @@ function enableEdit() {
 
     document.getElementById('openEditManualPicker').style.display = 'inline-block';
 
-    document.getElementById('openEditManualPicker').disabled = Boolean(originalFamilyId);
+    document.getElementById('openEditManualPicker').disabled = Boolean(originalFamilyDatabaseId);
 
     document.getElementById('saveBtn').style.display = 'inline-block';
 

@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}?v={{ filemtime(public_path('css/bhw/families.css')) }}">
 @endsection
 
 @section('content')
@@ -55,10 +55,6 @@
                         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
                     </span>
                 </label>
-                <button type="button" class="btn btn-secondary register-browse-button" onclick="openSubgroupPicker('register')" data-ui-action="secondary">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    Browse Puroks
-                </button>
             </div>
             <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>

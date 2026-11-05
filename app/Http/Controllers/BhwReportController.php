@@ -110,6 +110,10 @@ class BhwReportController extends Controller
         }
 
         $includeGraphics = $request->boolean('include_graphics');
+        $includeSummary = $request->boolean('include_summary');
+        $includeSexList = in_array('sex_by_purok', $selectedSections, true);
+        $includeAgeList = in_array('age_by_purok', $selectedSections, true);
+        $includePregnancyList = in_array('pregnancy_by_purok', $selectedSections, true);
 
         $citizenFilterSections = ['citizens', 'age_by_purok', 'sex_by_purok', 'pregnancy_by_purok', 'immunization'];
         $locationFilterSections = [
@@ -504,8 +508,58 @@ class BhwReportController extends Controller
             'other' => $sexByPurok->sum('other'),
         ];
 
+        $sexCitizenList = collect();
+        if ($includeSexList) {
+            $sexCitizenList = $citizensReport
+                ->filter(fn ($citizen) => in_array($citizen->Citizen_Sex, ['Male', 'Female'], true))
+                ->map(fn ($citizen) => [
+                    'purok' => $this->purokNameForCitizen($citizen) ?: 'Unassigned',
+                    'subgroup' => $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'No subgroup',
+                    'sex' => $citizen->Citizen_Sex,
+                    'classification' => $citizen->Citizen_Sex,
+                    'row' => [
+                        trim($citizen->Citizen_FName.' '.$citizen->Citizen_LName),
+                        $citizen->Citizen_Sex,
+                        $citizen->ageForEligibility() ?? 'Not recorded',
+                        $this->purokNameForCitizen($citizen) ?: 'Unassigned',
+                        $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'No subgroup',
+                    ],
+                ])
+                ->groupBy(fn ($item) => $item['purok']."\0".$item['subgroup']."\0".$item['sex'])
+                ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE)
+                ->map(fn ($items) => [
+                    'purok' => $items->first()['purok'],
+                    'subgroup' => $items->first()['subgroup'],
+                    'sex' => $items->first()['sex'],
+                    'classification' => $items->first()['sex'],
+                    'rows' => $items->sortBy(fn ($item) => strtolower($item['row'][0]))->pluck('row')->values()->all(),
+                ])
+                ->values();
+        }
+
         $pregnancyByPurok = $citizensReport->groupBy(fn ($citizen) => $this->purokNameForCitizen($citizen))->map(fn ($group) => $group->where('Citizen_Pregnant', true)->count());
         $pregnancyTotal = $pregnancyByPurok->sum();
+
+        $ageBrackets = [
+            'Infants (0-1)' => [0, 1], 'Toddlers (2-4)' => [2, 4], 'Children (5-12)' => [5, 12],
+            'Teenagers (13-17)' => [13, 17], 'Working adults (18-59)' => [18, 59], 'Seniors (60+)' => [60, 120],
+        ];
+        $ageCitizenList = collect();
+        if ($includeAgeList) {
+            $ageCitizenList = $this->groupedCitizenList($citizensReport, function ($citizen) use ($ageBrackets) {
+                $age = $citizen->ageForEligibility();
+                foreach ($ageBrackets as $label => [$min, $max]) {
+                    if ($age !== null && $age >= $min && $age <= $max) {
+                        return $label;
+                    }
+                }
+
+                return 'Unknown age';
+            }, array_merge(array_keys($ageBrackets), ['Unknown age']));
+        }
+        $pregnancyCitizenList = $includePregnancyList
+            ? $this->groupedCitizenList($citizensReport->where('Citizen_Pregnant', true), fn () => 'Pregnant', ['Pregnant'])
+            : collect();
 
         $healthRecordRelations = [
             'citizen.subgroup.purok',
@@ -751,7 +805,10 @@ class BhwReportController extends Controller
                         $supplies,
                         $events,
                         $referrals,
-                        $households
+                        $households,
+                        $sexCitizenList,
+                        $ageCitizenList,
+                        $pregnancyCitizenList
                     )
                 ),
                 Str::slug($reportTitle).'-'.now()->format('Y-m-d').'.xlsx'
@@ -764,7 +821,8 @@ class BhwReportController extends Controller
             'supplies', 'events', 'referrals', 'households', 'puroks', 'categories', 'ageByPurok',
             'ageTotals', 'immunization', 'immunizationSummary', 'sexByPurok', 'sexTotals', 'pregnancyByPurok',
             'pregnancyTotal',
-            'includeGraphics',
+            'includeGraphics', 'includeSummary', 'includeSexList', 'sexCitizenList', 'includeAgeList', 'ageCitizenList',
+            'includePregnancyList', 'pregnancyCitizenList',
             'diagnosisSummary', 'diagnosisByPurok', 'reportFilterSummary'
         );
 
@@ -870,6 +928,40 @@ class BhwReportController extends Controller
         return $normalizedPlace !== '' && str_contains($normalizedAddress, ' '.$normalizedPlace.' ');
     }
 
+    private function groupedCitizenList($citizens, callable $classify, array $classOrder)
+    {
+        return $citizens->map(function ($citizen) use ($classify) {
+            $purok = $this->purokNameForCitizen($citizen) ?: 'Unassigned';
+            $subgroup = $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'No subgroup';
+
+            return [
+                'purok' => $purok,
+                'subgroup' => $subgroup,
+                'classification' => $classify($citizen),
+                'row' => [
+                    trim($citizen->Citizen_FName.' '.$citizen->Citizen_LName),
+                    $citizen->Citizen_Sex ?: 'Not recorded',
+                    $citizen->ageForEligibility() ?? 'Not recorded',
+                    $purok,
+                    $subgroup,
+                ],
+            ];
+        })
+            ->groupBy(fn ($item) => $item['purok']."\0".$item['subgroup']."\0".$item['classification'])
+            ->map(fn ($items) => [
+                'purok' => $items->first()['purok'],
+                'subgroup' => $items->first()['subgroup'],
+                'classification' => $items->first()['classification'],
+                'rows' => $items->sortBy(fn ($item) => strtolower($item['row'][0]))->pluck('row')->values()->all(),
+            ])
+            ->sort(function ($a, $b) use ($classOrder) {
+                return strnatcasecmp($a['purok'], $b['purok'])
+                    ?: strnatcasecmp($a['subgroup'], $b['subgroup'])
+                    ?: (array_search($a['classification'], $classOrder, true) <=> array_search($b['classification'], $classOrder, true));
+            })
+            ->values();
+    }
+
     private function buildExportSections(
         Request $request,
         array $selectedSections,
@@ -890,7 +982,10 @@ class BhwReportController extends Controller
         $supplies,
         $events,
         $referrals,
-        $households = null
+        $households = null,
+        $sexCitizenList = null,
+        $ageCitizenList = null,
+        $pregnancyCitizenList = null
     ): array {
         $sections = [];
 
@@ -941,7 +1036,19 @@ class BhwReportController extends Controller
         }
 
         if (in_array('age_by_purok', $selectedSections, true)) {
-            $sections[] = [
+            if ($ageCitizenList !== null && $ageCitizenList->isNotEmpty()) {
+                $sections[] = [
+                    'title' => 'Age-Bracket List per Purok, Subgroup and Classification',
+                    'headings' => ['Name', 'Sex', 'Age', 'Purok', 'Subgroup', 'Classification'],
+                    'rows' => $ageCitizenList->flatMap(fn ($group) => array_map(
+                        fn ($row) => array_merge($row, [$group['classification']]),
+                        $group['rows']
+                    ))->values()->all(),
+                    'column_formats' => ['C' => '0'],
+                ];
+            }
+
+            $summarySection = [
                 'title' => 'Age-Bracket Breakdown per Purok',
                 'headings' => ['Purok', 'Infants', 'Toddlers', 'Children', 'Teenagers', 'Working adults', 'Seniors', 'Unknown age'],
                 'rows' => $ageByPurok->map(fn ($ages, $purok) => [
@@ -956,6 +1063,10 @@ class BhwReportController extends Controller
                 ])->values()->push(array_merge(['Total'], array_values($ageTotals->all())))->all(),
                 'column_formats' => array_fill_keys(['B', 'C', 'D', 'E', 'F', 'G', 'H'], '0'),
             ];
+
+            if ($request->boolean('include_summary')) {
+                $sections[] = $summarySection;
+            }
         }
 
         if (in_array('immunization', $selectedSections, true)) {
@@ -1000,7 +1111,16 @@ class BhwReportController extends Controller
         }
 
         if (in_array('sex_by_purok', $selectedSections, true)) {
-            $sections[] = [
+            if ($sexCitizenList !== null && $sexCitizenList->isNotEmpty()) {
+                $sections[] = [
+                    'title' => 'Male and Female List per Purok and Subgroup',
+                    'headings' => ['Name', 'Sex', 'Age', 'Purok', 'Subgroup'],
+                    'rows' => $sexCitizenList->flatMap(fn ($group) => $group['rows'])->values()->all(),
+                    'column_formats' => ['C' => '0'],
+                ];
+            }
+
+            $summarySection = [
                 'title' => 'Male and Female Counts by Purok',
                 'headings' => ['Purok', 'Male', 'Female', 'Other / not recorded'],
                 'rows' => $sexByPurok->map(fn ($counts, $purok) => [
@@ -1011,16 +1131,33 @@ class BhwReportController extends Controller
                 ])->values()->push(['Total', $sexTotals['male'], $sexTotals['female'], $sexTotals['other']])->all(),
                 'column_formats' => ['B' => '0', 'C' => '0', 'D' => '0'],
             ];
+
+            if ($request->boolean('include_summary')) {
+                $sections[] = $summarySection;
+            }
         }
 
         if (in_array('pregnancy_by_purok', $selectedSections, true)) {
-            $sections[] = [
+            if ($pregnancyCitizenList !== null && $pregnancyCitizenList->isNotEmpty()) {
+                $sections[] = [
+                    'title' => 'Pregnancy List per Purok and Subgroup',
+                    'headings' => ['Name', 'Sex', 'Age', 'Purok', 'Subgroup'],
+                    'rows' => $pregnancyCitizenList->flatMap(fn ($group) => $group['rows'])->values()->all(),
+                    'column_formats' => ['C' => '0'],
+                ];
+            }
+
+            $summarySection = [
                 'title' => 'Recorded Pregnancy by Purok',
                 'headings' => ['Purok', 'Recorded pregnant residents'],
                 'rows' => $pregnancyByPurok->map(fn ($count, $purok) => [$purok ?: 'Unassigned', $count])
                     ->values()->push(['Total', $pregnancyTotal])->all(),
                 'column_formats' => ['B' => '0'],
             ];
+
+            if ($request->boolean('include_summary')) {
+                $sections[] = $summarySection;
+            }
         }
 
         if (in_array('diagnosis_summary', $selectedSections, true)) {

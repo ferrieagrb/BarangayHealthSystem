@@ -12,13 +12,14 @@
         <h1>Citizen ID & Electronic Health Card</h1>
         <a href="{{ route('citizen.dashboard') }}" class="ecard-button ecard-button-secondary" data-ui-action="secondary">Back to Dashboard</a>
     </div>
-    <div class="ecard-actions-top print:hidden">
-        <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')" data-ui-action="secondary">Print Health Card Only</button>
-        <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
-    </div>
     <div class="ecard-content-stack">
 <div class="ecard-id-card-scroll" role="region" aria-label="Citizen Health Card" tabindex="0" data-ecard-fit>
             @include('partials.health-card', ['citizen' => $citizen, 'qrImage' => $qrImage])
+        </div>
+        <div class="ecard-section-actions print:hidden" aria-label="Health card download and print options">
+            <button type="button" class="ecard-print-button" data-ecard-download="id" data-format="png" data-ui-action="secondary">Download PNG</button>
+            <button type="button" class="ecard-print-button" data-ecard-download="id" data-format="pdf" data-ui-action="secondary">Download PDF</button>
+            <button type="button" class="ecard-print-button" onclick="printCitizenSection('id')" data-ui-action="secondary">Print Health Card Only</button>
         </div>
         <section class="print-health-record min-w-0 rounded-xl border-2 border-gray-300 bg-white p-5 shadow-lg sm:p-6">
 
@@ -261,6 +262,11 @@
                 </div>
             </div>
 </section>
+        <div class="ecard-section-actions print:hidden" aria-label="Health information download and print options">
+            <button type="button" class="ecard-print-button ecard-print-record" data-ecard-download="record" data-format="png" data-ui-action="secondary">Download PNG</button>
+            <button type="button" class="ecard-print-button ecard-print-record" data-ecard-download="record" data-format="pdf" data-ui-action="secondary">Download PDF</button>
+            <button type="button" class="ecard-print-button ecard-print-record" onclick="printCitizenSection('record')" data-ui-action="secondary">Print Health Information Only</button>
+        </div>
     </div>
 </div>
 
@@ -302,6 +308,7 @@ window.addEventListener('afterprint', function() {
     }
 });
 </script>
+<script src="{{ asset('js/ecard-download.js') }}?v={{ filemtime(public_path('js/ecard-download.js')) }}"></script>
 <script src="{{ asset('js/ecard-preview.js') }}?v={{ filemtime(public_path('js/ecard-preview.js')) }}"></script>
 <script src="{{ asset('js/ecard-fit.js') }}?v={{ filemtime(public_path('js/ecard-fit.js')) }}"></script>
 @endsection

@@ -264,7 +264,7 @@ dialog.family-modal .btn-link:hover {
 
 .bhw-families-page .form-row {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) auto;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
     align-items: end;
     gap: 15px;
     margin: 0 0 16px;
@@ -352,18 +352,10 @@ dialog.family-modal .family-select-trigger > svg {
     padding: 8px 13px;
 }
 
-.bhw-families-page .header-browse-button svg,
-.bhw-families-page .register-browse-button svg {
+.bhw-families-page .header-browse-button svg {
     width: 15px;
     height: 15px;
     stroke: #64748b;
-}
-
-.bhw-families-page .register-browse-button {
-    align-self: end;
-    min-height: 37px;
-    padding-right: 14px;
-    padding-left: 14px;
 }
 
 .bhw-families-page .create-family-button {
@@ -1037,11 +1029,6 @@ dialog.family-modal button:disabled {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
-    .bhw-families-page .register-form-row .register-browse-button {
-        grid-column: 1 / -1;
-        width: 100%;
-    }
-
     dialog.family-modal .family-edit-row {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
@@ -1100,11 +1087,6 @@ dialog.family-modal button:disabled {
     .bhw-families-page .register-form-row {
         grid-template-columns: minmax(0, 1fr);
         gap: 12px;
-    }
-
-    .bhw-families-page .register-form-row .register-browse-button {
-        grid-column: auto;
-        width: 100%;
     }
 
     .bhw-families-page .create-family-button {

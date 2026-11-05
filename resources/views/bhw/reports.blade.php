@@ -378,9 +378,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
             <div class="report-actions">
-                <label class="report-graphics-toggle" data-reports="age_by_purok,immunization,sex_by_purok,pregnancy_by_purok,diagnosis_summary">
+                <label class="report-graphics-toggle" style="margin-right:0" data-reports="age_by_purok,immunization,sex_by_purok,pregnancy_by_purok,diagnosis_summary">
                     <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
                     Include graphic summaries
+                </label>
+                <label class="report-graphics-toggle" data-reports="sex_by_purok,age_by_purok,pregnancy_by_purok">
+                    <input type="checkbox" name="include_summary" value="1" {{ $includeSummary ? 'checked' : '' }}>
+                    Include summary counts
                 </label>
                 <button type="submit" class="btn-primary" data-ui-action="primary">Generate Report</button>
                 <a class="btn-secondary" href="{{ route('bhw.reports', ['report_type' => $selectedReport]) }}" data-ui-action="reset">Reset Filters</a>
@@ -473,6 +477,8 @@ document.addEventListener('DOMContentLoaded', function () {
             @if(in_array('age_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Age-Bracket Breakdown per Purok</h3>
+                    @include('bhw.partials.report-citizen-list', ['title' => 'Age-Bracket List per Purok, Subgroup and Classification', 'groups' => $ageCitizenList])
+                    @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Infants</th><th>Toddlers</th><th>Children</th><th>Teenagers</th><th>Working adults</th><th>Seniors</th><th>Unknown age</th></tr></thead>
                         <tbody>
@@ -492,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <div class="graphic-row"><span>{{ $purok }}</span><div class="graphic-track"><div class="graphic-fill" style="width:{{ ($total / $maxAgeTotal) * 100 }}%"></div></div><strong>{{ $total }}</strong></div>
                             @endforeach
                         </div>
+                    @endif
                     @endif
                 </section>
             @endif
@@ -543,6 +550,8 @@ document.addEventListener('DOMContentLoaded', function () {
             @if(in_array('sex_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Male and Female Counts by Purok</h3>
+                    @include('bhw.partials.report-citizen-list', ['title' => 'Male and Female List per Purok and Subgroup', 'groups' => $sexCitizenList])
+                    @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Other / not recorded</th></tr></thead>
                         <tbody>
@@ -563,12 +572,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             @endforeach
                         </div>
                     @endif
+                    @endif
                 </section>
             @endif
 
             @if(in_array('pregnancy_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Recorded Pregnancy by Purok</h3>
+                    @include('bhw.partials.report-citizen-list', ['title' => 'Pregnancy List per Purok and Subgroup', 'groups' => $pregnancyCitizenList])
+                    @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Recorded pregnant residents</th></tr></thead>
                         <tbody>
@@ -587,6 +599,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <div class="graphic-row"><span>{{ $purok }}</span><div class="graphic-track"><div class="graphic-fill red" style="width:{{ ($count / $maxPregnancy) * 100 }}%"></div></div><strong>{{ $count }}</strong></div>
                             @endforeach
                         </div>
+                    @endif
                     @endif
                 </section>
             @endif
@@ -668,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
     (() => {
         const reportType = document.getElementById('reportType');
         const filterFields = document.querySelectorAll('.report-field[data-reports]');
-        const graphicsToggle = document.querySelector('.report-graphics-toggle');
+        const graphicsToggles = document.querySelectorAll('.report-graphics-toggle');
         const reportTypeField = reportType.closest('.report-field');
         const reportTypeLabel = document.getElementById('reportTypeLabel');
         const picker = document.createElement('div');
@@ -905,9 +918,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     input.disabled = !isRelevant;
                 });
             });
-            const graphicsRelevant = graphicsToggle.dataset.reports.split(',').includes(reportType.value);
-            graphicsToggle.hidden = !graphicsRelevant;
-            graphicsToggle.querySelector('input').disabled = !graphicsRelevant;
+            graphicsToggles.forEach((toggle) => {
+                const relevant = toggle.dataset.reports.split(',').includes(reportType.value);
+                toggle.hidden = !relevant;
+                toggle.querySelector('input').disabled = !relevant;
+            });
         };
 
         reportType.addEventListener('change', () => {
