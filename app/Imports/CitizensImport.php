@@ -257,6 +257,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         return null;
     }
 
+<<<<<<< HEAD
     // Heuristic for keyboard mashing such as "asdfghjk", "xqzvkw" or "aBcDeF". Multi-word names ("John Andrew Matthew") are checked word by word.
     private function looksJumbled(string $value): bool
     {
@@ -264,10 +265,17 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             if (class_exists(\Normalizer::class)) {
                 $word = preg_replace('/\p{M}+/u', '', \Normalizer::normalize($word, \Normalizer::FORM_D) ?: $word);
             }
+=======
+    // Heuristic for keyboard mashing such as "asdfgh", "xqzvk" or "aBcDeF".
+    private function looksJumbled(string $value): bool
+    {
+        foreach (preg_split('/[\s.\'\-]+/u', mb_strtolower($value), -1, PREG_SPLIT_NO_EMPTY) as $word) {
+>>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
             $letters = preg_replace('/[^a-z]/', '', $word);
             if ($letters === '') {
                 continue;
             }
+<<<<<<< HEAD
             // Doubled letters are normal ("Matthew", "Anne"); three in a row are not.
             if (preg_match('/(.)\1{2,}/', $letters)) {
                 return true;
@@ -282,6 +290,17 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             foreach (['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as $row) {
                 for ($i = 0; $i + 5 <= strlen($row); $i++) {
                     $run = substr($row, $i, 5);
+=======
+            if (mb_strlen($letters) >= 4 && !preg_match('/[aeiouy]/', $letters)) {
+                return true;
+            }
+            if (preg_match('/[^aeiou]{5,}/', $letters) || preg_match('/(.)\1{2,}/', $letters)) {
+                return true;
+            }
+            foreach (['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as $row) {
+                for ($i = 0; $i + 4 <= strlen($row); $i++) {
+                    $run = substr($row, $i, 4);
+>>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                     if (str_contains($letters, $run) || str_contains($letters, strrev($run))) {
                         return true;
                     }

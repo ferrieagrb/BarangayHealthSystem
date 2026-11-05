@@ -46,10 +46,18 @@
     }
 
     .ecard-id-card-scroll {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
         width: 100%;
         min-width: 0;
         max-width: 1000px;
         margin: 0 auto;
         overflow: visible;
+    }
+
+    .ecard-id-card-scroll .bheams-id-card {
+        margin: 0 auto;
+        flex: 0 0 auto;
     }
 }
