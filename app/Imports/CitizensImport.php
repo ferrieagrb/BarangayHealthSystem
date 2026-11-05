@@ -22,7 +22,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     private const DATE_FORMATS = ['Y-m-d', 'Y/m/d', 'n/j/Y', 'n-j-Y', 'n.j.Y', 'F j, Y', 'F j Y', 'M j, Y', 'M j Y', 'j F Y', 'j M Y'];
     private const MAX_ISSUES = 25;
     private const PUROK_PATTERN = '/^(purok\s*)?\d+$/i';
-    private const SUBGROUP_PATTERN = '/^\d+\s*[a-z]$/i';
+    private const SUBGROUP_PATTERN = '/^(?:(?:sub[\s\-]*)?(?:purok|group)\s*)?(?:\d+\s*[-._ ]?\s*)?[a-z]$/i';
 
     public int $createdAccounts = 0;
     public int $skippedRows = 0;
@@ -41,7 +41,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         'birthdate' => ['birthdate', 'birth_date', 'birthday', 'date_of_birth', 'dob'],
         'sex' => ['sex', 'gender'],
         'contact_number' => ['contact_number', 'contact_no', 'contact', 'contactnumber', 'mobile', 'mobile_number', 'phone', 'phone_number'],
-        'sub_purok' => ['sub_purok', 'subpurok', 'sub_purok_group', 'subgroup', 'sub_group'],
+        'sub_purok' => ['sub_purok', 'subpurok', 'sub_purok_group', 'subpurok_group', 'subgroup', 'sub_group', 'purok_subgroup', 'purok_sub_group', 'sub_purok_no', 'sub_purok_number'],
     ];
 
     private int $headingRowNumber;
@@ -186,8 +186,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
                 }
             }
         } elseif ($purok) {
-            // Fallback to the first available subgroup of the purok if not specified
-            $subgroup = $purok->subgroups->first();
+            $this->ignoreValue("{$entry}: Sub purok is empty; imported with no subgroup");
         } elseif ($subPurokInput !== '') {
             $this->ignoreValue("{$entry}: Sub purok \"{$subPurokInput}\" was left blank because the purok is missing");
         }
@@ -257,7 +256,6 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         return null;
     }
 
-<<<<<<< HEAD
     // Heuristic for keyboard mashing such as "asdfghjk", "xqzvkw" or "aBcDeF". Multi-word names ("John Andrew Matthew") are checked word by word.
     private function looksJumbled(string $value): bool
     {
@@ -265,17 +263,10 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             if (class_exists(\Normalizer::class)) {
                 $word = preg_replace('/\p{M}+/u', '', \Normalizer::normalize($word, \Normalizer::FORM_D) ?: $word);
             }
-=======
-    // Heuristic for keyboard mashing such as "asdfgh", "xqzvk" or "aBcDeF".
-    private function looksJumbled(string $value): bool
-    {
-        foreach (preg_split('/[\s.\'\-]+/u', mb_strtolower($value), -1, PREG_SPLIT_NO_EMPTY) as $word) {
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
             $letters = preg_replace('/[^a-z]/', '', $word);
             if ($letters === '') {
                 continue;
             }
-<<<<<<< HEAD
             // Doubled letters are normal ("Matthew", "Anne"); three in a row are not.
             if (preg_match('/(.)\1{2,}/', $letters)) {
                 return true;
@@ -290,17 +281,6 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
             foreach (['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as $row) {
                 for ($i = 0; $i + 5 <= strlen($row); $i++) {
                     $run = substr($row, $i, 5);
-=======
-            if (mb_strlen($letters) >= 4 && !preg_match('/[aeiouy]/', $letters)) {
-                return true;
-            }
-            if (preg_match('/[^aeiou]{5,}/', $letters) || preg_match('/(.)\1{2,}/', $letters)) {
-                return true;
-            }
-            foreach (['qwertyuiop', 'asdfghjkl', 'zxcvbnm'] as $row) {
-                for ($i = 0; $i + 4 <= strlen($row); $i++) {
-                    $run = substr($row, $i, 4);
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                     if (str_contains($letters, $run) || str_contains($letters, strrev($run))) {
                         return true;
                     }
@@ -368,9 +348,27 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
 
     private function findSubgroup(Purok $purok, string $input): ?PurokSubgroup
     {
-        $needle = mb_strtolower(preg_replace('/\s+/', '', $input));
+        $needle = $this->subgroupKey($input);
+        $purokNumber = preg_replace('/\D/', '', $purok->name);
 
-        return $purok->subgroups->first(fn (PurokSubgroup $subgroup) => mb_strtolower(preg_replace('/\s+/', '', $subgroup->name)) === $needle);
+        // A bare letter ("c") means that letter under the row's own purok.
+        if (preg_match('/^[a-z]$/', $needle)) {
+            $needle = ltrim($purokNumber, '0') . $needle;
+        }
+
+        return $purok->subgroups->first(fn (PurokSubgroup $subgroup) => $this->subgroupKey($subgroup->name) === $needle);
+    }
+
+    // Reduces "3C", "3-c", "Purok 3 C" or "Sub-purok 3c" to a comparable "3c".
+    private function subgroupKey(string $value): string
+    {
+        $value = mb_strtolower(trim($value));
+
+        if (preg_match('/(\d+)\s*[-._ ]?\s*([a-z])\b/', $value, $m)) {
+            return ltrim($m[1], '0') . $m[2];
+        }
+
+        return preg_replace('/[^a-z0-9]/', '', $value);
     }
 
     private function skipRow(string $message): void

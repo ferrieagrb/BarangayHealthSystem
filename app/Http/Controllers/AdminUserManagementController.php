@@ -211,17 +211,17 @@ public function resetPassword(Request $request, $id)
         return back()->withErrors(['user' => 'Use your account settings to change your own password.']);
     }
 
-    $defaultPassword = $user->role === 'citizen' ? 'Barangay123!' : 'TemporaryPassword123!';
+    $temporaryPassword = Str::random(16);
 
     $user->forceFill([
-        'password' => Hash::make($defaultPassword),
+        'password' => Hash::make($temporaryPassword),
         'must_change_password' => true,
         'failed_login_attempts' => 0,
         'is_locked' => false,
         'locked_until' => null,
     ])->save();
 
-    $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name} to the default; a password change is required at next login.", 'security', $user);
+    $this->logAdminActivity('user.password_reset', "Reset the password of {$user->name} to a generated temporary password; a password change is required at next login.", 'security', $user);
 
     $loginIdentifier = filled($user->username) ? $user->username : $user->email;
 

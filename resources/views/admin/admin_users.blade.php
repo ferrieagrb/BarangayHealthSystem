@@ -257,17 +257,10 @@
             <h3>Reset Password</h3>
             <button type="button" class="close-btn" onclick="closeResetModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;">&times;</button>
         </div>
-<<<<<<< HEAD
-        <form id="resetPasswordForm" method="POST">
-            @csrf
-            @method('PATCH')
-            <p style="margin-bottom: 12px;">The password of <strong id="reset_user_name"></strong> will be reset to the default (TemporaryPassword123! for staff, Barangay123! for citizens). They must change it at next login.</p>
-=======
         <form id="resetPasswordForm" method="POST" onsubmit="return confirm('Reset this password?');">
             @csrf
             @method('PATCH')
             <p style="margin-bottom: 12px;">Generate a temporary password for <strong id="reset_user_name"></strong>. It will be shown once, and the user must change it at next login.</p>
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
             <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
                 <label for="reset_confirm_password">Your password</label>
                 <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password" style="width: 100%;">

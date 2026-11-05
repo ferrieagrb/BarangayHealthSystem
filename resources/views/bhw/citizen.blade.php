@@ -141,12 +141,8 @@
               class="citizen-filter-form" id="citizenFilterForm">
 
             {{-- SEARCH --}}
-<<<<<<< HEAD
-            <div class="search-box"><label for="citizenSearchInput" class="citizen-control-label">Search residents</label>
-=======
             <div class="search-box citizen-filter-field">
                 <label for="citizenSearchInput" class="citizen-control-label">Search residents</label>
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                 <input type="search" name="search" id="citizenSearchInput"
                        value="{{ request('search') }}"
                        placeholder="Search citizen name or ID"
@@ -155,12 +151,8 @@
             </div>
 
             {{-- GROUPED PUROK AND SUBGROUP FILTER --}}
-<<<<<<< HEAD
-            <div class="filter-box purok-filter-box"><label for="purokFilter" class="citizen-control-label">Purok / subgroup</label>
-=======
             <div class="filter-box purok-filter-box citizen-filter-field">
                 <label for="purokFilter" class="citizen-control-label">Purok / subgroup</label>
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                 <select id="purokFilter" aria-label="Filter by Purok or Subgroup">
                     <option value="">All Puroks</option>
 
@@ -188,11 +180,7 @@
             </div>
 
             {{-- AGE FILTER --}}
-<<<<<<< HEAD
-            <div class="filter-box">
-=======
             <div class="filter-box citizen-filter-field">
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                 <label for="citizenAgeFilter" class="citizen-control-label">Age or age range</label>
                 <input type="text" name="age" id="citizenAgeFilter"
                        value="{{ request('age') }}"
@@ -200,13 +188,8 @@
             </div>
 
             {{-- STATUS FILTER --}}
-<<<<<<< HEAD
-            <div class="filter-box">
-                <span class="citizen-control-label">Additional filters</span>
-=======
             <div class="filter-box citizen-filter-field">
                 <label for="openCitizenStatusFilter" class="citizen-control-label">Additional filters</label>
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
                 <button type="button" id="openCitizenStatusFilter"
                         class="citizen-status-filter-btn" data-ui-action="secondary">
                     <span>Status & Filters</span>
@@ -516,11 +499,7 @@
         </div>
 
         <div class="citizen-pagination">
-<<<<<<< HEAD
-            {{ $citizens->appends(request()->query())->links('pagination::bootstrap-5') }}
-=======
             {{ $citizens->appends(request()->query())->links('partials.citizen-pagination') }}
->>>>>>> 9cd819303ad494ed0887432172e90d6b558a4075
         </div>
     </div>
 </div>
