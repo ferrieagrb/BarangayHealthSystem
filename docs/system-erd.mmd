@@ -1,0 +1,77 @@
+%% Barangay Health Information System: core operational ERD
+%% Three vertical columns; framework tables and activity logs are omitted.
+%% users.citizen_id is an application-level link, not a database FK.
+%% referrals is standalone because no citizen/user FK is defined.
+flowchart LR
+    subgraph community["COMMUNITY & ACCESS"]
+        direction TB
+        USERS["<b>USERS</b><br/><b>PK</b> id<br/>name · email · role<br/>citizen_id (application link)"]
+        PUROKS["<b>PUROKS</b><br/><b>PK</b> id<br/>name<br/><b>FK</b> user_id"]
+        SUBGROUPS["<b>PUROK_SUBGROUPS</b><br/><b>PK</b> id<br/><b>FK</b> purok_id<br/><b>FK</b> user_id"]
+        FAMILIES["<b>FAMILIES</b><br/><b>PK</b> id<br/>family_code · family_name<br/><b>FK</b> purok_id<br/><b>FK</b> subgroup_id<br/><b>FK</b> head_id"]
+        CITIZENS["<b>CITIZENS</b><br/><b>PK</b> id<br/>name · birth date · sex<br/><b>FK</b> family_id<br/><b>FK</b> subgroup_id"]
+        PUROK_USER["<b>PUROK_USER</b><br/><b>PK</b> id<br/><b>FK</b> purok_id<br/><b>FK</b> user_id"]
+        SUBGROUP_USER["<b>PUROK_SUBGROUP_USER</b><br/><b>PK</b> id<br/><b>FK</b> purok_subgroup_id<br/><b>FK</b> user_id"]
+        PERMISSIONS["<b>USER_PERMISSIONS</b><br/><b>PK</b> id<br/><b>FK</b> user_id<br/>feature · access"]
+    end
+
+    subgraph health["HEALTH SERVICES"]
+        direction TB
+        HEALTH_RECORDS["<b>HEALTH_RECORDS</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/>diagnosis · record_date"]
+        VACCINATION_RECORDS["<b>VACCINATION_RECORDS</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/>vaccine · dose · date"]
+        VACCINATION_SCHEDULES["<b>VACCINATION_SCHEDULES</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/><b>FK</b> scheduled_by<br/>vaccine · scheduled_date"]
+        MEDICATION_RECORDS["<b>MEDICATION_RECORDS</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/>medicine · dosage · date"]
+        MAINTENANCE_RECORDS["<b>MAINTENANCE_RECORDS</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/>medicine · dosage · frequency"]
+        HEALTH_SHARES["<b>CITIZEN_HEALTH_SHARES</b><br/><b>PK</b> id<br/><b>FK</b> citizen_id<br/><b>FK</b> granted_by_user_id<br/>expires_at · revoked_at"]
+    end
+
+    subgraph services["SUPPLIES & COMMUNICATION"]
+        direction TB
+        SUPPLIES["<b>SUPPLIES</b><br/><b>PK</b> id<br/>name · category · quantity"]
+        EVENTS["<b>EVENTS</b><br/><b>PK</b> id<br/>title · start"]
+        SUPPLY_RELEASES["<b>SUPPLY_RELEASES</b><br/><b>PK</b> id<br/><b>FK</b> event_id<br/><b>FK</b> user_id<br/><b>FK</b> claimed_by_user_id<br/><b>FK</b> citizen_id<br/><b>FK</b> supply_id<br/>quantity · status"]
+        SUPPLY_LOGS["<b>SUPPLY_LOGS</b><br/><b>PK</b> id<br/><b>FK</b> supply_id<br/><b>FK</b> user_id<br/><b>FK</b> citizen_id<br/>action · quantity"]
+        ANNOUNCEMENTS["<b>ANNOUNCEMENTS</b><br/><b>PK</b> id<br/><b>FK</b> user_id<br/>title · category"]
+        ANNOUNCEMENT_IMAGES["<b>ANNOUNCEMENT_IMAGES</b><br/><b>PK</b> id<br/><b>FK</b> announcement_id<br/>path · sort_order"]
+        REFERRALS["<b>REFERRALS</b><br/><b>PK</b> id<br/>date · name · status"]
+    end
+
+    USERS -->|user_id| PERMISSIONS
+    USERS -->|user_id| PUROK_USER
+    PUROKS -->|purok_id| PUROK_USER
+    USERS -->|user_id| SUBGROUP_USER
+    SUBGROUPS -->|purok_subgroup_id| SUBGROUP_USER
+    USERS -->|user_id · primary BHW| PUROKS
+    USERS -->|user_id · primary BHW| SUBGROUPS
+    PUROKS -->|purok_id| SUBGROUPS
+    PUROKS -->|purok_id| FAMILIES
+    SUBGROUPS -->|subgroup_id| FAMILIES
+    FAMILIES -->|family_id| CITIZENS
+    SUBGROUPS -->|subgroup_id| CITIZENS
+    CITIZENS -->|head_id| FAMILIES
+
+    CITIZENS -->|citizen_id| HEALTH_RECORDS
+    CITIZENS -->|citizen_id| VACCINATION_RECORDS
+    CITIZENS -->|citizen_id| VACCINATION_SCHEDULES
+    USERS -->|scheduled_by| VACCINATION_SCHEDULES
+    CITIZENS -->|citizen_id| MEDICATION_RECORDS
+    CITIZENS -->|citizen_id| MAINTENANCE_RECORDS
+    CITIZENS -->|citizen_id| HEALTH_SHARES
+    USERS -->|granted_by_user_id| HEALTH_SHARES
+
+    SUPPLIES -->|supply_id| SUPPLY_RELEASES
+    EVENTS -->|event_id| SUPPLY_RELEASES
+    USERS -->|FK · user_id / claimed_by_user_id| SUPPLY_RELEASES
+    CITIZENS -->|citizen_id| SUPPLY_RELEASES
+    SUPPLIES -->|supply_id| SUPPLY_LOGS
+    USERS -->|user_id| SUPPLY_LOGS
+    CITIZENS -->|citizen_id| SUPPLY_LOGS
+    USERS -->|user_id| ANNOUNCEMENTS
+    ANNOUNCEMENTS -->|announcement_id| ANNOUNCEMENT_IMAGES
+
+    linkStyle default stroke:#1d4ed8,stroke-width:3px;
+
+    classDef table fill:#ffffff,stroke:#334155,stroke-width:1.5px,color:#0f172a;
+    classDef standalone fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+    class USERS,PUROKS,SUBGROUPS,FAMILIES,CITIZENS,PUROK_USER,SUBGROUP_USER,PERMISSIONS,HEALTH_RECORDS,VACCINATION_RECORDS,VACCINATION_SCHEDULES,MEDICATION_RECORDS,MAINTENANCE_RECORDS,HEALTH_SHARES,SUPPLIES,EVENTS,SUPPLY_RELEASES,SUPPLY_LOGS,ANNOUNCEMENTS,ANNOUNCEMENT_IMAGES table;
+    class REFERRALS standalone;

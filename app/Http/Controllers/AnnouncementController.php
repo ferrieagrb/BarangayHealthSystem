@@ -35,7 +35,6 @@ class AnnouncementController extends Controller
     public function publicIndex()
     {
         $announcements = Announcement::with('images')
-            ->whereHas('images')
             ->latest()
             ->get();
 
@@ -44,8 +43,6 @@ class AnnouncementController extends Controller
 
     public function publicShow(Announcement $announcement)
     {
-        abort_unless($announcement->images()->exists(), 404);
-
         $announcement->load('images');
 
         return view('citizenannouncement_show', compact('announcement'));
@@ -58,8 +55,8 @@ class AnnouncementController extends Controller
             'title' => 'required',
             'description' => 'required',
             'category' => 'required',
-            'images' => 'required|array|min:1',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'post_to_facebook' => 'nullable|boolean',
         ]);
 
@@ -105,7 +102,7 @@ class AnnouncementController extends Controller
             return;
         }
 
-        $message = "📢 [{$announcement->category}] {$announcement->title}\n\n{$announcement->description}";
+        $message = "{$announcement->title} - {$announcement->category}\n\n{$announcement->description}";
 
         try {
             $image = $announcement->images->first();
@@ -181,9 +178,60 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
-        // Archiving keeps the announcement, its images and any Facebook post so it can be restored.
-        $announcement->delete();
+        $announcement->load('images');
+        $facebookError = $this->deleteFromFacebookPage($announcement);
 
-        return redirect()->route('announcements')->with('success', 'Announcement archived. You can restore it from the archive.');
+        if ($facebookError) {
+            return redirect()->route('announcements')
+                ->with('error', "Announcement was not deleted because the Facebook post could not be removed: {$facebookError}");
+        }
+
+        foreach ($announcement->images as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        $announcement->images()->delete();
+        $announcement->forceDelete();
+
+        return redirect()->route('announcements')->with('success', 'Announcement deleted.');
+    }
+
+    private function deleteFromFacebookPage(Announcement $announcement)
+    {
+        $postId = $announcement->facebook_post_id;
+        $accessToken = config('services.facebook.access_token');
+
+        if (!$postId) {
+            return null;
+        }
+
+        if (!$accessToken) {
+            return 'Facebook credentials are not configured.';
+        }
+
+        try {
+            $response = Http::timeout(20)->delete(
+                "https://graph.facebook.com/{$postId}?" . http_build_query(['access_token' => $accessToken])
+            );
+
+            // Error 100 / subcode 33 means the post no longer exists on Facebook.
+            $alreadyGone = $response->json('error.code') == 100 && $response->json('error.error_subcode') == 33;
+
+            if ($response->failed() && !$alreadyGone) {
+                Log::error('Facebook Delete Error: ' . $response->body());
+                $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion failed: ' . substr($response->body(), 0, 500), 'integration');
+
+                return $response->json('error.message') ?: 'Unexpected response from Facebook.';
+            }
+
+            $this->logAdminActivity('facebook.deleted', 'Announcement deleted from Facebook.', 'integration');
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Facebook API Exception: ' . $e->getMessage());
+            $this->logAdminActivity('facebook.delete_failed', 'Facebook announcement deletion threw an exception: ' . $e->getMessage(), 'integration');
+
+            return 'Could not reach Facebook.';
+        }
     }
 }

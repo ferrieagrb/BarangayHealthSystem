@@ -70,11 +70,12 @@
             <div>
                 <h2>Registered Families</h2>
                 <p>Showing all registered households and assigned citizens.</p>
-                <p class="family-filter-notice" id="familyFilterNotice" hidden></p>
+                <p class="family-filter-notice" id="familyFilterNotice" @if(!$subgroupFilter) hidden @endif>@if($subgroupFilter)Filtered by {{ optional($puroks->flatMap->subgroups->firstWhere('id', (int) $subgroupFilter))->name ?? 'selected subgroup' }}@endif</p>
             </div>
-            <div class="family-search">
-                <input type="search" id="familySearchInput" class="form-control" placeholder="Search family or ID..." aria-label="Search registered families">
-            </div>
+            <form class="family-search" method="GET" action="{{ route('bhw.families.index') }}" id="familySearchForm">
+                @if($subgroupFilter)<input type="hidden" name="subgroup_id" value="{{ $subgroupFilter }}">@endif
+                <input type="search" name="search" value="{{ $search }}" id="familySearchInput" class="form-control" placeholder="Search family or ID..." aria-label="Search registered families">
+            </form>
         </div>
         <div class="family-table-wrap"><table class="family-table">
             <thead>
@@ -119,11 +120,15 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">No families registered yet.</td>
+                        <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">No families found.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table></div>
+
+        <div class="citizen-pagination">
+            {{ $families->links('partials.citizen-pagination') }}
+        </div>
     </div>
 </div>
 
@@ -459,8 +464,7 @@
     }
 
     function getSubgroupHouseholdCount(subgroupId) {
-        return Array.from(document.querySelectorAll('.bhw-families-page .family-row'))
-            .filter(row => String(row.dataset.subgroupId) === String(subgroupId)).length;
+        return Number(subgroupFamilyCounts[subgroupId] || 0);
     }
 
     function renderSubgroupPickerTable() {
@@ -528,34 +532,15 @@
         closeSubgroupPicker();
     }
 
-    let activeFamilySubgroupFilter = null;
+    const subgroupFamilyCounts = @json($subgroupCounts);
+    const familiesIndexUrl = @json(route('bhw.families.index'));
+
     function applyFamilySubgroupFilter(subgroupId, displayName) {
-        activeFamilySubgroupFilter = String(subgroupId);
-        document.getElementById('familySearchInput').value = '';
-        const notice = document.getElementById('familyFilterNotice');
-        notice.textContent = `Filtered by ${displayName}`;
-        notice.hidden = false;
-        applyFamilyFilters();
+        window.location.href = `${familiesIndexUrl}?subgroup_id=${encodeURIComponent(subgroupId)}`;
     }
 
     function resetFamilySubgroupFilter() {
-        activeFamilySubgroupFilter = null;
-        const search = document.getElementById('familySearchInput');
-        if (search) search.value = '';
-        const notice = document.getElementById('familyFilterNotice');
-        if (notice) notice.hidden = true;
-        applyFamilyFilters();
-        if (document.getElementById('subgroupPickerModal').open) closeSubgroupPicker();
-    }
-
-    function applyFamilyFilters() {
-        const search = document.getElementById('familySearchInput');
-        const query = search ? search.value.trim().toLowerCase() : '';
-        document.querySelectorAll('.bhw-families-page .family-row').forEach(row => {
-            const matchesSearch = row.textContent.toLowerCase().includes(query);
-            const matchesSubgroup = activeFamilySubgroupFilter === null || String(row.dataset.subgroupId) === activeFamilySubgroupFilter;
-            row.hidden = !(matchesSearch && matchesSubgroup);
-        });
+        window.location.href = familiesIndexUrl;
     }
 
     // Citizen Picker Controls
@@ -640,7 +625,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const search = document.getElementById('familySearchInput');
-    if (search) search.addEventListener('input', applyFamilyFilters);
+    if (search) {
+        let searchTimer;
+        search.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => document.getElementById('familySearchForm').submit(), 500);
+        });
+    }
 
     // Flash success messages as a brief popup toast instead of a page banner.
     const toast = document.getElementById('familyPageAlert');

@@ -39,6 +39,12 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="error-message">
+        {{ session('error') }}
+    </div>
+@endif
+
 <div class="page-top">
         <div class="page-title">
             <h1>Announcements</h1>
@@ -102,10 +108,10 @@
 
             <div class="announcement-card-actions">
                 <button type="button" class="btn-secondary announcement-view-button" data-ui-action="secondary">View Details</button>
-                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Archive this announcement? You can restore it from the archive.');">
+                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Delete this announcement? It will also be removed from Facebook. This cannot be undone.');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-danger" data-ui-action="danger">Archive</button>
+                    <button type="submit" class="btn-danger" data-ui-action="danger">Delete</button>
                 </form>
             </div>
 

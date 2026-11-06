@@ -77,14 +77,41 @@ class FamilyController extends Controller
             }
         }
 
-        $families = $familiesQuery->latest()->get();
+        $subgroupCounts = (clone $familiesQuery)
+            ->toBase()
+            ->selectRaw('subgroup_id, count(*) as total')
+            ->groupBy('subgroup_id')
+            ->pluck('total', 'subgroup_id');
+
+        $request = request();
+        $search = trim((string) $request->query('search', ''));
+        $subgroupFilter = $request->query('subgroup_id');
+
+        $familiesQuery->when($search !== '', function ($query) use ($search) {
+            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search) . '%';
+            $query->where(fn ($q) => $q->where('families.family_name', 'like', $like)
+                ->orWhere('families.family_code', 'like', $like));
+        });
+        $familiesQuery->when($subgroupFilter, fn ($query) => $query->where('families.subgroup_id', $subgroupFilter));
+
+        // Always order by purok number (Purok 1-4), then subgroup, then family name.
+        $families = $familiesQuery
+            ->leftJoin('puroks as order_puroks', 'order_puroks.id', '=', 'families.purok_id')
+            ->leftJoin('purok_subgroups as order_subgroups', 'order_subgroups.id', '=', 'families.subgroup_id')
+            ->select('families.*')
+            ->orderByRaw('LENGTH(order_puroks.name)')
+            ->orderBy('order_puroks.name')
+            ->orderBy('order_subgroups.name')
+            ->orderBy('families.family_name')
+            ->paginate(10)
+            ->withQueryString();
         $puroks = $puroksQuery->get();
         $availableCitizens = app(BhwCitizenAccess::class)
             ->scopeCitizens(citizens::query(), $user)
             ->whereNull('family_id')
             ->get();
 
-        return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens'));
+        return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens', 'subgroupCounts', 'search', 'subgroupFilter'));
     }
 
     public function store(Request $request)
