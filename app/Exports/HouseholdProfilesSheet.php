@@ -25,7 +25,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
  */
 class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, WithCustomValueBinder, WithDrawings, WithEvents, WithStrictNullComparison, WithTitle
 {
-    private const HEADINGS = ['Family ID', 'Family Name', 'Family Head', 'Member', 'Role', 'Age', 'Sex', 'Purok / Subgroup'];
+    private const HEADINGS = ['Family ID', 'Family Name', 'Family Head', 'Member', 'Role', 'Age', 'Sex', 'Birthdate', 'Contact No.', 'Purok / Subgroup'];
 
     private ?array $built = null;
 
@@ -104,7 +104,7 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
                     'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CBD5E1']]],
                 ]);
 
-                foreach ([14, 24, 20, 26, 12, 9, 10, 26] as $index => $width) {
+                foreach ([14, 24, 20, 30, 12, 9, 10, 16, 16, 26] as $index => $width) {
                     $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($index + 1))->setWidth($width);
                 }
 
@@ -186,10 +186,12 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
                             $member ? ($member['is_head'] ? 'Head' : 'Member') : '',
                             $member['age'] ?? '',
                             $member['sex'] ?? '',
+                            $member['birthdate'] ?? '',
+                            $member['contact'] ?? '',
                             $purok['name'].' / '.$label,
                         ];
                         if ($member && $member['is_head']) {
-                            $ops[] = ['type' => 'style', 'range' => "D{$line}:G{$line}", 'style' => [
+                            $ops[] = ['type' => 'style', 'range' => "D{$line}:I{$line}", 'style' => [
                                 'font' => ['bold' => true, 'color' => ['rgb' => '173B82']],
                                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEF2FF']],
                             ]];
@@ -206,7 +208,7 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8FAFC']],
                         'alignment' => ['vertical' => Alignment::VERTICAL_TOP],
                     ]];
-                    $ops[] = ['type' => 'style', 'range' => "F{$start}:G{$end}", 'style' => [
+                    $ops[] = ['type' => 'style', 'range' => "F{$start}:I{$end}", 'style' => [
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                     ]];
                 }

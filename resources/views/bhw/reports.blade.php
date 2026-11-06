@@ -382,6 +382,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="checkbox" name="include_graphics" value="1" {{ $includeGraphics ? 'checked' : '' }}>
                     Include graphic summaries
                 </label>
+                <label class="report-graphics-toggle" style="margin-right:0" data-reports="sex_by_purok,age_by_purok,pregnancy_by_purok">
+                    <input type="checkbox" name="count_mode_only" value="1" {{ request()->boolean('count_mode_only') ? 'checked' : '' }}>
+                    Count mode only
+                </label>
                 <label class="report-graphics-toggle" data-reports="sex_by_purok,age_by_purok,pregnancy_by_purok">
                     <input type="checkbox" name="include_summary" value="1" {{ $includeSummary ? 'checked' : '' }}>
                     Include summary counts
@@ -408,9 +412,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 <section class="report-section">
                     <h3>Citizen Profiles ({{ $citizensReport->count() }})</h3>
                     @if($citizensReport->isEmpty()) <div class="report-empty">No citizens match the selected filters.</div>
-                    @else <table class="report-table"><thead><tr><th>Name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
+                    @else <table class="report-table"><thead><tr><th>Citizen ID</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Birthdate</th><th>Age</th><th>Sex</th><th>Contact No.</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
                         @foreach($citizensReport as $citizen)
-                            <tr><td>{{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}<br><small>ID: C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</small></td><td>{{ $citizen->ageForEligibility() ?? 'Not recorded' }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
+                            <tr><td>C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</td><td>{{ $citizen->Citizen_FName }}</td><td>{{ $citizen->Citizen_MName }}</td><td>{{ $citizen->Citizen_LName }}</td><td>{{ $citizen->Citizen_BirthDate ? \Illuminate\Support\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y') : 'Not recorded' }}</td><td>{{ $citizen->ageForEligibility() ?? 'Not recorded' }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->Citizen_ContactNo ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
                         @endforeach
                     </tbody></table>@endif
                 </section>
@@ -431,13 +435,13 @@ document.addEventListener('DOMContentLoaded', function () {
                             $householdsByPurok = $households->groupBy(fn ($f) => $f->subgroup?->purok?->name ?? $f->purok?->name ?? 'Unassigned');
                         @endphp
                         <table class="report-table household-table">
-                            <thead><tr><th>Family ID</th><th>Family Name</th><th>Family Head</th><th>Member</th><th>Role</th><th>Age</th><th>Sex</th><th>Purok / Subgroup</th></tr></thead>
+                            <thead><tr><th>Family ID</th><th>Family Name</th><th>Family Head</th><th>Member</th><th>Role</th><th>Age</th><th>Sex</th><th>Birthdate</th><th>Contact No.</th><th>Purok / Subgroup</th></tr></thead>
                             <tbody>
                             @foreach($householdsByPurok as $purokName => $purokFamilies)
-                                <tr class="household-purok-row"><td colspan="8">{{ $purokName }} &mdash; Qty: {{ $purokFamilies->count() }}</td></tr>
+                                <tr class="household-purok-row"><td colspan="10">{{ $purokName }} &mdash; Qty: {{ $purokFamilies->count() }}</td></tr>
                                 @foreach($purokFamilies->groupBy(fn ($f) => $f->subgroup?->name ?? 'No subgroup') as $subgroupName => $subgroupFamilies)
                                     @php $subgroupLabel = \App\Support\FamilyCode::subgroupLabel($purokName, $subgroupFamilies->first()->subgroup?->name); @endphp
-                                    <tr class="household-subgroup-row"><td colspan="8">{{ $subgroupLabel }} &bull; Qty: {{ $subgroupFamilies->count() }}</td></tr>
+                                    <tr class="household-subgroup-row"><td colspan="10">{{ $subgroupLabel }} &bull; Qty: {{ $subgroupFamilies->count() }}</td></tr>
                                     @foreach($subgroupFamilies as $family)
                                         @php
                                             $rowCount = max(1, $family->sorted_members->count());
@@ -450,10 +454,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                                     <td class="family-cell" rowspan="{{ $rowCount }}">{{ $family->family_name }}</td>
                                                     <td class="family-cell" rowspan="{{ $rowCount }}">{{ $family->head_name }}</td>
                                                 @endif
-                                                <td>{{ $member->Citizen_FName }} {{ $member->Citizen_LName }}</td>
+                                                <td>{{ trim(implode(' ', array_filter([$member->Citizen_FName, $member->Citizen_MName, $member->Citizen_LName]))) }}</td>
                                                 <td>@if($member->id === $family->head_id)<span class="household-badge">Head</span>@else Member @endif</td>
                                                 <td>{{ $member->ageForEligibility() ?? 'Not recorded' }}</td>
                                                 <td>{{ $member->Citizen_Sex ?: 'Not recorded' }}</td>
+                                                <td>{{ $member->Citizen_BirthDate ? \Illuminate\Support\Carbon::parse($member->Citizen_BirthDate)->format('M d, Y') : 'Not recorded' }}</td>
+                                                <td>{{ $member->Citizen_ContactNo ?: 'Not recorded' }}</td>
                                                 <td>{{ $location }}</td>
                                             </tr>
                                         @empty
@@ -461,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 <td class="family-cell">{{ $family->family_code ?: 'F-'.str_pad($family->id, 4, '0', STR_PAD_LEFT) }}</td>
                                                 <td class="family-cell">{{ $family->family_name }}</td>
                                                 <td class="family-cell">{{ $family->head_name }}</td>
-                                                <td colspan="4">No members</td>
+                                                <td colspan="6">No members</td>
                                                 <td>{{ $location }}</td>
                                             </tr>
                                         @endforelse
@@ -477,7 +483,6 @@ document.addEventListener('DOMContentLoaded', function () {
             @if(in_array('age_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Age-Bracket Breakdown per Purok</h3>
-                    @include('bhw.partials.report-citizen-list', ['title' => 'Age-Bracket List per Purok, Subgroup and Classification', 'groups' => $ageCitizenList])
                     @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Infants</th><th>Toddlers</th><th>Children</th><th>Teenagers</th><th>Working adults</th><th>Seniors</th><th>Unknown age</th></tr></thead>
@@ -500,6 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     @endif
                     @endif
+                    @unless(request()->boolean('count_mode_only'))@include('bhw.partials.report-citizen-list', ['title' => 'Age-Bracket List per Purok, Subgroup and Classification', 'groups' => $ageCitizenList])@endunless
                 </section>
             @endif
 
@@ -550,7 +556,6 @@ document.addEventListener('DOMContentLoaded', function () {
             @if(in_array('sex_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Male and Female Counts by Purok</h3>
-                    @include('bhw.partials.report-citizen-list', ['title' => 'Male and Female List per Purok and Subgroup', 'groups' => $sexCitizenList])
                     @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Other / not recorded</th></tr></thead>
@@ -573,13 +578,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     @endif
                     @endif
+                    @unless(request()->boolean('count_mode_only'))@include('bhw.partials.report-citizen-list', ['title' => 'Male and Female List per Purok and Subgroup', 'groups' => $sexCitizenList])@endunless
                 </section>
             @endif
 
             @if(in_array('pregnancy_by_purok', $selectedSections))
                 <section class="report-section">
                     <h3>Recorded Pregnancy by Purok</h3>
-                    @include('bhw.partials.report-citizen-list', ['title' => 'Pregnancy List per Purok and Subgroup', 'groups' => $pregnancyCitizenList])
                     @if($includeSummary)
                     <table class="report-table">
                         <thead><tr><th>Purok</th><th>Recorded pregnant residents</th></tr></thead>
@@ -601,6 +606,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     @endif
                     @endif
+                    @unless(request()->boolean('count_mode_only'))@include('bhw.partials.report-citizen-list', ['title' => 'Pregnancy List per Purok and Subgroup', 'groups' => $pregnancyCitizenList])@endunless
                 </section>
             @endif
 
@@ -937,6 +943,21 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
         updateReportFields();
+    })();
+</script>
+<script>
+    (() => {
+        const countMode = document.querySelector('input[name="count_mode_only"]');
+        const overridden = ['include_summary', 'include_graphics']
+            .map(name => document.querySelector(`input[name="${name}"]`))
+            .filter(Boolean);
+        if (!countMode) return;
+        const sync = () => overridden.forEach(input => {
+            if (countMode.checked) input.checked = false;
+            input.disabled = countMode.checked;
+        });
+        countMode.addEventListener('change', sync);
+        sync();
     })();
 </script>
 @endsection

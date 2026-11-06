@@ -79,9 +79,8 @@
                     id="announcementImages"
                     accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                     multiple
-                    required
                 >
-                <small>Select one or more pictures for this public announcement.</small>
+                <small>Optional. Select one or more pictures for this announcement.</small>
             </div>
 
             <!-- FACEBOOK CROSS-POST CHECKBOX -->
@@ -185,6 +184,16 @@
                 <p id="confirmAnnouncementDescription">
                     —
                 </p>
+
+            </div>
+
+            <div class="announcement-preview-item" id="confirmAnnouncementPhotosWrap" style="display:none;">
+
+                <span class="announcement-preview-label">
+                    Photo
+                </span>
+
+                <div id="confirmAnnouncementPhotos" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;"></div>
 
             </div>
 
@@ -361,6 +370,23 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmAnnouncementFacebook.textContent =
                 postToFacebook ? "Yes (Will publish to Facebook)" : "No (Local only)";
 
+
+            const photosWrap = document.getElementById("confirmAnnouncementPhotosWrap");
+            const photos = document.getElementById("confirmAnnouncementPhotos");
+            photos.querySelectorAll("img").forEach(function (img) {
+                URL.revokeObjectURL(img.src);
+            });
+            photos.innerHTML = "";
+
+            const files = document.getElementById("announcementImages").files;
+            Array.from(files).forEach(function (file) {
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+                img.style.cssText = "max-width:100%; max-height:220px; border-radius:8px; object-fit:contain;";
+                photos.appendChild(img);
+            });
+            photosWrap.style.display = files.length ? "" : "none";
 
             /* ----------------------------------------------------
                Show confirmation modal

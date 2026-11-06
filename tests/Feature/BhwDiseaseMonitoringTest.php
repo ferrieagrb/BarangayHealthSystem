@@ -721,9 +721,9 @@ class BhwDiseaseMonitoringTest extends TestCase
             $workbook = IOFactory::load($workbookPath);
             $this->assertCount(13, $workbook->getAllSheets());
             $citizenSheet = $workbook->getSheetByName('Citizen Profiles');
-            $this->assertSame('Sex', $citizenSheet->getCell('C7')->getValue());
-            $this->assertSame('Female', $citizenSheet->getCell('C8')->getValue());
-            $this->assertSame('Male', $citizenSheet->getCell('C9')->getValue());
+            $this->assertSame('Sex', $citizenSheet->getCell('G7')->getValue());
+            $this->assertSame('Female', $citizenSheet->getCell('G8')->getValue());
+            $this->assertSame('Male', $citizenSheet->getCell('G9')->getValue());
             $this->assertSame('Fever', $workbook->getSheetByName('Health Records')->getCell('E8')->getValue());
             $this->assertSame('Owned Referral', $workbook->getSheetByName('Referrals')->getCell('B8')->getValue());
             $this->assertSame('Total', $workbook->getSheetByName('Male and Female Counts by Purok')->getCell('A9')->getValue());
