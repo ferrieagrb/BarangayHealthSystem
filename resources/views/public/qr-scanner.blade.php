@@ -55,7 +55,7 @@
         <div class="container hero-content">
             <span class="badge">Citizen Health ID</span>
             <h1 class="hero-title">Public <br><span class="text-accent">QR Scanner</span></h1>
-            <p class="hero-description">Scan a Citizen Health ID QR code to view the citizen's health information while public viewing is enabled. No login is required.</p>
+            <p class="hero-description">Scan a Citizen Health ID QR code to view health information while public sharing is on. No login is required.</p>
         </div>
     </section>
 

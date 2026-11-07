@@ -207,7 +207,7 @@ class QRScannerController extends Controller
 
         if (!$citizen->public_health_id_enabled) {
             return response()->json([
-                'message' => 'Public viewing of this Health ID record is turned off.',
+                'message' => 'Public health sharing is off for this citizen.',
             ], 403)->header('Cache-Control', 'no-store');
         }
 

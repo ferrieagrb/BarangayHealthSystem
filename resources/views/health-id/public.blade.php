@@ -53,10 +53,10 @@
             <div class="brand-mark" aria-hidden="true" style="margin:0 auto 16px;">▦</div>
             <h1>Citizen Health ID</h1>
             @if($sharingUnavailable ?? false)
-                <p>Health ID visibility settings are temporarily unavailable. Please try again later.</p>
-            @elseif($tokenFound && !($publicAccessEnabled ?? false))
-                <p>Public viewing of this Health ID record is turned off.</p>
-                <p>The citizen can turn public viewing back on from their signed-in BHEAMS account.</p>
+                <p>Health record sharing is temporarily unavailable. Please try again later.</p>
+            @elseif($tokenFound)
+                <p>Public health sharing is off for this citizen.</p>
+                <p>Public sharing is off. The citizen can turn it back on from their signed-in BHEAMS account.</p>
             @else
                 <p>This Health ID link is invalid or no longer available.</p>
             @endif
@@ -69,12 +69,12 @@
                     <span class="brand-mark" aria-hidden="true">+</span>
                     <span>BHEAMS<small>BARANGAY AMUYONG HEALTH RECORD</small></span>
                 </div>
-                <p class="share-notice">This record is publicly viewable through the Citizen Health ID QR link while public viewing is enabled. Contact number is not included. The citizen can turn off access at any time. Do not copy or retain information beyond your care needs.</p>
+                <p class="share-notice">This health record is publicly shared through the citizen's QR link. The citizen can turn sharing off at any time. Contact number is not included. Do not copy or retain information beyond your care needs.</p>
             </header>
 
             <article class="record-card">
                 <h1>Amuyong Health Record</h1>
-                <p style="margin:0;color:#64748b;">Medical information shared by the citizen through their Citizen Health ID.</p>
+                <p style="margin:0;color:#64748b;">Health information available through this Citizen Health ID.</p>
 
                 <h2>Citizen Information</h2>
                 <div class="record-facts">

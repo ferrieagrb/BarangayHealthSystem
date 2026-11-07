@@ -341,11 +341,14 @@ class AppearancePreferencesTest extends TestCase
                     $viewData['scheduledReleases'] = $empty;
                 }
                 if ($view === 'archive') {
+                    $archiveConfig = new \ReflectionClass(\App\Http\Controllers\ArchiveController::class);
+                    $archiveTypes = $archiveConfig->getConstant('TYPES');
+                    $archiveAllowed = $archiveConfig->getConstant('ROLE_TYPES')[$role];
                     $viewData += [
                         'layout' => $role === 'admin' ? 'templates.admin' : 'templates.layout',
-                        'tabs' => ['citizens' => ['label' => 'Citizens', 'count' => 0]],
+                        'tabs' => collect($archiveAllowed)->mapWithKeys(fn ($key) => [$key => ['label' => $archiveTypes[$key]['label'], 'count' => 0]])->all(),
                         'indexRoute' => $role === 'admin' ? 'admin.archive.index' : 'archive.index',
-                        'type' => 'citizens', 'items' => $empty,
+                        'type' => end($archiveAllowed), 'items' => $empty,
                     ];
                 }
                 $viewName = $view === 'archive' ? 'archive.index' : $role . '.' . str_replace('/', '.', $view);

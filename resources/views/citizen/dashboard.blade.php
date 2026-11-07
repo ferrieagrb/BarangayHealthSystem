@@ -1686,7 +1686,7 @@ body.theme-dark .c-home {
             </div>
             @if($publicHealthIdEnabled)
                 <p class="c-muted" role="status">
-                    Public viewing is on by default and is currently enabled.
+                    Public QR sharing is on. It stays enabled until you turn it off.
                     The shared record includes your basic details, Purok/family/subgroup, physical and status fields,
                     diagnoses and comments, immunizations, and maintenance medicines. Your contact number is not shared.
                     Anyone with your QR code or its link can view this information until you turn access off.
@@ -1694,17 +1694,21 @@ body.theme-dark .c-home {
                 <form method="POST" action="{{ route('citizen.health-sharing.revoke') }}">
                     @csrf
                     @method('DELETE')
-                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Turn off public viewing</button>
+                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Turn off public sharing</button>
                 </form>
             @else
                 <p class="c-muted">
                     Public viewing is currently off. If enabled, anyone who scans or receives your QR link can view your basic details,
                     Purok/family/subgroup, physical and status fields, diagnoses and comments, immunizations, and maintenance medicines
-                    until you turn access off again. Your contact number is excluded.
+                    until you turn sharing off. Your contact number is excluded. You can turn off access at any time.
                 </p>
                 <form method="POST" action="{{ route('citizen.health-sharing.grant') }}">
                     @csrf
-                    <button class="c-btn" type="submit" data-ui-action="primary">Turn on public viewing</button>
+                    <label style="display:flex;align-items:flex-start;gap:9px;margin:14px 0;">
+                        <input type="checkbox" name="consent" value="1" required style="margin-top:4px;">
+                        <span>I understand that anyone with my QR link can view this health information until I turn sharing off.</span>
+                    </label>
+                    <button class="c-btn" type="submit" data-ui-action="primary">Turn on public sharing</button>
                 </form>
             @endif
             @if(session('success'))
