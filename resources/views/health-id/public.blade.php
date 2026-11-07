@@ -54,8 +54,8 @@
             @if($sharingUnavailable ?? false)
                 <p>Health record sharing is temporarily unavailable. Please try again later.</p>
             @elseif($tokenFound)
-                <p>The citizen has not enabled sharing, or the sharing permission has expired or been revoked.</p>
-                <p>Ask the citizen to enable health record sharing from their signed-in BHEAMS account before viewing this record.</p>
+                <p>Public health sharing is off for this citizen.</p>
+                <p>Public sharing is off. The citizen can turn it back on from their signed-in BHEAMS account.</p>
             @else
                 <p>This Health ID link is invalid or no longer available.</p>
             @endif
@@ -68,12 +68,12 @@
                     <span class="brand-mark" aria-hidden="true">+</span>
                     <span>BHEAMS<small>BARANGAY AMUYONG HEALTH RECORD</small></span>
                 </div>
-                <p class="share-notice">This record is being shared with the citizen's consent until {{ $share->expires_at->format('M d, Y g:i A') }}. Contact number is not included. Do not copy or retain information beyond your care needs.</p>
+                <p class="share-notice">This health record is publicly shared through the citizen's QR link. The citizen can turn sharing off at any time. Contact number is not included. Do not copy or retain information beyond your care needs.</p>
             </header>
 
             <article class="record-card">
                 <h1>Amuyong Health Record</h1>
-                <p style="margin:0;color:#64748b;">Medical information shared by the citizen through their Citizen Health ID.</p>
+                <p style="margin:0;color:#64748b;">Health information available through this Citizen Health ID.</p>
 
                 <h2>Citizen Information</h2>
                 <div class="record-facts">

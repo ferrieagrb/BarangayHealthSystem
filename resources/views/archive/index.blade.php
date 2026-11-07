@@ -17,11 +17,11 @@
         <div class="archive-alert ok">{{ session('success') }}</div>
     @endif
 
-    <div class="archive-tabs">
+    <nav class="archive-tabs" data-archive-tabs aria-label="Archived record categories">
         @foreach($tabs as $key => $tab)
-            <a href="{{ route($indexRoute, ['type' => $key]) }}" class="{{ $key === $type ? 'active' : '' }}">{{ $tab['label'] }}<span>({{ $tab['count'] }})</span></a>
+            <a href="{{ route($indexRoute, ['type' => $key]) }}" class="{{ $key === $type ? 'active' : '' }}" @if($key === $type) aria-current="page" @endif>{{ $tab['label'] }}<span>({{ $tab['count'] }})</span></a>
         @endforeach
-    </div>
+    </nav>
 
     <div class="archive-card">
         <table class="archive-table">
@@ -53,4 +53,8 @@
         {{ $items->links('partials.pagination') }}
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/audit-log-tabs.js') }}?v={{ filemtime(public_path('js/audit-log-tabs.js')) }}" defer></script>
 @endsection

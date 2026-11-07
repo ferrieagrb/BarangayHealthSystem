@@ -22,6 +22,7 @@ class CitizenHealthShareController extends Controller
         $now = now();
 
         DB::transaction(function () use ($citizen, $user, $now): void {
+            citizens::whereKey($citizen->id)->lockForUpdate()->firstOrFail();
             CitizenHealthShare::query()
                 ->active()
                 ->where('citizen_id', $citizen->id)
@@ -31,11 +32,11 @@ class CitizenHealthShareController extends Controller
                 'citizen_id' => $citizen->id,
                 'granted_by_user_id' => $user->id,
                 'granted_at' => $now,
-                'expires_at' => $now->copy()->addDays(7),
+                'expires_at' => null,
             ]);
         });
 
-        return back()->with('success', 'Health record sharing is enabled for 7 days. You can revoke access at any time.');
+        return back()->with('success', 'Public QR health sharing is on until you turn it off.');
     }
 
     public function revoke(Request $request): RedirectResponse
@@ -44,11 +45,22 @@ class CitizenHealthShareController extends Controller
         abort_unless($user?->isCitizen() && $user->citizen_id, 403);
 
         $now = now();
-        CitizenHealthShare::query()
-            ->active()
-            ->where('citizen_id', $user->citizen_id)
-            ->update(['revoked_at' => $now, 'updated_at' => $now]);
+        DB::transaction(function () use ($user, $now): void {
+            citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            CitizenHealthShare::query()->active()->where('citizen_id', $user->citizen_id)
+                ->update(['revoked_at' => $now, 'updated_at' => $now]);
+            $latest = CitizenHealthShare::where('citizen_id', $user->citizen_id)
+                ->latest('granted_at')->latest('id')->first();
+            if (!$latest) {
+                CitizenHealthShare::create([
+                    'citizen_id' => $user->citizen_id, 'granted_by_user_id' => $user->id,
+                    'granted_at' => $now, 'expires_at' => null, 'revoked_at' => $now,
+                ]);
+            } elseif ($latest->revoked_at === null) {
+                $latest->update(['revoked_at' => $now]);
+            }
+        });
 
-        return back()->with('success', 'Health record sharing has been revoked.');
+        return back()->with('success', 'Public QR health sharing is off. Scanning your QR will no longer show your health information.');
     }
 }

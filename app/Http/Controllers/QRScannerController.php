@@ -209,7 +209,7 @@ class QRScannerController extends Controller
         $share = $this->activeHealthShare($citizen);
         if (!$share) {
             return response()->json([
-                'message' => 'This citizen has not enabled health record sharing, or the sharing permission has expired or been revoked.',
+                'message' => 'Public health sharing is off for this citizen.',
             ], 403)->header('Cache-Control', 'no-store');
         }
 

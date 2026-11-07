@@ -1,21 +1,34 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const mobile = window.matchMedia('(max-width: 768px)');
+    function centerControl(navigation, button, animate) {
+        if (!mobile.matches || !button) return;
+        const navBounds = navigation.getBoundingClientRect();
+        const tabBounds = button.getBoundingClientRect();
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        navigation.scrollTo({
+            left: navigation.scrollLeft + tabBounds.left - navBounds.left - (navigation.clientWidth - button.offsetWidth) / 2,
+            behavior: animate && !reducedMotion ? 'smooth' : 'instant'
+        });
+    }
+
+    document.querySelectorAll('[data-archive-tabs]').forEach(function (navigation) {
+        if (navigation.dataset.archiveTabsInitialized) return;
+        navigation.dataset.archiveTabsInitialized = 'true';
+        const showCurrent = () => centerControl(navigation, navigation.querySelector('[aria-current="page"]'), false);
+        showCurrent();
+        mobile.addEventListener('change', showCurrent);
+        navigation.addEventListener('focusin', event => centerControl(navigation, event.target.closest('a'), true));
+    });
+
     document.querySelectorAll('[data-audit-tabs]').forEach(function (page) {
         if (page.dataset.auditTabsInitialized) return;
         page.dataset.auditTabsInitialized = 'true';
         const initialTab = page.dataset.initialTab;
         const navigation = page.querySelector('.tabs');
         const buttons = Array.from(navigation.querySelectorAll('.tab'));
-        const mobile = window.matchMedia('(max-width: 768px)');
 
         function showActiveTab(button, animate) {
-            if (!mobile.matches) return;
-            const navBounds = navigation.getBoundingClientRect();
-            const tabBounds = button.getBoundingClientRect();
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            navigation.scrollTo({
-                left: navigation.scrollLeft + tabBounds.left - navBounds.left - (navigation.clientWidth - button.offsetWidth) / 2,
-                behavior: animate && !reducedMotion ? 'smooth' : 'instant'
-            });
+            centerControl(navigation, button, animate);
         }
 
         function activate(button, animate = true) {

@@ -13,6 +13,7 @@ use App\Models\MedicationRecord;
 use App\Models\MaintenanceRecord;
 use App\Models\PurokSubgroup;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class citizens extends Authenticatable
 {
@@ -21,6 +22,19 @@ class citizens extends Authenticatable
 
     protected static function booted(): void
     {
+        static::created(function (self $citizen): void {
+            if (!config('health_sharing.automatic_for_new_citizens', true)
+                || !Schema::hasTable('citizen_health_shares')) return;
+            // Allow older schemas to keep registering citizens until the migration is applied.
+            $expiry = collect(Schema::getColumns('citizen_health_shares'))->firstWhere('name', 'expires_at');
+            if (!($expiry['nullable'] ?? false)) return;
+            CitizenHealthShare::create([
+                'citizen_id' => $citizen->id,
+                'granted_by_user_id' => null,
+                'granted_at' => now(),
+                'expires_at' => null,
+            ]);
+        });
         static::saving(function (self $citizen): void {
             if ($citizen->Citizen_Sex !== 'Female') {
                 $citizen->Citizen_Pregnant = false;
