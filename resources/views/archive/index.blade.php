@@ -50,7 +50,7 @@
     </div>
 
     <div class="pagination-container">
-        {{ $items->links('pagination::bootstrap-5') }}
+        {{ $items->links('partials.pagination') }}
     </div>
 </div>
 @endsection

@@ -181,7 +181,7 @@
             </tbody>
 
         </table>
-        {{ $referrals->links('pagination::bootstrap-5') }}
+        {{ $referrals->links('partials.pagination') }}
 
     </div>
 

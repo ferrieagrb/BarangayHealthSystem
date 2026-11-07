@@ -5,10 +5,10 @@
 @endsection
 
 @section('content')
-<div class="admin-record-page admin-logs-page">
+<div class="admin-record-page admin-logs-page" data-audit-tabs data-initial-tab="{{ request('tab', 'adminActivity') }}">
     <div class="page-top"><div class="page-title-group"><h1>System Audit Logs</h1><p>Review administrative actions and activity across system features.</p></div></div>
 
-    <div class="tabs">
+    <div class="tabs" role="tablist" aria-label="Audit log sections">
         <button class="tab active" data-tab="adminActivity">Admin Activity</button>
         <button class="tab" data-tab="security">Security &amp; Errors</button>
         <button class="tab" data-tab="citizens">Citizens</button>
@@ -26,86 +26,72 @@
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Scope</th><th>Action</th><th>Description</th><th>IP</th></tr></thead><tbody>
             @forelse($adminActivityLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->actor_name ?? 'System' }}</td><td>{{ ucfirst($log->scope) }}</td><td><span class="tag">{{ $log->action }}</span></td><td>{{ $log->description }}</td><td>{{ $log->ip_address ?? 'N/A' }}</td></tr>@empty<tr><td colspan="6" class="empty-log">No administrative activity recorded.</td></tr>@endforelse
         </tbody></table>
-        <div class="pagination-container">{{ $adminActivityLogs->appends(array_merge(request()->query(), ['tab' => 'adminActivity']))->links('pagination::bootstrap-5') }}</div>
+        <div class="pagination-container">{{ $adminActivityLogs->appends(array_merge(request()->query(), ['tab' => 'adminActivity']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="security" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Event</th><th>Description</th><th>IP</th></tr></thead><tbody>
             @forelse($securityLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->actor_name ?? 'Unauthenticated / System' }}</td><td><span class="tag">{{ $log->action }}</span></td><td>{{ $log->description }}</td><td>{{ $log->ip_address ?? 'N/A' }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No security or exception events.</td></tr>@endforelse
         </tbody></table>
-        <div class="pagination-container">{{ $securityLogs->appends(array_merge(request()->query(), ['tab' => 'security']))->links('pagination::bootstrap-5') }}</div>
+        <div class="pagination-container">{{ $securityLogs->appends(array_merge(request()->query(), ['tab' => 'security']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="citizens" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Action</th><th>Citizen</th><th>Description</th></tr></thead><tbody>
             @forelse($citizenLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ ucfirst($log->action) }}</td><td>{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'N/A' }}</td><td>{{ $log->description }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No citizen logs.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $citizenLogs->appends(array_merge(request()->query(), ['tab' => 'citizens']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $citizenLogs->appends(array_merge(request()->query(), ['tab' => 'citizens']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="supplies" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Action</th><th>Supply</th><th>Quantity</th><th>Citizen</th></tr></thead><tbody>
             @forelse($supplyLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ ucfirst($log->action) }}</td><td>{{ $log->supply->name ?? 'Removed supply' }}</td><td>{{ $log->quantity }}</td><td>{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'General inventory' }}</td></tr>@empty<tr><td colspan="6" class="empty-log">No supply logs.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $supplyLogs->appends(array_merge(request()->query(), ['tab' => 'supplies']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $supplyLogs->appends(array_merge(request()->query(), ['tab' => 'supplies']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="health" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Action</th><th>Citizen ID</th><th>Description</th></tr></thead><tbody>
             @forelse($healthRecordLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ ucfirst($log->action) }}</td><td>{{ $log->citizen_id ?? 'N/A' }}</td><td>{{ $log->description }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No health logs.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $healthRecordLogs->appends(array_merge(request()->query(), ['tab' => 'health']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $healthRecordLogs->appends(array_merge(request()->query(), ['tab' => 'health']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="vehicle" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Vehicle</th><th>Borrower</th><th>Borrowed At</th></tr></thead><tbody>
             @forelse($vehicleLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->vehicle_name }}</td><td>{{ $log->borrower }}</td><td>{{ $log->borrowed_at }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No vehicle logs.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $vehicleLogs->appends(array_merge(request()->query(), ['tab' => 'vehicle']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $vehicleLogs->appends(array_merge(request()->query(), ['tab' => 'vehicle']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="announcements" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Title</th><th>Category</th></tr></thead><tbody>
             @forelse($announcementLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->title }}</td><td>{{ $log->category ?? 'General' }}</td></tr>@empty<tr><td colspan="4" class="empty-log">No announcements.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $announcementLogs->appends(array_merge(request()->query(), ['tab' => 'announcements']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $announcementLogs->appends(array_merge(request()->query(), ['tab' => 'announcements']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="events" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Event</th><th>Details</th></tr></thead><tbody>
             @forelse($eventLogs as $log)<tr><td>{{ \Carbon\Carbon::parse($log->start)->format('M d, Y') }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->title }}</td><td>{{ $log->description ?? 'No details' }}</td></tr>@empty<tr><td colspan="4" class="empty-log">No events.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $eventLogs->appends(array_merge(request()->query(), ['tab' => 'events']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $eventLogs->appends(array_merge(request()->query(), ['tab' => 'events']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="referrals" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Patient</th><th>Request</th><th>Status</th></tr></thead><tbody>
             @forelse($referralLogs as $log)<tr><td>{{ $log->date_of_referral }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->name }}</td><td>{{ $log->requests_for }}</td><td>{{ ucfirst($log->status ?? 'pending') }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No referrals.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $referralLogs->appends(array_merge(request()->query(), ['tab' => 'referrals']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $referralLogs->appends(array_merge(request()->query(), ['tab' => 'referrals']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="maintenance" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Date</th><th>Actor</th><th>Citizen</th><th>Medicine</th><th>Schedule</th></tr></thead><tbody>
             @forelse($maintenanceLogs as $log)<tr><td>{{ $log->created_at }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'N/A' }}</td><td>{{ $log->medicine_name }}</td><td>{{ $log->start_date->format('M d, Y') }}{{ $log->end_date ? ' - ' . $log->end_date->format('M d, Y') : ' - Ongoing' }}</td></tr>@empty<tr><td colspan="5" class="empty-log">No maintenance records.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $maintenanceLogs->appends(array_merge(request()->query(), ['tab' => 'maintenance']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $maintenanceLogs->appends(array_merge(request()->query(), ['tab' => 'maintenance']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="releases" class="tab-content">
         <table class="admin-log-table"><thead><tr><th>Claim Date</th><th>Actor</th><th>Batch</th><th>Citizen</th><th>Supply</th><th>Status</th></tr></thead><tbody>
             @forelse($releaseLogs as $log)<tr><td>{{ $log->claim_date->format('M d, Y') }}</td><td>{{ $log->user->name ?? 'Legacy / System' }}</td><td>{{ $log->batch_title }}</td><td>{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'N/A' }}</td><td>{{ $log->supply->name ?? 'Unavailable' }}</td><td>{{ ucfirst($log->status) }}</td></tr>@empty<tr><td colspan="6" class="empty-log">No batch releases.</td></tr>@endforelse
-        </tbody></table><div class="pagination-container">{{ $releaseLogs->appends(array_merge(request()->query(), ['tab' => 'releases']))->links('pagination::bootstrap-5') }}</div>
+        </tbody></table><div class="pagination-container">{{ $releaseLogs->appends(array_merge(request()->query(), ['tab' => 'releases']))->links('partials.pagination') }}</div>
     </div>
 </div>
 @endsection
 
 @section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const initialTab = @json(request('tab', 'adminActivity'));
-    document.querySelectorAll('.tab').forEach(function (button) {
-        button.addEventListener('click', function () {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(panel => panel.classList.remove('active'));
-            button.classList.add('active');
-            document.getElementById(button.dataset.tab).classList.add('active');
-        });
-    });
-    const initialButton = document.querySelector(`.tab[data-tab="${initialTab}"]`);
-    if (initialButton) initialButton.click();
-});
-</script>
+<script src="{{ asset('js/audit-log-tabs.js') }}?v={{ filemtime(public_path('js/audit-log-tabs.js')) }}" defer></script>
 @endsection

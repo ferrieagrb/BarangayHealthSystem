@@ -53,7 +53,7 @@
             control.removeAttribute('data-bheams-icon-only');
             return;
         }
-        if (control.closest('.fc, .leaflet-control, .map-mode-controls, [role="tablist"]')) return;
+        if (control.closest('.fc, .leaflet-control, .map-mode-controls, [role="tablist"], .medical-autocomplete-results')) return;
         if (control.closest('.sidebar') && !control.closest('.logout-form, .citizen-sidebar-logout')) return;
         if (control.closest('.nav-menu') && !control.matches('.btn-login')) return;
 

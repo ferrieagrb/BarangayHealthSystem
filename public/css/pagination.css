@@ -1,0 +1,132 @@
+/* One pagination layout across all role pages and modal pickers. */
+body .bheams-pagination {
+    display: flex !important;
+    flex: 1 1 100%;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    gap: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 12px 0 0;
+    padding: 0;
+    font-family: inherit;
+    text-align: center;
+}
+
+body .bheams-pagination .bheams-pagination-summary {
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: var(--theme-muted, #64748b);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+}
+
+body .bheams-pagination .bheams-pagination-scroll {
+    display: block !important;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+body .bheams-pagination .bheams-pagination-scroll .bheams-page-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    width: max-content;
+    min-width: 0;
+    max-width: none;
+    margin: 0 auto;
+    padding: 4px 2px;
+    list-style: none;
+}
+
+body .bheams-page-list > li {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body .bheams-pagination .bheams-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 36px;
+    min-height: 44px;
+    margin: 0;
+    padding: 7px 10px;
+    border: 1px solid var(--theme-border, #dce4ee);
+    border-radius: 7px;
+    background: var(--theme-raised, #f8fafc);
+    color: var(--theme-text, #334155);
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+body .bheams-pagination .bheams-page-link.is-current {
+    background: var(--action-primary, #234f9b) !important;
+    border-color: var(--action-primary, #234f9b) !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+body .bheams-pagination .bheams-page-link.is-disabled,
+body .bheams-pagination .bheams-page-link.is-gap {
+    color: var(--theme-muted, #64748b) !important;
+}
+
+body .bheams-pagination a.bheams-page-link:hover {
+    background: var(--theme-hover, #e8eef7);
+    color: var(--theme-text, #334155);
+}
+
+body .bheams-pagination :is(a, [data-pagination-scroll]):focus-visible {
+    outline: 2px solid var(--action-primary, #234f9b);
+    outline-offset: 1px;
+}
+
+/* Existing client-side pickers retain their handlers and get the same row layout. */
+body .main-content :is(.pagination-controls, .pagination-buttons) {
+    display: flex;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: safe center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+body .main-content :is(.pagination-controls, .pagination-buttons) > * {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+body .main-content .table-footer:has(> .pagination-buttons) {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}

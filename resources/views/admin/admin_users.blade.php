@@ -1,7 +1,7 @@
 @extends('templates.admin')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/admin/admin_users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/admin_users.css') }}?v={{ filemtime(public_path('css/admin/admin_users.css')) }}">
 @endsection
 
 @section('content')
@@ -134,7 +134,7 @@
                             <button type="submit" class="btn-primary" data-ui-action="primary">Set Active</button>
                         </form>
                         @else
-                        <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')" data-ui-action="secondary">
+                        <button type="button" class="btn-primary" data-edit-id="{{ $user->id }}" data-edit-name="{{ $user->name }}" data-edit-email="{{ $user->email }}" data-edit-username="{{ $user->username ?? '' }}" data-edit-role="{{ $user->role }}" onclick="openEditModal(this.dataset.editId, this.dataset.editName, this.dataset.editEmail, this.dataset.editUsername, this.dataset.editRole)" data-ui-action="secondary">
                             Edit
                         </button>
 
@@ -158,7 +158,7 @@
     </table>
 
     <div style="margin-top: 15px;">
-        {{ $users->links('pagination::bootstrap-5') }}
+        {{ $users->links('partials.pagination') }}
     </div>
 
 </div>
@@ -238,6 +238,9 @@
                     <label for="edit_confirm_password">Your password <small>(required only when changing the role)</small></label>
                     <input type="password" id="edit_confirm_password" name="confirm_password" autocomplete="current-password" style="width: 100%;">
                 </div>
+                <div class="edit-password-actions">
+                    <button type="button" id="editResetPassword" class="secondary-btn" onclick="openResetModal(this)" data-ui-action="secondary">Reset Password</button>
+                </div>
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
                 <button type="button" class="secondary-btn" onclick="closeEditModal()" data-ui-action="secondary">Cancel</button>
@@ -284,12 +287,29 @@
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_role').value = role;
         document.getElementById('edit_confirm_password').value = '';
+        const resetButton = document.getElementById('editResetPassword');
+        resetButton.dataset.resetUser = id;
+        resetButton.dataset.resetName = name;
         
         modal.style.display = 'flex';
     }
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
+    }
+
+    function openResetModal(button) {
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('resetPasswordForm').action = `/admin/users/${button.dataset.resetUser}/reset-password`;
+        document.getElementById('reset_user_name').textContent = button.dataset.resetName;
+        document.getElementById('reset_confirm_password').value = '';
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    function closeResetModal() {
+        document.getElementById('resetModal').style.display = 'none';
+        document.getElementById('editModal').style.display = 'flex';
+        document.getElementById('editResetPassword').focus();
     }
 
     window.onclick = function(event) {
