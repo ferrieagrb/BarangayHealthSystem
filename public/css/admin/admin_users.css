@@ -520,6 +520,28 @@ table.users-table td:last-child {
     animation: modalSlideIn 0.25s ease;
 }
 
+.modal-overlay.edit-user-modal-overlay {
+    box-sizing: border-box;
+}
+
+.modal-card.edit-user-modal-card {
+    width: min(560px, calc(100vw - 40px));
+    max-width: 560px;
+    max-height: calc(100vh - 40px);
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.edit-user-reset-form {
+    margin-top: 18px;
+    padding: 16px 20px 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.edit-user-reset-form .modal-footer {
+    padding: 12px 0 0;
+}
+
 @keyframes modalSlideIn {
     from {
         transform: translateY(-20px);

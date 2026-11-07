@@ -105,7 +105,13 @@ class FamilyController extends Controller
             ->orderBy('families.family_name')
             ->paginate(10)
             ->withQueryString();
-        $puroks = $puroksQuery->get();
+        $puroks = $puroksQuery->get()
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->each(fn ($purok) => $purok->setRelation(
+                'subgroups',
+                $purok->subgroups->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()
+            ));
         $availableCitizens = app(BhwCitizenAccess::class)
             ->scopeCitizens(citizens::query(), $user)
             ->whereNull('family_id')

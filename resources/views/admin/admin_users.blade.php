@@ -137,9 +137,6 @@
                         <button type="button" class="btn-primary" onclick="openEditModal('{{ $user->id }}', '{{ $user->name }}', '{{ $user->email }}', '{{ $user->username ?? '' }}', '{{ $user->role }}')" data-ui-action="secondary">
                             Edit
                         </button>
-                        <button type="button" class="btn-primary" data-reset-user="{{ $user->id }}" data-reset-name="{{ $user->name }}" onclick="openResetModal(this)">
-                            Reset Password
-                        </button>
 
                         <form action="{{ route('admin.users.delete', $user->id) }}"
                             method="POST"
@@ -207,8 +204,8 @@
 </div>
 
 <!-- Edit User Modal -->
-<div id="editModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-    <div class="modal-card" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
+<div id="editModal" class="modal-overlay edit-user-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+    <div class="modal-card edit-user-modal-card">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3>Edit User Information</h3>
             <button type="button" class="close-btn" onclick="closeEditModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;" data-ui-action="secondary">&times;</button>
@@ -247,26 +244,16 @@
                 <button type="submit" class="primary-btn" data-ui-action="primary">Save Changes</button>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- Reset Password Modal -->
-<div id="resetModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-    <div class="modal-card" style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
-        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3>Reset Password</h3>
-            <button type="button" class="close-btn" onclick="closeResetModal()" style="background:none; border:none; font-size: 20px; cursor:pointer;">&times;</button>
-        </div>
-        <form id="resetPasswordForm" method="POST" onsubmit="return confirm('Reset this password?');">
+        <form id="resetPasswordForm" method="POST" onsubmit="return confirm('Reset this password?');" class="edit-user-reset-form">
             @csrf
             @method('PATCH')
+            <h4 style="margin: 0 0 8px;">Reset Password</h4>
             <p style="margin-bottom: 12px;">Generate a temporary password for <strong id="reset_user_name"></strong>. It will be shown once, and the user must change it at next login.</p>
             <div class="input-group" style="margin-bottom: 10px;" @hidden(! \App\Models\SystemSetting::passwordReentryRequired())>
                 <label for="reset_confirm_password">Your password</label>
                 <input type="password" id="reset_confirm_password" name="confirm_password" @required(\App\Models\SystemSetting::passwordReentryRequired()) autocomplete="current-password" style="width: 100%;">
             </div>
             <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                <button type="button" class="secondary-btn" onclick="closeResetModal()">Cancel</button>
                 <button type="submit" class="primary-btn">Reset Password</button>
             </div>
         </form>
@@ -285,9 +272,13 @@
     function openEditModal(id, name, email, username, role) {
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editUserForm');
+        const resetForm = document.getElementById('resetPasswordForm');
         
         // Target standard admin route update path
         form.action = `/admin/users/${id}`;
+        resetForm.action = `/admin/users/${id}/reset-password`;
+        document.getElementById('reset_user_name').textContent = name;
+        document.getElementById('reset_confirm_password').value = '';
         document.getElementById('edit_name').value = name;
         document.getElementById('edit_email').value = email;
         document.getElementById('edit_username').value = username;
@@ -301,29 +292,14 @@
         document.getElementById('editModal').style.display = 'none';
     }
 
-    function openResetModal(button) {
-        document.getElementById('resetPasswordForm').action = `/admin/users/${button.dataset.resetUser}/reset-password`;
-        document.getElementById('reset_user_name').textContent = button.dataset.resetName;
-        document.getElementById('reset_confirm_password').value = '';
-        document.getElementById('resetModal').style.display = 'flex';
-    }
-
-    function closeResetModal() {
-        document.getElementById('resetModal').style.display = 'none';
-    }
-
     window.onclick = function(event) {
         const editModal = document.getElementById('editModal');
         const addModal = document.getElementById('addModal');
-        const resetModal = document.getElementById('resetModal');
         if (event.target === editModal) {
             closeEditModal();
         }
         if (event.target === addModal) {
             closeAddModal();
-        }
-        if (event.target === resetModal) {
-            closeResetModal();
         }
     }
 </script>
