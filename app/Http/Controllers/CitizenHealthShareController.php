@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\citizens;
+use App\Models\CitizenHealthShare;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CitizenHealthShareController extends Controller
 {
@@ -13,12 +15,12 @@ class CitizenHealthShareController extends Controller
         $user = $request->user();
         abort_unless($user?->isCitizen() && $user->citizen_id, 403);
 
-        $citizen = citizens::findOrFail($user->citizen_id);
-        $citizen->public_health_id_enabled = true;
-        $citizen->save();
+        $now = now();
+        DB::transaction(function () use ($user, $now): void {
+            $citizen = citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen->public_health_id_enabled = true;
+            $citizen->save();
 
-        DB::transaction(function () use ($citizen, $user, $now): void {
-            citizens::whereKey($citizen->id)->lockForUpdate()->firstOrFail();
             CitizenHealthShare::query()
                 ->active()
                 ->where('citizen_id', $citizen->id)
@@ -40,16 +42,12 @@ class CitizenHealthShareController extends Controller
         $user = $request->user();
         abort_unless($user?->isCitizen() && $user->citizen_id, 403);
 
-<<<<<<< HEAD
-        $citizen = citizens::findOrFail($user->citizen_id);
-        $citizen->public_health_id_enabled = false;
-        $citizen->save();
-
-        return back()->with('success', 'Public viewing of your Health ID record is turned off.');
-=======
         $now = now();
         DB::transaction(function () use ($user, $now): void {
-            citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen = citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen->public_health_id_enabled = false;
+            $citizen->save();
+
             CitizenHealthShare::query()->active()->where('citizen_id', $user->citizen_id)
                 ->update(['revoked_at' => $now, 'updated_at' => $now]);
             $latest = CitizenHealthShare::where('citizen_id', $user->citizen_id)
@@ -65,6 +63,5 @@ class CitizenHealthShareController extends Controller
         });
 
         return back()->with('success', 'Public QR health sharing is off. Scanning your QR will no longer show your health information.');
->>>>>>> 9c90e16b55532dc40651f41341bb26b6d7471633
     }
 }
