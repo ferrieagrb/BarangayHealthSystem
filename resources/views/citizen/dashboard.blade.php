@@ -1684,38 +1684,32 @@ body.theme-dark .c-home {
                     <p class="c-muted">Control whether someone with your Citizen ID QR link can view your e-Card health information.</p>
                 </div>
             </div>
-            @if($healthShare)
+            @if($publicHealthIdEnabled)
                 <p class="c-muted" role="status">
-                    Sharing is enabled until {{ $healthShare->expires_at->format('M d, Y g:i A') }}.
+                    Public viewing is on by default and is currently enabled.
                     The shared record includes your basic details, Purok/family/subgroup, physical and status fields,
                     diagnoses and comments, immunizations, and maintenance medicines. Your contact number is not shared.
+                    Anyone with your QR code or its link can view this information until you turn access off.
                 </p>
                 <form method="POST" action="{{ route('citizen.health-sharing.revoke') }}">
                     @csrf
                     @method('DELETE')
-                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Revoke sharing now</button>
+                    <button class="c-btn" type="submit" style="background:#b91c1c;" data-ui-action="danger">Turn off public viewing</button>
                 </form>
             @else
                 <p class="c-muted">
-                    Sharing is currently off. If enabled, anyone who scans or receives your QR link can view your basic details,
+                    Public viewing is currently off. If enabled, anyone who scans or receives your QR link can view your basic details,
                     Purok/family/subgroup, physical and status fields, diagnoses and comments, immunizations, and maintenance medicines
-                    for seven days. Your contact number is excluded. You can revoke access at any time.
+                    until you turn access off again. Your contact number is excluded.
                 </p>
                 <form method="POST" action="{{ route('citizen.health-sharing.grant') }}">
                     @csrf
-                    <label style="display:flex;align-items:flex-start;gap:9px;margin:14px 0;">
-                        <input type="checkbox" name="consent" value="1" required style="margin-top:4px;">
-                        <span>I consent to sharing the health information described above for seven days.</span>
-                    </label>
-                    <button class="c-btn" type="submit" data-ui-action="primary">Enable 7-day sharing</button>
+                    <button class="c-btn" type="submit" data-ui-action="primary">Turn on public viewing</button>
                 </form>
             @endif
             @if(session('success'))
                 <p class="c-muted" role="status" style="margin-top:12px;">{{ session('success') }}</p>
             @endif
-            @error('consent')
-                <p class="c-muted" role="alert" style="color:#b91c1c;margin-top:12px;">{{ $message }}</p>
-            @enderror
         </div>
 
     @else

@@ -73,7 +73,8 @@ class CitizenController extends Controller
 
         $allowed = match ($user->role) {
             'admin', 'superadmin' => true,
-            'bhw' => app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen),
+            'bhw' => app(BhwCitizenAccess::class)->canAccessCitizen($user, $citizen)
+                || app(BhwCitizenAccess::class)->canViewAll($user),
             'citizen' => (int) $user->citizen_id === (int) $citizen->id,
             default => false,
         };
@@ -84,7 +85,67 @@ class CitizenController extends Controller
         $disk = Storage::disk('local')->exists($path) ? 'local' : 'public';
         abort_unless(Storage::disk($disk)->exists($path), 404);
 
-        return Storage::disk($disk)->response($path, null, ['Cache-Control' => 'private, max-age=3600']);
+        return Storage::disk($disk)->response($path, null, ['Cache-Control' => 'private, no-store']);
+    }
+
+    public function updateOwnPhoto(Request $request)
+    {
+        abort_unless($request->user()->isCitizen(), 403);
+
+        $validated = $request->validate([
+            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $citizen = citizens::findOrFail($request->user()->citizen_id);
+        $this->replaceCitizenPhoto($citizen, $validated['photo']);
+
+        return redirect()->route('citizen.settings')->with('success', 'Your photo was updated successfully.');
+    }
+
+    public function updatePhoto(Request $request, $id)
+    {
+        $citizen = citizens::findOrFail($id);
+        $this->authorizeCitizenEdit($citizen);
+        abort_if($citizen->Citizen_IsDeceased, 403, 'Deceased citizen records are locked.');
+
+        $validated = $request->validate([
+            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+        $this->replaceCitizenPhoto($citizen, $validated['photo']);
+        $this->logActivity('update', 'citizen', $citizen->id, 'Updated citizen photo');
+
+        return back()->with('photo_success', 'Citizen photo updated successfully.');
+    }
+
+    private function replaceCitizenPhoto(citizens $citizen, \Illuminate\Http\UploadedFile $photo): void
+    {
+        $photoPath = $photo->store('citizen-photos', 'local');
+        if ($photoPath === false) {
+            throw new \RuntimeException('Unable to store citizen photo.');
+        }
+
+        try {
+            $oldPath = DB::transaction(function () use ($citizen, $photoPath) {
+                $citizen = citizens::whereKey($citizen->id)->lockForUpdate()->firstOrFail();
+                $oldPath = $citizen->photo_path;
+                $citizen->update(['photo_path' => $photoPath]);
+
+                return $oldPath;
+            });
+        } catch (\Throwable $e) {
+            Storage::disk('local')->delete($photoPath);
+            throw $e;
+        }
+
+        if ($oldPath && preg_match('~^citizen-photos/[^/\\\\]+$~', $oldPath)
+            && !citizens::withTrashed()->where('photo_path', $oldPath)->exists()) {
+            foreach (['local', 'public'] as $disk) {
+                if (Storage::disk($disk)->exists($oldPath) && !Storage::disk($disk)->delete($oldPath)) {
+                    \Log::warning('Unable to delete replaced citizen photo.', ['disk' => $disk, 'path' => $oldPath]);
+                }
+            }
+        }
+
     }
 
     private function restrictToAssignedCitizens($query)
@@ -447,6 +508,10 @@ class CitizenController extends Controller
         $photoPath = $request->hasFile('photo')
             ? $request->file('photo')->store('citizen-photos', 'local')
             : null;
+
+        if ($photoPath === false) {
+            throw new \RuntimeException('Unable to store citizen photo.');
+        }
 
         try {
             $citizen = DB::transaction(function () use ($validated, $photoPath, $request, $family) {

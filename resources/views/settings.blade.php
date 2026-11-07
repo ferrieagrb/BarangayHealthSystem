@@ -130,6 +130,8 @@
     
     @include('partials.appearance-settings')
 
+    @include('partials.push-notification-settings')
+
     {{-- CARD 2: SECURITY & PASSWORD SETTINGS --}}
     <div class="settings-card">
         <div class="settings-header" style="background: #0f172a;">

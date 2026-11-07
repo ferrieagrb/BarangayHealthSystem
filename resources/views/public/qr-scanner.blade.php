@@ -48,13 +48,14 @@
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 </head>
 <body>
+@include('partials.global-loader')
     @include('public.partials.header', ['activeNav' => 'qr'])
 
     <section class="hero page-hero" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%), url('{{ asset('images/mission.jpg') }}');">
         <div class="container hero-content">
             <span class="badge">Citizen Health ID</span>
             <h1 class="hero-title">Public <br><span class="text-accent">QR Scanner</span></h1>
-            <p class="hero-description">Scan a Citizen Health ID QR code to view the health information the citizen has chosen to share. No login is required.</p>
+            <p class="hero-description">Scan a Citizen Health ID QR code to view the citizen's health information while public viewing is enabled. No login is required.</p>
         </div>
     </section>
 
@@ -63,7 +64,7 @@
             <div class="section-header">
                 <h2 id="public-qr-title">Scan a Citizen ID</h2>
             </div>
-            <p class="public-qr-muted">Use the camera on your phone or computer, select a saved QR image, or enter the QR link/token manually. Detailed records appear only while the citizen's sharing permission is active.</p>
+            <p class="public-qr-muted">Use the camera on your phone or computer, select a saved QR image, or enter the QR link/token manually. Public viewing is on by default and can be turned off by the citizen.</p>
             <div class="public-qr-layout">
                 <div class="public-qr-panel">
                     <h2>QR Scanner</h2>
@@ -244,6 +245,7 @@
                 try {
                     const response = await fetch(lookupUrlTemplate.replace('TOKEN_PLACEHOLDER', encodeURIComponent(token)), {
                         headers: { 'Accept': 'application/json' },
+                        loader: true,
                         cache: 'no-store'
                     });
                     const data = await response.json();

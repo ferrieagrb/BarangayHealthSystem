@@ -99,7 +99,7 @@
                             @if($release->status === 'scheduled')
                                 <form method="POST" action="{{ route('supplies.batch.release.claim', $release->id) }}">
                                     @csrf
-                                    <button type="submit" class="btn-primary" onclick="return confirm('Confirm that this citizen claimed the assigned supply?');" data-ui-action="primary">Mark Claimed</button>
+                                    <button type="submit" class="btn-primary" data-confirm-message="Confirm that this citizen claimed the assigned supply?" data-confirm-danger="false" data-ui-action="primary">Mark Claimed</button>
                                 </form>
                             @else
                                 <small>Claimed {{ $release->claimed_at?->format('M d, Y h:i A') }}</small>

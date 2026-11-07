@@ -303,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const lookupUrl = lookupUrlTemplate.replace('TOKEN_PLACEHOLDER', encodeURIComponent(token));
             const response = await fetch(lookupUrl, {
                 method: 'GET',
+                loader: true,
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin'
             });

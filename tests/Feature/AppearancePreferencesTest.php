@@ -69,14 +69,20 @@ class AppearancePreferencesTest extends TestCase
         foreach (['bhw', 'admin', 'superadmin', 'citizen'] as $role) {
             $user = $this->makeUser($role);
             foreach ($this->settingsUrls($role) as $url) {
-                $this->actingAs($user)->get($url)->assertOk()
-                    ->assertSee('data-appearance-form', false)
+                $response = $this->actingAs($user)->get($url)->assertOk()
                     ->assertSee('css/theme.css', false)
                     ->assertSee('js/appearance.js', false)
                     ->assertSee('css/sidebar-scroll.css', false)
                     ->assertSee('role="navigation"', false)
                     ->assertSee('tabindex="0"', false)
                     ->assertSee('data-theme="light"', false);
+
+                if (in_array($url, [route('settings'), route('citizen.settings')], true)) {
+                    $response->assertSee('data-appearance-form', false)
+                        ->assertSee('Browser Notifications')
+                        ->assertSee('My Devices')
+                        ->assertSee('manifest.webmanifest');
+                }
             }
             $this->assertSame('light', $user->fresh()->theme);
             $this->actingAs($user)->put(route('user.preferences.update'), [

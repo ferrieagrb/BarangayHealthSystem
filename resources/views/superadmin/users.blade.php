@@ -166,7 +166,7 @@
                                         <form
                                             action="{{ route('superadmin.users.restore', $user->id) }}"
                                             method="POST"
-                                            onsubmit="return confirm('Reactivate this user? They will be required to change their password at next login.')"
+                                            data-confirm-message="Reactivate this user? They will be required to change their password at next login."
                                         >
                                             @csrf
                                             @method('PATCH')
@@ -207,6 +207,7 @@
                                             action="{{ route('superadmin.users.delete', $user->id) }}"
                                             method="POST"
                                             class="delete-user-form"
+                                            data-confirm-message="Mark this user as inactive? The account will be archived and cannot sign in until reactivated."
                                         >
                                             @csrf
                                             @method('DELETE')
@@ -701,19 +702,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (addModal && addModal.classList.contains('is-open')) {
             closeModal(addModal);
         }
-    });
-
-    // Confirm before marking a user inactive.
-    document.querySelectorAll('.delete-user-form').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            const confirmed = window.confirm(
-                'Mark this user as inactive? The account will be archived and cannot sign in until reactivated.'
-            );
-
-            if (!confirmed) {
-                event.preventDefault();
-            }
-        });
     });
 
     // Prevent repeated Add User submissions.

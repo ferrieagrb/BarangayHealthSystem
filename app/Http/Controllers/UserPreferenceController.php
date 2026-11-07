@@ -28,7 +28,11 @@ class UserPreferenceController extends Controller
     {
         $user = auth()->user();
         if ($user->isCitizen()) {
-            return view('citizen.settings', compact('user'));
+            $citizen = $user->citizen_id
+                ? \App\Models\citizens::find($user->citizen_id)
+                : null;
+
+            return view('citizen.settings', compact('user', 'citizen'));
         }
 
         return view('settings', compact('user'));

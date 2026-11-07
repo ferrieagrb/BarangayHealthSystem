@@ -47,15 +47,16 @@
 @include('partials.button-action-assets')
 </head>
 <body id="appActionControls">
+@include('partials.global-loader')
     @if(!$citizen)
         <main class="access-card">
             <div class="brand-mark" aria-hidden="true" style="margin:0 auto 16px;">▦</div>
             <h1>Citizen Health ID</h1>
             @if($sharingUnavailable ?? false)
-                <p>Health record sharing is temporarily unavailable. Please try again later.</p>
-            @elseif($tokenFound)
-                <p>The citizen has not enabled sharing, or the sharing permission has expired or been revoked.</p>
-                <p>Ask the citizen to enable health record sharing from their signed-in BHEAMS account before viewing this record.</p>
+                <p>Health ID visibility settings are temporarily unavailable. Please try again later.</p>
+            @elseif($tokenFound && !($publicAccessEnabled ?? false))
+                <p>Public viewing of this Health ID record is turned off.</p>
+                <p>The citizen can turn public viewing back on from their signed-in BHEAMS account.</p>
             @else
                 <p>This Health ID link is invalid or no longer available.</p>
             @endif
@@ -68,7 +69,7 @@
                     <span class="brand-mark" aria-hidden="true">+</span>
                     <span>BHEAMS<small>BARANGAY AMUYONG HEALTH RECORD</small></span>
                 </div>
-                <p class="share-notice">This record is being shared with the citizen's consent until {{ $share->expires_at->format('M d, Y g:i A') }}. Contact number is not included. Do not copy or retain information beyond your care needs.</p>
+                <p class="share-notice">This record is publicly viewable through the Citizen Health ID QR link while public viewing is enabled. Contact number is not included. The citizen can turn off access at any time. Do not copy or retain information beyond your care needs.</p>
             </header>
 
             <article class="record-card">

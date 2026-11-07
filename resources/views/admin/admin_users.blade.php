@@ -128,7 +128,7 @@
                         @if($showArchived)
                         <form action="{{ route('admin.users.restore', $user->id) }}"
                             method="POST"
-                            onsubmit="return confirm('Reactivate this user? They will be required to change their password at next login.')" style="display:inline;">
+                            data-confirm-message="Reactivate this user? They will be required to change their password at next login." style="display:inline;">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn-primary" data-ui-action="primary">Set Active</button>
@@ -140,7 +140,7 @@
 
                         <form action="{{ route('admin.users.delete', $user->id) }}"
                             method="POST"
-                            onsubmit="return confirm('Mark this user as inactive? The account will be archived and cannot sign in until reactivated.')" style="display:inline;">
+                            data-confirm-message="Mark this user as inactive? The account will be archived and cannot sign in until reactivated." style="display:inline;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-danger" data-ui-action="danger">Set Inactive</button>
@@ -247,7 +247,7 @@
                 <button type="submit" class="primary-btn" data-ui-action="primary">Save Changes</button>
             </div>
         </form>
-        <form id="resetPasswordForm" method="POST" onsubmit="return confirm('Reset this password?');" class="edit-user-reset-form">
+        <form id="resetPasswordForm" method="POST" data-confirm-message="Reset this password?" class="edit-user-reset-form">
             @csrf
             @method('PATCH')
             <h4 style="margin: 0 0 8px;">Reset Password</h4>

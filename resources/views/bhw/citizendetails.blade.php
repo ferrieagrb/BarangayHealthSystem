@@ -38,6 +38,7 @@
             <input type="hidden" id="vaccineSelectionToken" name="vaccine_selection_token" value="">
         </form>
 
+        @include('bhw.partials.citizen-photo-form')
         <form method="POST"
 
               action="{{ route('citizen.update', $citizen->id) }}"
@@ -57,6 +58,8 @@
             {{-- BASIC INFORMATION --}}
 
             <h3 class="citizen-section-title">Basic Information</h3>
+
+            @include('bhw.partials.citizen-photo')
 
             <label for="Citizen_FName">First Name</label>
 
@@ -147,8 +150,8 @@
                  <input type="text"
                      id="Citizen_Subgroup"
                      value="{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}"
+                     disabled
                      readonly>
-                 <button type="button" class="btn-secondary" id="openEditManualPicker" style="display:none;" data-ui-action="secondary">Assign without family</button>
 
             <hr class="citizen-section-divider">
 
@@ -193,41 +196,11 @@
 
             <h3 class="citizen-section-title">Physical Information</h3>
 
-            <label for="Citizen_Height">Height (cm)</label>
+                 <label for="Citizen_Height">Height (cm)</label>
+                 <input type="number" id="Citizen_Height" name="Citizen_Height" min="0" step="0.01" value="{{ old('Citizen_Height', $citizen->Citizen_Height) }}" placeholder="e.g. 165.50" disabled>
 
-            <input type="number"
-
-                   id="Citizen_Height"
-
-                   name="Citizen_Height"
-
-                   min="0"
-
-                   step="0.01"
-
-                   value="{{ old('Citizen_Height', $citizen->Citizen_Height) }}"
-
-                   placeholder="e.g. 165.50"
-
-                   disabled>
-
-            <label for="Citizen_Weight">Weight (kg)</label>
-
-            <input type="number"
-
-                   id="Citizen_Weight"
-
-                   name="Citizen_Weight"
-
-                   min="0"
-
-                   step="0.01"
-
-                   value="{{ old('Citizen_Weight', $citizen->Citizen_Weight) }}"
-
-                   placeholder="e.g. 55.50"
-
-                   disabled>
+                 <label for="Citizen_Weight">Weight (kg)</label>
+                 <input type="number" id="Citizen_Weight" name="Citizen_Weight" min="0" step="0.01" value="{{ old('Citizen_Weight', $citizen->Citizen_Weight) }}" placeholder="e.g. 55.50" disabled>
 
             <label for="Citizen_Sex">Sex</label>
 
@@ -555,7 +528,7 @@
                                         <form method="POST"
                                               action="{{ route('citizen.vaccination.delete', [$citizen->id, $vaccination->id]) }}"
                                               style="margin:0; flex-shrink:0;"
-                                              onsubmit="return confirm('Archive this vaccination record? You can restore it from the archive.');">
+                                              data-confirm-message="Archive this vaccination record? You can restore it from the archive.">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button>
@@ -629,7 +602,7 @@
                         <form method="POST"
                               action="{{ route('health.maintenance.delete', $maintenance->id) }}"
                               style="margin:0; flex-shrink:0;"
-                              onsubmit="return confirm('Archive this maintenance medicine record? You can restore it from the archive.');">
+                              data-confirm-message="Archive this maintenance medicine record? You can restore it from the archive.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button>
@@ -787,7 +760,7 @@
  @forelse($citizen->healthRecords->sortByDesc('record_date') as $record)
  <article class="diagnosis-history-card"><div class="diagnosis-history-inner"><div class="diagnosis-history-top"><div><div class="diagnosis-history-title">{{ $record->diagnosis }} <span class="diagnosis-pill">{{ $record->severity ?: 'Low / Mild' }}</span></div><div class="diagnosis-meta">Assessment Date: {{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : $record->created_at?->format('M d, Y') }}</div></div>
 @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
-<form method="POST" action="{{ route('health.record.delete', $record->id) }}" onsubmit="return confirm('Are you sure you want to archive this diagnosis record? You can restore it from the archive.');" style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button></form>
+<form method="POST" action="{{ route('health.record.delete', $record->id) }}" data-confirm-message="Are you sure you want to archive this diagnosis record? You can restore it from the archive." style="margin:0;flex-shrink:0">@csrf<button type="submit" class="diagnosis-delete" style="cursor:pointer;color:#b91c1c;border-color:#fecaca;background:#fef2f2" data-ui-action="danger">Archive</button></form>
 @endif
 </div>
  <div class="diagnosis-vitals"><div><span>BMI</span><strong>{{ $record->bmi !== null ? number_format((float)$record->bmi, 1).' kg/m²' : '—' }}</strong></div><div><span>Weight / Height</span><strong>{{ $record->weight !== null ? rtrim(rtrim(number_format((float)$record->weight,1,'.',''),'0'),'.').'kg' : '—' }} / {{ $record->height !== null ? rtrim(rtrim(number_format((float)$record->height,1,'.',''),'0'),'.').'cm' : '—' }}</strong></div><div><span>Temp</span><strong>{{ $record->temperature !== null ? number_format((float)$record->temperature,1).' °C' : '—' }}</strong></div><div><span>BP</span><strong>{{ $record->blood_pressure ?: '—' }}</strong></div></div>
@@ -937,6 +910,8 @@ let originalFamilySubgroup = @json($citizen->family->subgroup->name ?? 'None');
 function enableEdit() {
 
     const form = document.getElementById('citizenForm');
+    const photoField = document.getElementById('photo');
+    if (photoField) photoField.disabled = false;
 
     const inputs = form.querySelectorAll('input:not([type="hidden"]), select');
 
@@ -998,6 +973,12 @@ function enableEdit() {
 function disableEdit() {
 
     const form = document.getElementById('citizenForm');
+    const photoInput = document.getElementById('photo');
+    if (photoInput) {
+        photoInput.value = '';
+        photoInput.dispatchEvent(new Event('change'));
+        photoInput.disabled = true;
+    }
 
     const fields = form.querySelectorAll('input:not([type="hidden"]), select');
 

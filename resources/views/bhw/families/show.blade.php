@@ -226,7 +226,7 @@
     </div>
     <div class="modal-footer family-management-footer">
         @if(auth()->user()->hasWriteAccess('family'))
-        <form id="archiveFamilyForm" method="POST" onsubmit="return confirm('Archive this family? Its members are kept, and you can restore the family from the archive.')">
+        <form id="archiveFamilyForm" method="POST" data-confirm-message="Archive this family? Its members are kept, and you can restore the family from the archive.">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger" data-ui-action="danger">Archive family</button>
@@ -360,7 +360,7 @@
                 const form = document.createElement('form');
                 form.action = `/bhw/families/members/${member.id}`;
                 form.method = 'POST';
-                form.onsubmit = () => confirm('Remove citizen from family?');
+                form.dataset.confirmMessage = 'Remove citizen from family?';
 
                 const csrfInput = document.createElement('input');
                 csrfInput.type = 'hidden';

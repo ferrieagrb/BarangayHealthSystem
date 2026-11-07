@@ -19,6 +19,7 @@
     </style>
 </head>
 <body>
+@include('partials.global-loader')
     <main class="card">
         <h1>Confirm your password</h1>
         <p>This action involves sensitive citizen or system data. Please re-enter your own password to continue.</p>

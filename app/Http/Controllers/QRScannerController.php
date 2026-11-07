@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\citizens;
-use App\Models\CitizenHealthShare;
 use App\Models\CitizenActivityLog;
 use App\Models\HealthRecord;
 use App\Models\HealthRecordActivityLog;
@@ -157,11 +156,11 @@ class QRScannerController extends Controller
      */
     public function publicHealthId(string $token): Response
     {
-        if (!Schema::hasTable('citizen_health_shares')) {
+        if (!Schema::hasColumn('citizens', 'public_health_id_enabled')) {
             return response()
                 ->view('health-id.public', [
                     'citizen' => null,
-                    'share' => null,
+                    'publicAccessEnabled' => false,
                     'tokenFound' => false,
                     'sharingUnavailable' => true,
                 ], 503)
@@ -170,16 +169,16 @@ class QRScannerController extends Controller
         }
 
         $citizen = citizens::query()->where('qr_token', $token)->first();
-        $share = $citizen ? $this->activeHealthShare($citizen) : null;
+        $publicAccessEnabled = $citizen?->public_health_id_enabled ?? false;
 
-        if ($citizen && $share) {
+        if ($citizen && $publicAccessEnabled) {
             $this->loadPublicHealthCardRelations($citizen);
         }
 
         return response()
             ->view('health-id.public', [
-                'citizen' => $share ? $citizen : null,
-                'share' => $share,
+                'citizen' => $publicAccessEnabled ? $citizen : null,
+                'publicAccessEnabled' => $publicAccessEnabled,
                 'tokenFound' => $citizen !== null,
                 'sharingUnavailable' => false,
             ], $citizen ? 200 : 404)
@@ -192,9 +191,9 @@ class QRScannerController extends Controller
      */
     public function publicHealthSummary(string $token): JsonResponse
     {
-        if (!Schema::hasTable('citizen_health_shares')) {
+        if (!Schema::hasColumn('citizens', 'public_health_id_enabled')) {
             return response()->json([
-                'message' => 'Health record sharing is temporarily unavailable. Please try again later.',
+                'message' => 'Health ID visibility settings are temporarily unavailable. Please try again later.',
             ], 503)->header('Cache-Control', 'no-store, private');
         }
 
@@ -206,10 +205,9 @@ class QRScannerController extends Controller
             ], 404)->header('Cache-Control', 'no-store');
         }
 
-        $share = $this->activeHealthShare($citizen);
-        if (!$share) {
+        if (!$citizen->public_health_id_enabled) {
             return response()->json([
-                'message' => 'This citizen has not enabled health record sharing, or the sharing permission has expired or been revoked.',
+                'message' => 'Public viewing of this Health ID record is turned off.',
             ], 403)->header('Cache-Control', 'no-store');
         }
 
@@ -231,7 +229,7 @@ class QRScannerController extends Controller
             ->map(fn ($record) => [
                 'vaccine_name' => $record->vaccine_name,
                 'dose_number' => $record->dose_number,
-                'date_administered' => $record->date_administered,
+                'date_administered' => $record->date_administered?->toDateString(),
                 'administered_by' => $record->administered_by,
             ]);
 
@@ -277,15 +275,6 @@ class QRScannerController extends Controller
             'maintenance_medicines' => $maintenanceMedicines,
         ])->header('Cache-Control', 'no-store, private')
             ->header('Referrer-Policy', 'no-referrer');
-    }
-
-    private function activeHealthShare(citizens $citizen): ?CitizenHealthShare
-    {
-        return CitizenHealthShare::query()
-            ->active()
-            ->where('citizen_id', $citizen->id)
-            ->latest('granted_at')
-            ->first();
     }
 
     private function loadPublicHealthCardRelations(citizens $citizen): void

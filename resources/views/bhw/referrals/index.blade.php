@@ -154,6 +154,7 @@
                                 <a
                                     href="{{ route('referrals.download', $referral->id) }}"
                                     class="btn-primary"
+                                    data-no-loader
                                  data-ui-action="secondary">
                                     Download PDF
                                 </a>
