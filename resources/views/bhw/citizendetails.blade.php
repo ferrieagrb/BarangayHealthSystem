@@ -1359,7 +1359,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("saveDiagnosisBtn");
 
 
-       CONFIRMATION MODAL ELEMENTS
+    /* CONFIRMATION MODAL ELEMENTS
 
        ============================================================ */
 
@@ -1394,6 +1394,9 @@ document.addEventListener("DOMContentLoaded", function () {
             "confirmDiagnosisSubmission"
 
         );
+
+    // This page uses direct submission when the old confirmation dialog is absent.
+    if (!diagnosisForm || !diagnosisConfirmModal || !cancelDiagnosisConfirmation || !confirmDiagnosisSubmission) return;
 
     /* ============================================================
 

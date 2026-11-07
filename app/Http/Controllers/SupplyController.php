@@ -7,6 +7,9 @@ use App\Models\Supply;
 use App\Models\SupplyLog;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Category;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class SupplyController extends Controller
 {
@@ -205,12 +208,23 @@ class SupplyController extends Controller
         abort(403, 'Unauthorized action. Your account has read-only access to supplies.');
     }
 
-        $categories = Category::all();
+        $normalize = fn ($value) => trim(preg_replace('/[\s\p{P}]+/u', ' ', Str::lower($value)));
+        $name = trim($request->name);
+        $category = trim($request->category);
+        $duplicate = Supply::query()->get(['name', 'category'])->contains(fn ($item) =>
+            $normalize($item->name) === $normalize($name)
+            && $normalize($item->category) === $normalize($category)
+        );
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'name' => 'This item already exists in the selected category. Deposit stock into the existing item instead.',
+            ]);
+        }
 
-        // Ensure we don't duplicate or create phantom stock rows
+        // New catalogs start empty; existing records and stock are never renamed.
         Supply::create([
-            'name' => $request->name,
-            'category' => $request->category,
+            'name' => $name,
+            'category' => $category,
             'quantity' => 0, // Starts at zero until a batch is deposited
             'min_stock' => $request->min_stock,
             'status' => 'Out of Stock'
@@ -256,6 +270,25 @@ class SupplyController extends Controller
         }
 
         return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
+    }
+
+    public function archiveItem($id)
+    {
+        $this->requireSupplyWrite();
+        DB::transaction(function () use ($id) {
+            $item = Supply::findOrFail($id);
+            $packs = Supply::where('name', $item->name)->lockForUpdate()->get()
+                ->filter(fn ($pack) => $pack->name === $item->name);
+            foreach ($packs as $pack) {
+                SupplyLog::create([
+                    'action' => 'archive', 'supply_id' => $pack->id,
+                    'quantity' => $pack->quantity, 'user_id' => Auth::id(),
+                    'citizen_id' => null, 'notes' => 'Archived supply item and its packs',
+                ]);
+                $pack->delete();
+            }
+        });
+        return back()->with('success', 'Supply item and its packs archived. Restore them from the Supplies archive.');
     }
 
     public function destroy($id)

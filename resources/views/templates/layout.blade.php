@@ -86,7 +86,6 @@
     <script src="{{ asset('js/bhw-mobile.js') }}" defer></script>
     <script src="{{ asset('js/sidebar-navigation.js') }}?v={{ filemtime(public_path('js/sidebar-navigation.js')) }}" defer></script>
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
-    @include('partials.medical-autocomplete-assets')
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
 

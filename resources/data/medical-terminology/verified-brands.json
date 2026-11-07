@@ -1,0 +1,20 @@
+{
+    "retrieved_on": "2026-11-07",
+    "sources": {
+        "ph-fda": {
+            "label": "Philippine FDA published drug record",
+            "publication": "https://verification.fda.gov.ph/drug_productsview.php?export=pdf&registration_number=DR-XY22982",
+            "cross_reference": "https://www.hpra.ie/find-a-medicine/for-human-use/authorised-medicines/details/28196",
+            "verification_note": "Brand and generic identity checked against the indexed official Philippine FDA record and HPRA product information. This reference does not assert current registration or availability."
+        }
+    },
+    "terms": [
+        {
+            "name": "Fluimucil",
+            "generic_name": "Acetylcysteine",
+            "type": "medicine",
+            "sources": ["ph-fda"],
+            "registration_number": "DR-XY22982"
+        }
+    ]
+}

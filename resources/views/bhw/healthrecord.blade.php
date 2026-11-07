@@ -297,7 +297,7 @@
                 <!-- PAGINATION -->
                 <div>
 
-                    {{ $citizens->links('pagination::bootstrap-5') }}
+                    {{ $citizens->links('partials.pagination') }}
 
                 </div>
 

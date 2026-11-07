@@ -2,12 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\HealthRecord;
-use App\Models\MaintenanceRecord;
-use App\Models\MedicationRecord;
 use App\Models\User;
-use App\Models\citizens;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -23,7 +18,55 @@ class MedicalTerminologySearch
 {
     private const MAX_RESULTS = 8;
 
-    public function search(string $type, string $query, User $user): array
+    public function refreshOfficialReferences(): array
+    {
+        $path = config('medical_terminology.reference_path');
+        $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $download = fn ($url) => Http::timeout(60)->connectTimeout(10)->get($url)->throw()->body();
+        $csv = $download($data['sources']['doh-pnf']['data_url']);
+        $html = $download($data['sources']['who-eml']['data_url']);
+        $terms = [];
+        $counts = ['doh-pnf' => 0, 'who-eml' => 0];
+        $add = function ($name, $source, $type = 'medicine') use (&$terms, &$counts) {
+            $name = trim(html_entity_decode($name, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            if ($name === '' || mb_strlen($name) > 255) return;
+            $key = $type . '|' . mb_strtolower($name);
+            $terms[$key] ??= ['name' => $name, 'type' => $type, 'sources' => []];
+            if (!in_array($source, $terms[$key]['sources'], true)) {
+                $terms[$key]['sources'][] = $source;
+                $counts[$source]++;
+            }
+        };
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, $csv); rewind($stream);
+        $headers = fgetcsv($stream);
+        $column = is_array($headers) ? array_search('Molecule', $headers, true) : false;
+        if ($column === false) throw new RuntimeException('DOH reference format changed; old data preserved.');
+        while (($row = fgetcsv($stream)) !== false) $add($row[$column] ?? '', 'doh-pnf');
+        fclose($stream);
+        $previous = libxml_use_internal_errors(true);
+        $document = new \DOMDocument();
+        $document->loadHTML('<?xml encoding="UTF-8">' . $html);
+        libxml_clear_errors(); libxml_use_internal_errors($previous);
+        $xpath = new \DOMXPath($document);
+        foreach ($xpath->query('//h5[contains(@class,"medicine-name")]') as $node) {
+            $add($node->getAttribute('title'), 'who-eml');
+        }
+        foreach ($xpath->query('//span[contains(@class,"indication-text")]') as $node) {
+            $add($node->textContent, 'who-eml', 'diagnosis');
+        }
+        if ($counts['doh-pnf'] < 300 || $counts['who-eml'] < 500) {
+            throw new RuntimeException('Official reference response was incomplete; old data preserved.');
+        }
+        $data['retrieved_on'] = now('Asia/Manila')->toDateString();
+        $data['terms'] = array_values($terms);
+        $temporary = $path . '.tmp';
+        file_put_contents($temporary, json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+        rename($temporary, $path);
+        return $counts;
+    }
+
+    public function search(string $type, string $query, User $user, ?string $category = null): array
     {
         $query = trim($query);
 
@@ -31,11 +74,50 @@ class MedicalTerminologySearch
             'medicine' => $this->searchMedicines($query, $user),
             'vaccine' => $this->searchVaccines($query),
             'diagnosis' => $this->searchDiagnoses($query, $user),
+            'supply' => $this->searchSupplies($query, $category ?? '', $user),
         };
+    }
+
+    public function supplyType(string $category): string
+    {
+        $category = $this->normalize($category);
+        if (preg_match('/vaccin|immuniz|immunis|bakuna/', $category)) return 'vaccine';
+        if (preg_match('/medicin|medicat|drug|pharma|gamot|vitamin|supplement/', $category)) return 'medicine';
+        return 'supply';
+    }
+
+    private function searchSupplies(string $query, string $category, User $user): array
+    {
+        $type = $this->supplyType($category);
+        if ($type !== 'supply') {
+            return $this->search($type, $query, $user) + ['terminology_type' => $type];
+        }
+
+        $suggestions = [];
+        if (Schema::hasTable('supplies')) {
+            // Local catalog entries are only for ordinary supplies, never medical spelling.
+            $names = DB::table('supplies')
+                ->whereRaw('LOWER(TRIM(category)) = ?', [mb_strtolower(trim($category))])
+                ->when(Schema::hasColumn('supplies', 'deleted_at'), fn ($builder) => $builder->whereNull('deleted_at'))
+                ->whereNotNull('name')->distinct()->orderBy('name')->limit(500)->pluck('name');
+            foreach ($names as $name) {
+                $rank = $this->termRank($query, $name);
+                if ($rank <= 3) $suggestions[] = [
+                    'name' => $name, 'source' => 'Local supply catalog (not verified terminology)',
+                    'match_rank' => $rank, 'source_rank' => 0,
+                ];
+            }
+        }
+        return $this->response($suggestions, false, null) + ['terminology_type' => 'supply'];
     }
 
     private function searchMedicines(string $query, User $user): array
     {
+        $references = $this->officialReferenceSuggestions('medicine', $query);
+        if ($references !== []) {
+            return $this->response($references, false, 'Suggestions from published official medicine references; select the correct name.')
+                + ['reference_available' => true];
+        }
         $available = false;
         $message = null;
         $suggestions = [];
@@ -48,9 +130,44 @@ class MedicalTerminologySearch
             $message = 'Online medicine suggestions are unavailable. You can enter a medicine manually.';
         }
 
-        $suggestions = array_merge($suggestions, $this->localMedicineSuggestions($query, $user));
-
         return $this->response($suggestions, $available, $message);
+    }
+
+    private function officialReferenceSuggestions(string $type, string $query): array
+    {
+        $path = config('medical_terminology.reference_path');
+        $data = is_string($path) && is_file($path)
+            ? json_decode(file_get_contents($path), true)
+            : ['terms' => [], 'sources' => []];
+        $brandPath = config('medical_terminology.brand_reference_path');
+        if ($type === 'medicine' && is_string($brandPath) && is_file($brandPath)) {
+            $brands = json_decode(file_get_contents($brandPath), true);
+            $data['terms'] = array_merge($data['terms'], $brands['terms'] ?? []);
+            $data['sources'] = array_merge($data['sources'], $brands['sources'] ?? []);
+            foreach ($brands['terms'] ?? [] as $brand) {
+                $data['source_dates'][$brand['sources'][0]] = $brands['retrieved_on'];
+            }
+        }
+        $suggestions = [];
+        foreach ($data['terms'] ?? [] as $term) {
+            if (($term['type'] ?? null) !== $type) continue;
+            $rank = $this->bestTermRank($query, array_filter([$term['name'], $term['generic_name'] ?? null]));
+            // Minor errors in a partial prefix still suggest real, sourced names.
+            $normalized = $this->normalize($query);
+            if ($rank > 3 && mb_strlen($normalized) >= 4) {
+                $prefix = mb_substr($this->normalize($term['name']), 0, mb_strlen($normalized));
+                if (levenshtein($normalized, $prefix) === 1) $rank = 3;
+            }
+            if ($rank > 3) continue;
+            $sources = array_map(fn ($key) => $data['sources'][$key]['label'], $term['sources']);
+            $suggestions[] = [
+                'name' => $term['name'], 'source' => implode(' · ', $sources),
+                'generic_name' => $term['generic_name'] ?? null,
+                'source_url' => $data['sources'][$term['sources'][0]]['publication'],
+                'reference_date' => $data['source_dates'][$term['sources'][0]] ?? $data['retrieved_on'], 'match_rank' => $rank, 'source_rank' => 0,
+            ];
+        }
+        return $suggestions;
     }
 
     private function searchVaccines(string $query): array
@@ -250,14 +367,129 @@ class MedicalTerminologySearch
             }
         }
 
-        $suggestions = array_merge($suggestions, $this->localDiagnosisSuggestions($query, $user));
+        if (!$available || $suggestions === []) {
+            try {
+                $suggestions = $this->nlmConditionSuggestions($query);
+                $available = true;
+                $message = null;
+            } catch (ConnectionException|RequestException|RuntimeException $exception) {
+                $this->logProviderFailure('NLM Medical Conditions', $exception);
+                $message = 'Online diagnosis suggestions are unavailable. You can enter a diagnosis manually.';
+            }
+        }
+
+        if ($suggestions === []) {
+            try {
+                $mesh = $this->meshDiagnosisSuggestions($query);
+                $suggestions = $mesh;
+                $available = true;
+                $message = null;
+            } catch (ConnectionException|RequestException|RuntimeException $exception) {
+                $this->logProviderFailure('NLM MeSH', $exception);
+            }
+        }
+
+        if (!$available) {
+            $references = $this->officialReferenceSuggestions('diagnosis', $query);
+            if ($references !== []) {
+                return $this->response($references, false, 'Live lookup unavailable; showing WHO published condition terminology.')
+                    + ['reference_available' => true];
+            }
+        }
 
         return $this->response($suggestions, $available, $message);
     }
 
+    private function nlmConditionSuggestions(string $query): array
+    {
+        $key = 'medical-terminology:nlm:conditions:' . hash('sha256', mb_strtolower($query));
+        return Cache::remember($key, now()->addMinutes((int) config('medical_terminology.cache_minutes', 1440)), function () use ($query) {
+            $parameters = ['terms' => $query, 'maxList' => self::MAX_RESULTS,
+                'df' => 'primary_name,icd10cm_codes'];
+            $fetch = fn ($parameters) => Http::acceptJson()
+                ->timeout((int) config('medical_terminology.timeout', 5))
+                ->get(config('services.nlm_conditions.url'), $parameters)->throw()->json();
+            $data = $fetch($parameters);
+            $approximate = false;
+            if (is_array($data) && ($data[0] ?? 0) === 0 && mb_strlen($query) >= 4) {
+                // Construct a bounded fuzzy query; never forward user query-string operators.
+                $words = preg_split('/\s+/u', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $query), -1, PREG_SPLIT_NO_EMPTY);
+                $parameters['terms'] = '';
+                $parameters['q'] = implode(' AND ', array_map(fn ($word) => $word . '~1', $words));
+                $data = $fetch($parameters);
+                $approximate = true;
+            }
+            if (!is_array($data) || !is_array($data[3] ?? null)) {
+                throw new RuntimeException('NLM returned invalid condition terminology.');
+            }
+            $items = [];
+            foreach ($data[3] as $index => $row) {
+                if (!is_array($row) || !is_string($row[0] ?? null) || trim($row[0]) === '') continue;
+                $items[] = [
+                    'name' => trim($row[0]), 'classification_code' => $row[1] ?? null,
+                    'code_system' => 'ICD-10-CM', 'source' => 'NLM Medical Conditions',
+                    'match_rank' => $approximate ? 3 : min(2, $this->termRank($query, $row[0])),
+                    'source_rank' => 1,
+                    'provider_rank' => $index,
+                ];
+            }
+            return $items;
+        });
+    }
+
+    private function meshDiagnosisSuggestions(string $query): array
+    {
+        $key = 'medical-terminology:nlm:mesh:' . hash('sha256', mb_strtolower($query));
+        return Cache::remember($key, now()->addMinutes((int) config('medical_terminology.cache_minutes', 1440)), function () use ($query) {
+            $fetch = fn ($label, $limit) => Http::acceptJson()
+                ->timeout((int) config('medical_terminology.timeout', 10))
+                ->get(config('services.nlm_mesh.url'), ['label' => $label, 'match' => 'contains', 'limit' => $limit])
+                ->throw()->json();
+            $data = $fetch($query, self::MAX_RESULTS);
+            $approximate = false;
+            if ($data === [] && mb_strlen($query) >= 5) {
+                // Search the longest word's stem, then rank against the whole input.
+                // This finds multiword spelling errors without hardcoded disease names.
+                $words = preg_split('/\s+/u', $this->normalize($query), -1, PREG_SPLIT_NO_EMPTY);
+                usort($words, fn ($left, $right) => mb_strlen($right) <=> mb_strlen($left));
+                $stem = mb_substr($words[0] ?? '', 0, 5);
+                if (mb_strlen($stem) >= 4 && $stem !== $this->normalize($query)) {
+                    $data = $fetch($stem, 50);
+                    $approximate = true;
+                }
+            }
+            if (!is_array($data) || !array_is_list($data)) {
+                throw new RuntimeException('NLM MeSH returned invalid terminology.');
+            }
+            $items = [];
+            foreach ($data as $row) {
+                if (!is_array($row) || !is_string($row['label'] ?? null)
+                    || !is_string($row['resource'] ?? null)
+                    || !preg_match('~^https?://id\.nlm\.nih\.gov/mesh/(D\d+)$~', $row['resource'] ?? '', $identifier)) continue;
+                $queryWords = explode(' ', $this->normalize($query));
+                $candidateWords = explode(' ', $this->normalize($row['label']));
+                foreach ($queryWords as $word) {
+                    $matches = array_filter($candidateWords, fn ($candidate) =>
+                        str_starts_with($candidate, $word)
+                        || (mb_strlen($word) >= 5 && levenshtein($word, $candidate) <= 2)
+                    );
+                    if ($matches === []) continue 2;
+                }
+                $rank = $this->termRank($query, $row['label']);
+                if ($approximate) $rank = 3;
+                if ($rank > 3) continue;
+                $items[] = ['name' => $row['label'], 'source' => 'NLM MeSH',
+                    'source_url' => 'https://id.nlm.nih.gov/mesh/' . $identifier[1],
+                    'classification_code' => $identifier[1], 'code_system' => 'MeSH',
+                    'match_rank' => $approximate ? 3 : $rank, 'source_rank' => 2];
+            }
+            return $items;
+        });
+    }
+
     private function rxNormSuggestions(string $query): array
     {
-        $key = 'medical-terminology:rxnorm:' . hash('sha256', mb_strtolower($query));
+        $key = 'medical-terminology:rxnorm:v2:' . hash('sha256', mb_strtolower($query));
 
         return Cache::remember($key, now()->addMinutes((int) config('medical_terminology.cache_minutes', 1440)), function () use ($query) {
             $response = Http::acceptJson()
@@ -276,19 +508,32 @@ class MedicalTerminologySearch
 
             $rxNormCandidates = array_values(array_filter($candidates, fn ($candidate) =>
                 is_array($candidate)
-                && !empty($candidate['name'])
-                && strtoupper((string) ($candidate['source'] ?? '')) === 'RXNORM'
+                && is_string($candidate['name'] ?? null) && trim($candidate['name']) !== ''
+                && is_string($candidate['source'] ?? null)
+                && in_array(strtoupper((string) ($candidate['source'] ?? '')), ['RXNORM', 'ATC', 'USP', 'INN', 'BAN'], true)
             ));
 
-            return array_map(fn ($candidate) => [
+            $items = array_map(fn ($candidate) => [
                 'name' => trim((string) $candidate['name']),
                 'code' => null,
                 'classification_code' => null,
                 'description' => null,
-                'source' => 'NLM RxNorm',
+                'source' => 'NLM RxNorm' . (strtoupper($candidate['source']) === 'RXNORM' ? '' : ' / ' . strtoupper($candidate['source'])),
                 'match_rank' => $this->termRank($query, (string) $candidate['name']),
                 'source_rank' => 1,
             ], $rxNormCandidates);
+
+            if (array_filter($items, fn ($item) => $item['match_rank'] <= 3) === [] && mb_strlen($query) >= 4) {
+                $spelling = Http::acceptJson()->timeout((int) config('medical_terminology.timeout', 5))
+                    ->get(config('services.rxnorm.spelling_url'), ['name' => $query])->throw()
+                    ->json('suggestionGroup.suggestionList.suggestion', []);
+                foreach (is_array($spelling) ? $spelling : [] as $name) {
+                    if (!is_string($name) || trim($name) === '') continue;
+                    $items[] = ['name' => trim($name), 'source' => 'NLM RxNorm',
+                        'match_rank' => 3, 'source_rank' => 1];
+                }
+            }
+            return $items;
         });
     }
 
@@ -396,12 +641,13 @@ class MedicalTerminologySearch
             }
 
             return [
-                'name' => trim((string) $entity['title']),
+                'name' => trim(html_entity_decode(strip_tags((string) $entity['title']), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
                 'code' => null,
                 'classification_code' => isset($entity['theCode']) ? trim((string) $entity['theCode']) : null,
                 'description' => null,
                 'source' => 'WHO ICD-11',
-                'match_rank' => $this->termRank($query, (string) $entity['title']),
+                'code_system' => 'ICD-11',
+                'match_rank' => min(3, $this->termRank($query, strip_tags((string) $entity['title']))),
                 'source_rank' => 0,
             ];
         }, $entities)));
@@ -431,120 +677,6 @@ class MedicalTerminologySearch
         });
     }
 
-    private function localMedicineSuggestions(string $query, User $user): array
-    {
-        $terms = [];
-        $citizenIds = null;
-
-        foreach ([
-            [MedicationRecord::class, 'medication_records'],
-            [MaintenanceRecord::class, 'maintenance_records'],
-        ] as [$model, $table]) {
-            if (!Schema::hasTable($table)) {
-                continue;
-            }
-
-            $citizenIds ??= $this->accessibleCitizenIds($user);
-            $names = $model::query()
-                ->whereIn('citizen_id', (clone $citizenIds))
-                ->whereNotNull('medicine_name')
-                ->where('medicine_name', '<>', '')
-                ->distinct()
-                ->orderBy('medicine_name')
-                ->limit(500)
-                ->pluck('medicine_name');
-
-            foreach ($names as $name) {
-                $rank = $this->termRank($query, (string) $name);
-                if ($rank <= 3) {
-                    $terms[] = [
-                        'name' => trim((string) $name),
-                        'code' => null,
-                        'classification_code' => null,
-                        'description' => null,
-                        'source' => 'BHEAMS records',
-                        'match_rank' => $rank,
-                        'source_rank' => 0,
-                    ];
-                }
-            }
-        }
-
-        if (Schema::hasTable('supplies')) {
-            $inventoryNames = DB::table('supplies')
-                ->where('quantity', '>', 0)
-                ->where(function ($categoryQuery) {
-                    foreach (['medicine', 'medication', 'drug', 'pharma'] as $keyword) {
-                        $categoryQuery->orWhereRaw('LOWER(category) LIKE ?', ['%' . $keyword . '%']);
-                    }
-                })
-                ->whereNotNull('name')
-                ->where('name', '<>', '')
-                ->distinct()
-                ->orderBy('name')
-                ->limit(500)
-                ->pluck('name');
-
-            foreach ($inventoryNames as $name) {
-                $rank = $this->termRank($query, (string) $name);
-                if ($rank <= 3) {
-                    $terms[] = [
-                        'name' => trim((string) $name),
-                        'code' => null,
-                        'classification_code' => null,
-                        'description' => null,
-                        'source' => 'BHEAMS inventory',
-                        'match_rank' => $rank,
-                        'source_rank' => 0,
-                    ];
-                }
-            }
-        }
-
-        return $terms;
-    }
-
-    private function localDiagnosisSuggestions(string $query, User $user): array
-    {
-        if (!Schema::hasTable('health_records')) {
-            return [];
-        }
-
-        $diagnoses = HealthRecord::query()
-            ->whereIn('citizen_id', $this->accessibleCitizenIds($user))
-            ->whereNotNull('diagnosis')
-            ->where('diagnosis', '<>', '')
-            ->distinct()
-            ->orderBy('diagnosis')
-            ->limit(500)
-            ->pluck('diagnosis');
-
-        $suggestions = [];
-        foreach ($diagnoses as $diagnosis) {
-            $rank = $this->termRank($query, (string) $diagnosis);
-            if ($rank <= 3) {
-                $suggestions[] = [
-                    'name' => trim((string) $diagnosis),
-                    'code' => null,
-                    'classification_code' => null,
-                    'description' => null,
-                    'source' => 'BHEAMS records',
-                    'match_rank' => $rank,
-                    'source_rank' => 1,
-                ];
-            }
-        }
-
-        return $suggestions;
-    }
-
-    private function accessibleCitizenIds(User $user): Builder
-    {
-        return app(BhwCitizenAccess::class)
-            ->scopeCitizens(citizens::query(), $user)
-            ->select('citizens.id');
-    }
-
     private function response(array $suggestions, bool $available, ?string $message): array
     {
         $suggestions = array_values(array_filter($suggestions, fn ($suggestion) =>
@@ -554,8 +686,8 @@ class MedicalTerminologySearch
         ));
 
         usort($suggestions, fn ($left, $right) =>
-            [$left['match_rank'], $left['source_rank'], mb_strtolower($left['name'])]
-            <=> [$right['match_rank'], $right['source_rank'], mb_strtolower($right['name'])]
+            [$left['match_rank'], $left['source_rank'], $left['provider_rank'] ?? 0, mb_strtolower($left['name'])]
+            <=> [$right['match_rank'], $right['source_rank'], $right['provider_rank'] ?? 0, mb_strtolower($right['name'])]
         );
 
         $unique = [];
@@ -586,7 +718,7 @@ class MedicalTerminologySearch
                 3 => 'approximate',
                 default => 'partial',
             };
-            unset($suggestion['match_rank'], $suggestion['source_rank']);
+            unset($suggestion['match_rank'], $suggestion['source_rank'], $suggestion['provider_rank']);
             $unique[$key] = $suggestion;
         }
 

@@ -13,6 +13,14 @@
     white-space: nowrap;
 }
 
+.supplies-alert {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #dcfce7;
+    color: #166534;
+}
+
 .summary-card-trend span {
     display: inline-flex;
     align-items: center;
@@ -103,6 +111,31 @@
     white-space: nowrap;
 }
 
+/* Keep action labels intact even when shared controls allow text wrapping. */
+body .main-content .supplies-main-table .openDeposit,
+body .main-content .pack-table [data-ui-action] {
+    width: max-content;
+    max-width: none;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* Scroll the wrapper instead of squeezing the fixed-width action column. */
+@media (max-width: 900px) {
+    #bhwSidebar ~ .main-content .supplies-main-table-wrapper .supplies-main-table {
+        display: table;
+        min-width: 1000px;
+        max-width: none;
+    }
+
+    #bhwSidebar ~ .main-content .supplies-main-table-wrapper .pack-table {
+        display: table;
+        min-width: 780px;
+        max-width: none;
+    }
+}
+
 .arrow-icon {
     display: inline-block;
     margin-right: 8px;
@@ -177,13 +210,35 @@
 }
 
 /* Pack table columns: Item Code, Serial, Qty, Expiry, Supplier, Status, Action */
-.pack-table thead th:nth-child(1) { width: 16%; }
-.pack-table thead th:nth-child(2) { width: 14%; }
-.pack-table thead th:nth-child(3) { width: 9%; }
-.pack-table thead th:nth-child(4) { width: 18%; }
+.pack-table thead th:nth-child(1) { width: 14%; }
+.pack-table thead th:nth-child(2) { width: 12%; }
+.pack-table thead th:nth-child(3) { width: 8%; }
+.pack-table thead th:nth-child(4) { width: 15%; }
 .pack-table thead th:nth-child(5) { width: 17%; }
 .pack-table thead th:nth-child(6) { width: 12%; }
-.pack-table thead th:nth-child(7) { width: 14%; }
+.pack-table thead th:nth-child(7) { width: 22%; }
+
+.supplies-header-actions,
+.supply-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.supply-actions form {
+    margin: 0;
+    max-width: 100%;
+}
+
+.main-content .supply-actions button,
+.main-content .supplies-header-actions a {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    flex-shrink: 0;
+}
 
 .pack-table td:last-child,
 .pack-table th:last-child {

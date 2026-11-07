@@ -1368,13 +1368,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function closeMedicinePickerModal() {
 
+        if (!medicinePickerModal) return;
+
         medicinePickerModal.classList.remove("active");
 
         medicinePickerModal.setAttribute("aria-hidden", "true");
 
     }
 
-    openMedicinePicker.addEventListener("click", function () {
+    openMedicinePicker?.addEventListener("click", function () {
 
         medicinePickerModal.classList.add("active");
 
@@ -1382,9 +1384,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    closeMedicinePicker.addEventListener("click", closeMedicinePickerModal);
+    closeMedicinePicker?.addEventListener("click", closeMedicinePickerModal);
 
-    medicinePickerModal.addEventListener("click", function (event) {
+    medicinePickerModal?.addEventListener("click", function (event) {
 
         if (event.target === medicinePickerModal) {
 
@@ -1398,6 +1400,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         option.addEventListener("click", function () {
 
+            if (!existingMedicine || !selectedMedicineLabel) return;
             existingMedicine.value = option.dataset.medicine;
 
             selectedMedicineLabel.textContent = option.dataset.medicine;
@@ -1436,9 +1439,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    medicineSource.addEventListener("change", updateMedicineSourceFields);
-
-    updateMedicineSourceFields();
+    if (medicineSource) {
+        medicineSource.addEventListener("change", updateMedicineSourceFields);
+        updateMedicineSourceFields();
+    }
     setEditGatedState(false);
 
     /* ============================================================
@@ -1463,7 +1467,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById("saveDiagnosisBtn");
 
-
+});
 
 </script>
 

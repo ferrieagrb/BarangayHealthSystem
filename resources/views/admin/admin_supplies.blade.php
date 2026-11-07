@@ -1,7 +1,7 @@
 @extends('templates.admin')
 
 @section('CSSown')
-    <link rel="stylesheet" href="{{ asset('css/admin/admin_supplies.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/admin_supplies.css') }}?v={{ filemtime(public_path('css/admin/admin_supplies.css')) }}">
 @endsection
 
 @section('content')
@@ -155,6 +155,8 @@
                         </strong>
                     </p>
 
+                    @if(auth()->user()->hasWriteAccess('supplies'))
+                    <div class="inventory-item-actions">
                     <button
                         type="button"
                         onclick="openDepositModalForItem(@js($name))"
@@ -162,6 +164,13 @@
                      data-ui-action="secondary">
                         + Deposit Stock For This Item
                     </button>
+                    <form action="{{ route('supplies.archive-item', $group->first()->id) }}" method="POST" onsubmit="return confirm('Archive this item and all its packs? You can restore them from the Supplies archive.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inventory-button" data-ui-action="danger">Archive Item</button>
+                    </form>
+                    </div>
+                    @endif
 
                 </div>
 
@@ -176,6 +185,7 @@
                                 <th>Quantity</th>
                                 <th>Expiration Date</th>
                                 <th>Supplier</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
 
@@ -203,6 +213,17 @@
 
                                     <td>
                                         {{ $batch->supplier ?? 'N/A' }}
+                                    </td>
+                                    <td>
+                                        @if(auth()->user()->hasWriteAccess('supplies'))
+                                            <form class="inventory-pack-actions" action="{{ url('/supplies/' . $batch->id) }}" method="POST" onsubmit="return confirm('Archive this supply pack? You can restore it from the Supplies archive.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inventory-button" data-ui-action="danger">Archive</button>
+                                            </form>
+                                        @else
+                                            <span>Read Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -408,7 +429,7 @@
             </button>
         </div>
 
-        <form action="{{ route('supplies.store') }}" method="POST">
+        <form action="{{ url('/supplies') }}" method="POST">
 
             @csrf
 
@@ -419,6 +440,9 @@
                     type="text"
                     name="name"
                     id="catalog_item_name"
+                    data-medical-autocomplete="supply"
+                    maxlength="255"
+                    placeholder="Select category, then search item name"
                     required
                 >
             </div>

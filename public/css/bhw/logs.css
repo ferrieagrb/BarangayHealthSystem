@@ -112,3 +112,24 @@ tr:not(:last-child) {
     background: #fee2e2;
     color: #991b1b;
 }
+
+@media screen and (max-width: 768px) {
+    .main-content .logs-page .tabs {
+        flex-wrap: nowrap;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px 0 8px;
+        scrollbar-width: thin;
+    }
+
+    .main-content .logs-page .tabs .tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        min-height: 44px;
+    }
+}
