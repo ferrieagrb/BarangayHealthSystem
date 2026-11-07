@@ -1,7 +1,7 @@
 @extends('templates.layout')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/bhw/supply_create.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/supply_create.css') }}?v={{ filemtime(public_path('css/bhw/supply_create.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endsection
 
@@ -16,6 +16,12 @@
 
 <div class="form-container">
 
+    @if($errors->any())
+        <div class="supply-form-errors" role="alert">
+            @foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('supplies.store') }}" id="supplyForm">
         @csrf
 
@@ -24,7 +30,7 @@
             <!-- ITEM NAME -->
             <div class="form-group" style="grid-column: span 2;">
                 <label>Item Name</label>
-                <input type="text" name="name" required placeholder="e.g., Biogesic">
+                <input type="text" name="name" data-medical-autocomplete="supply" value="{{ old('name') }}" maxlength="255" required placeholder="Select category, then search item name">
             </div>
 
             <!-- CATEGORY (Dynamic from Database) -->
@@ -34,7 +40,7 @@
                     <option value="" disabled selected>Select Category</option>
                     @isset($categories)
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->name }}">{{ $cat->name }}</option>
+                            <option value="{{ $cat->name }}" @selected(old('category') === $cat->name)>{{ $cat->name }}</option>
                         @endforeach
                     @endisset
                 </select>

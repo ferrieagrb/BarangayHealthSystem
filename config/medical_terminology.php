@@ -1,7 +1,9 @@
 <?php
 
 return [
-    'timeout' => (int) env('MEDICAL_TERMINOLOGY_TIMEOUT', 5),
+    'timeout' => (int) env('MEDICAL_TERMINOLOGY_TIMEOUT', 10),
+    'reference_path' => resource_path('data/medical-terminology/official-references.json'),
+    'brand_reference_path' => resource_path('data/medical-terminology/verified-brands.json'),
     'cache_minutes' => (int) env('MEDICAL_TERMINOLOGY_CACHE_MINUTES', 1440),
     'vaccine_aliases' => [
         'BCG' => [

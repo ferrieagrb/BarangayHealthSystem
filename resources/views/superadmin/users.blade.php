@@ -251,7 +251,7 @@
 
         @if ($users->hasPages())
             <div class="users-pagination">
-                {{ $users->links('pagination::bootstrap-5') }}
+                {{ $users->links('partials.pagination') }}
             </div>
         @endif
     </section>

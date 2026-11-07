@@ -1,7 +1,7 @@
 @extends('templates.layout')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/bhw/supplies.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/supplies.css') }}?v={{ filemtime(public_path('css/bhw/supplies.css')) }}">
 <style>
     .batch-release-modal {
         position: fixed;
@@ -212,6 +212,9 @@
 @section('content')
 
 <!-- HEADER -->
+@if(session('success'))
+    <div class="supplies-alert" role="status">{{ session('success') }}</div>
+@endif
 <div class="page-top">
     <div class="page-title">
         <h1>Health Supplies Inventory</h1>
@@ -219,9 +222,12 @@
     </div>
 
     @if(auth()->user()->hasWriteAccess('supplies'))
+        <div class="supplies-header-actions">
+        <a href="{{ route('archive.index', ['type' => 'supplies']) }}" class="btn-secondary" data-ui-action="secondary">View Archive</a>
         <a href="{{ route('supplies.create') }}" class="btn-primary" data-ui-action="primary">
             + Add New Item
         </a>
+        </div>
     @endif
 </div>
 
@@ -400,7 +406,7 @@
 
                         @if(auth()->user()->hasWriteAccess('supplies'))
 
-                            <div onclick="event.stopPropagation();">
+                            <div class="supply-actions" onclick="event.stopPropagation();">
 
                                 <button
                                     type="button"
@@ -409,6 +415,12 @@
                                  data-ui-action="primary">
                                     + Deposit Packs
                                 </button>
+
+                                <form action="{{ route('supplies.archive-item', $itemsOfKind->first()->id) }}" method="POST" onsubmit="return confirm('Archive this item and all its packs? You can restore them from the Supplies archive.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-danger" data-ui-action="danger">Archive Item</button>
+                                </form>
 
                             </div>
 
@@ -553,6 +565,7 @@
 
                                                         @if(auth()->user()->hasWriteAccess('supplies'))
 
+                                                            <div class="supply-actions">
                                                             @if(
                                                                 !($supply->expiration_date &&
                                                                 \Carbon\Carbon::parse($supply->expiration_date)->isPast())
@@ -579,7 +592,6 @@
                                                                 action="{{ route('supplies.destroy', $supply->id) }}"
                                                                 method="POST"
                                                                 onsubmit="return confirm('Archive this supply pack? You can restore it from the archive.');"
-                                                                style="display:inline;"
                                                             >
 
                                                                 @csrf
@@ -595,6 +607,7 @@
                                                                 </button>
 
                                                             </form>
+                                                            </div>
 
                                                         @else
 

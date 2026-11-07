@@ -90,6 +90,15 @@
     transform: translateY(-1px);
 }
 
+/* Allow long labels to wrap between words on narrow screens. */
+body .main-content .inventory-button,
+body .main-content .inventory-page-header .btn-primary {
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+    flex-shrink: 0;
+}
+
 .inventory-button-primary,
 .inventory-page-header .btn-primary {
     background: #0e42b1;
@@ -1213,4 +1222,36 @@ body.theme-dark .inventory-category-list {
 .inventory-page-header p {
     margin: 6px 0 0;
     line-height: 1.6;
+}
+.inventory-item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.inventory-item-actions form,
+.inventory-pack-actions {
+    margin: 0;
+}
+
+.inventory-batch-table td:last-child {
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .main-content .inventory-item-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .main-content .inventory-item-actions .inventory-button {
+        width: 100%;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: normal;
+    }
 }

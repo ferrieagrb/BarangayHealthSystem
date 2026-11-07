@@ -948,3 +948,9 @@ table.users-table td:last-child {
     margin: 6px 0 0;
     line-height: 1.6;
 }
+.edit-password-actions {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 12px;
+    border-top: 1px solid var(--theme-border, #dce4ee);
+}

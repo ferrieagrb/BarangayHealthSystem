@@ -300,9 +300,34 @@ class AppearancePreferencesTest extends TestCase
         ];
         foreach ($pages as $role => $views) {
             $user = $this->makeUser($role);
+            if (getenv('BHEAMS_SUPPLY_FIXTURES') && in_array($role, ['bhw', 'admin'], true)) {
+                DB::table('user_permissions')->insert(['user_id' => $user->id, 'feature' => 'supplies', 'access' => 'write']);
+            }
             $user->update(['theme' => 'dark', 'font_size' => 'normal']);
             foreach ($views as $view) {
+                if (($onlyPages = getenv('BHEAMS_APPEARANCE_PAGES'))
+                    && !in_array($role . '.' . str_replace('/', '.', $view), explode(',', $onlyPages), true)) {
+                    continue;
+                }
                 $viewData = $data;
+                if ($view === 'families/show') {
+                    $viewData['families'] = $empty;
+                    $viewData['subgroupFilter'] = null;
+                    $viewData['subgroupCounts'] = [];
+                    $viewData['search'] = '';
+                }
+                if ($view === 'referrals/index') {
+                    $viewData['referrals'] = $empty;
+                }
+                if (getenv('BHEAMS_SUPPLY_FIXTURES') && in_array($view, ['supplies', 'admin_supplies'], true)) {
+                    $viewData['supplies'] = collect([
+                        new \App\Models\Supply(['id' => 101, 'name' => 'Paracetamol', 'category' => 'Medicine', 'quantity' => 12,
+                            'item_number' => 'PACK-101', 'serial_number' => 'SERIAL-101', 'supplier' => 'Test supplier',
+                            'expiration_date' => '2030-01-01', 'updated_at' => now(), 'min_stock' => 5]),
+                        new \App\Models\Supply(['id' => 102, 'name' => 'Empty Supply', 'category' => 'Medical Supplies',
+                            'quantity' => 0, 'updated_at' => now(), 'min_stock' => 5]),
+                    ])->each(function ($supply, $index) { $supply->id = 101 + $index; });
+                }
                 if ($role === 'admin' && $view === 'admin_analytics') {
                     $viewData['bhwUsers'] = 0;
                 }

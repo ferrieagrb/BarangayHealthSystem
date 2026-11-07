@@ -85,12 +85,12 @@
 
                 <div class="form-group">
                     <label>Name of Medication Given</label>
-                    <textarea name="medication_given"></textarea>
+                    <textarea name="medication_given" data-medical-autocomplete="medicine" data-medical-multiple placeholder="Enter medicine names, separated by commas"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>If Self-Medication</label>
-                    <textarea name="self_medication"></textarea>
+                    <textarea name="self_medication" data-medical-autocomplete="medicine" data-medical-multiple placeholder="Enter medicine names, separated by commas"></textarea>
                 </div>
 
                 <div class="form-group full">

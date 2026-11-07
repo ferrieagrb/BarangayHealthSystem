@@ -283,11 +283,11 @@ Route::get('/announcements/{announcement}', function (\Illuminate\Http\Request $
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
+Route::post('/medical-terminology/search', [MedicalTerminologyController::class, 'search'])
+    ->middleware(['auth', 'password.changed', 'throttle:60,1'])
+    ->name('bhw.medical-terminology.search');
 
-    Route::post('/medical-terminology/search', [MedicalTerminologyController::class, 'search'])
-        ->middleware('throttle:30,1')
-        ->name('bhw.medical-terminology.search');
+Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
 
     Route::get('/home', [BhwHomeController::class, 'index'])->name('home');
 
@@ -504,6 +504,7 @@ Route::middleware(['auth', 'role:superadmin', 'password.changed'])->prefix('supe
 
 
 Route::middleware(['auth', 'feature.write:supplies', 'password.changed'])->group(function () {
+    Route::delete('/supplies/catalog/{id}', [SupplyController::class, 'archiveItem'])->name('supplies.archive-item');
     Route::post('/supplies', [SupplyController::class, 'store']);
     Route::put('/supplies/{id}', [SupplyController::class, 'update']);
     Route::delete('/supplies/{id}', [SupplyController::class, 'destroy']);

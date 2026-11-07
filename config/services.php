@@ -46,6 +46,15 @@ return [
 
     'rxnorm' => [
         'approximate_url' => env('RXNORM_APPROXIMATE_URL', 'https://rxnav.nlm.nih.gov/REST/approximateTerm.json'),
+        'spelling_url' => 'https://rxnav.nlm.nih.gov/REST/spellingsuggestions.json',
+    ],
+
+    'nlm_conditions' => [
+        'url' => 'https://clinicaltables.nlm.nih.gov/api/conditions/v3/search',
+    ],
+
+    'nlm_mesh' => [
+        'url' => 'https://id.nlm.nih.gov/mesh/lookup/descriptor',
     ],
 
     'cdc_cvx' => [

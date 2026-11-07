@@ -4,7 +4,8 @@
     min-width: 0;
 }
 
-.medical-autocomplete > input {
+.medical-autocomplete > input,
+.medical-autocomplete > textarea {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
@@ -146,4 +147,45 @@
     color: #64748b;
     font-size: 11px;
     line-height: 1.4;
+}
+
+.medical-autocomplete-name mark {
+    background: transparent;
+    color: inherit;
+    font-weight: 700;
+}
+
+/* Stay in the form flow so modal scroll containers cannot clip the choices. */
+.medical-autocomplete-results {
+    position: relative;
+    top: auto;
+    margin-top: 4px;
+    box-sizing: border-box;
+}
+
+.medical-autocomplete-option-heading {
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.medical-autocomplete-name,
+.medical-autocomplete-meta {
+    overflow-wrap: anywhere;
+}
+
+body.theme-dark .medical-autocomplete-results,
+body.theme-dark .medical-autocomplete-option {
+    background: var(--theme-surface, #1e1e1e);
+    color: var(--theme-text, #e5e7eb);
+    border-color: var(--theme-border, #404040);
+}
+
+body.theme-dark .medical-autocomplete-option:hover,
+body.theme-dark .medical-autocomplete-option[aria-selected="true"] {
+    background: var(--theme-surface-alt, #262626);
+}
+
+body.theme-dark .medical-autocomplete-meta,
+body.theme-dark .medical-autocomplete-status {
+    color: var(--theme-muted, #9ca3af);
 }
