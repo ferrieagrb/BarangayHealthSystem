@@ -194,6 +194,11 @@
 }
 
 .archive-page .archive-tabs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    box-sizing: border-box;
+    border: 1px solid var(--theme-border, #dce4ee);
     padding: 8px 14px;
     border-radius: 8px;
     background: #f1f5f9;
@@ -203,8 +208,20 @@
 }
 
 .archive-page .archive-tabs a.active {
+    border-color: var(--action-primary);
     background: var(--action-primary);
     color: #fff;
+}
+
+.archive-page .archive-tabs a:focus-visible {
+    outline: 2px solid var(--action-primary);
+    outline-offset: 2px;
+}
+
+body.theme-dark .archive-page .archive-tabs a:not(.active) {
+    background: var(--theme-raised);
+    color: var(--theme-text);
+    border-color: var(--theme-border);
 }
 
 .archive-page .archive-tabs a span {
@@ -249,7 +266,8 @@
     }
 }
 @media screen and (max-width: 768px) {
-    .main-content .admin-logs-page .tabs {
+    .main-content .admin-logs-page .tabs,
+    .main-content .archive-page .archive-tabs {
         flex-wrap: nowrap;
         width: 100%;
         min-width: 0;
@@ -261,7 +279,8 @@
         scrollbar-width: thin;
     }
 
-    .main-content .admin-logs-page .tabs .tab {
+    .main-content .admin-logs-page .tabs .tab,
+    .main-content .archive-page .archive-tabs a {
         flex: 0 0 auto;
         white-space: nowrap;
         overflow-wrap: normal;

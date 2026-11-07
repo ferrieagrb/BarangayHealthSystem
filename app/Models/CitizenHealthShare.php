@@ -36,13 +36,15 @@ class CitizenHealthShare extends Model
 
     public function isActive(): bool
     {
-        return $this->revoked_at === null && $this->expires_at?->isFuture() === true;
+        return $this->revoked_at === null && ($this->expires_at === null || $this->expires_at->isFuture());
     }
 
     public function scopeActive(Builder $query): Builder
     {
         return $query
             ->whereNull('revoked_at')
-            ->where('expires_at', '>', now());
+            ->where(function (Builder $query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
     }
 }
