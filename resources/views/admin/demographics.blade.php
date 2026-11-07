@@ -90,7 +90,7 @@
                             <div class="record-meta"><span>{{ $purok->families_count }} families</span><span>{{ $purok->subgroups_count }} subgroups</span><span>{{ $purok->purge_citizens_count }} citizens</span></div>
                             <div class="record-actions"><button type="submit" class="btn btn-secondary">Save changes</button></div>
                         </form>
-                        <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" class="delete-form" onsubmit="return confirm('Archive this Purok? It can only be archived after its families, subgroups, and citizen references have been moved. You can restore it later from the archive.')">
+                        <form action="{{ route('admin.puroks.destroy', $purok->id) }}" method="POST" class="delete-form" data-confirm-message="Archive this Purok? It can only be archived after its families, subgroups, and citizen references have been moved. You can restore it later from the archive.">
                             @csrf
                             @method('DELETE')
                             <label class="field delete-password-field"><span>Admin password</span><input type="password" name="current_password" autocomplete="current-password" required></label>

@@ -1684,11 +1684,12 @@ body.theme-dark .c-home {
                     <p class="c-muted">Control whether someone with your Citizen ID QR link can view your e-Card health information.</p>
                 </div>
             </div>
-            @if($healthShare)
+            @if($publicHealthIdEnabled)
                 <p class="c-muted" role="status">
                     Public QR sharing is on. It stays enabled until you turn it off.
                     The shared record includes your basic details, Purok/family/subgroup, physical and status fields,
                     diagnoses and comments, immunizations, and maintenance medicines. Your contact number is not shared.
+                    Anyone with your QR code or its link can view this information until you turn access off.
                 </p>
                 <form method="POST" action="{{ route('citizen.health-sharing.revoke') }}">
                     @csrf
@@ -1697,7 +1698,7 @@ body.theme-dark .c-home {
                 </form>
             @else
                 <p class="c-muted">
-                    Sharing is currently off. If enabled, anyone who scans or receives your QR link can view your basic details,
+                    Public viewing is currently off. If enabled, anyone who scans or receives your QR link can view your basic details,
                     Purok/family/subgroup, physical and status fields, diagnoses and comments, immunizations, and maintenance medicines
                     until you turn sharing off. Your contact number is excluded. You can turn off access at any time.
                 </p>
@@ -1713,9 +1714,6 @@ body.theme-dark .c-home {
             @if(session('success'))
                 <p class="c-muted" role="status" style="margin-top:12px;">{{ session('success') }}</p>
             @endif
-            @error('consent')
-                <p class="c-muted" role="alert" style="color:#b91c1c;margin-top:12px;">{{ $message }}</p>
-            @enderror
         </div>
 
     @else

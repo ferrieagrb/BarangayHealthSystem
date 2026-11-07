@@ -416,7 +416,7 @@
                                     + Deposit Packs
                                 </button>
 
-                                <form action="{{ route('supplies.archive-item', $itemsOfKind->first()->id) }}" method="POST" onsubmit="return confirm('Archive this item and all its packs? You can restore them from the Supplies archive.');">
+                                <form action="{{ route('supplies.archive-item', $itemsOfKind->first()->id) }}" method="POST" data-confirm-message="Archive this item and all its packs? You can restore them from the Supplies archive.">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-danger" data-ui-action="danger">Archive Item</button>
@@ -591,7 +591,7 @@
                                                             <form
                                                                 action="{{ route('supplies.destroy', $supply->id) }}"
                                                                 method="POST"
-                                                                onsubmit="return confirm('Archive this supply pack? You can restore it from the archive.');"
+                                                                data-confirm-message="Archive this supply pack? You can restore it from the archive."
                                                             >
 
                                                                 @csrf

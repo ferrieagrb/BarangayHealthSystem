@@ -14,6 +14,7 @@
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         @include('partials.favicon')
+        @include('partials.pwa-meta')
         @yield('CSSown')<style>
 html { scroll-behavior: smooth; scroll-padding-top: 165px; }
 .c-header-section-nav a { font-size: 14px; min-height: 44px; }
@@ -865,78 +866,11 @@ body,
         <link rel="stylesheet" href="{{ asset('css/sidebar-scroll.css') }}?v={{ filemtime(public_path('css/sidebar-scroll.css')) }}">
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}" data-font="{{ $currentFontSize }}">
+@include('partials.global-loader')
     @yield('scripts')
 
     <div class="dashboard">
-        <!-- Custom Logo Loader -->
-        <div id="global-loader">
-            <div class="logo-spinner-wrapper">
-                <div class="spinner-ring-blue">
-                </div>
-                <div class="spinner-ring-white">
-                </div>
-                <img src="{{ asset('images/amuyong.png') }}" alt="Logo" class="spinner-logo">
-            </div>
-            <span class="loader-status-text">Processing, please wait...</span>
-        </div><script>
-    (function() {
-            const loader = document.getElementById('global-loader');
-            if (!loader) return;
-            let loaderTimeout = null;
-
-            // Function to show loader
-            window.showLoader = function() {
-                loader.classList.add('active');
-                window.clearTimeout(loaderTimeout);
-                loaderTimeout = window.setTimeout(window.hideLoader, 12000);
-            };
-
-            // Function to hide loader
-            window.hideLoader = function() {
-                loader.classList.remove('active');
-                window.clearTimeout(loaderTimeout);
-                loaderTimeout = null;
-            };
-
-            // Trigger on any form submission across the site
-            document.addEventListener('submit', function(e) {
-                if (e.defaultPrevented) return;
-                if (e.target.closest('[data-no-loader="true"], .logout-form, .citizen-sidebar-logout')) return;
-                showLoader();
-            });
-
-            // Trigger on regular link clicks (excluding anchors or target="_blank")
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a');
-
-                if (!link) return;
-
-                // Do not show the loader for same-page section tabs.
-                const href = link.getAttribute('href');
-
-                if (!href ||
-                    href.startsWith('#') ||
-                    href.startsWith('javascript:') ||
-                    link.getAttribute('target') === '_blank') {
-                    return;
-                }
-
-                // Show the loader only for actual same-site navigation.
-                if (link.href && link.hostname === window.location.hostname) {
-                    showLoader();
-                }
-            });
-
-            // Hide loader when page finishes fully loading or comes from cache (back button)
-            window.addEventListener('pageshow', function(event) {
-                hideLoader();
-            });
-
-            window.addEventListener('load', function() {
-                hideLoader();
-            });
-        })();
-</script><!-- SIDEBAR -->
+        <!-- SIDEBAR -->
 <div class="sidebar" id="citizenSidebar" role="navigation" aria-label="Citizen navigation" aria-hidden="true" tabindex="0">
     <div class="top sidebar-header">
         <a class="sidebar-brand" href="{{ route('citizen.dashboard') }}" aria-label="BHEAMS home">

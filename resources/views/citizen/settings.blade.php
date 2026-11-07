@@ -103,6 +103,91 @@
         line-height: 1.5;
     }
 
+    .cs-photo {
+        display: block;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+
+    .cs-photo-previews {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cs-photo-previews figure,
+    .cs-photo-compare figure {
+        margin: 0;
+    }
+
+    .cs-photo-previews figcaption,
+    .cs-photo-compare figcaption {
+        margin-bottom: 8px;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .cs-photo-dialog {
+        position: fixed;
+        inset: 0;
+        margin: auto;
+        height: fit-content;
+        width: min(520px, calc(100% - 32px));
+        max-height: 90vh;
+        overflow: auto;
+        box-sizing: border-box;
+        border: 0;
+        border-radius: 14px;
+        padding: 24px;
+        color: #172033;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, .3);
+    }
+
+    .cs-photo-dialog::backdrop {
+        background: rgba(15, 23, 42, .65);
+    }
+
+    .cs-photo-dialog h2 {
+        margin: 0;
+        color: #173b82;
+    }
+
+    .cs-photo-compare {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 32px;
+        margin: 20px 0;
+    }
+
+    .cs-photo-compare figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 130px;
+        text-align: center;
+    }
+
+    .cs-photo-compare img {
+        margin: 0 auto;
+    }
+
+    .cs-photo-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .cs-photo-cancel {
+        background: #e2e8f0;
+        color: #263449;
+    }
+
     .cs-alert {
         padding: 13px 16px;
         margin-bottom: 18px;
@@ -176,7 +261,7 @@
             <h1>My Settings</h1>
 
             <p>
-                Manage accessibility, account security, and email verification.
+                Manage your photo, accessibility, account security, and email verification.
             </p>
         </div>
 
@@ -213,6 +298,63 @@
             </ul>
         </div>
     @endif
+
+    <section class="cs-card">
+        <h2><i class="bx bx-image"></i> My Photo</h2>
+        <div class="cs-body">
+            @if ($citizen)
+                <div class="cs-photo-previews">
+                    <figure>
+                        <figcaption>Current photo</figcaption>
+                        @if ($citizen->photo_path)
+                            <img class="cs-photo" src="{{ route('citizen.photo', $citizen->id) }}" alt="Your current citizen photo">
+                        @else
+                            <p class="cs-hint">You do not have a photo yet.</p>
+                        @endif
+                    </figure>
+                    <figure id="selected-photo-preview" hidden>
+                        <figcaption>New photo preview</figcaption>
+                        <img class="cs-photo" id="selected-photo-image" alt="Preview of your selected photo">
+                    </figure>
+                </div>
+                <form id="citizen-photo-form" action="{{ route('citizen.photo.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="cs-field">
+                        <label for="photo">Choose a new photo</label>
+                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" required aria-describedby="photo-hint">
+                        <p class="cs-hint" id="photo-hint">JPG, PNG, or WEBP; maximum 2 MB. This photo appears on your health ID.</p>
+                        <p class="cs-hint cs-error" id="photo-preview-error" role="alert" hidden></p>
+                    </div>
+                    <button class="cs-submit" type="submit">Update Photo</button>
+                    <dialog class="cs-photo-dialog" id="photo-confirm-dialog" aria-labelledby="photo-confirm-title" aria-describedby="photo-confirm-description">
+                        <h2 id="photo-confirm-title">Confirm photo change</h2>
+                        <p class="cs-hint" id="photo-confirm-description">Review your new photo before saving. It will appear on your health ID.</p>
+                        <div class="cs-photo-compare">
+                            <figure>
+                                <figcaption>Current photo</figcaption>
+                                @if ($citizen->photo_path)
+                                    <img class="cs-photo" src="{{ route('citizen.photo', $citizen->id) }}" alt="Your current citizen photo">
+                                @else
+                                    <p class="cs-hint">No current photo.</p>
+                                @endif
+                            </figure>
+                            <figure>
+                                <figcaption>New photo</figcaption>
+                                <img class="cs-photo" id="confirm-photo-image" alt="Preview of your new citizen photo">
+                            </figure>
+                        </div>
+                        <div class="cs-photo-actions">
+                            <button class="cs-submit cs-photo-cancel" id="photo-confirm-cancel" type="button" autofocus>Cancel</button>
+                            <button class="cs-submit" id="photo-confirm-save" type="button">Confirm change</button>
+                        </div>
+                    </dialog>
+                </form>
+            @else
+                <p class="cs-hint">No citizen record is linked to your account. Please contact your barangay health worker.</p>
+            @endif
+        </div>
+    </section>
 
     {{-- Appearance and Accessibility --}}
     <section class="cs-card">
@@ -293,6 +435,8 @@
             </form>
         </div>
     </section>
+
+    @include('partials.push-notification-settings')
 
     {{-- Change Password --}}
     <section class="cs-card">
@@ -412,4 +556,5 @@
 
 </main>
 
+<script src="{{ asset('js/citizen-photo-settings.js') }}"></script>
 @endsection

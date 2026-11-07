@@ -36,7 +36,7 @@
                         <td>{{ trim((string) $detail) !== '' ? $detail : '—' }}</td>
                         <td>{{ optional($item->deleted_at)->format('M d, Y h:i A') }}</td>
                         <td>
-                            <form method="POST" action="{{ route($restoreRoute, ['type' => $type, 'id' => $item->id]) }}" onsubmit="return confirm('Restore this record?')">
+                            <form method="POST" action="{{ route($restoreRoute, ['type' => $type, 'id' => $item->id]) }}" data-confirm-message="Restore this record?" data-confirm-danger="false">
                                 @csrf
                                 <button type="submit" class="archive-restore" data-ui-action="primary">Restore</button>
                             </form>

@@ -48,6 +48,7 @@ class PublicHealthIdSummaryTest extends TestCase
             $table->unsignedBigInteger('family_id')->nullable();
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->uuid('qr_token')->unique();
+            $table->boolean('public_health_id_enabled')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -217,8 +218,6 @@ class PublicHealthIdSummaryTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $this->createActiveShare($citizen);
-
         $response = $this->getJson(route('health-id.summary', $citizen->qr_token));
 
         $response
@@ -265,8 +264,6 @@ class PublicHealthIdSummaryTest extends TestCase
             'Citizen_Age' => 26,
             'qr_token' => '10d20f39-4eb6-4eef-8ccf-04801cd5fd2e',
         ]);
-        $this->createActiveShare($citizen);
-
         $this->getJson(route('health-id.summary', $citizen->qr_token))
             ->assertOk()
             ->assertJsonPath('latest_diagnosis', null)
@@ -285,7 +282,6 @@ class PublicHealthIdSummaryTest extends TestCase
             'Citizen_Age' => 32,
             'qr_token' => '1f0f09f9-646e-42ef-9718-a2ed32eb26f6',
         ]);
-        $this->createActiveShare($citizen);
         HealthRecord::create([
             'citizen_id' => $citizen->id,
             'diagnosis' => 'Recorded diagnosis',
@@ -325,7 +321,7 @@ class PublicHealthIdSummaryTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_expired_or_revoked_sharing_does_not_expose_health_records(): void
+    public function test_public_access_is_on_by_default_and_citizen_can_turn_it_off(): void
     {
         $citizen = citizens::create([
             'Citizen_FName' => 'Alex',
@@ -337,26 +333,36 @@ class PublicHealthIdSummaryTest extends TestCase
         ]);
         HealthRecord::create([
             'citizen_id' => $citizen->id,
-            'diagnosis' => 'Private diagnosis',
+            'diagnosis' => 'Public diagnosis',
         ]);
 
-        $shareId = $this->createActiveShare($citizen);
-        DB::table('citizen_health_shares')->where('id', $shareId)->update([
-            'expires_at' => now()->subMinute(),
+        $this->assertTrue($citizen->fresh()->public_health_id_enabled);
+        $this->getJson(route('health-id.summary', $citizen->qr_token))
+            ->assertOk()
+            ->assertJsonPath('health_records.0.diagnosis', 'Public diagnosis');
+        $this->get(route('health-id.public', $citizen->qr_token))
+            ->assertOk()
+            ->assertSee('Public diagnosis');
+
+        $user = User::create([
+            'name' => 'Alex Cruz',
+            'email' => 'alex@example.test',
+            'password' => 'password',
+            'role' => User::ROLE_CITIZEN,
+            'citizen_id' => $citizen->id,
+            'must_change_password' => false,
         ]);
 
+        $this->actingAs($user)
+            ->delete(route('citizen.health-sharing.revoke'))
+            ->assertRedirect();
+        $this->assertDatabaseHas('citizens', [
+            'id' => $citizen->id,
+            'public_health_id_enabled' => false,
+        ]);
         $this->getJson(route('health-id.summary', $citizen->qr_token))
             ->assertForbidden()
-            ->assertJsonMissing(['diagnosis' => 'Private diagnosis']);
-
-        DB::table('citizen_health_shares')->where('id', $shareId)->update([
-            'revoked_at' => now(),
-            'expires_at' => now()->addDay(),
-        ]);
-
-        $this->getJson(route('health-id.summary', $citizen->qr_token))
-            ->assertForbidden()
-            ->assertJsonMissing(['diagnosis' => 'Private diagnosis']);
+            ->assertJsonMissing(['diagnosis' => 'Public diagnosis']);
 
         $this->get(route('health-id.public', $citizen->qr_token))
             ->assertOk()
@@ -391,7 +397,7 @@ class PublicHealthIdSummaryTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->post(route('citizen.health-sharing.grant'), ['consent' => '1'])
+            ->post(route('citizen.health-sharing.grant'))
             ->assertRedirect();
 
         $share = DB::table('citizen_health_shares')
@@ -409,8 +415,15 @@ class PublicHealthIdSummaryTest extends TestCase
         $this->delete(route('citizen.health-sharing.revoke'))
             ->assertRedirect();
 
-        $this->assertNotNull(DB::table('citizen_health_shares')->where('id', $share->id)->value('revoked_at'));
+        $this->assertDatabaseHas('citizens', [
+            'id' => $citizen->id,
+            'public_health_id_enabled' => false,
+        ]);
         $this->getJson(route('health-id.summary', $citizen->qr_token))->assertForbidden();
+
+        $this->post(route('citizen.health-sharing.grant'))
+            ->assertRedirect();
+        $this->getJson(route('health-id.summary', $citizen->qr_token))->assertOk();
     }
 
     public function test_bhw_cannot_grant_citizen_sharing(): void
@@ -422,6 +435,7 @@ class PublicHealthIdSummaryTest extends TestCase
             'Citizen_ContactNo' => '555-0105',
             'Citizen_Age' => 36,
             'qr_token' => '1d2f2cbe-74f6-4833-bec9-14e787e64022',
+            'public_health_id_enabled' => false,
         ]);
         $user = User::create([
             'name' => 'Health Worker',
@@ -436,7 +450,10 @@ class PublicHealthIdSummaryTest extends TestCase
             ->postJson(route('citizen.health-sharing.grant'), ['consent' => '1'])
             ->assertForbidden();
 
-        $this->assertDatabaseCount('citizen_health_shares', 0);
+        $this->assertDatabaseHas('citizens', [
+            'id' => $citizen->id,
+            'public_health_id_enabled' => false,
+        ]);
     }
 
     public function test_unknown_uuid_does_not_return_a_citizen_summary(): void
@@ -450,19 +467,23 @@ class PublicHealthIdSummaryTest extends TestCase
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
     }
 
-    public function test_public_health_routes_fail_closed_if_the_sharing_table_is_not_migrated(): void
+    public function test_public_health_routes_do_not_depend_on_the_legacy_sharing_table(): void
     {
         Schema::dropIfExists('citizen_health_shares');
 
-        $this->getJson(route('health-id.summary', 'a430be32-ab13-4781-901a-fbf9e990d8c1'))
-            ->assertStatus(503)
-            ->assertJsonPath('message', 'Health record sharing is temporarily unavailable. Please try again later.')
-            ->assertDontSee('SQLSTATE');
+        $citizen = citizens::create([
+            'Citizen_FName' => 'Riley',
+            'Citizen_LName' => 'Santos',
+            'Citizen_BirthDate' => '1990-01-01',
+            'Citizen_ContactNo' => '555-0106',
+            'Citizen_Age' => 36,
+            'qr_token' => 'a430be32-ab13-4781-901a-fbf9e990d8c1',
+        ]);
 
-        $this->get(route('health-id.public', 'a430be32-ab13-4781-901a-fbf9e990d8c1'))
-            ->assertStatus(503)
-            ->assertSee('Health record sharing is temporarily unavailable.')
-            ->assertDontSee('SQLSTATE');
+        $this->getJson(route('health-id.summary', $citizen->qr_token))->assertOk();
+        $this->get(route('health-id.public', $citizen->qr_token))
+            ->assertOk()
+            ->assertSee('Santos, Riley');
     }
 
     public function test_public_qr_scanner_navigation_works_for_guests_and_authenticated_users(): void

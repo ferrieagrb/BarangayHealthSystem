@@ -421,6 +421,7 @@
 </head>
 
 <body id="appActionControls">
+@include('partials.global-loader')
 
     <main class="password-page">
 

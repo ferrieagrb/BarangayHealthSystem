@@ -71,6 +71,7 @@ class citizens extends Authenticatable
         'family_id',
         'qr_token',
         'photo_path',
+        'public_health_id_enabled',
         'Citizen_Sex',
         'Citizen_Height',
         'Citizen_Weight',
@@ -103,6 +104,7 @@ class citizens extends Authenticatable
             'Citizen_Pregnant' => 'boolean',
             'Citizen_InPills' => 'boolean',
             'Citizen_IsDeceased' => 'boolean',
+            'public_health_id_enabled' => 'boolean',
         ];
     }
 

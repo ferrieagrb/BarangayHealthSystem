@@ -164,7 +164,7 @@
                      data-ui-action="secondary">
                         + Deposit Stock For This Item
                     </button>
-                    <form action="{{ route('supplies.archive-item', $group->first()->id) }}" method="POST" onsubmit="return confirm('Archive this item and all its packs? You can restore them from the Supplies archive.');">
+                    <form action="{{ route('supplies.archive-item', $group->first()->id) }}" method="POST" data-confirm-message="Archive this item and all its packs? You can restore them from the Supplies archive.">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="inventory-button" data-ui-action="danger">Archive Item</button>
@@ -216,7 +216,7 @@
                                     </td>
                                     <td>
                                         @if(auth()->user()->hasWriteAccess('supplies'))
-                                            <form class="inventory-pack-actions" action="{{ url('/supplies/' . $batch->id) }}" method="POST" onsubmit="return confirm('Archive this supply pack? You can restore it from the Supplies archive.');">
+                                            <form class="inventory-pack-actions" action="{{ url('/supplies/' . $batch->id) }}" method="POST" data-confirm-message="Archive this supply pack? You can restore it from the Supplies archive.">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inventory-button" data-ui-action="danger">Archive</button>
@@ -358,7 +358,7 @@
                                     <form
                                         action="{{ route('admin.categories.destroy', $cat->id) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Archive this category? You can restore it from the archive.')"
+                                        data-confirm-message="Archive this category? You can restore it from the archive."
                                     >
                                         @csrf
                                         @method('DELETE')

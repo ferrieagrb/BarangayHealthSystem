@@ -20,6 +20,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @include('partials.favicon')
+    @include('partials.pwa-meta')
 
     <style>
         /* CSS para sa pantay at maayos na alignment ng sidebar icons at text */
@@ -88,70 +89,11 @@
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 </head>
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+@include('partials.global-loader')
 
 @yield('scripts')
     <div class="dashboard">
 
-        <div id="global-loader">
-    <div class="logo-spinner-wrapper">
-        <div class="spinner-ring-blue"></div>
-        <div class="spinner-ring-white"></div>
-        <img src="{{ asset('images/amuyong.png') }}" alt="Logo" class="spinner-logo">
-    </div>
-    <span class="loader-status-text">Processing, please wait...</span>
-</div>
-
-<script>
-    (function() {
-        const loader = document.getElementById('global-loader');
-        if (!loader) return;
-
-        // Native <dialog> modals use the top layer, so the loader is promoted to it as a popover.
-        const supportsPopover = typeof loader.showPopover === 'function';
-        if (supportsPopover) loader.setAttribute('popover', 'manual');
-
-        window.showLoader = function() {
-            loader.classList.add('active');
-            if (supportsPopover) {
-                try { if (!loader.matches(':popover-open')) loader.showPopover(); } catch (e) {}
-            }
-        };
-
-        window.hideLoader = function() {
-            loader.classList.remove('active');
-            if (supportsPopover) {
-                try { if (loader.matches(':popover-open')) loader.hidePopover(); } catch (e) {}
-            }
-        };
-
-        document.addEventListener('submit', function(e) {
-            if (e.defaultPrevented) return;
-            if (e.target.closest('[data-no-loader="true"], .logout-form, .citizen-sidebar-logout')) return;
-            if (e.submitter && e.submitter.closest('[data-no-loader="true"]')) return;
-            showLoader();
-        });
-
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (link && link.href && 
-                link.dataset.noLoader !== 'true' &&
-                link.getAttribute('target') !== '_blank' && 
-                !link.href.startsWith('#') && 
-                !link.href.startsWith('javascript:') &&
-                link.hostname === window.location.hostname) {
-                showLoader();
-            }
-        });
-
-        window.addEventListener('pageshow', function(event) {
-            hideLoader();
-        });
-        
-        window.addEventListener('load', function() {
-            hideLoader();
-        });
-    })();
-</script>
 
     <!-- SIDEBAR -->
     <div class="sidebar" id="bhwSidebar" role="navigation" aria-label="Primary navigation" tabindex="0" style="display: flex; flex-direction: column; height: 100vh;">

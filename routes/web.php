@@ -47,6 +47,7 @@ use App\Http\Controllers\SuperAdmin\AdminAuditLogController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\UserPreferenceController;
 use App\Http\Controllers\PublicAssetController;
+use App\Http\Controllers\PushSubscriptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -159,7 +160,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
         $announcements = Announcement::with('images')->latest()->take(5)->get();
         $citizen = null;
         $maintenanceRecords = collect();
-        $healthShare = null;
+        $publicHealthIdEnabled = false;
 
         if ($user->citizen_id) {
             $citizen = citizens::with([
@@ -176,11 +177,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
                 $maintenanceRecords = MaintenanceRecord::where('citizen_id', $citizen->id)
                     ->latest()
                     ->get();
-                $healthShare = \App\Models\CitizenHealthShare::query()
-                    ->active()
-                    ->where('citizen_id', $citizen->id)
-                    ->latest('granted_at')
-                    ->first();
+                $publicHealthIdEnabled = (bool) $citizen->public_health_id_enabled;
             }
         }
 
@@ -196,7 +193,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
             'maintenanceRecords',
             'qrImage',
             'vaccinationSchedulingEnabled',
-            'healthShare'
+            'publicHealthIdEnabled'
         ));
     })->name('dashboard');
     Route::post('/health-sharing', [CitizenHealthShareController::class, 'grant'])
@@ -245,6 +242,7 @@ Route::middleware(['auth', 'password.changed'])->prefix('citizen')->name('citize
     //  STATIC ROUTE PLACED SAFELY AT THE TOP OF THE PREFIX GROUP
     Route::get('/my-health-card', [CitizenController::class, 'citizenViewECard'])->name('ecard');
     Route::get('/settings', [UserPreferenceController::class, 'edit'])->name('settings');
+    Route::put('/settings/photo', [CitizenController::class, 'updateOwnPhoto'])->name('photo.update');
 
     // Citizen Announcement Details
 Route::get('/announcements/{announcement}', function (\Illuminate\Http\Request $request, \App\Models\Announcement $announcement) {
@@ -317,6 +315,7 @@ Route::middleware(['auth', 'role:bhw', 'password.changed'])->group(function () {
     Route::get('/citizen/{id}', fn ($id) => app(CitizenController::class)->show($id))->name('citizen.show');
     Route::get('/citizendetails/{id}', fn ($id) => app(CitizenController::class)->citizendetails($id))->name('citizendetails');
     Route::delete('/citizen/{id}', fn ($id) => app(CitizenController::class)->destroy($id))->name('citizen.delete');
+    Route::put('/citizen/{id}/photo', [CitizenController::class, 'updatePhoto'])->whereNumber('id')->name('citizen.photo.bhw-update');
     Route::put('/citizen/{id}', fn ($id) => app(CitizenController::class)->update(request(), $id))->name('citizen.update');
 
 
@@ -522,6 +521,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/preferences', [UserPreferenceController::class, 'update'])->name('user.preferences.update');
     Route::put('/settings/password', [UserPreferenceController::class, 'updatePassword'])->name('user.password.update');
+    Route::get('/push-subscriptions', [PushSubscriptionController::class, 'index'])->name('push-subscriptions.index');
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
+    Route::delete('/push-subscriptions/{subscriptionId}', [PushSubscriptionController::class, 'revoke'])->whereNumber('subscriptionId')->name('push-subscriptions.revoke');
 });
 
 // Standard signed email-verification flow for authenticated accounts.

@@ -47,6 +47,7 @@
 @include('partials.button-action-assets')
 </head>
 <body id="appActionControls">
+@include('partials.global-loader')
     @if(!$citizen)
         <main class="access-card">
             <div class="brand-mark" aria-hidden="true" style="margin:0 auto 16px;">▦</div>

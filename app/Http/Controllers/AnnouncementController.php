@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Announcement;
 use App\Models\AnnouncementImage;
+use App\Jobs\DispatchAnnouncementPush;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -77,6 +78,8 @@ class AnnouncementController extends Controller
 
             return $announcement;
         });
+
+        DispatchAnnouncementPush::dispatch($announcement->id);
 
         // Cross-post to Facebook Page if checked
         if ($request->boolean('post_to_facebook')) {

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CitizenHealthShare;
 use App\Models\citizens;
+use App\Models\CitizenHealthShare;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,15 +14,13 @@ class CitizenHealthShareController extends Controller
     {
         $user = $request->user();
         abort_unless($user?->isCitizen() && $user->citizen_id, 403);
-        $request->validate([
-            'consent' => ['accepted'],
-        ]);
 
-        $citizen = citizens::findOrFail($user->citizen_id);
         $now = now();
+        DB::transaction(function () use ($user, $now): void {
+            $citizen = citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen->public_health_id_enabled = true;
+            $citizen->save();
 
-        DB::transaction(function () use ($citizen, $user, $now): void {
-            citizens::whereKey($citizen->id)->lockForUpdate()->firstOrFail();
             CitizenHealthShare::query()
                 ->active()
                 ->where('citizen_id', $citizen->id)
@@ -46,7 +44,10 @@ class CitizenHealthShareController extends Controller
 
         $now = now();
         DB::transaction(function () use ($user, $now): void {
-            citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen = citizens::whereKey($user->citizen_id)->lockForUpdate()->firstOrFail();
+            $citizen->public_health_id_enabled = false;
+            $citizen->save();
+
             CitizenHealthShare::query()->active()->where('citizen_id', $user->citizen_id)
                 ->update(['revoked_at' => $now, 'updated_at' => $now]);
             $latest = CitizenHealthShare::where('citizen_id', $user->citizen_id)

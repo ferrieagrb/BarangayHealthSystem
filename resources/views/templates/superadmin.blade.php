@@ -17,6 +17,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @include('partials.favicon')
+    @include('partials.pwa-meta')
     <script>
     tailwind.config = {
         corePlugins: {
@@ -57,6 +58,7 @@
 
 
 <body data-appearance-role="{{ auth()->user()->role }}" class="theme-{{ $currentTheme }} font-{{ $currentFontSize }}">
+@include('partials.global-loader')
 @yield('scripts')
 <div class="dashboard">
 

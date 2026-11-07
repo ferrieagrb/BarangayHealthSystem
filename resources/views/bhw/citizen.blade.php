@@ -646,6 +646,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ? @json(route('citizen.export.pdf'))
             : @json(route('citizen.export'));
 
+        window.loaderSuppress(1500);
         window.location.href = exportPath + '?' + params.toString();
         closeModal();
     });

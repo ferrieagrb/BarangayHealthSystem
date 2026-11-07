@@ -266,6 +266,7 @@
                 <a
                     href="{{ route('superadmin.system.settings.backup') }}"
                     class="settings-button settings-button-secondary"
+                    data-no-loader
                  data-ui-action="secondary">
                     Download Database Backup
                 </a>

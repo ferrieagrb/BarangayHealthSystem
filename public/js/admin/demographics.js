@@ -113,14 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     root.querySelectorAll('[data-open-tab]').forEach((button) => {
         button.addEventListener('click', () => setTab(button.dataset.openTab));
     });
-    root.querySelectorAll('.citizen-purge-form').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            if (!window.confirm(form.dataset.confirmMessage)) {
-                event.preventDefault();
-            }
-        });
-    });
-
     function updateAssignmentCount(form) {
         const count = form.querySelectorAll('input[name="bhw_ids[]"]:checked').length;
         const countElement = form.querySelector('.assignment-count');
@@ -666,13 +658,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus(`Boundary for ${currentTargetName()} edited. Save to apply the changes.`);
     }
 
-    function chooseMode(nextMode) {
+    async function chooseMode(nextMode) {
         const target = currentTarget();
         if (!target) {
             setStatus('Select a Purok and target before editing the map.', 'error');
             return;
         }
-        if ((boundaryDirty || targetPinDirty) && !window.confirm('Discard unsaved map changes?')) return;
+        if ((boundaryDirty || targetPinDirty) && !(await window.showConfirmation('Discard unsaved map changes?'))) return;
         clearDraftLayer();
         removeTargetPin();
         renderSavedLayers();
@@ -766,8 +758,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus(`${drawingPoints.length} unsaved boundary points remain.`);
     });
 
-    cancelChangesButton.addEventListener('click', () => {
-        if ((boundaryDirty || targetPinDirty) && !window.confirm('Discard unsaved map changes?')) return;
+    cancelChangesButton.addEventListener('click', async () => {
+        if ((boundaryDirty || targetPinDirty) && !(await window.showConfirmation('Discard unsaved map changes?'))) return;
         clearDraftLayer();
         mode = 'pin';
         removeTargetPin();
@@ -817,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const warnings = currentTargetType() === 'subgroup' ? boundaryWarnings(geometry, target) : [];
-        if (warnings.length && !window.confirm(`${warnings.join('\n')}\n\nSave this boundary anyway?`)) return;
+        if (warnings.length && !(await window.showConfirmation(`${warnings.join('\n')}\n\nSave this boundary anyway?`))) return;
         saveBoundaryButton.disabled = true;
         setStatus(`Saving boundary for ${target.name}...`);
         try {
@@ -836,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     deleteBoundaryButton.addEventListener('click', async () => {
         const target = currentTarget();
-        if (!target?.boundary || !window.confirm(`Delete the saved ${currentTargetType()} boundary for ${target.name}? This cannot be undone.`)) return;
+        if (!target?.boundary || !(await window.showConfirmation(`Delete the saved ${currentTargetType()} boundary for ${target.name}? This cannot be undone.`))) return;
         deleteBoundaryButton.disabled = true;
         try {
             await sendJson(mapRoute('BoundaryDelete', target.id), undefined, 'DELETE');
@@ -852,8 +844,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     [purokSelect, targetTypeSelect, subgroupSelect].forEach((select) => {
-        select.addEventListener('change', () => {
-            if ((boundaryDirty || targetPinDirty) && !window.confirm('Discard unsaved map changes?')) {
+        select.addEventListener('change', async () => {
+            if ((boundaryDirty || targetPinDirty) && !(await window.showConfirmation('Discard unsaved map changes?'))) {
                 refreshTarget();
                 return;
             }

@@ -11,6 +11,7 @@
 @include('partials.button-action-assets')
 </head>
 <body id="appActionControls">
+@include('partials.global-loader')
 
     <div class="login-card">
         <div class="top-nav">

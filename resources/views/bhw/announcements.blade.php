@@ -108,7 +108,7 @@
 
             <div class="announcement-card-actions">
                 <button type="button" class="btn-secondary announcement-view-button" data-ui-action="secondary">View Details</button>
-                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" onsubmit="return confirm('Delete this announcement? It will also be removed from Facebook. This cannot be undone.');">
+                <form method="POST" action="{{ route('announcements.destroy', $a->id) }}" onclick="event.stopPropagation();" data-confirm-message="Delete this announcement? It will also be removed from Facebook. This cannot be undone.">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn-danger" data-ui-action="danger">Delete</button>
