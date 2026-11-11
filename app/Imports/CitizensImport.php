@@ -13,11 +13,15 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\BeforeSheet;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsEmptyRows
+class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, WithColumnLimit, WithEvents
 {
+    public const HEADING_SEARCH_ROWS = 20;
+
     // Letters and spaces only; a final Jr. or Sr. may contain a period.
     private const NAME_PATTERN = '/^(?:[\p{L}][\p{L}\p{M}]*(?: [\p{L}][\p{L}\p{M}]*)*(?: (?:jr|sr)\.)?|(?:jr|sr)\.)$/iu';
     private const DATE_FORMATS = ['Y-m-d', 'Y/m/d', 'n/j/Y', 'n-j-Y', 'n.j.Y', 'F j, Y', 'F j Y', 'M j, Y', 'M j Y', 'j F Y', 'j M Y'];
@@ -46,6 +50,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     ];
 
     private int $headingRowNumber;
+    private string $endColumn = 'A';
 
     public function __construct(int $headingRowNumber = 1)
     {
@@ -56,6 +61,20 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     public function headingRow(): int
     {
         return $this->headingRowNumber;
+    }
+
+    public function endColumn(): string
+    {
+        return $this->endColumn;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            BeforeSheet::class => function (BeforeSheet $event): void {
+                $this->endColumn = $event->getSheet()->getDelegate()->getHighestDataColumn();
+            },
+        ];
     }
 
     public static function canonicalHeader(mixed $header): ?string
@@ -73,7 +92,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     /** Finds the row (within the first 20) holding the required First Name and Last Name headers, in any column order. */
     public static function detectHeadingRow(array $rows): int
     {
-        foreach (array_slice($rows, 0, 20, true) as $index => $cells) {
+        foreach (array_slice($rows, 0, self::HEADING_SEARCH_ROWS, true) as $index => $cells) {
             $found = collect($cells)->map(fn ($cell) => self::canonicalHeader($cell))->filter()->unique();
             if ($found->contains('first_name') && $found->contains('last_name')) {
                 return $index + 1;
@@ -85,6 +104,10 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
 
     public function model(array $row)
     {
+        if (!array_filter($row)) {
+            return null;
+        }
+
         $normalized = [];
         foreach ($row as $key => $value) {
             $canonical = self::canonicalHeader($key);
