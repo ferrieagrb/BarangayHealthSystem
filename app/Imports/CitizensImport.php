@@ -18,7 +18,8 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsEmptyRows
 {
-    private const NAME_PATTERN = '/^[\p{L}\p{M}][\p{L}\p{M}\s.\'\-]*$/u';
+    // Letters and spaces only; a final Jr. or Sr. may contain a period.
+    private const NAME_PATTERN = '/^(?:[\p{L}][\p{L}\p{M}]*(?: [\p{L}][\p{L}\p{M}]*)*(?: (?:jr|sr)\.)?|(?:jr|sr)\.)$/iu';
     private const DATE_FORMATS = ['Y-m-d', 'Y/m/d', 'n/j/Y', 'n-j-Y', 'n.j.Y', 'F j, Y', 'F j Y', 'M j, Y', 'M j Y', 'j F Y', 'j M Y'];
     private const MAX_ISSUES = 25;
     private const PUROK_PATTERN = '/^(purok\s*)?\d+$/i';
@@ -106,7 +107,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
 
         // Required values must be valid, otherwise the row cannot be imported at all.
         $middleName = $this->text($row['middle_name'] ?? $row['Middle Name'] ?? $row['MIDDLE_NAME'] ?? '');
-        foreach (['First name' => $firstName, 'Middle name' => $middleName, 'Last name' => $lastName] as $label => $value) {
+        foreach (['First name' => $firstName, 'Last name' => $lastName] as $label => $value) {
             if ($value === '') {
                 continue;
             }
@@ -114,8 +115,8 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
                 $this->skipRow("{$entry}: {$label} \"{$value}\" looks like jumbled letters");
                 return null;
             }
-            if ($label !== 'Middle name' && !$this->validName($value)) {
-                $this->skipRow("{$entry}: {$label} \"{$value}\" has an invalid format");
+            if (!$this->validName($value)) {
+                $this->skipRow("{$entry}: {$label} \"{$value}\" must contain letters and spaces only (a period is allowed only in a final Jr. or Sr.)");
                 return null;
             }
         }
@@ -134,7 +135,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         }
 
         // Optional values: a wrongly formatted value is dropped, the rest of the row is still imported.
-        if ($middleName !== '' && !$this->validName($middleName)) {
+        if ($middleName !== '' && (!$this->validName($middleName) || $this->looksJumbled($middleName))) {
             $this->ignoreValue("{$entry}: Middle name \"{$middleName}\" has an invalid format and was left blank");
             $middleName = '';
         }
@@ -192,6 +193,9 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
         }
 
         $purokName = $purok?->name;
+        $firstName = mb_convert_case($firstName, MB_CASE_TITLE, 'UTF-8');
+        $middleName = mb_convert_case($middleName, MB_CASE_TITLE, 'UTF-8');
+        $lastName = mb_convert_case($lastName, MB_CASE_TITLE, 'UTF-8');
 
         return DB::transaction(function () use ($firstName, $lastName, $middleName, $birthDate, $age, $sex, $purokName, $subgroup, $contact) {
             $citizen = citizens::create([
@@ -243,7 +247,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, Skips
     // Accepts 09XXXXXXXXX, 9XXXXXXXXX (Excel drops the leading zero), 639XXXXXXXXX and +639XXXXXXXXX, with spaces, dashes or parentheses.
     private function normalizeContact(string $value): ?string
     {
-        if (!preg_match('/^\+?[\d\s\-().]+$/', $value)) {
+        if (!preg_match('/^\+?[0-9\s\-()]+$/', $value)) {
             return null;
         }
 
