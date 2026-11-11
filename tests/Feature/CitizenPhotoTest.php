@@ -102,6 +102,38 @@ class CitizenPhotoTest extends TestCase
         });
     }
 
+    public function test_bhw_can_create_citizens_without_contact_number_or_email(): void
+    {
+        $migration = require database_path('migrations/2026_11_12_000001_make_user_email_optional.php');
+        $migration->up();
+        // Start with the original non-nullable column to exercise the schema fix.
+        Schema::table('citizens', function (Blueprint $table): void {
+            $table->string('Citizen_ContactNo')->nullable(false)->change();
+        });
+        $contactMigration = require database_path('migrations/2026_11_12_000002_make_citizen_contact_number_optional.php');
+        $contactMigration->up();
+        $bhw = $this->user('bhw');
+        $purok = DB::table('puroks')->insertGetId(['name' => 'Purok 1']);
+        $subgroup = DB::table('purok_subgroups')->insertGetId([
+            'name' => 'Group A', 'purok_id' => $purok, 'user_id' => $bhw->id,
+        ]);
+
+        foreach (['Jamie', 'Alex'] as $firstName) {
+            $this->actingAs($bhw)->post(route('citizen.store'), [
+                'Citizen_FName' => $firstName, 'Citizen_LName' => 'Rivera',
+                'Citizen_BirthDate' => '1990-04-02', 'Citizen_Sex' => 'Female',
+                'Citizen_Purok' => 'Purok 1', 'subgroup_id' => $subgroup,
+                'Citizen_ContactNo' => '', 'email' => '',
+            ])->assertRedirect(route('citizenlist'))->assertSessionHasNoErrors();
+
+            $citizen = citizens::where('Citizen_FName', $firstName)->firstOrFail();
+            $this->assertNull($citizen->Citizen_ContactNo);
+            $account = User::where('citizen_id', $citizen->id)->firstOrFail();
+            $this->assertNull($account->email);
+            $this->assertNotEmpty($account->username);
+        }
+    }
+
     public function test_bhw_can_create_a_citizen_with_a_private_photo(): void
     {
         $bhw = $this->user('bhw');

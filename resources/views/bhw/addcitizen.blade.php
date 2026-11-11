@@ -60,6 +60,7 @@
     <form method="POST"
           action="{{ route('citizen.store') }}"
           id="citizen-form"
+          novalidate
           enctype="multipart/form-data">
         @csrf
 
@@ -148,12 +149,11 @@
             </div>
 
             <div class="form-group">
-                <label for="contact">Contact Number</label>
+                <label for="contact">Contact Number (Optional)</label>
                 <input
                     type="text"
                     name="Citizen_ContactNo"
                     id="contact"
-                    required
                     inputmode="numeric"
                     autocomplete="off"
                     maxlength="11"
@@ -300,12 +300,11 @@
             <h3 class="citizen-section-title" style="grid-column: 1 / -1;">Portal Login Credentials</h3>
 
             <div class="form-group">
-                <label for="email">Email Address (For Login)</label>
+                <label for="email">Email Address (Optional)</label>
                 <input
                     type="email"
                     name="email"
                     id="email"
-                    required
                     placeholder="resident@email.com"
                     value="{{ old('email') }}"
                     autocomplete="off"
@@ -323,6 +322,7 @@
             <button type="submit" class="btn-primary" data-ui-action="primary">Save Citizen & Create Account</button>
             <a href="{{ route('citizenlist') }}" class="btn-secondary" data-ui-action="secondary">Cancel</a>
         </div>
+        <p id="citizenSaveError" role="alert" hidden style="margin:12px 0 0;color:#b91c1c;"></p>
 
 
     </form>
@@ -352,24 +352,49 @@
     .family-option:hover { border-color:#2563eb; background:#eff6ff; }
     .family-picker-close { border:0; background:transparent; font-size:24px; cursor:pointer; }
     .family-create-form { display:grid; gap:12px; margin-top:20px; padding-top:20px; border-top:1px solid #e5e7eb; }
+    #familyPickerModal .family-picker-box { width:min(600px,100%); padding:24px; background:var(--theme-surface,#fff); color:var(--theme-text,#172b4d); }
+    #familyPickerModal .family-picker-header { align-items:flex-start; margin-bottom:20px; }
+    #familyPickerTitle { font-size:22px; line-height:1.4; }
+    .family-picker-description { margin:5px 0 0; color:var(--theme-muted,#64748b); font-size:13px; line-height:1.5; }
+    #familyPickerModal #familySearch { display:block; width:100%; height:46px; margin:0 0 16px; padding:10px 14px; box-sizing:border-box; border:1px solid var(--theme-border,#dce4ee); border-radius:9px; background:var(--theme-surface,#fff); color:var(--theme-text,#172b4d); font:inherit; font-size:14px; }
+    #familyPickerModal #familySearch:focus { outline:2px solid #93b6ed; outline-offset:2px; }
+    #familyPickerModal .family-option { display:flex !important; justify-content:space-between !important; width:100%; min-height:76px; padding:14px 16px !important; gap:16px; border:1px solid var(--theme-border,#dce4ee) !important; border-radius:10px; background:var(--theme-surface,#fff) !important; color:var(--theme-text,#172b4d) !important; text-align:left !important; box-shadow:none !important; }
+    #familyPickerModal .family-option[hidden] { display:none !important; }
+    #familyPickerModal .family-option:hover,
+    #familyPickerModal .family-option:focus-visible { background:var(--theme-hover,#e8eef7) !important; border-color:#7298cf !important; }
+    #familyPickerModal .family-option > span:first-child { flex:1; min-width:0; overflow-wrap:anywhere; }
+    #familyPickerModal .family-option strong { display:block; font-size:14px; font-weight:600; line-height:1.5; }
+    #familyPickerModal .family-option small { display:block; margin-top:4px; color:var(--theme-muted,#64748b); font-size:12px; }
+    #familyPickerModal .family-option > span:last-child { flex:none; padding:6px 10px; border-radius:6px; background:var(--theme-raised,#f1f5f9); color:var(--theme-link,#234f9b); font-size:12px; font-weight:600; }
+    #familyPickerModal .family-picker-close { flex:none; width:36px; min-height:36px; padding:0 !important; }
+    .family-picker-footer { display:flex; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--theme-border,#dce4ee); }
+    #familyPickerEmpty { padding:24px 12px; margin:0; text-align:center; color:var(--theme-muted,#64748b); font-size:14px; }
+    #familyPickerEmpty[hidden] { display:none; }
+    @media(max-width:480px) { #familyPickerModal .family-picker-box { padding:18px; } #familyPickerModal .family-option { padding:12px !important; gap:10px; } }
 </style>
 
 <div class="family-picker-modal" id="familyPickerModal" aria-hidden="true">
     <div class="family-picker-box" role="dialog" aria-modal="true" aria-labelledby="familyPickerTitle">
         <div class="family-picker-header">
-            <h2 id="familyPickerTitle" style="margin:0;">Select Family</h2>
+            <div>
+                <h2 id="familyPickerTitle" style="margin:0;">Select Family</h2>
+                <p class="family-picker-description">Choose the citizen's household.</p>
+            </div>
             <button type="button" class="family-picker-close" id="closeFamilyPicker" aria-label="Close" data-ui-action="secondary">&times;</button>
         </div>
-        <input type="search" id="familySearch" class="form-control" placeholder="Search family name...">
+        <input type="search" id="familySearch" class="form-control" placeholder="Search family name or ID..." aria-label="Search family name or ID" autocomplete="off">
         <div class="family-picker-list" id="familyPickerList">
             @foreach($families as $family)
                 <button type="button" class="family-option" data-family-id="{{ $family->id }}" data-family-label="{{ $family->family_code }} · {{ $family->family_name }} - {{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}" data-purok="{{ $family->purok->name ?? '' }}" data-subgroup="{{ $family->subgroup->id ?? '' }}" data-subgroup-name="{{ $family->subgroup->name ?? '' }}" data-ui-action="secondary">
-                    <span><strong>{{ $family->family_code }} · {{ $family->family_name }}</strong><br><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
+                    <span><strong>{{ $family->family_code }} · {{ $family->family_name }}</strong><small>{{ $family->purok->name ?? 'No Purok' }} / {{ $family->subgroup->name ?? 'No subgroup' }}</small></span>
                     <span>Select</span>
                 </button>
             @endforeach
         </div>
-        <button type="button" class="btn-primary" id="openNewFamilyModal" style="margin-top:16px;" data-ui-action="primary">+ Add New Family</button>
+        <p id="familyPickerEmpty" role="status" @if($families->isNotEmpty()) hidden @endif>No families found.</p>
+        <div class="family-picker-footer">
+            <button type="button" class="btn-primary" id="openNewFamilyModal" data-ui-action="primary">+ Add New Family</button>
+        </div>
     </div>
 </div>
 
@@ -469,7 +494,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
     function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
 
-    document.getElementById('openFamilyPicker').addEventListener('click', () => openModal(familyPickerModal));
+    document.getElementById('openFamilyPicker').addEventListener('click', () => {
+        openModal(familyPickerModal);
+        document.getElementById('familySearch').focus();
+    });
+    familyPickerModal.addEventListener('click', event => {
+        if (event.target === familyPickerModal) closeModal(familyPickerModal);
+    });
+    familyPickerModal.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeModal(familyPickerModal);
+            document.getElementById('openFamilyPicker').focus();
+        }
+    });
     document.getElementById('openManualAssignment').addEventListener('click', () => { useManualAssignment(); openModal(manualAssignmentModal); });
     document.getElementById('closeManualAssignment').addEventListener('click', () => closeModal(manualAssignmentModal));
     document.getElementById('closeFamilyPicker').addEventListener('click', () => closeModal(familyPickerModal));
@@ -492,6 +529,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#familyPickerList .family-option').forEach(option => {
             option.hidden = !option.textContent.toLowerCase().includes(term);
         });
+        document.getElementById('familyPickerEmpty').hidden = !!document.querySelector('#familyPickerList .family-option:not([hidden])');
     });
 
     document.getElementById('quickFamilyForm').addEventListener('submit', async function (event) {
@@ -566,6 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pillsField = document.getElementById('pillsField');
     const pillsInput = document.getElementById('Citizen_InPills');
     const citizenForm = document.getElementById('citizen-form');
+    const saveError = document.getElementById('citizenSaveError');
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photoPreview');
     const photoPreviewEmpty = document.getElementById('photoPreviewEmpty');
@@ -678,6 +717,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Intercepts form submission to open custom centered modal
     citizenForm.addEventListener('submit', function(e) {
+        saveError.hidden = true;
+        if (!citizenForm.checkValidity()) {
+            e.preventDefault();
+            const invalid = citizenForm.querySelector(':invalid');
+            const label = invalid?.labels?.[0]?.textContent.trim() || 'Required field';
+            saveError.textContent = `${label}: ${invalid?.validationMessage || 'Please check this field.'}`;
+            saveError.hidden = false;
+            citizenForm.reportValidity();
+            return;
+        }
         if (!isFormVerified) {
             e.preventDefault();
 
@@ -686,8 +735,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const family = familyDisplay.value;
             const manualAssignment = purokInput.value && subgroupInput.value;
 
-            if(!firstName || !lastName || (!family && !manualAssignment)) {
-                citizenForm.reportValidity();
+            if (!familyIdInput.value && !manualAssignment) {
+                saveError.textContent = 'Select a family, or click Assign without family and choose a Purok and subgroup before saving.';
+                saveError.hidden = false;
+                assignmentStatus.textContent = saveError.textContent;
+                document.getElementById('openManualAssignment').focus();
+                saveError.scrollIntoView({ block: 'center', behavior: 'smooth' });
                 return;
             }
 
@@ -703,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isFormVerified = true;
         modal.style.display = 'none';
         if (window.showLoader) showLoader();
-        citizenForm.submit();
+        citizenForm.requestSubmit();
     });
 
     // If user clicks "Cancel" inside the modal, hide the modal and stay on page
