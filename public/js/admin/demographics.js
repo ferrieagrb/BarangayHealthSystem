@@ -8,6 +8,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const root = document.getElementById('demographicsApp');
     if (!root) return;
 
+    root.querySelectorAll('.bhw-assignment-dialog').forEach(dialog => {
+        const boxes = [...dialog.querySelectorAll('input[type="checkbox"]')];
+        let previous = [];
+        const summary = root.querySelector(`[data-assignment-summary="${dialog.dataset.bhwId}"]`);
+        const updateSummary = () => {
+            const selected = boxes.filter(box => box.checked);
+            summary.textContent = selected.length ? selected.map(box => box.dataset.areaLabel).join(', ') : 'No assigned subgroups';
+        };
+        root.querySelector(`[data-open-assignment="${dialog.dataset.bhwId}"]`).addEventListener('click', () => {
+            previous = boxes.map(box => box.checked);
+            dialog.showModal();
+        });
+        const cancel = () => {
+            boxes.forEach((box, index) => { box.checked = previous[index]; });
+            dialog.close();
+        };
+        dialog.addEventListener('cancel', event => { event.preventDefault(); cancel(); });
+        dialog.querySelectorAll('[data-cancel-assignment]').forEach(button => button.addEventListener('click', cancel));
+        dialog.querySelector('[data-apply-assignment]').addEventListener('click', () => {
+            updateSummary();
+            document.getElementById('assignmentDraftStatus').textContent = 'Unsaved changes. Click Save all assignments when ready.';
+            dialog.close();
+        });
+        dialog.querySelectorAll('[data-select-purok]').forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('fieldset').querySelectorAll('input[type="checkbox"]').forEach(box => { box.checked = true; });
+            });
+        });
+        dialog.addEventListener('keydown', event => {
+            if (event.key === 'Enter' && event.target.matches('input')) event.preventDefault();
+        });
+        updateSummary();
+    });
+
     const data = window.demographicsMapData || { puroks: [], subgroups: [], routes: {} };
     const tabs = [...root.querySelectorAll('.demographics-tab')];
     const panels = [...root.querySelectorAll('.demographics-panel')];

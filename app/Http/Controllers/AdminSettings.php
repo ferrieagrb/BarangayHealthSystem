@@ -180,6 +180,37 @@ class AdminSettings extends Controller
         return back()->with('success', $message)->with('demographics_tab', 'puroks');
     }
 
+    public function updateBhwAssignments(Request $request)
+    {
+        $validated = $request->validate([
+            'assignments' => ['required', 'array'],
+            'assignments.*.present' => ['required', 'in:1'],
+            'assignments.*.subgroup_ids' => ['sometimes', 'array'],
+            'assignments.*.subgroup_ids.*' => ['integer', Rule::exists('purok_subgroups', 'id')->whereNull('deleted_at')],
+        ]);
+        $assignments = $validated['assignments'];
+        $bhwIds = User::where('role', 'bhw')->whereIn('id', array_keys($assignments))->pluck('id');
+        if ($bhwIds->count() !== count($assignments)) {
+            throw ValidationException::withMessages(['assignments' => 'Only active BHW users can be assigned.']);
+        }
+
+        DB::transaction(function () use ($assignments) {
+            foreach (PurokSubgroup::orderBy('id')->lockForUpdate()->get() as $subgroup) {
+                $ids = $subgroup->bhws()->pluck('users.id')->all();
+                // Preserve assignments created before the multiple-BHW relationship.
+                if (!$ids && $subgroup->user_id) $ids[] = $subgroup->user_id;
+                foreach ($assignments as $bhwId => $selection) {
+                    $ids = array_values(array_filter($ids, fn ($id) => (int) $id !== (int) $bhwId));
+                    if (in_array($subgroup->id, $selection['subgroup_ids'] ?? [])) $ids[] = (int) $bhwId;
+                }
+                $subgroup->bhws()->sync($ids);
+                $subgroup->update(['user_id' => $ids[0] ?? null]);
+            }
+        });
+
+        return back()->with('demographics_tab', 'subgroups')->with('success', 'All BHW assignments saved successfully.');
+    }
+
     public function storeSubgroup(Request $request)
     {
         $request->validate([

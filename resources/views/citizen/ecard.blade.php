@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
-<link rel="stylesheet" href="{{ asset('css/bhw/ecard.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/ecard.css') }}?v={{ filemtime(public_path('css/bhw/ecard.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/health-card.css') }}">
 @endsection
 
@@ -294,7 +294,7 @@ function printCitizenSection(section) {
     citizenPrintPageRule = document.createElement('style');
     citizenPrintPageRule.id = 'citizen-print-page-size';
     citizenPrintPageRule.textContent = section === 'id'
-        ? '@page { size: 85.60mm 53.98mm; margin: 0; }'
+        ? '@page { size: auto; margin: 0; }'
         : '@page { size: A4 landscape; margin: 8mm; }';
     document.head.appendChild(citizenPrintPageRule);
 

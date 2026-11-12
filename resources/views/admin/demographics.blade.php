@@ -2,7 +2,7 @@
 
 @section('CSSown')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<link rel="stylesheet" href="{{ asset('css/admin/demographics.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/demographics.css') }}?v={{ filemtime(public_path('css/admin/demographics.css')) }}">
 @endsection
 
 @section('content')
@@ -119,7 +119,7 @@
             <div class="section-heading subgroup-section-header subgroup-create-header">
                 <div>
                     <h2>Create a Subgroup</h2>
-                    <p>Choose a parent Purok and optionally assign one or more BHWs.</p>
+                    <p>Choose a parent Purok and enter the subgroup details.</p>
                 </div>
                 <span class="required-fields-note">* Required fields</span>
             </div>
@@ -131,32 +131,6 @@
                         <label class="field"><span>Subgroup name <b aria-hidden="true">*</b></span><input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. P1A, Sector 3" maxlength="255" required></label>
                         <label class="field"><span>Description <small>(optional)</small></span><input type="text" name="description" value="{{ old('description') }}" placeholder="Optional area notes or landmarks" maxlength="2000"></label>
                     </div>
-                    <div class="field bhw-selector">
-                        <div class="create-bhw-heading">
-                            <div>
-                                <span>Assign BHWs <small>(optional, select all that apply)</small></span>
-                                <p>Selected health workers will be primary responders for this subgroup area.</p>
-                            </div>
-                            <div class="create-bhw-tools">
-                                <span><strong class="assignment-count">0</strong> selected</span>
-                                <button type="button" class="text-button select-all-bhws">Select All</button>
-                            </div>
-                        </div>
-                        <label class="bhw-search-field">
-                            <input type="search" class="bhw-search-input" placeholder="Filter BHW list..." aria-label="Filter available BHWs">
-                        </label>
-                        <div class="bhw-checklist create-bhw-checklist">
-                        @forelse($bhws as $bhw)
-                            <label class="bhw-option" data-bhw-name="{{ $bhw->name ?: $bhw->email }}">
-                                <span class="bhw-name">{{ $bhw->name ?: $bhw->email }}</span>
-                                <input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}" @checked(in_array($bhw->id, old('bhw_ids', [])))>
-                            </label>
-                        @empty
-                            <p class="empty-state">No BHW accounts available.</p>
-                        @endforelse
-                        <p class="empty-state bhw-no-search-results" hidden>No BHWs match your search.</p>
-                        </div>
-                    </div>
                     <div class="subgroup-create-footer">
                         <button type="submit" class="btn btn-primary"><i class="bx bx-plus-circle" aria-hidden="true"></i> Add Subgroup</button>
                     </div>
@@ -164,11 +138,49 @@
             </form>
         </div>
 
+        <section class="demographics-card">
+            <div class="section-heading"><div><h2>BHW User List</h2><p>Choose coverage using Assignment, then save all user assignments together.</p></div></div>
+            <form action="{{ route('admin.bhw-assignments.update') }}" method="POST" id="bhwAssignmentsForm">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="demographics_tab" value="subgroups">
+                @forelse($bhws as $bhw)
+                    @php
+                        $assignedIds = $subgroups->filter(fn ($group) => $group->bhws->contains('id', $bhw->id) || (!$group->bhws->count() && $group->user_id == $bhw->id))->pluck('id')->all();
+                        $selectedIds = old('assignments.'.$bhw->id.'.subgroup_ids', old('assignments.'.$bhw->id.'.present') ? [] : $assignedIds);
+                    @endphp
+                    <article class="bhw-user-row">
+                        <div><strong>{{ $bhw->name ?: $bhw->email }}</strong><small>{{ $bhw->email }}</small><small data-assignment-summary="{{ $bhw->id }}"></small></div>
+                        <input type="hidden" name="assignments[{{ $bhw->id }}][present]" value="1">
+                        <button type="button" class="btn btn-secondary" data-open-assignment="{{ $bhw->id }}">Assignment</button>
+                    </article>
+                    <dialog class="bhw-assignment-dialog" id="bhwAssignment-{{ $bhw->id }}" aria-labelledby="bhwAssignmentTitle-{{ $bhw->id }}" data-bhw-id="{{ $bhw->id }}">
+                        <div class="section-heading assignment-dialog-heading"><div><h2 id="bhwAssignmentTitle-{{ $bhw->id }}">Assignment: {{ $bhw->name ?: $bhw->email }}</h2><p>Select all subgroups covered by this BHW.</p></div><button type="button" class="assignment-dialog-close" data-cancel-assignment data-ui-action="secondary" aria-label="Close assignment">&times;</button></div>
+                        <div class="assignment-area-list">
+                            @foreach($puroks as $purok)
+                                <fieldset class="assignment-purok"><legend>{{ $purok->name }}</legend>
+                                    <button type="button" class="text-button" data-select-purok data-ui-action="secondary">Select all</button>
+                                    @forelse($subgroups->where('purok_id', $purok->id) as $group)
+                                        <label class="assignment-area-option"><input type="checkbox" name="assignments[{{ $bhw->id }}][subgroup_ids][]" value="{{ $group->id }}" data-area-label="{{ $purok->name }} / {{ $group->name }}" @checked(in_array($group->id, $selectedIds))> <span>{{ $group->name }}</span></label>
+                                    @empty
+                                        <p class="empty-state">No subgroups in this Purok.</p>
+                                    @endforelse
+                                </fieldset>
+                            @endforeach
+                        </div>
+                        <div class="record-actions"><button type="button" class="btn btn-secondary" data-cancel-assignment>Cancel</button><button type="button" class="btn btn-primary" data-apply-assignment>Apply selection</button></div>
+                    </dialog>
+                @empty
+                    <p class="empty-state">No BHW accounts available.</p>
+                @endforelse
+                <div class="assignment-save-row"><span role="status" id="assignmentDraftStatus">Save all assignments to keep your changes.</span><button type="submit" class="btn btn-primary" @disabled($bhws->isEmpty())>Save all assignments</button></div>
+            </form>
+        </section>
         <div class="demographics-card subgroup-section-card">
             <div class="section-heading subgroup-section-header subgroup-list-header">
                 <div class="subgroup-list-title">
-                    <h2>Subgroups &amp; Assignments</h2>
-                    <p>Assignments are stored independently; saving one subgroup will not affect another.</p>
+                    <h2>Manage Subgroups</h2>
+                    <p>Edit subgroup details here. Manage BHW coverage in the user list above.</p>
                 </div>
                 <div class="subgroup-list-filters">
                     <label class="subgroup-filter-search">
@@ -207,24 +219,6 @@
                                 <label class="field"><span>Parent Purok</span><select name="purok_id" required>@foreach($puroks as $purok)<option value="{{ $purok->id }}" {{ $subgroup->purok_id == $purok->id ? 'selected' : '' }}>{{ $purok->name }}</option>@endforeach</select></label>
                                 <label class="field"><span>Subgroup name</span><input type="text" name="name" value="{{ $subgroup->name }}" maxlength="255" required></label>
                                 <label class="field"><span>Description</span><input type="text" name="description" value="{{ $subgroup->description }}" maxlength="2000" placeholder="Optional"></label>
-                            </div>
-                            <div class="bhw-assignment">
-                                <div class="assignment-heading"><strong>Assigned BHWs <span class="assignment-count">{{ $subgroup->bhws->count() }}</span></strong><div><button type="button" class="text-button select-all-bhws">Select all</button><button type="button" class="text-button clear-bhws">Clear</button></div></div>
-                                <input type="hidden" name="bhw_ids_present" value="1">
-                                <label class="bhw-search-field subgroup-bhw-search">
-                                    <input type="search" class="bhw-search-input" placeholder="Filter BHW list..." aria-label="Filter BHWs for {{ $subgroup->name }}">
-                                </label>
-                                <div class="bhw-checklist">
-                                    @forelse($bhws as $bhw)
-                                        <label class="bhw-option" data-bhw-name="{{ $bhw->name ?: $bhw->email }}">
-                                            <span class="bhw-name">{{ $bhw->name ?: $bhw->email }}</span>
-                                            <input type="checkbox" name="bhw_ids[]" value="{{ $bhw->id }}" {{ $subgroup->bhws->contains('id', $bhw->id) || (!$subgroup->bhws->count() && $subgroup->user_id == $bhw->id) ? 'checked' : '' }}>
-                                        </label>
-                                    @empty
-                                        <p class="empty-state">No BHW accounts available.</p>
-                                    @endforelse
-                                    <p class="empty-state bhw-no-search-results" hidden>No BHWs match your search.</p>
-                                </div>
                             </div>
                             <div class="subgroup-record-footer">
                                 <div class="record-meta">
