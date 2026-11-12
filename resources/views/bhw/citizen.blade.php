@@ -39,9 +39,12 @@
 @section('content')
 <div class="bhw-citizen-page">
 
-{{-- SUCCESS POPUP --}}
-@if($errors->has('confirm_password') || $errors->has('password'))
-<div role="alert" style="margin:0 0 14px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;">
+{{-- FORM AND IMPORT ERRORS --}}
+@if($errors->any() || session('error'))
+<div role="alert" aria-live="assertive" style="margin:0 0 14px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;">
+    @if(session('error'))
+        <div>{{ session('error') }}</div>
+    @endif
     @foreach($errors->all() as $error)
         <div>{{ $error }}</div>
     @endforeach

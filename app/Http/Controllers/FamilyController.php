@@ -11,6 +11,8 @@ use App\Services\BhwCitizenAccess;
 use App\Services\FamilyCodeGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class FamilyController extends Controller
 {
@@ -83,14 +85,29 @@ class FamilyController extends Controller
             ->groupBy('subgroup_id')
             ->pluck('total', 'subgroup_id');
 
+        // Keep overview counts independent of list filters, within the user's scope.
+        $overview = (clone $familiesQuery)->withCount('members')->get();
+        $familyOverview = [
+            ['Total Families', $overview->count(), 'Registered households'],
+            ['Family Members', $overview->sum('members_count'), 'Citizens assigned to households'],
+            ['With Family Head', $overview->filter(fn ($family) => $family->members->contains('id', $family->head_id))->count(), 'Households with an assigned head'],
+            ['New Families', $overview->where('created_at', '>=', now()->subDays(14))->count(), 'Registered in the last 14 days'],
+        ];
+
         $request = request();
         $search = trim((string) $request->query('search', ''));
         $subgroupFilter = $request->query('subgroup_id');
 
         $familiesQuery->when($search !== '', function ($query) use ($search) {
-            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search) . '%';
-            $query->where(fn ($q) => $q->where('families.family_name', 'like', $like)
-                ->orWhere('families.family_code', 'like', $like));
+            $query->whereHas('members', function ($members) use ($search) {
+                // Match every name token against the same citizen, in any name order.
+                foreach (preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) as $token) {
+                    $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $token) . '%';
+                    $members->where(fn ($name) => $name->where('Citizen_FName', 'like', $like)
+                        ->orWhere('Citizen_MName', 'like', $like)
+                        ->orWhere('Citizen_LName', 'like', $like));
+                }
+            });
         });
         $familiesQuery->when($subgroupFilter, fn ($query) => $query->where('families.subgroup_id', $subgroupFilter));
 
@@ -117,24 +134,58 @@ class FamilyController extends Controller
             ->whereNull('family_id')
             ->get();
 
-        return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens', 'subgroupCounts', 'search', 'subgroupFilter'));
+        return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens', 'subgroupCounts', 'search', 'subgroupFilter', 'familyOverview'));
     }
 
     public function store(Request $request)
     {
         $this->authorizeFamilyWrite();
 
-        $request->validate([
-            'family_name' => 'required|string|max:255',
+        $validated = $request->validate([
             'subgroup_id' => 'required|exists:purok_subgroups,id',
+            'citizen_ids' => 'required|array|min:1',
+            'citizen_ids.*' => 'required|integer|distinct|exists:citizens,id',
         ]);
 
-        $subgroup = PurokSubgroup::findOrFail($request->subgroup_id);
+        $subgroup = PurokSubgroup::with('purok')->findOrFail($validated['subgroup_id']);
         $this->authorizeSubgroup($subgroup);
 
-        app(FamilyCodeGenerator::class)->create($request->family_name, $subgroup);
+        $citizenIds = array_map('intval', $validated['citizen_ids']);
+        $user = Auth::user();
+        $access = app(BhwCitizenAccess::class);
 
-        return back()->with('success', 'Family created successfully.');
+        DB::transaction(function () use ($citizenIds, $subgroup, $user, $access): void {
+            $selectedCitizens = $access->scopeCitizens(citizens::query(), $user)
+                ->whereIn('id', $citizenIds)
+                ->whereNull('family_id')
+                ->where('subgroup_id', $subgroup->id)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            if ($selectedCitizens->count() !== count($citizenIds)) {
+                throw ValidationException::withMessages([
+                    'citizen_ids' => 'One or more selected citizens are no longer available in this Purok / Subgroup.',
+                ]);
+            }
+
+            $members = collect($citizenIds)->map(fn (int $id) => $selectedCitizens->get($id));
+            $head = $members->first();
+            $familyName = trim((string) $head->Citizen_LName) ?: trim((string) $head->Citizen_FName);
+            $family = app(FamilyCodeGenerator::class)->create($familyName . ' Family', $subgroup);
+            $family->update(['head_id' => $head->id]);
+
+            foreach ($members as $citizen) {
+                $citizen->update([
+                    'family_id' => $family->id,
+                    'Citizen_Purok' => $subgroup->purok->name,
+                    'subgroup_id' => $subgroup->id,
+                ]);
+                $this->logAssignmentChange($citizen, 'Assigned citizen to family ' . $family->family_name);
+            }
+        });
+
+        return back()->with('success', 'Family and selected household members created successfully.');
     }
 
     public function storeQuick(Request $request)
