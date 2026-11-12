@@ -482,7 +482,7 @@ class CitizenController extends Controller
             'family_id' => 'nullable|exists:families,id',
             'Citizen_Purok' => 'nullable|string|max:255|required_without:family_id',
             'subgroup_id' => 'nullable|exists:purok_subgroups,id|required_without:family_id',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email',
             'password' => 'nullable|string|min:6',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'Citizen_Sex' => 'required|in:Male,Female',
@@ -538,7 +538,7 @@ class CitizenController extends Controller
 
                 User::create([
                     'name' => $validated['Citizen_FName'] . ' ' . $validated['Citizen_LName'],
-                    'email' => $validated['email'],
+                    'email' => $validated['email'] ?? null,
                     'username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate']),
                     'password' => $password,
                     'role' => 'citizen',
@@ -1429,6 +1429,7 @@ class CitizenController extends Controller
             $file = $request->file('file');
             $firstSheet = Excel::toArray(new \App\Imports\RawSheetImport(), $file)[0] ?? [];
             $import = new CitizensImport(CitizensImport::detectHeadingRow($firstSheet));
+            unset($firstSheet);
             Excel::import($import, $file);
 
             $this->logActivity('import', 'citizen', null, 'Imported citizens via CSV/Excel spreadsheet');

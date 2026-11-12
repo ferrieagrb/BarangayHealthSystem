@@ -21,47 +21,127 @@
             <div class="family-alert-content"><span>{{ session('error') }}</span></div>
         </div>
     @endif
+    @if($errors->any())
+        <div class="family-container-alert" role="alert" style="background:#fef2f2;border-color:#fecaca;color:#991b1b">
+            <div class="family-alert-content">
+                <span>{{ $errors->first() }}</span>
+            </div>
+        </div>
+    @endif
 
     <header class="family-page-header">
         <div>
-            <h1>Family Registry &amp; Household Management</h1>
+            <h1>Family Management</h1>
             <p>Manage barangay family records, citizen associations, and purok subgroup assignments.</p>
         </div>
-        <button type="button" class="btn btn-secondary header-browse-button" onclick="openSubgroupPicker('browse')" data-ui-action="secondary">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 8 3l8 3 5-2.5v15L16 21l-8-3-5 2.5v-15ZM8 3v15m8-12v15M5.5 8.5 6.7 8m7.1.7.7.3m-8.3 4.8.5-.3"/></svg>
-            Browse Puroks
-        </button>
+        @if(auth()->user()->hasWriteAccess('family'))
+        <button type="button" class="btn btn-primary" onclick="openFamilyRegistrationModal()" data-ui-action="primary">+ Add Family</button>
+        @endif
     </header>
 
-    <!-- Register Family Form -->
-    @if(auth()->user()->hasWriteAccess('family'))
-    <section class="card family-card family-register-card">
-        <h2 class="section-card-title">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4z"/><path d="M12 8v9M7.5 12.5h9"/></svg>
-            Register New Family
-        </h2>
-        <form action="{{ route('bhw.families.store') }}" method="POST">
-            @csrf
-            <div class="form-row register-form-row">
-                <label class="family-field">
-                    <span>Family Name</span>
-                    <input type="text" name="family_name" placeholder="e.g., Santos Family" class="form-control" required>
-                </label>
-                <label class="family-field">
-                    <span>Purok / Subgroup</span>
-                    <span class="family-select-trigger">
-                        <input type="hidden" name="subgroup_id" id="registerSubgroupId" required>
-                        <input type="text" id="registerSubgroupDisplay" class="form-control" placeholder="-- Select Purok / Subgroup --" readonly onclick="openSubgroupPicker('register')" required aria-label="Select Purok or subgroup">
-                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
-                    </span>
-                </label>
+    <section class="family-overview" aria-label="Family overview">
+        <div class="family-summary-grid">
+            @foreach($familyOverview as [$label, $value, $description])
+            <article class="family-summary-card">
+                <span>{{ $label }}</span>
+                <strong>{{ number_format($value) }}</strong>
+                <small>{{ $description }}</small>
+            </article>
+            @endforeach
+        </div>
+        <article class="family-chart-card">
+            <h2>Families by subgroup</h2>
+            <p>All households in your assigned areas &middot; independent of list filters</p>
+            <div class="family-bar-chart" role="list" aria-label="Families by subgroup">
+                @forelse($puroks->flatMap->subgroups->filter(fn ($subgroup) => $subgroupCounts->has($subgroup->id)) as $subgroup)
+                <div class="family-chart-column" role="listitem" aria-label="{{ $subgroup->name }}: {{ $subgroupCounts[$subgroup->id] }} families">
+                    <div class="family-chart-track">
+                        <div class="family-chart-bar" style="height: {{ max(2, $subgroupCounts[$subgroup->id] / max(1, $subgroupCounts->max()) * 100) }}%"><span>{{ $subgroupCounts[$subgroup->id] }}</span></div>
+                    </div>
+                    <span class="family-chart-label">{{ $puroks->firstWhere('id', $subgroup->purok_id)?->name }} / {{ $subgroup->name }}</span>
+                </div>
+                @empty
+                <p class="family-chart-empty">No registered families yet.</p>
+                @endforelse
             </div>
-            <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                Create Family Record
-            </button>
-        </form>
+        </article>
     </section>
+
+    <form class="family-filter-toolbar" method="GET" action="{{ route('bhw.families.index') }}" id="familySearchForm">
+        <label class="family-field"><span>Search citizen</span>
+            <input type="search" name="search" value="{{ $search }}" id="familySearchInput" class="form-control" placeholder="Search citizen name to find their family" autocomplete="off">
+        </label>
+        <label class="family-field"><span>Purok / subgroup</span>
+            <select name="subgroup_id" class="form-control" onchange="this.form.requestSubmit()">
+                <option value="">All assigned subgroups</option>
+                @foreach($puroks as $purok)
+                <optgroup label="{{ $purok->name }}">
+                    @foreach($purok->subgroups as $subgroup)
+                    <option value="{{ $subgroup->id }}" @selected((string) $subgroupFilter === (string) $subgroup->id)>{{ $subgroup->name }}</option>
+                    @endforeach
+                </optgroup>
+                @endforeach
+            </select>
+        </label>
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+        <a href="{{ route('bhw.families.index') }}" class="btn btn-secondary">Reset</a>
+    </form>
+
+    <!-- Register Family Dialog Trigger -->
+    @if(auth()->user()->hasWriteAccess('family'))
+    <dialog id="familyRegistrationModal" class="family-modal family-registration-modal" aria-labelledby="familyRegistrationTitle">
+        <div class="modal-header">
+            <div>
+                <h3 id="familyRegistrationTitle">Add Family</h3>
+                <p class="family-registration-modal-subtitle">Select the family head, then add members.</p>
+            </div>
+            <button type="button" class="modal-close-button" onclick="closeFamilyRegistrationModal()" aria-label="Close family registration" data-ui-action="secondary">&times;</button>
+        </div>
+        <div class="modal-body">
+        <form action="{{ route('bhw.families.store') }}" method="POST" id="registerFamilyForm">
+            @csrf
+            <div class="family-registration-fields">
+                <label class="family-field family-registration-subgroup" hidden>
+                    <span>Purok / Subgroup</span>
+                    <select name="subgroup_id" id="registerSubgroupId" class="form-control">
+                        <option value="">Select Purok / Subgroup</option>
+                        @foreach($puroks as $purok)
+                            @if($purok->subgroups->isNotEmpty())
+                                <optgroup label="{{ $purok->name }}">
+                                    @foreach($purok->subgroups as $subgroup)
+                                        <option value="{{ $subgroup->id }}" @selected(old('subgroup_id') == $subgroup->id)>{{ $subgroup->name }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        @endforeach
+                    </select>
+                </label>
+                <div class="family-member-fields" id="registerFamilyMemberFields">
+                    <div class="family-member-input-row" data-citizen-row>
+                        <label class="family-field">
+                            <span>Search Citizen</span>
+                            <span class="family-citizen-search-wrap">
+                                <input type="search" class="form-control family-citizen-search" placeholder="Search by citizen name..." autocomplete="off" required>
+                                <input type="hidden" name="citizen_ids[]" class="family-citizen-id">
+                                <span class="family-citizen-suggestions" role="listbox" hidden></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary family-add-member-button" id="addFamilyMemberField" data-ui-action="secondary">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Add More
+                </button>
+            </div>
+            <div class="family-create-actions">
+                <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
+                    Save
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeFamilyRegistrationModal()" data-ui-action="secondary">Cancel</button>
+            </div>
+        </form>
+        </div>
+    </dialog>
     @endif
 
     <!-- Registered Families Table -->
@@ -72,10 +152,6 @@
                 <p>Showing all registered households and assigned citizens.</p>
                 <p class="family-filter-notice" id="familyFilterNotice" @if(!$subgroupFilter) hidden @endif>@if($subgroupFilter)Filtered by {{ optional($puroks->flatMap->subgroups->firstWhere('id', (int) $subgroupFilter))->name ?? 'selected subgroup' }}@endif</p>
             </div>
-            <form class="family-search" method="GET" action="{{ route('bhw.families.index') }}" id="familySearchForm">
-                @if($subgroupFilter)<input type="hidden" name="subgroup_id" value="{{ $subgroupFilter }}">@endif
-                <input type="search" name="search" value="{{ $search }}" id="familySearchInput" class="form-control" placeholder="Search family or ID..." aria-label="Search registered families">
-            </form>
         </div>
         <div class="family-table-wrap"><table class="family-table">
             <thead>
@@ -84,7 +160,7 @@
                     <th>Family Name</th>
                     <th>Family Head</th>
                     <th>Purok & Subgroup</th>
-                    <th>Members Count</th>
+                    <th>Family Members</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -101,7 +177,14 @@
                                 <span style="color: #666; font-size: 13px;">({{ $fam->subgroup->name }})</span>
                             @endif
                         </td>
-                        <td>{{ $fam->members->count() }} citizen(s)</td>
+                        <td>
+                            <div class="family-member-names">
+                                @foreach($fam->members as $member)
+                                <div>{{ trim(implode(' ', array_filter([$member->Citizen_FName, $member->Citizen_MName, $member->Citizen_LName]))) }}</div>
+                                @endforeach
+                            </div>
+                            <small>{{ $fam->members->count() }} citizen(s)</small>
+                        </td>
                         <td class="family-actions-cell">
                             <div class="family-actions">
                                 @if(auth()->user()->hasWriteAccess('family'))
@@ -120,7 +203,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">No families found.</td>
+                        <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">{{ $search !== '' ? 'No family found for that citizen name.' : 'No families found.' }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -316,6 +399,175 @@
     let currentCitizenPage = 1;
     const citizenPageSize = 5;
     let filteredCitizens = [...allAvailableCitizens];
+
+    function citizenFullName(citizen) {
+        return [citizen.Citizen_FName, citizen.Citizen_MName, citizen.Citizen_LName]
+            .filter(Boolean)
+            .join(' ');
+    }
+
+    function selectedRegistrationCitizenIds() {
+        return new Set(
+            [...document.querySelectorAll('#registerFamilyMemberFields .family-citizen-id')]
+                .map(input => input.value)
+                .filter(Boolean)
+        );
+    }
+
+    function renderRegistrationCitizenSuggestions(row) {
+        const searchInput = row.querySelector('.family-citizen-search');
+        const suggestions = row.querySelector('.family-citizen-suggestions');
+        const subgroupId = document.getElementById('registerSubgroupId').value;
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        const currentId = row.querySelector('.family-citizen-id').value;
+        const selectedIds = selectedRegistrationCitizenIds();
+        selectedIds.delete(currentId);
+
+        suggestions.replaceChildren();
+        if (!query) {
+            suggestions.hidden = true;
+            return;
+        }
+
+        const matches = allAvailableCitizens
+            .filter(citizen => citizen.subgroup_id && (!subgroupId || String(citizen.subgroup_id) === String(subgroupId)))
+            .filter(citizen => !selectedIds.has(String(citizen.id)))
+            .filter(citizen => citizenFullName(citizen).toLocaleLowerCase().includes(query))
+            .slice(0, 8);
+
+        if (matches.length === 0) {
+            const empty = document.createElement('span');
+            empty.className = 'family-citizen-suggestion-empty';
+            empty.textContent = 'No available citizens found.';
+            suggestions.appendChild(empty);
+        } else {
+            matches.forEach(citizen => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'family-citizen-suggestion';
+                option.setAttribute('role', 'option');
+                option.textContent = citizenFullName(citizen);
+                option.addEventListener('click', () => {
+                    document.getElementById('registerSubgroupId').value = citizen.subgroup_id;
+                    row.querySelector('.family-citizen-id').value = citizen.id;
+                    searchInput.value = citizenFullName(citizen);
+                    searchInput.setCustomValidity('');
+                    suggestions.hidden = true;
+                });
+                suggestions.appendChild(option);
+            });
+        }
+
+        suggestions.hidden = false;
+    }
+
+    function initializeRegistrationCitizenRow(row) {
+        const searchInput = row.querySelector('.family-citizen-search');
+        const citizenId = row.querySelector('.family-citizen-id');
+        const suggestions = row.querySelector('.family-citizen-suggestions');
+
+        searchInput.addEventListener('input', () => {
+            if (row === row.parentElement.firstElementChild) {
+                document.getElementById('registerSubgroupId').value = '';
+                row.parentElement.querySelectorAll('[data-citizen-row]:not(:first-child)').forEach(other => other.remove());
+            }
+            citizenId.value = '';
+            searchInput.setCustomValidity('');
+            renderRegistrationCitizenSuggestions(row);
+        });
+        searchInput.addEventListener('focus', () => renderRegistrationCitizenSuggestions(row));
+        searchInput.addEventListener('keydown', event => {
+            if (event.key === 'Escape') suggestions.hidden = true;
+        });
+
+        const removeButton = row.querySelector('.family-remove-member-button');
+        if (removeButton) {
+            removeButton.addEventListener('click', () => {
+                row.remove();
+            });
+        }
+    }
+
+    function initializeFamilyRegistration() {
+        const form = document.getElementById('registerFamilyForm');
+        if (!form) return;
+
+        const subgroupSelect = document.getElementById('registerSubgroupId');
+        const memberFields = document.getElementById('registerFamilyMemberFields');
+        const addButton = document.getElementById('addFamilyMemberField');
+        const firstRow = memberFields.querySelector('[data-citizen-row]');
+
+        initializeRegistrationCitizenRow(firstRow);
+        firstRow.querySelector('.family-citizen-search').disabled = false;
+        addButton.disabled = false;
+
+        subgroupSelect.addEventListener('change', () => {
+            memberFields.querySelectorAll('[data-citizen-row]:not(:first-child)').forEach(row => row.remove());
+            const searchInput = firstRow.querySelector('.family-citizen-search');
+            searchInput.value = '';
+            searchInput.disabled = !subgroupSelect.value;
+            searchInput.placeholder = subgroupSelect.value ? 'Search by citizen name...' : 'Select a Purok / Subgroup first';
+            firstRow.querySelector('.family-citizen-id').value = '';
+            firstRow.querySelector('.family-citizen-suggestions').hidden = true;
+            addButton.disabled = !subgroupSelect.value;
+        });
+
+        addButton.addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.className = 'family-member-input-row';
+            row.dataset.citizenRow = '';
+            row.innerHTML = `
+                <label class="family-field">
+                    <span>Search Citizen</span>
+                    <span class="family-citizen-search-wrap">
+                        <input type="search" class="form-control family-citizen-search" placeholder="Search by citizen name..." autocomplete="off" required>
+                        <input type="hidden" name="citizen_ids[]" class="family-citizen-id">
+                        <span class="family-citizen-suggestions" role="listbox" hidden></span>
+                    </span>
+                </label>
+                <button type="button" class="btn btn-secondary family-remove-member-button" aria-label="Remove citizen field" data-ui-action="secondary">Remove</button>
+            `;
+            memberFields.appendChild(row);
+            initializeRegistrationCitizenRow(row);
+            row.querySelector('.family-citizen-search').focus();
+        });
+
+        form.addEventListener('submit', event => {
+            const incompleteRow = [...memberFields.querySelectorAll('[data-citizen-row]')]
+                .find(row => !row.querySelector('.family-citizen-id').value);
+            if (incompleteRow) {
+                const searchInput = incompleteRow.querySelector('.family-citizen-search');
+                searchInput.setCustomValidity('Select a citizen from the search results.');
+                searchInput.reportValidity();
+                event.preventDefault();
+                return;
+            }
+
+            if (new Set([...memberFields.querySelectorAll('.family-citizen-id')].map(input => input.value)).size
+                !== memberFields.querySelectorAll('.family-citizen-id').length) {
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('click', event => {
+            if (!memberFields.contains(event.target)) {
+                memberFields.querySelectorAll('.family-citizen-suggestions').forEach(list => {
+                    list.hidden = true;
+                });
+            }
+        });
+    }
+
+    function openFamilyRegistrationModal() {
+        const modal = document.getElementById('familyRegistrationModal');
+        if (!modal || modal.open) return;
+        modal.showModal();
+        modal.querySelector('.family-citizen-search').focus();
+    }
+
+    function closeFamilyRegistrationModal() {
+        document.getElementById('familyRegistrationModal')?.close();
+    }
 
     function openFamilyModal(button) {
         const family = JSON.parse(button.getAttribute('data-family'));
@@ -523,8 +775,9 @@
 
     function selectSubgroup(id, displayName) {
         if (currentSubgroupTarget === 'register') {
-            document.getElementById('registerSubgroupId').value = id;
-            document.getElementById('registerSubgroupDisplay').value = displayName;
+            const subgroupSelect = document.getElementById('registerSubgroupId');
+            subgroupSelect.value = id;
+            subgroupSelect.dispatchEvent(new Event('change'));
         } else if (currentSubgroupTarget === 'modal') {
             document.getElementById('modalSubgroupId').value = id;
             document.getElementById('modalSubgroupDisplay').value = displayName;
@@ -624,6 +877,8 @@
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    initializeFamilyRegistration();
+
     const search = document.getElementById('familySearchInput');
     if (search) {
         let searchTimer;
