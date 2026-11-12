@@ -423,6 +423,7 @@ Route::middleware(['auth', 'role:admin', 'password.changed'])->prefix('admin')->
     Route::delete('/demographics/puroks/{purok}/boundary', [AdminSettings::class, 'destroyPurokBoundary'])->name('puroks.boundary.destroy');
 
     Route::post('/purok-subgroups', [AdminSettings::class, 'storeSubgroup'])->name('subgroups.store');
+    Route::put('/demographics/bhw-assignments', [AdminSettings::class, 'updateBhwAssignments'])->name('bhw-assignments.update');
     Route::put('/purok-subgroups/{id}', [AdminSettings::class, 'updateSubgroup'])->name('subgroups.update'); 
     Route::delete('/purok-subgroups/{id}', [AdminSettings::class, 'destroySubgroup'])->name('subgroups.destroy');
     Route::delete('/purok-subgroups/{id}/citizens', [AdminSettings::class, 'permanentlyDeleteSubgroupCitizens'])->name('subgroups.citizens.destroy');

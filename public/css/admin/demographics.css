@@ -1961,3 +1961,63 @@ body.theme-dark .subgroup-record .record-actions .btn-archive {
         width: 100%;
     }
 }
+
+.bhw-user-row, .assignment-save-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; border-bottom:1px solid var(--border-color, #dce4ef); }
+.bhw-user-row > div { min-width:0; }
+.bhw-user-row small { display:block; margin-top:5px; color:var(--text-secondary, #64748b); overflow-wrap:anywhere; }
+.bhw-user-row .btn { flex-shrink:0; }
+.bhw-assignment-dialog { width:min(640px, calc(100vw - 32px)); max-height:85vh; box-sizing:border-box; padding:24px; border:1px solid #dce4ef; border-radius:18px; background:var(--card-bg, #fff); color:var(--text-primary, #172e50); }
+.bhw-assignment-dialog::backdrop { background:rgba(15,23,42,.5); }
+.assignment-area-list { max-height:50vh; overflow:auto; margin:18px 0; }
+.assignment-purok { border:1px solid #dce4ef; border-radius:10px; margin:12px 0; padding:14px; }
+.assignment-purok legend { font-weight:600; padding:0 6px; }
+.assignment-area-option { display:flex; align-items:center; gap:10px; padding:12px 4px; cursor:pointer; }
+.assignment-area-option input { width:18px; height:18px; flex-shrink:0; }
+body.theme-dark .bhw-assignment-dialog { background:#172334; color:#e2e8f0; border-color:#40516a; }
+@media(max-width:600px) { .assignment-save-row { align-items:stretch; flex-direction:column; } .bhw-assignment-dialog { padding:16px; } }
+
+/* Restore dialog centering after the admin stylesheet's universal margin reset. */
+.demographics-container .bhw-assignment-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(580px, calc(100vw - 32px));
+    max-height: calc(100dvh - 48px);
+    padding: 24px;
+    overflow: auto;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .28);
+}
+.bhw-assignment-dialog::backdrop { background: rgba(15, 23, 42, .48); backdrop-filter: blur(2px); }
+.bhw-assignment-dialog .assignment-dialog-heading { align-items: flex-start; gap: 16px; margin-bottom: 0; }
+.bhw-assignment-dialog .assignment-dialog-heading h2 { font-size: 19px; line-height: 1.4; }
+.bhw-assignment-dialog .assignment-dialog-heading p { font-size: 13px; margin-top: 6px; }
+#demographicsApp .bhw-assignment-dialog .assignment-dialog-close {
+    width: 32px; height: 32px; min-height: 32px !important; padding: 0; flex-shrink: 0;
+    font-size: 24px; line-height: 1; border: 0 !important; background: transparent !important;
+}
+.bhw-assignment-dialog .assignment-area-list { max-height: min(50dvh, 420px); margin: 20px 0; padding: 0 6px 0 0; }
+.bhw-assignment-dialog .assignment-area-list:focus-visible { outline: 2px solid #527ab5; outline-offset: 3px; }
+.bhw-assignment-dialog .assignment-purok { padding: 10px 14px; margin: 0 0 12px; }
+.bhw-assignment-dialog .assignment-purok legend { font-size: 14px; }
+#demographicsApp .bhw-assignment-dialog [data-select-purok] {
+    min-height: 28px !important; width: auto; padding: 3px 8px; font-size: 12px;
+    border: 0 !important; background: transparent !important; color: var(--demo-blue, #234f9b) !important;
+}
+.bhw-assignment-dialog .assignment-area-option { padding: 9px 4px; font-size: 14px; }
+.bhw-assignment-dialog .assignment-area-option:hover { background: var(--demo-soft, #f1f5f9); border-radius: 6px; }
+.bhw-assignment-dialog input[type="checkbox"] { accent-color: #234f9b; }
+.bhw-assignment-dialog .record-actions { padding-top: 16px; border-top: 1px solid var(--demo-border, #dce4ef); gap: 10px; }
+#demographicsApp .bhw-assignment-dialog .record-actions .btn { width: auto; min-width: 100px; min-height: 40px !important; padding: 9px 16px; font-size: 13px; }
+body.theme-dark #demographicsApp .bhw-assignment-dialog [data-select-purok] { color: #a8c8ff !important; }
+@media(max-width:600px) { .demographics-container .bhw-assignment-dialog { padding: 18px; } }
+
+/* Let the document own scrolling; a fixed-height content pane creates a second scroll area. */
+body:has(#demographicsApp) .main-content {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+}
+body:has(#demographicsApp) {
+    background: var(--theme-bg, #f2f3f8);
+}

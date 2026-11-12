@@ -18,6 +18,8 @@ const markup = `<!doctype html><meta name="viewport" content="width=device-width
 <select id="vaccine" data-medical-autocomplete="vaccine"><option value="">Select vaccine</option>
 <option value="BCG" data-code="BCG" data-eligibility-status="unavailable" disabled>BCG</option></select>
 <button type="reset">Reset</button></form><button id="outside">Outside</button>
+<div id="global-loader"><span class="loader-status-text"></span></div>
+<script src="/public/js/global-loader.js"></script>
 <script src="/public/js/medical-autocomplete.js"></script>`;
 
 (async () => {
@@ -43,6 +45,8 @@ const markup = `<!doctype html><meta name="viewport" content="width=device-width
             page.on('pageerror', error => errors.push(error.message));
             await page.route('**/search', async route => {
                 const body = route.request().postDataJSON(); requests.push(body);
+                assert.equal(await page.locator('#global-loader').evaluate(loader => loader.classList.contains('active')), false,
+                    'Autocomplete requests must not show the global logo loader'); checks++;
                 if (body.q === 'offline') return route.fulfill({ status: 503, body: '{}' });
                 if (body.q === 'nomatch') return route.fulfill({ json: { suggestions: [], online_available: true } });
                 if (body.q === 'old') await new Promise(resolve => setTimeout(resolve, 600));

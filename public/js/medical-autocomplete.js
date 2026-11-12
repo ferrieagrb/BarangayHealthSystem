@@ -338,6 +338,8 @@
             try {
                 const response = await fetch(endpoint, {
                     method: 'POST',
+                    // Suggestions already show a local status; keep typing unobstructed.
+                    noLoader: true,
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json',
