@@ -26,11 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         dialog.addEventListener('cancel', event => { event.preventDefault(); cancel(); });
         dialog.querySelectorAll('[data-cancel-assignment]').forEach(button => button.addEventListener('click', cancel));
-        dialog.querySelector('[data-apply-assignment]').addEventListener('click', () => {
-            updateSummary();
-            document.getElementById('assignmentDraftStatus').textContent = 'Unsaved changes. Click Save all assignments when ready.';
-            dialog.close();
-        });
         dialog.querySelectorAll('[data-select-purok]').forEach(button => {
             button.addEventListener('click', () => {
                 button.closest('fieldset').querySelectorAll('input[type="checkbox"]').forEach(box => { box.checked = true; });

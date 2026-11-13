@@ -24,6 +24,60 @@ class AdminCitizenPurgeTest extends TestCase
         $this->createTestSchema();
     }
 
+    public function test_applying_one_bhw_assignment_persists_after_reload_and_preserves_other_workers(): void
+    {
+        Schema::create('system_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key');
+            $table->text('value')->nullable();
+        });
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'must_change_password' => false]);
+        $worker = User::factory()->create(['role' => 'bhw']);
+        $otherWorker = User::factory()->create(['role' => 'bhw']);
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $first = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1A']);
+        $second = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1B']);
+        $first->bhws()->sync([$worker->id, $otherWorker->id]);
+
+        $this->actingAs($admin)
+            ->from(route('admin.demographics'))
+            ->put(route('admin.bhw-assignments.update'), [
+                'demographics_tab' => 'subgroups',
+                'assignments' => [$worker->id => ['present' => 1, 'subgroup_ids' => [$second->id]]],
+            ])
+            ->assertRedirect(route('admin.demographics'))
+            ->assertSessionHas('demographics_tab', 'subgroups')
+            ->assertSessionHas('success', 'BHW assignments saved successfully.');
+
+        $this->assertDatabaseHas('purok_subgroup_user', ['purok_subgroup_id' => $first->id, 'user_id' => $otherWorker->id]);
+        $this->assertDatabaseMissing('purok_subgroup_user', ['purok_subgroup_id' => $first->id, 'user_id' => $worker->id]);
+        $this->assertDatabaseHas('purok_subgroup_user', ['purok_subgroup_id' => $second->id, 'user_id' => $worker->id]);
+
+        $html = $this->get(route('admin.demographics'))->assertOk()->getContent();
+        $document = new \DOMDocument();
+        @$document->loadHTML($html);
+        $xpath = new \DOMXPath($document);
+        $form = "//form[.//dialog[@data-bhw-id='{$worker->id}']]";
+        $this->assertSame(1, $xpath->query("$form//button[@data-apply-assignment and @type='submit']")->length);
+        $this->assertSame(1, $xpath->query("$form//input[@name='assignments[{$worker->id}][present]']")->length);
+        $this->assertSame(0, $xpath->query("$form//input[@value='{$first->id}' and @type='checkbox' and @checked]")->length);
+        $this->assertSame(1, $xpath->query("$form//input[@value='{$second->id}' and @type='checkbox' and @checked]")->length);
+
+        $this->from(route('admin.demographics'))
+            ->put(route('admin.bhw-assignments.update'), [
+                'demographics_tab' => 'subgroups',
+                'assignments' => [$worker->id => ['present' => 1]],
+            ])
+            ->assertRedirect(route('admin.demographics'));
+
+        $this->assertDatabaseMissing('purok_subgroup_user', ['purok_subgroup_id' => $second->id, 'user_id' => $worker->id]);
+        $this->assertDatabaseHas('purok_subgroup_user', ['purok_subgroup_id' => $first->id, 'user_id' => $otherWorker->id]);
+        $html = $this->get(route('admin.demographics'))->assertOk()->getContent();
+        @$document->loadHTML($html);
+        $xpath = new \DOMXPath($document);
+        $this->assertSame(0, $xpath->query("$form//input[@type='checkbox' and @checked]")->length);
+    }
+
     public function test_admin_can_delete_a_purok_boundary_without_changing_other_puroks(): void
     {
         $admin = User::factory()->create([

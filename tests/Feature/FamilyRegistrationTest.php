@@ -86,6 +86,31 @@ class FamilyRegistrationTest extends TestCase
         });
     }
 
+    public function test_add_citizen_view_exposes_configuration_to_its_external_script(): void
+    {
+        Schema::create('system_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key');
+            $table->text('value')->nullable();
+        });
+        Auth::login(User::create(['role' => 'bhw']));
+        request()->setLaravelSession(session()->driver());
+        session()->flashInput(['family_id' => '12', 'subgroup_id' => '34']);
+
+        $html = view('bhw.addcitizen', [
+            'puroks' => collect(),
+            'families' => collect(),
+            'errors' => new \Illuminate\Support\ViewErrorBag(),
+        ])->render();
+
+        $this->assertStringContainsString('data-quick-family-url="'.route('bhw.families.quick.store').'"', $html);
+        $this->assertStringContainsString('data-old-family-id="12"', $html);
+        $this->assertStringContainsString('data-old-subgroup-id="34"', $html);
+        $this->assertStringContainsString('js/bhw/addcitizen.js', $html);
+        $this->assertStringContainsString('js/templates/session-timeout.js', $html);
+        $this->assertStringContainsString('data-session-lifetime="'.config('session.lifetime', 120).'"', $html);
+    }
+
     public function test_searching_a_citizen_returns_their_whole_family_within_assigned_subgroups(): void
     {
         $user = User::create(['role' => 'bhw']);
