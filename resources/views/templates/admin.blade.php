@@ -132,7 +132,7 @@
 @include('templates.partials.logout-modal')
 
 @auth
-<div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+<div id="session-timeout-modal" data-session-lifetime="{{ config('session.lifetime', 120) }}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
     <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
         <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
@@ -143,55 +143,10 @@
 @endauth
 
 <!-- JS -->
-<script>
-const sidebar = document.querySelector(".sidebar");
-const toggleBtn = document.querySelector(".topbutton");
-const sidebarMobile = window.matchMedia("(max-width: 768px)");
-
-function updateSidebarToggle() {
-    const collapsed = sidebar.classList.contains("collapsed");
-    const expanded = sidebarMobile.matches ? collapsed : !collapsed;
-    toggleBtn.setAttribute("aria-expanded", String(expanded));
-    toggleBtn.setAttribute("aria-label", sidebarMobile.matches
-        ? (expanded ? "Close sidebar" : "Open sidebar")
-        : (expanded ? "Collapse sidebar" : "Expand sidebar"));
-    toggleBtn.querySelector("i").className = expanded ? "bx bx-chevron-left" : "bx bx-chevron-right";
-}
-
-toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-    updateSidebarToggle();
-});
-sidebarMobile.addEventListener("change", updateSidebarToggle);
-updateSidebarToggle();
-</script>
+<script src="{{ asset('js/templates/admin-inline-1.js') }}?v={{ filemtime(public_path('js/templates/admin-inline-1.js')) }}"></script>
 
 @auth
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Dynamically grab SESSION_LIFETIME from Laravel config (in minutes) and convert to milliseconds
-        const sessionLifetimeMinutes = {{ config('session.lifetime', 120) }};
-        const sessionLimit = sessionLifetimeMinutes * 60 * 1000; 
-
-        let timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
-
-        function resetTimer() {
-            clearTimeout(timeoutHandle);
-            timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
-        }
-
-        function triggerTimeout() {
-            // Show the popup modal wherever the user is
-            document.getElementById('session-timeout-modal').style.display = 'flex';
-        }
-
-        // Reset timer on user interaction (mouse movement, clicks, keystrokes)
-        window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('keypress', resetTimer);
-        window.addEventListener('click', resetTimer);
-        window.addEventListener('scroll', resetTimer);
-    });
-</script>
+<script src="{{ asset('js/templates/session-timeout.js') }}?v={{ filemtime(public_path('js/templates/session-timeout.js')) }}"></script>
 @endauth
 
 <script src="{{ asset('js/password-toggle.js') . '?v=1793722773' }}"></script>

@@ -208,7 +208,7 @@ class AdminSettings extends Controller
             }
         });
 
-        return back()->with('demographics_tab', 'subgroups')->with('success', 'All BHW assignments saved successfully.');
+        return back()->with('demographics_tab', 'subgroups')->with('success', 'BHW assignments saved successfully.');
     }
 
     public function storeSubgroup(Request $request)

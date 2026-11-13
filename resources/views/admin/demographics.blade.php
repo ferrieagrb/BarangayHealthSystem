@@ -139,16 +139,16 @@
         </div>
 
         <section class="demographics-card">
-            <div class="section-heading"><div><h2>BHW User List</h2><p>Choose coverage using Assignment, then save all user assignments together.</p></div></div>
-            <form action="{{ route('admin.bhw-assignments.update') }}" method="POST" id="bhwAssignmentsForm">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="demographics_tab" value="subgroups">
+            <div class="section-heading"><div><h2>BHW User List</h2><p>Choose coverage using Assignment and apply the selection to save it.</p></div></div>
                 @forelse($bhws as $bhw)
                     @php
                         $assignedIds = $subgroups->filter(fn ($group) => $group->bhws->contains('id', $bhw->id) || (!$group->bhws->count() && $group->user_id == $bhw->id))->pluck('id')->all();
                         $selectedIds = old('assignments.'.$bhw->id.'.subgroup_ids', old('assignments.'.$bhw->id.'.present') ? [] : $assignedIds);
                     @endphp
+                    <form action="{{ route('admin.bhw-assignments.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="demographics_tab" value="subgroups">
                     <article class="bhw-user-row">
                         <div><strong>{{ $bhw->name ?: $bhw->email }}</strong><small>{{ $bhw->email }}</small><small data-assignment-summary="{{ $bhw->id }}"></small></div>
                         <input type="hidden" name="assignments[{{ $bhw->id }}][present]" value="1">
@@ -168,13 +168,12 @@
                                 </fieldset>
                             @endforeach
                         </div>
-                        <div class="record-actions"><button type="button" class="btn btn-secondary" data-cancel-assignment>Cancel</button><button type="button" class="btn btn-primary" data-apply-assignment>Apply selection</button></div>
+                        <div class="record-actions"><button type="button" class="btn btn-secondary" data-cancel-assignment>Cancel</button><button type="submit" class="btn btn-primary" data-apply-assignment>Apply selection</button></div>
                     </dialog>
+                    </form>
                 @empty
                     <p class="empty-state">No BHW accounts available.</p>
                 @endforelse
-                <div class="assignment-save-row"><span role="status" id="assignmentDraftStatus">Save all assignments to keep your changes.</span><button type="submit" class="btn btn-primary" @disabled($bhws->isEmpty())>Save all assignments</button></div>
-            </form>
         </section>
         <div class="demographics-card subgroup-section-card">
             <div class="section-heading subgroup-section-header subgroup-list-header">
@@ -314,235 +313,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/admin/demographics.js') }}"></script>
+<script src="{{ asset('js/admin/demographics.js') }}?v={{ filemtime(public_path('js/admin/demographics.js')) }}"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&loading=async&callback=initDemographicsMap" async defer></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const mapElement = document.getElementById('purokLocationMap');
-    const locationSelect = document.getElementById('purokLocationSelect');
-    const statusElement = document.getElementById('purokLocationStatus');
-    const saveLocationButton = document.getElementById('savePurokLocation');
-
-    const defaultCenter = {
-        lat: 14.0668,
-        lng: 120.8531
-    };
-
-    let map;
-    let marker;
-    let MapConstructor;
-    let MarkerConstructor;
-    let activeForm;
-
-    function getForm(id) {
-        return document.querySelector(
-            `.purok-location-form[data-purok-id="${id}"]`
-        );
-    }
-
-    function setPin(latitude, longitude, hasSavedLocation) {
-        const position = {
-            lat: latitude,
-            lng: longitude
-        };
-
-        map.setCenter(position);
-        map.setZoom(hasSavedLocation ? 17 : 15);
-
-        if (!marker) {
-            marker = new MarkerConstructor({
-                map: map,
-                position: position,
-                draggable: true
-            });
-
-            marker.addListener('dragend', function (event) {
-                updateCoordinates(
-                    event.latLng.lat(),
-                    event.latLng.lng()
-                );
-            });
-        } else {
-            marker.setPosition(position);
-            marker.setMap(map);
-        }
-    }
-
-    function updateCoordinates(latitude, longitude) {
-        if (!activeForm) {
-            return;
-        }
-
-        activeForm.querySelector('.purok-latitude').value =
-            latitude.toFixed(7);
-
-        activeForm.querySelector('.purok-longitude').value =
-            longitude.toFixed(7);
-
-        statusElement.textContent =
-            `Pin selected for ${activeForm.dataset.purokName}. Save the Purok to keep this location.`;
-    }
-
-    function loadSelectedPurok() {
-        if (!map) {
-            return;
-        }
-
-        const option = locationSelect.options[
-            locationSelect.selectedIndex
-        ];
-
-        activeForm = option.value
-            ? getForm(option.value)
-            : null;
-
-        if (!activeForm) {
-            statusElement.textContent =
-                'Select a Purok, then click the map to add or move its pin.';
-
-            saveLocationButton.disabled = true;
-
-            if (marker) {
-                marker.setMap(null);
-            }
-
-            map.setCenter(defaultCenter);
-            map.setZoom(15);
-
-            return;
-        }
-
-        const latitude = Number(option.dataset.lat);
-        const longitude = Number(option.dataset.lng);
-
-        const hasSavedLocation =
-            option.dataset.lat !== '' &&
-            option.dataset.lng !== '' &&
-            Number.isFinite(latitude) &&
-            Number.isFinite(longitude) &&
-            latitude !== 0 &&
-            longitude !== 0;
-
-        if (hasSavedLocation) {
-            setPin(latitude, longitude, true);
-
-            statusElement.textContent =
-                `${activeForm.dataset.purokName} is pinned. Click the map or drag the marker to move it.`;
-        } else {
-            setPin(
-                defaultCenter.lat,
-                defaultCenter.lng,
-                false
-            );
-
-            statusElement.textContent =
-                `${activeForm.dataset.purokName} has no location pinned yet. Click the map to add one.`;
-        }
-
-        saveLocationButton.disabled = false;
-    }
-
-    async function initializeMap() {
-        if (
-            !mapElement ||
-            typeof google === 'undefined' ||
-            !google.maps ||
-            !google.maps.importLibrary
-        ) {
-            window.setTimeout(initializeMap, 250);
-            return;
-        }
-
-        try {
-            const mapsLibrary =
-                await google.maps.importLibrary('maps');
-
-            const markerLibrary =
-                await google.maps.importLibrary('marker');
-
-            MapConstructor = mapsLibrary.Map;
-            MarkerConstructor = markerLibrary.Marker;
-
-            map = new MapConstructor(mapElement, {
-                center: defaultCenter,
-                zoom: 15,
-                mapTypeId: 'roadmap',
-                streetViewControl: false,
-                fullscreenControl: true
-            });
-
-            map.addListener('click', function (event) {
-                if (!activeForm || !event.latLng) {
-                    return;
-                }
-
-                const latitude = event.latLng.lat();
-                const longitude = event.latLng.lng();
-
-                setPin(latitude, longitude, true);
-
-                updateCoordinates(latitude, longitude);
-            });
-
-            locationSelect.addEventListener(
-                'change',
-                loadSelectedPurok
-            );
-
-            saveLocationButton.addEventListener(
-                'click',
-                function () {
-                    if (!activeForm) {
-                        return;
-                    }
-
-                    const latitude = activeForm.querySelector(
-                        '.purok-latitude'
-                    ).value;
-
-                    const longitude = activeForm.querySelector(
-                        '.purok-longitude'
-                    ).value;
-
-                    if (!latitude || !longitude) {
-                        statusElement.textContent =
-                            'Click the map to place a pin before saving.';
-
-                        return;
-                    }
-
-                    statusElement.textContent =
-                        `Saving ${activeForm.dataset.purokName} at ${latitude}, ${longitude}...`;
-
-                    activeForm.requestSubmit();
-                }
-            );
-
-            document.querySelectorAll(
-                '.pick-purok-location'
-            ).forEach(function (button) {
-                button.addEventListener('click', function () {
-                    locationSelect.value = button.dataset.purokId;
-
-                    loadSelectedPurok();
-
-                    mapElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                });
-            });
-
-        } catch (error) {
-            console.error('Failed to initialize Google Maps:', error);
-
-            statusElement.textContent =
-                'Unable to load the map. Check your Google Maps API configuration and internet connection.';
-        }
-    }
-
-    // Legacy Google Maps purok picker; its elements no longer exist on this page.
-    if (mapElement) initializeMap();
-});
-</script>
+<script src="{{ asset('js/admin/demographics-inline-2.js') }}?v={{ filemtime(public_path('js/admin/demographics-inline-2.js')) }}"></script>
 @endsection

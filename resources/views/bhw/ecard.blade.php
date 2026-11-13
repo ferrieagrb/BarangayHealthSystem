@@ -275,34 +275,7 @@
     </div>
 </div>
 
-<script>
-let citizenPrintPageRule = null;
-function printCitizenSection(section) {
-    document.body.classList.remove('print-id-only', 'print-record-only');
-    document.body.classList.add(section === 'id' ? 'print-id-only' : 'print-record-only');
-
-    if (citizenPrintPageRule) {
-        citizenPrintPageRule.remove();
-        citizenPrintPageRule = null;
-    }
-
-    citizenPrintPageRule = document.createElement('style');
-    citizenPrintPageRule.id = 'citizen-print-page-size';
-    citizenPrintPageRule.textContent = section === 'id'
-        ? '@page { size: auto; margin: 0; }'
-        : '@page { size: A4 landscape; margin: 8mm; }';
-    document.head.appendChild(citizenPrintPageRule);
-
-    window.print();
-}
-window.addEventListener('afterprint', function() {
-    document.body.classList.remove('print-id-only', 'print-record-only');
-    if (citizenPrintPageRule) {
-        citizenPrintPageRule.remove();
-        citizenPrintPageRule = null;
-    }
-});
-</script>
+<script src="{{ asset('js/bhw/ecard-inline-1.js') }}?v={{ filemtime(public_path('js/bhw/ecard-inline-1.js')) }}"></script>
 <script src="{{ asset('js/ecard-download.js') }}?v={{ filemtime(public_path('js/ecard-download.js')) }}"></script>
 <script src="{{ asset('js/ecard-preview.js') }}?v={{ filemtime(public_path('js/ecard-preview.js')) }}"></script>
 <script src="{{ asset('js/ecard-fit.js') }}?v={{ filemtime(public_path('js/ecard-fit.js')) }}"></script>

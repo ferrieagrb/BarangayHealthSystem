@@ -98,9 +98,7 @@
     <!-- SIDEBAR -->
     <div class="sidebar" id="bhwSidebar" role="navigation" aria-label="Primary navigation" tabindex="0" style="display: flex; flex-direction: column; height: 100vh;">
         @if(request()->routeIs('bhw.reports', 'bhw.analytics'))
-            <script>
-                document.getElementById('bhwSidebar').classList.toggle('collapsed', !window.matchMedia('(max-width: 768px)').matches);
-            </script>
+            <script src="{{ asset('js/templates/layout-inline-1.js') }}?v={{ filemtime(public_path('js/templates/layout-inline-1.js')) }}"></script>
         @endif
 
         <div class="top sidebar-header">
@@ -241,7 +239,7 @@
 
 @auth
 
-<div id="session-timeout-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+<div id="session-timeout-modal" data-session-lifetime="{{ config('session.lifetime', 120) }}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
     <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
         <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
@@ -253,28 +251,7 @@
 @endauth
 
 @auth
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const sessionLifetimeMinutes = {{ config('session.lifetime', 120) }};
-        const sessionLimit = sessionLifetimeMinutes * 60 * 1000; 
-
-        let timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
-
-        function resetTimer() {
-            clearTimeout(timeoutHandle);
-            timeoutHandle = setTimeout(triggerTimeout, sessionLimit);
-        }
-
-        function triggerTimeout() {
-            document.getElementById('session-timeout-modal').style.display = 'flex';
-        }
-
-        window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('keypress', resetTimer);
-        window.addEventListener('click', resetTimer);
-        window.addEventListener('scroll', resetTimer);
-    });
-</script>
+<script src="{{ asset('js/templates/session-timeout.js') }}?v={{ filemtime(public_path('js/templates/session-timeout.js')) }}"></script>
 @endauth
 
 <script src="{{ asset('js/password-toggle.js') . '?v=1793722773' }}"></script>
