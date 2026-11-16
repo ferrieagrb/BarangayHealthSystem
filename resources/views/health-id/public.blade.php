@@ -86,8 +86,12 @@
                     <div class="fact"><span>Weight</span><strong>{{ $citizen->Citizen_Weight !== null ? $citizen->Citizen_Weight . ' kg' : 'Not recorded' }}</strong></div>
                     <div class="fact"><span>Sex</span><strong>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</strong></div>
                     <div class="fact"><span>Housing status</span><strong>{{ $citizen->Citizen_HousingStatus ?: 'Not recorded' }}</strong></div>
-                    <div class="fact"><span>Pregnancy status</span><strong>{{ $citizen->Citizen_Pregnant === null ? 'Not recorded' : ($citizen->Citizen_Pregnant ? 'Yes' : 'No') }}</strong></div>
-                    <div class="fact"><span>Taking pills</span><strong>{{ $citizen->Citizen_InPills === null ? 'Not recorded' : ($citizen->Citizen_InPills ? 'Yes' : 'No') }}</strong></div>
+                    @if($citizen->Citizen_Sex === 'Female')
+                        <div class="fact"><span>Pregnancy status</span><strong>{{ $citizen->Citizen_Pregnant === null ? 'Not recorded' : ($citizen->Citizen_Pregnant ? 'Yes' : 'No') }}</strong></div>
+                        @if($citizen->ageForEligibility() !== null && $citizen->ageForEligibility() >= 16)
+                            <div class="fact"><span>Taking pills</span><strong>{{ $citizen->Citizen_InPills === null ? 'Not recorded' : ($citizen->Citizen_InPills ? 'Yes' : 'No') }}</strong></div>
+                        @endif
+                    @endif
                     <div class="fact"><span>Deceased status</span><strong>{{ $citizen->Citizen_IsDeceased === null ? 'Not recorded' : ($citizen->Citizen_IsDeceased ? 'Deceased' : 'Living') }}</strong></div>
                     <div class="fact"><span>Family name</span><strong>{{ $citizen->family?->family_name ?: 'Not assigned' }}</strong></div>
                     <div class="fact"><span>Subgroup</span><strong>{{ $citizen->subgroup?->name ?: ($citizen->family?->subgroup?->name ?: 'Not assigned') }}</strong></div>

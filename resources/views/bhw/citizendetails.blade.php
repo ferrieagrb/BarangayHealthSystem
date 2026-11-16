@@ -1184,7 +1184,8 @@ window.updateFamilyPlanningEligibility = function () {
     }
 
     familyPlanningFields.hidden = !isFemale;
-    pregnant.disabled = !isEditing || !isFemale;
+    const pregnancyEligible = isFemale && age !== null && age >= 15;
+    pregnant.disabled = !isEditing || !pregnancyEligible;
 
     if (!isFemale) {
         pregnant.value = '0';

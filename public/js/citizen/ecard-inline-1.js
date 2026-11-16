@@ -21,7 +21,7 @@ function printCitizenSection(section) {
     citizenPrintPageRule = document.createElement('style');
     citizenPrintPageRule.id = 'citizen-print-page-size';
     citizenPrintPageRule.textContent = section === 'id'
-        ? '@page { size: auto; margin: 0; }'
+        ? '@page { size: auto; margin: 10mm; }'
         : '@page { size: A4 landscape; margin: 8mm; }';
     document.head.appendChild(citizenPrintPageRule);
 

@@ -97,3 +97,16 @@ and `browser-results.json` stay in the temporary fixture directory.
 New components should use `--theme-*` or the bridged role variables for their
 surfaces, borders, and text. Add new shared component selectors to `theme.css`
 instead of creating a separate palette or a second preference storage mechanism.
+
+## Form sizing across browsers
+
+The shared appearance include also loads the versioned `public/css/form-layout.css`.
+Form fields can shrink inside flex/grid tracks instead of allowing long select
+options to widen the entire form. Toolbars and action rows wrap, text buttons can
+grow vertically, and single-value selects use an explicit arrow and a minimum
+height that grows with the font size. Multiple-selection lists retain their native
+appearance. Text size adjustment is set to 100%; browser zoom remains available.
+
+The appearance script uses `Object.prototype.hasOwnProperty.call` so initialization
+does not depend on `Object.hasOwn`, which first shipped in Safari 15.4. This does
+not establish compatibility for other browser APIs elsewhere in the application.

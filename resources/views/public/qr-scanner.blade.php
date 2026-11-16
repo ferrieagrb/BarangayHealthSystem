@@ -177,8 +177,8 @@
                         <div class="public-qr-fact"><small>Height</small><strong>${escapeHtml(displayValue(citizen.height, ' cm'))}</strong></div>
                         <div class="public-qr-fact"><small>Weight</small><strong>${escapeHtml(displayValue(citizen.weight, ' kg'))}</strong></div>
                         <div class="public-qr-fact"><small>Housing status</small><strong>${escapeHtml(displayValue(citizen.housing_status))}</strong></div>
-                        <div class="public-qr-fact"><small>Pregnancy status</small><strong>${escapeHtml(statusValue(citizen.pregnant))}</strong></div>
-                        <div class="public-qr-fact"><small>Taking pills</small><strong>${escapeHtml(statusValue(citizen.taking_pills))}</strong></div>
+                        ${citizen.sex === 'Female' && Object.prototype.hasOwnProperty.call(citizen, 'pregnant') ? `<div class="public-qr-fact"><small>Pregnancy status</small><strong>${escapeHtml(statusValue(citizen.pregnant))}</strong></div>` : ''}
+                        ${citizen.sex === 'Female' && Object.prototype.hasOwnProperty.call(citizen, 'taking_pills') ? `<div class="public-qr-fact"><small>Taking pills</small><strong>${escapeHtml(statusValue(citizen.taking_pills))}</strong></div>` : ''}
                         <div class="public-qr-fact"><small>Deceased status</small><strong>${escapeHtml(citizen.deceased === null || citizen.deceased === undefined ? 'Not recorded' : (citizen.deceased ? 'Deceased' : 'Living'))}</strong></div>
                     </div>`;
 

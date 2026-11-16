@@ -826,8 +826,29 @@ class BhwReportController extends Controller
                 ->map(fn ($section) => $availableSections[$section])
                 ->implode(' + ');
 
-            return Pdf::loadView('bhw.reports', $reportData)
-                ->setPaper('a4', 'landscape')
+            $reportData['pdfOrientation'] = 'portrait';
+            $html = view('bhw.reports', $reportData)->render();
+            // Count the rendered columns, including optional citizen lists and colspans.
+            $document = new \DOMDocument();
+            @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+            $xpath = new \DOMXPath($document);
+            $maxColumns = 0;
+            foreach ($xpath->query('//table/thead/tr') as $row) {
+                $columns = 0;
+                foreach ($row->childNodes as $cell) {
+                    if ($cell instanceof \DOMElement && in_array($cell->tagName, ['th', 'td'], true)) {
+                        $columns += max(1, (int) $cell->getAttribute('colspan'));
+                    }
+                }
+                $maxColumns = max($maxColumns, $columns);
+            }
+            if ($maxColumns > 6) {
+                $reportData['pdfOrientation'] = 'landscape';
+                $html = view('bhw.reports', $reportData)->render();
+            }
+
+            return Pdf::loadHTML($html)
+                ->setPaper('a4', $reportData['pdfOrientation'])
                 ->download(Str::slug($reportTitle).'-'.now()->format('Y-m-d').'.pdf');
         }
 

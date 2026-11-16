@@ -7,8 +7,8 @@
 @endsection
 
 @section('content')
-<div class="bhw-ecard-page mx-auto max-w-7xl px-4 py-8">
-    <div class="ecard-page-header print:hidden">
+<div class="bhw-ecard-page">
+    <div class="ecard-page-header page-header print:hidden">
         <h1>Citizen ID & Electronic Health Card</h1>
         <a href="{{ route('citizenlist') }}" class="ecard-button ecard-button-secondary" data-ui-action="secondary">Back to Citizen List</a>
     </div>

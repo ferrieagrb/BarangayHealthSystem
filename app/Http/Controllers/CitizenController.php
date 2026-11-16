@@ -505,6 +505,7 @@ class CitizenController extends Controller
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
 
+
         $photoPath = $request->hasFile('photo')
             ? $request->file('photo')->store('citizen-photos', 'local')
             : null;
@@ -1090,6 +1091,14 @@ class CitizenController extends Controller
         ]);
 
         $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+
+        // Preserve recorded values when a field is read-only for this age.
+        if ($validated['Citizen_Age'] <= 14) {
+            unset($validated['Citizen_Pregnant']);
+        }
+        if ($validated['Citizen_Age'] < 16) {
+            unset($validated['Citizen_InPills']);
+        }
 
         $family = !empty($validated['family_id'])
             ? Family::with(['purok', 'subgroup'])->findOrFail($validated['family_id'])
