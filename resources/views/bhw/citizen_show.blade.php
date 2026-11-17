@@ -273,6 +273,7 @@
 
             <div id="familyPlanningSection" @if($citizen->Citizen_Sex !== 'Female') hidden @endif>
             <h3 class="citizen-section-title">Health &amp; Family Planning</h3>
+            <p id="familyPlanningAgeNotice" @if(($citizen->ageForEligibility() ?? 0) >= 16) hidden @endif>Pregnancy can be edited from age 15; birth control pills from age 16.</p>
 
             <div class="citizen-status-field">
 
@@ -1031,9 +1032,11 @@ function updateFamilyPlanningEligibility() {
     }
 
     const editing = !sexInput.disabled;
+    const pregnancyEligible = female && age !== null && age >= 15;
     const pillsEligible = female && age !== null && age >= 16;
     section.hidden = !female;
-    pregnancyInput.disabled = !female || !editing;
+    document.getElementById('familyPlanningAgeNotice').hidden = pillsEligible;
+    pregnancyInput.disabled = !pregnancyEligible || !editing;
     pillsField.hidden = !pillsEligible;
     pillsInput.disabled = !pillsEligible || !editing;
     if (!female) pregnancyInput.value = '0';

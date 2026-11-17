@@ -262,8 +262,9 @@ class QRScannerController extends Controller
                 'height' => $citizen->Citizen_Height,
                 'weight' => $citizen->Citizen_Weight,
                 'housing_status' => $citizen->Citizen_HousingStatus,
-                'pregnant' => $citizen->Citizen_Pregnant,
-                'taking_pills' => $citizen->Citizen_InPills,
+                ...($citizen->Citizen_Sex === 'Female' ? ['pregnant' => $citizen->Citizen_Pregnant] : []),
+                ...($citizen->Citizen_Sex === 'Female' && $citizen->ageForEligibility() !== null && $citizen->ageForEligibility() >= 16
+                    ? ['taking_pills' => $citizen->Citizen_InPills] : []),
                 'deceased' => $citizen->Citizen_IsDeceased,
             ],
             'latest_diagnosis' => $healthRecords->first() ? [

@@ -254,6 +254,41 @@ class PublicHealthIdSummaryTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_public_sharing_omits_inapplicable_family_planning_fields(): void
+    {
+        foreach ([['Male', 21, false, false], ['Female', 15, true, false], ['Female', 21, true, true]] as $index => [$sex, $age, $pregnancyVisible, $pillsVisible]) {
+            $citizen = citizens::create([
+                'Citizen_FName' => 'Test',
+                'Citizen_LName' => 'Resident',
+                'Citizen_BirthDate' => now()->subYears($age)->toDateString(),
+                'Citizen_ContactNo' => '555-0100',
+                'Citizen_Age' => $age,
+                'Citizen_Sex' => $sex,
+                'Citizen_Pregnant' => false,
+                'Citizen_InPills' => false,
+                'qr_token' => sprintf('2c1f934d-7fb7-43be-a0a1-c76d746cf7a%d', $index),
+                'public_health_id_enabled' => true,
+            ]);
+
+            $summary = $this->getJson(route('health-id.summary', $citizen->qr_token))->assertOk();
+            $page = $this->get(route('health-id.public', $citizen->qr_token))->assertOk();
+            if ($pregnancyVisible) {
+                $summary->assertJsonPath('citizen.pregnant', false);
+                $page->assertSee('Pregnancy status');
+            } else {
+                $summary->assertJsonMissingPath('citizen.pregnant');
+                $page->assertDontSee('Pregnancy status');
+            }
+            if ($pillsVisible) {
+                $summary->assertJsonPath('citizen.taking_pills', false);
+                $page->assertSee('Taking pills');
+            } else {
+                $summary->assertJsonMissingPath('citizen.taking_pills');
+                $page->assertDontSee('Taking pills');
+            }
+        }
+    }
+
     public function test_citizen_with_no_health_history_receives_empty_record_collections(): void
     {
         $citizen = citizens::create([

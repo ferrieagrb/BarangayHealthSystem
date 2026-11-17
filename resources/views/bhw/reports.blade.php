@@ -69,20 +69,22 @@
     .graphic-fill.red { background: #dc2626; }
     .print-only { display: none; }
     @if(request('export_format') === 'pdf')
-        @page { size: A4 landscape; margin: 14mm; }
-        body { margin: 0; color: #172033; font-family: DejaVu Sans, sans-serif; font-size: 10px; }
-        .reports-page { padding: 0; }
+        @page { size: A4 {{ $pdfOrientation ?? 'portrait' }}; margin: 12mm; }
+        body { margin: 0; color: #172033; font-family: DejaVu Sans, sans-serif; font-size: 9pt; }
+        .reports-page { padding: 0; font-family: DejaVu Sans, sans-serif; }
         .reports-grid { display: block; }
         .report-builder, .no-print { display: none !important; }
         .report-panel { padding: 0; border: 0; box-shadow: none; }
-        .report-meta h1 { font-size: 20px; }
-        .report-meta p { font-size: 10px; }
-        .report-section { page-break-inside: auto; }
-        .report-section h3 { font-size: 13px; }
-        .report-table { width: 100%; font-size: 9px; page-break-inside: auto; }
-        .report-table th, .report-table td { padding: 5px; }
+        .report-meta { margin-bottom: 8px; }
+        .report-meta h1 { font-size: 13pt; line-height: 1.2; }
+        .report-meta p { margin-top: 3px; font-size: 9pt; }
+        .report-section { margin-top: 10px; page-break-inside: auto; }
+        .report-section h3 { margin-bottom: 5px; padding-bottom: 4px; font-size: 10pt; }
+        .report-table { width: 100%; font-size: 9pt; line-height: 1.25; page-break-inside: auto; }
+        .report-table th, .report-table td { padding: 4px; overflow-wrap: break-word; }
+        .report-table th { font-size: 9pt; }
         .report-table-scroll { width: 100%; overflow: visible; }
-        .report-details-table { min-width: 0; font-size: 7px; }
+        .report-details-table { min-width: 0; font-size: 9pt; }
         .report-table tr { page-break-inside: avoid; }
         .report-graphic { display: block; }
         .graphic-row { display: table; width: 100%; }
@@ -98,7 +100,7 @@
         .report-meta { flex-direction: column; }
     }
     @media print {
-        @page { size: landscape; margin: 14mm; }
+        @page { size: {{ request('export_format') === 'pdf' ? 'A4 '.($pdfOrientation ?? 'portrait') : 'landscape' }}; margin: {{ request('export_format') === 'pdf' ? '12mm' : '14mm' }}; }
         html, body, .dashboard, .main-content { height: auto !important; min-height: 0 !important; overflow: visible !important; }
         .dashboard { display: block !important; }
         .sidebar, .page-top, .report-builder, .no-print { display: none !important; }
@@ -110,7 +112,7 @@
         .report-preview { display: block !important; }
         .report-table { width: 100%; page-break-inside: auto; }
         .report-table-scroll { width: 100%; overflow: visible !important; }
-        .report-details-table { min-width: 0; font-size: 8px; }
+        .report-details-table { min-width: 0; font-size: {{ request('export_format') === 'pdf' ? '9pt' : '8px' }}; }
         .report-table thead { display: table-header-group; }
         .report-table tr { break-inside: avoid; page-break-inside: avoid; }
         .report-section { break-inside: auto; page-break-inside: auto; }

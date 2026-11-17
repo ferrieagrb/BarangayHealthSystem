@@ -49,7 +49,8 @@
     function apply(preferences) {
         current = {
             theme: preferences.theme === 'dark' ? 'dark' : 'light',
-            font: Object.hasOwn(scales, preferences.font) ? preferences.font : 'normal'
+            // Object.hasOwn is unavailable in Safari versions before 15.4.
+            font: Object.prototype.hasOwnProperty.call(scales, preferences.font) ? preferences.font : 'normal'
         };
         for (const element of [root, body]) {
             element.classList.toggle('theme-dark', current.theme === 'dark');
