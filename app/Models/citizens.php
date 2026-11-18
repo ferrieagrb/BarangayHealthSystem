@@ -13,6 +13,7 @@ use App\Models\MedicationRecord;
 use App\Models\MaintenanceRecord;
 use App\Models\PurokSubgroup;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 
 class citizens extends Authenticatable
@@ -170,6 +171,12 @@ class citizens extends Authenticatable
 public function family()
 {
     return $this->belongsTo(Family::class, 'family_id')->withTrashed();
+}
+
+public function scopeWithoutActiveFamily(Builder $query): Builder
+{
+    // Archived household links remain available for restore, but do not block reassignment.
+    return $query->whereDoesntHave('family', fn (Builder $family) => $family->whereNull('families.deleted_at'));
 }
 
 public function subgroup()

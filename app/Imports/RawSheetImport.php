@@ -3,15 +3,16 @@
 namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToArray;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithLimit;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Events\BeforeImport;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-class RawSheetImport implements ToArray, WithLimit, WithMultipleSheets
+class RawSheetImport implements ToArray, WithLimit, WithMultipleSheets, WithColumnLimit, WithEvents
 {
-    public function limit(): int
-    {
-        return 20;
-    }
+    private string $endColumn = 'A';
 
     public function sheets(): array
     {

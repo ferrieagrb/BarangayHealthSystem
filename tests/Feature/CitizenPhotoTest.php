@@ -120,15 +120,17 @@ class CitizenPhotoTest extends TestCase
 
         foreach (['Jamie', 'Alex'] as $firstName) {
             $this->actingAs($bhw)->post(route('citizen.store'), [
-                'Citizen_FName' => $firstName, 'Citizen_LName' => 'Rivera',
+                'Citizen_FName' => strtolower($firstName), 'Citizen_LName' => 'rivera',
                 'Citizen_BirthDate' => '1990-04-02', 'Citizen_Sex' => 'Female',
                 'Citizen_Purok' => 'Purok 1', 'subgroup_id' => $subgroup,
                 'Citizen_ContactNo' => '', 'email' => '',
             ])->assertRedirect(route('citizenlist'))->assertSessionHasNoErrors();
 
             $citizen = citizens::where('Citizen_FName', $firstName)->firstOrFail();
+            $this->assertSame('Rivera', $citizen->Citizen_LName);
             $this->assertNull($citizen->Citizen_ContactNo);
             $account = User::where('citizen_id', $citizen->id)->firstOrFail();
+            $this->assertSame($firstName.' Rivera', $account->name);
             $this->assertNull($account->email);
             $this->assertNotEmpty($account->username);
         }

@@ -465,6 +465,7 @@ class AdminCitizenPurgeTest extends TestCase
             $table->string('family_name');
             $table->unsignedBigInteger('purok_id');
             $table->unsignedBigInteger('subgroup_id')->nullable();
+            $table->string('family_code')->nullable()->unique();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -10,6 +10,7 @@ use App\Models\PurokSubgroup;
 use App\Models\Supply;
 use App\Models\UserPermission;
 use App\Models\citizens;
+use App\Services\FamilyCodeGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -302,7 +303,10 @@ class AdminSettings extends Controller
         $this->validatePurgeConfirmation($request, $confirmationName);
 
         DB::transaction(function () use ($subgroup) {
-            $subgroup->families()->whereDoesntHave('members')->delete();
+            $codes = app(FamilyCodeGenerator::class);
+            foreach ($subgroup->families()->whereDoesntHave('members')->get() as $family) {
+                $codes->archive($family);
+            }
             $subgroup->delete();
         });
 

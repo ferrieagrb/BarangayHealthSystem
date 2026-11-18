@@ -32,4 +32,27 @@ class ImportHeadingPreviewTest extends TestCase
             unlink($path);
         }
     }
+
+    public function test_preview_preserves_late_header_columns_but_ignores_formatted_empty_columns(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'heading-preview-');
+        $book = new Spreadsheet();
+        $sheet = $book->getActiveSheet();
+        $sheet->setCellValue('C1', 'First Name');
+        $sheet->setCellValue('Q1', 'Last Name');
+        $sheet->getColumnDimension('XFC')->setWidth(10);
+
+        try {
+            (new Xlsx($book))->save($path);
+            $sheets = Excel::toArray(new RawSheetImport(), $path, null, \Maatwebsite\Excel\Excel::XLSX);
+
+            $this->assertCount(1, $sheets);
+            $this->assertCount(17, $sheets[0][0]);
+            $this->assertSame('Last Name', $sheets[0][0][16]);
+            $this->assertSame(1, CitizensImport::detectHeadingRow($sheets[0]));
+        } finally {
+            $book->disconnectWorksheets();
+            unlink($path);
+        }
+    }
 }
