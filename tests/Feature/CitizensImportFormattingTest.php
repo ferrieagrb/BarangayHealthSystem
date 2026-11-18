@@ -24,10 +24,11 @@ class CitizensImportFormattingTest extends TestCase
 
         Schema::create('citizens', function (Blueprint $table) {
             $table->id();
-            foreach (['Citizen_FName', 'Citizen_MName', 'Citizen_LName', 'Citizen_BirthDate', 'Citizen_ContactNo', 'Citizen_Sex', 'Citizen_Purok', 'qr_token'] as $column) {
+            foreach (['Citizen_FName', 'Citizen_MName', 'Citizen_LName', 'Citizen_ContactNo', 'Citizen_Sex', 'Citizen_Purok', 'qr_token'] as $column) {
                 $table->string($column)->nullable();
             }
-            $table->integer('Citizen_Age')->nullable();
+            $table->date('Citizen_BirthDate');
+            $table->integer('Citizen_Age');
             $table->unsignedBigInteger('subgroup_id')->nullable();
             $table->boolean('Citizen_Pregnant')->default(false);
             $table->boolean('Citizen_InPills')->default(false);
@@ -44,6 +45,8 @@ class CitizensImportFormattingTest extends TestCase
             $table->timestamps();
             $table->softDeletes();
         });
+        $migration = require database_path('migrations/2026_11_18_000002_make_citizen_birth_date_and_age_optional.php');
+        $migration->up();
     }
 
     private function row(array $values = []): array
@@ -69,6 +72,25 @@ class CitizensImportFormattingTest extends TestCase
         $this->assertSame('09123456789', $citizen->Citizen_ContactNo);
         $this->assertSame('Josh Adrian De La Peña Jr.', User::first()->name);
         $this->assertSame(1, $import->createdAccounts);
+    }
+
+    #[DataProvider('missingOrInvalidBirthDates')]
+    public function test_import_preserves_unknown_birth_date_and_does_not_invent_a_username(mixed $birthDate): void
+    {
+        $import = new CitizensImport();
+        $citizen = $import->model($this->row(['birthdate' => $birthDate]));
+
+        $this->assertNull($citizen->fresh()->Citizen_BirthDate);
+        $this->assertNull($citizen->fresh()->Citizen_Age);
+        $this->assertNull(User::firstOrFail()->username);
+        $this->assertStringContainsString('birthdate', strtolower(implode(' ', $import->issues)));
+        $this->assertSame(1, $import->createdAccounts);
+        $this->assertSame(1, $import->accountsWithoutUsername);
+    }
+
+    public static function missingOrInvalidBirthDates(): array
+    {
+        return [[null], [''], ['2/31/2026']];
     }
 
     #[DataProvider('invalidNames')]

@@ -59,7 +59,7 @@
         <p style="color:#4b5563;margin-bottom:22px;">{{ session('success') }}</p>
         @if(session('import_issues'))
             <div style="text-align:left;max-height:180px;overflow:auto;margin:-8px 0 20px;padding:10px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:12px;line-height:1.5;">
-                <strong>Some data was not accepted because of wrong format:</strong>
+                <strong>Import notes:</strong>
                 <ul style="margin:6px 0 0;padding-left:18px;">
                     @foreach(session('import_issues') as $issue)
                         <li>{{ $issue }}</li>
