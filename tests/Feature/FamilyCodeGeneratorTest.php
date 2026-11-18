@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Family;
 use App\Models\Purok;
 use App\Models\PurokSubgroup;
 use App\Services\FamilyCodeGenerator;
@@ -63,6 +64,69 @@ class FamilyCodeGeneratorTest extends TestCase
     public function test_it_combines_a_mother_purok_with_a_letter_only_subgroup(): void
     {
         $this->assertSame('4A', FamilyCode::prefixFor('Purok 4', 'A'));
+    }
+
+    public function test_archiving_fills_the_gap_only_in_the_same_area(): void
+    {
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1A']);
+        $otherSubgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1B']);
+        $generator = new FamilyCodeGenerator;
+        $first = $generator->create('First', $subgroup);
+        $middle = $generator->create('Middle', $subgroup);
+        $last = $generator->create('Last', $subgroup);
+        $other = $generator->create('Other', $otherSubgroup);
+
+        $generator->archive($middle);
+
+        $this->assertSame('F1A-0001', $first->fresh()->family_code);
+        $this->assertSame('F1A-0002', $last->fresh()->family_code);
+        $this->assertSame('F1B-0001', $other->fresh()->family_code);
+        $this->assertTrue($middle->fresh()->trashed());
+        $this->assertNull($middle->fresh()->family_code);
+        $this->assertSame('F1A-0003', $generator->create('New', $subgroup)->family_code);
+    }
+
+    public function test_restoring_a_family_assigns_the_next_number_without_duplicates(): void
+    {
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1A']);
+        $generator = new FamilyCodeGenerator;
+        $archived = $generator->create('Malabad', $subgroup);
+        $current = $generator->create('Fabia Family', $subgroup);
+
+        $generator->archive($archived);
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+
+        $generator->restore($archived->fresh());
+        $this->assertFalse($archived->fresh()->trashed());
+        $this->assertSame('F1A-0002', $archived->fresh()->family_code);
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+
+        // A restored record can be archived again, including after another family is removed.
+        $generator->archive($current);
+        $this->assertSame('F1A-0001', $archived->fresh()->family_code);
+        $generator->archive($archived);
+        $this->assertSame('F1A-0001', $generator->create('New household', $subgroup)->family_code);
+    }
+
+    public function test_migration_renumbers_existing_current_families_and_releases_archived_codes(): void
+    {
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => '1A']);
+        $generator = new FamilyCodeGenerator;
+        $archived = $generator->create('Malabad', $subgroup);
+        $current = $generator->create('Fabia Family', $subgroup);
+        $archived->delete(); // Data saved before automatic renumbering was introduced.
+
+        $migration = require database_path('migrations/2026_11_18_000001_renumber_active_family_codes.php');
+        $migration->up();
+
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+        $this->assertNull($archived->fresh()->family_code);
+        $migration->up(); // Running the repair again keeps the same numbering.
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+        $this->assertSame(2, Family::withTrashed()->count());
     }
 
     public function test_it_strips_the_p_prefix_from_subgroup_labels_like_p1a(): void

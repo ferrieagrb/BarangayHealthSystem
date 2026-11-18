@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\ArchiveController;
 use App\Models\citizens;
+use App\Models\Family;
 use App\Models\Purok;
 use App\Models\PurokSubgroup;
 use App\Models\User;
 use App\Models\UserPermission;
+use App\Services\FamilyCodeGenerator;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -178,5 +181,152 @@ class FamilyRegistrationTest extends TestCase
         $this->assertSame($family->id, $member->fresh()->family_id);
         $this->assertSame(2, $family->members()->count());
         $this->assertSame('Family and selected household members created successfully.', $response->getSession()->get('success'));
+    }
+
+    public function test_archiving_and_restoring_renumbers_codes_without_changing_member_assignments(): void
+    {
+        $user = User::create(['role' => 'bhw']);
+        UserPermission::create(['user_id' => $user->id, 'feature' => 'family', 'access' => 'write']);
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create([
+            'purok_id' => $purok->id, 'user_id' => $user->id, 'name' => '1A',
+        ]);
+        $generator = app(FamilyCodeGenerator::class);
+        $archived = $generator->create('Malabad', $subgroup);
+        $current = $generator->create('Fabia Family', $subgroup);
+        $member = citizens::create([
+            'Citizen_FName' => 'Lolita', 'Citizen_LName' => 'Fabia',
+            'family_id' => $current->id, 'subgroup_id' => $subgroup->id,
+        ]);
+        $archivedMember = citizens::create([
+            'Citizen_FName' => 'Maria', 'Citizen_LName' => 'Malabad',
+            'family_id' => $archived->id, 'subgroup_id' => $subgroup->id,
+        ]);
+        $current->update(['head_id' => $member->id]);
+        Auth::login($user);
+
+        app(FamilyController::class)->archive($archived);
+
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+        $this->assertSame($current->id, $member->fresh()->family_id);
+        $this->assertSame($member->id, $current->fresh()->head_id);
+        $this->assertSame($archived->id, $archivedMember->fresh()->family_id);
+
+        app(ArchiveController::class)->restore('families', $archived->id);
+
+        $this->assertSame('F1A-0002', $archived->fresh()->family_code);
+        $this->assertFalse($archived->fresh()->trashed());
+        $this->assertSame($archived->id, $archivedMember->fresh()->family_id);
+        $this->assertSame('F1A-0001', $current->fresh()->family_code);
+    }
+
+    public function test_family_pickers_include_members_of_previously_archived_families_within_the_bhw_scope(): void
+    {
+        [$subgroup, $archived, $current] = $this->familyAssignmentContext();
+        $available = $this->familyCitizen($subgroup, null, 'Unassigned');
+        $archivedMember = $this->familyCitizen($subgroup, $archived, 'Lolita');
+        $this->familyCitizen($subgroup, $current, 'Already assigned');
+        $deletedCitizen = $this->familyCitizen($subgroup, $archived, 'Archived citizen');
+        $deletedCitizen->delete();
+        $otherSubgroup = PurokSubgroup::create(['purok_id' => $subgroup->purok_id, 'name' => '1B']);
+        $otherFamily = app(FamilyCodeGenerator::class)->create('Other Family', $otherSubgroup);
+        $this->familyCitizen($otherSubgroup, $otherFamily, 'Outside assigned area');
+        $otherFamily->delete();
+        $archived->delete(); // Existing archived records still have a non-null family_id.
+
+        $controller = app(FamilyController::class);
+        $expected = [$available->id, $archivedMember->id];
+        $this->assertEqualsCanonicalizing($expected, $controller->index()->getData()['availableCitizens']->pluck('id')->all());
+        $this->assertEqualsCanonicalizing($expected, $controller->show($current)->getData()['availableCitizens']->pluck('id')->all());
+        $this->assertSame($archived->id, $archivedMember->fresh()->family_id);
+    }
+
+    public function test_archived_family_members_can_join_an_existing_family_and_are_not_reclaimed_on_restore(): void
+    {
+        [$subgroup, $archived, $current] = $this->familyAssignmentContext();
+        $member = $this->familyCitizen($subgroup, $archived, 'Lolita');
+        $remaining = $this->familyCitizen($subgroup, $archived, 'Remaining');
+        $archived->update(['head_id' => $member->id]);
+        app(FamilyController::class)->archive($archived);
+
+        app(FamilyController::class)->addMember(Request::create('/bhw/families/members', 'POST', [
+            'citizen_id' => $member->id,
+        ]), $current);
+
+        $this->assertSame($current->id, $member->fresh()->family_id);
+        $this->assertSame($subgroup->id, $member->fresh()->subgroup_id);
+        $this->assertSame('Purok 1', $member->fresh()->Citizen_Purok);
+        $this->assertDatabaseHas('citizen_activity_logs', [
+            'citizen_id' => $member->id, 'description' => 'Assigned citizen to family Casal Family',
+        ]);
+
+        app(ArchiveController::class)->restore('families', $archived->id);
+
+        $this->assertSame($current->id, $member->fresh()->family_id);
+        $this->assertSame([$remaining->id], $archived->members()->pluck('id')->all());
+        $this->assertNull($archived->fresh()->head_id);
+        $this->assertNotContains($member->id, app(FamilyController::class)->index()->getData()['availableCitizens']->pluck('id')->all());
+    }
+
+    public function test_new_family_registration_accepts_citizens_linked_to_an_archived_family(): void
+    {
+        [$subgroup, $archived] = $this->familyAssignmentContext();
+        $member = $this->familyCitizen($subgroup, $archived, 'Lolita');
+        app(FamilyController::class)->archive($archived);
+
+        app(FamilyController::class)->store(Request::create('/bhw/families', 'POST', [
+            'subgroup_id' => $subgroup->id, 'citizen_ids' => [$member->id],
+        ]));
+
+        $newFamily = Family::findOrFail($member->fresh()->family_id);
+        $this->assertNotSame($archived->id, $newFamily->id);
+        $this->assertSame('Fabia Family', $newFamily->family_name);
+        $this->assertSame($member->id, $newFamily->head_id);
+        $this->assertSame(0, $archived->members()->count());
+        $this->assertTrue($archived->fresh()->trashed());
+    }
+
+    public function test_registration_rechecks_availability_if_the_old_family_was_restored(): void
+    {
+        [$subgroup, $archived] = $this->familyAssignmentContext();
+        $member = $this->familyCitizen($subgroup, $archived, 'Lolita');
+        $codes = app(FamilyCodeGenerator::class);
+        $codes->archive($archived);
+        $codes->restore($archived);
+
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        try {
+            app(FamilyController::class)->store(Request::create('/bhw/families', 'POST', [
+                'subgroup_id' => $subgroup->id, 'citizen_ids' => [$member->id],
+            ]));
+        } finally {
+            $this->assertSame($archived->id, $member->fresh()->family_id);
+            $this->assertSame(2, Family::count());
+        }
+    }
+
+    private function familyAssignmentContext(): array
+    {
+        $user = User::create(['role' => 'bhw']);
+        UserPermission::create(['user_id' => $user->id, 'feature' => 'family', 'access' => 'write']);
+        $purok = Purok::create(['name' => 'Purok 1']);
+        $subgroup = PurokSubgroup::create([
+            'purok_id' => $purok->id, 'user_id' => $user->id, 'name' => '1A',
+        ]);
+        $codes = app(FamilyCodeGenerator::class);
+        $archived = $codes->create('Fabia Family', $subgroup);
+        $current = $codes->create('Casal Family', $subgroup);
+        Auth::login($user);
+
+        return [$subgroup, $archived, $current];
+    }
+
+    private function familyCitizen(PurokSubgroup $subgroup, ?Family $family, string $name): citizens
+    {
+        return citizens::create([
+            'Citizen_FName' => $name, 'Citizen_LName' => 'Fabia',
+            'Citizen_Purok' => 'Purok 1', 'subgroup_id' => $subgroup->id,
+            'family_id' => $family?->id,
+        ]);
     }
 }
