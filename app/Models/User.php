@@ -56,6 +56,10 @@ class User extends Authenticatable implements MustVerifyEmail
     // Citizen username: lastname_MMDD (e.g. delacruz_0111); a number is appended if already taken.
     public static function citizenUsername($lastName, $birthDate, $ignoreUserId = null): ?string
     {
+        if ($birthDate === null || trim((string) $birthDate) === '') {
+            return null;
+        }
+
         try {
             $mmdd = \Illuminate\Support\Carbon::parse($birthDate)->format('md');
         } catch (\Throwable $e) {

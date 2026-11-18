@@ -367,7 +367,7 @@ class CitizenController extends Controller
             ->paginate(10)
             ->withQueryString();
         foreach ($citizens as $citizen) {
-            $citizen->setAttribute('Citizen_Age', Carbon::parse($citizen->Citizen_BirthDate)->age);
+            $citizen->setAttribute('Citizen_Age', $citizen->ageForEligibility());
         }
 
         /*
@@ -1445,6 +1445,9 @@ class CitizenController extends Controller
             $this->logAdminActivity('citizens.imported', 'Imported citizen records from Excel.', 'data');
 
             $message = "Import finished. {$import->createdAccounts} citizen accounts were created with the default temporary password.";
+            if ($import->accountsWithoutUsername > 0) {
+                $message .= " {$import->accountsWithoutUsername} account(s) need a valid birthdate added before a login username can be generated.";
+            }
             if ($import->skippedRows > 0) {
                 $message .= " {$import->skippedRows} row(s) were skipped.";
             }

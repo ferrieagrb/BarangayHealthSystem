@@ -30,6 +30,7 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, WithC
     private const SUBGROUP_PATTERN = '/^(?:(?:sub[\s\-]*)?(?:purok|group)\s*)?(?:\d+\s*[-._ ]?\s*)?[a-z]$/i';
 
     public int $createdAccounts = 0;
+    public int $accountsWithoutUsername = 0;
     public int $skippedRows = 0;
     public int $ignoredValues = 0;
     /** @var list<string> */
@@ -169,10 +170,12 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, WithC
         if ($birthDateValue !== null && $this->text($birthDateValue) !== '') {
             $birthDate = $this->parseBirthDate($birthDateValue);
             if ($birthDate === null) {
-                $this->ignoreValue("{$entry}: Birthdate \"{$this->text($birthDateValue)}\" is not a valid date and was left blank");
+                $this->ignoreValue("{$entry}: Birthdate \"{$this->text($birthDateValue)}\" is invalid. Add a valid birthdate to generate the citizen's login username");
             } else {
                 $age = Carbon::parse($birthDate)->age;
             }
+        } else {
+            $this->ignoreValue("{$entry}: Birthdate is missing. Add a valid birthdate to generate the citizen's login username");
         }
 
         $sexInput = $this->text($row['sex'] ?? $row['Sex'] ?? $row['SEX'] ?? '');
@@ -248,6 +251,9 @@ class CitizensImport implements ToModel, WithHeadingRow, WithChunkReading, WithC
             ]);
 
             $this->createdAccounts++;
+            if ($birthDate === null) {
+                $this->accountsWithoutUsername++;
+            }
 
             return $citizen;
         });
