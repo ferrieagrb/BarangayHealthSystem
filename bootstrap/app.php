@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Automatically track page views and response loading times on web routes
         $middleware->web(append: [
+            \App\Http\Middleware\CapitalizeTextInputs::class,
             TrackPageViews::class,
             SystemMaintenance::class,
             SecurityHeaders::class,

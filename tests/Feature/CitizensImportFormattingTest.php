@@ -227,9 +227,9 @@ class CitizensImportFormattingTest extends TestCase
             $file = new UploadedFile($path, 'citizens.xlsx', null, null, true);
             $preview = Excel::toArray(new RawSheetImport(), $file);
 
+            $this->assertCount(1, $preview);
             $this->assertSame(1, CitizensImport::detectHeadingRow($preview[0]));
-            $this->assertCount(17, $preview[1][0]);
-            $this->assertSame('Last Name', $preview[1][0][16]);
+            $this->assertCount(17, $preview[0][0]);
 
             $import = new CitizensImport(CitizensImport::detectHeadingRow($preview[0]));
             Excel::import($import, $file);

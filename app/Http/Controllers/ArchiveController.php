@@ -14,6 +14,7 @@ use App\Models\PurokSubgroup;
 use App\Models\Supply;
 use App\Models\User;
 use App\Models\VaccinationRecord;
+use App\Services\FamilyCodeGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -77,7 +78,11 @@ class ArchiveController extends Controller
         abort_unless(in_array($type, $this->allowedTypes(), true), 404);
 
         $record = self::TYPES[$type]['model']::onlyTrashed()->findOrFail($id);
-        $record->restore();
+        if ($record instanceof Family) {
+            app(FamilyCodeGenerator::class)->restore($record);
+        } else {
+            $record->restore();
+        }
 
         if ($record instanceof citizens) {
             // Bring back the citizen's login too, forcing a fresh password.

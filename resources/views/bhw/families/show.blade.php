@@ -133,13 +133,13 @@
                     Add More
                 </button>
             </div>
-            <div class="family-create-actions">
-                <button type="submit" class="btn btn-primary create-family-button" data-ui-action="primary">
-                    Save
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeFamilyRegistrationModal()" data-ui-action="secondary">Cancel</button>
-            </div>
         </form>
+        </div>
+        <div class="modal-footer family-create-actions">
+            <button type="submit" form="registerFamilyForm" class="btn btn-primary create-family-button" data-ui-action="primary">
+                Save
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeFamilyRegistrationModal()" data-ui-action="secondary">Cancel</button>
         </div>
     </dialog>
     @endif

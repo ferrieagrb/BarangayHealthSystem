@@ -706,6 +706,59 @@ dialog.family-modal .modal-body {
     overscroll-behavior: contain;
 }
 
+/* Keep registration controls in view and give citizen results room to breathe. */
+dialog.family-registration-modal {
+    width: min(960px, calc(100vw - 32px));
+    max-width: 960px;
+    height: min(720px, calc(100dvh - 32px));
+    max-height: calc(100dvh - 32px);
+}
+
+dialog.family-registration-modal .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+}
+
+dialog.family-registration-modal .family-registration-modal-subtitle {
+    margin: 4px 0 0;
+    color: var(--theme-muted, #64748b);
+    line-height: 1.5;
+}
+
+dialog.family-registration-modal .family-citizen-suggestions {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    max-height: none;
+    margin-top: 8px;
+    overflow: visible;
+    box-shadow: none;
+}
+
+dialog.family-registration-modal .family-citizen-suggestion {
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+dialog.family-registration-modal .family-create-actions {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 16px 22px;
+    border-top: 1px solid var(--theme-border, #e6edf5);
+    background: var(--theme-surface, #fff);
+}
+
+@media (max-width: 640px) {
+    dialog.family-registration-modal .family-citizen-suggestions {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 dialog.family-modal .modal-body h4 {
     margin: 0 0 13px;
     color: #94a3b8;

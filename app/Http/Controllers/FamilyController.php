@@ -111,7 +111,7 @@ class FamilyController extends Controller
         });
         $familiesQuery->when($subgroupFilter, fn ($query) => $query->where('families.subgroup_id', $subgroupFilter));
 
-        // Always order by purok number (Purok 1-4), then subgroup, then family name.
+        // Order by purok and subgroup, then show the lowest Family ID first.
         $families = $familiesQuery
             ->leftJoin('puroks as order_puroks', 'order_puroks.id', '=', 'families.purok_id')
             ->leftJoin('purok_subgroups as order_subgroups', 'order_subgroups.id', '=', 'families.subgroup_id')
@@ -119,7 +119,9 @@ class FamilyController extends Controller
             ->orderByRaw('LENGTH(order_puroks.name)')
             ->orderBy('order_puroks.name')
             ->orderBy('order_subgroups.name')
-            ->orderBy('families.family_name')
+            ->orderByRaw('LENGTH(families.family_code)')
+            ->orderBy('families.family_code')
+            ->orderBy('families.id')
             ->paginate(10)
             ->withQueryString();
         $puroks = $puroksQuery->get()
@@ -131,7 +133,7 @@ class FamilyController extends Controller
             ));
         $availableCitizens = app(BhwCitizenAccess::class)
             ->scopeCitizens(citizens::query(), $user)
-            ->whereNull('family_id')
+            ->withoutActiveFamily()
             ->get();
 
         return view('bhw.families.show', compact('families', 'puroks', 'availableCitizens', 'subgroupCounts', 'search', 'subgroupFilter', 'familyOverview'));
@@ -157,7 +159,7 @@ class FamilyController extends Controller
         DB::transaction(function () use ($citizenIds, $subgroup, $user, $access): void {
             $selectedCitizens = $access->scopeCitizens(citizens::query(), $user)
                 ->whereIn('id', $citizenIds)
-                ->whereNull('family_id')
+                ->withoutActiveFamily()
                 ->where('subgroup_id', $subgroup->id)
                 ->lockForUpdate()
                 ->get()
@@ -212,7 +214,7 @@ class FamilyController extends Controller
         $citizenAccess = app(BhwCitizenAccess::class);
         $availableCitizens = $citizenAccess
             ->scopeCitizens(citizens::query(), $user)
-            ->whereNull('family_id')
+            ->withoutActiveFamily()
             ->where(function ($query) use ($family) {
                 $query->where('Citizen_Purok', $family->purok?->name)
                     ->orWhereHas('subgroup', fn ($subgroup) => $subgroup->where('purok_id', $family->purok_id));
@@ -324,7 +326,7 @@ class FamilyController extends Controller
         $this->authorizeFamily($family);
 
         $name = $family->family_name;
-        $family->delete();
+        app(FamilyCodeGenerator::class)->archive($family);
 
         return redirect()->route('bhw.families.index')->with('success', "Family {$name} archived. You can restore it from the archive.");
     }
