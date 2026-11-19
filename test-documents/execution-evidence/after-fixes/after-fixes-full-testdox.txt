@@ -1,0 +1,258 @@
+Admin Citizen Purge (Tests\Feature\AdminCitizenPurge)
+ [x] Applying one bhw assignment persists after reload and preserves other workers
+ [x] Admin can delete a purok boundary without changing other puroks
+ [x] Admin password is required to delete puroks and subgroups
+ [x] Admin can archive citizens and citizen accounts in a purok only
+ [x] Subgroup purge uses family membership and requires an exact confirmation
+ [x] Non admin cannot access the citizen purge route
+ [x] Admin can delete subgroup after its citizens are removed and empty families are cleaned up
+ [x] Archiving an empty subgroup requires exact confirmation and preserves bhw assignments
+
+Appearance Preferences (Tests\Feature\AppearancePreferences)
+ [x] Every role can preview without persisting and save only its own preferences
+ [x] Invalid preferences and anonymous requests cannot change saved values
+ [x] Shared sidebar scroll styles cover every role and keep navigation scrollable
+ [x] Shared assets cover representative role sections
+
+Bhw Assignments (Tests\Feature\BhwAssignments)
+ [x] Bulk selection preserves other workers and supports shared coverage
+ [x] Non bhw selection is rejected without changes
+
+Bhw Disease Monitoring (Tests\Feature\BhwDiseaseMonitoring)
+ [x] Monitoring uses record date assigned subgroups and distinct citizens
+ [x] Unassigned citizens are accessible only to bhws in the same mother purok
+ [x] Bhw can assign an unassigned citizen within the same purok but not across puroks
+ [x] Small results are suppressed from aggregate details
+ [x] Monthly trend counts records and masks buckets with fewer than three citizens
+ [x] Reports page loads when vaccine filter is active
+ [x] Custom report can be downloaded as a filtered excel workbook
+ [x] All report sections render and export the same filtered data
+ [x] Household profiles report is ordered by purok and filterable
+ [x] Report purok filter includes bhw pivot assigned subgroups
+ [x] Report filters validate ranges and ignore inapplicable sex filter
+ [x] Health history reports apply citizen name and id search
+ [x] All puroks citizen profiles match in preview and excel
+ [x] Health and immunization reports preserve individual history and schedule status
+ [x] Diagnosis summary also includes individual history in preview and excel
+
+Bhw Route Connections (Tests\Feature\BhwRouteConnections)
+ [x] Citizen show name resolves to the bhw only route
+ [x] Calendar event edit route calls the update action
+ [x] Family routes are limited to bhw users
+ [x] Qr checker diagnosis route has a controller action
+ [x] Qr lookup accepts legacy health card ids
+
+Citizen Announcement Return Navigation (Tests\Feature\CitizenAnnouncementReturnNavigation)
+ [x] Dashboard entry returns to dashboard and restores scroll
+ [x] Announcement list entry returns to list and restores scroll
+ [x] Missing or invalid source falls back to dashboard
+ [x] Announcement list cards open the full detail with list source
+
+Citizen Birth Date Migration (Tests\Feature\CitizenBirthDateMigration)
+ [x] Migration allows unknown birth dates and ages without losing existing data
+
+Citizen Family Planning Eligibility (Tests\Feature\CitizenFamilyPlanningEligibility)
+ [x] Male citizens cannot retain pregnancy or pills statuses
+ [x] Female pills status requires age sixteen and pregnancy remains available
+ [x] Changing sex or age clears newly ineligible statuses
+ [x] Migration clears ineligible statuses from existing records
+ [x] Ecards hide family planning statuses for males and pills for minors
+
+Citizen Photo (Tests\Feature\CitizenPhoto)
+ [x] Bhw can create citizens without contact number or email
+ [x] Bhw can create a citizen with a private photo
+ [x] Citizen can replace photo and only their own record changes
+ [x] Photo validation and access are enforced
+ [x] Citizen can add a first photo and replace a legacy public photo
+ [x] Guests cannot change photos
+ [x] Assigned bhw can add and replace photo without changing citizen details
+ [x] Bhw photo permissions and deceased record lock are enforced
+ [x] Bhw photo controls are shown only for editable living citizens
+
+Citizens Import Formatting (Tests\Feature\CitizensImportFormatting)
+ [x] Import saves capitalized names and allows blank middle name
+ [x] Import preserves unknown birth date and does not invent a username with data set #0
+ [x] Import preserves unknown birth date and does not invent a username with data set #1
+ [x] Import preserves unknown birth date and does not invent a username with data set #2
+ [x] Invalid required name skips row with data set #0
+ [x] Invalid required name skips row with data set #1
+ [x] Invalid required name skips row with data set #2
+ [x] Invalid required name skips row with data set #3
+ [x] Invalid required name skips row with data set #4
+ [x] Invalid required name skips row with data set #5
+ [x] Invalid required name skips row with data set #6
+ [x] Invalid optional middle name and contact are left blank
+ [x] Contact formats are normalized or reported with data set #0
+ [x] Contact formats are normalized or reported with data set #1
+ [x] Contact formats are normalized or reported with data set #2
+ [x] Contact formats are normalized or reported with data set #3
+ [x] Contact formats are normalized or reported with data set #4
+ [x] Contact formats are normalized or reported with data set #5
+ [x] Contact formats are normalized or reported with data set #6
+ [x] Contact formats are normalized or reported with data set #7
+ [x] Contact formats are normalized or reported with data set #8
+ [x] Contact formats are normalized or reported with data set #9
+ [x] Header preview reads only the first twenty rows of a large csv
+ [x] Header preview and chunked import preserve later rows with data set #0
+ [x] Header preview and chunked import preserve later rows with data set #1
+ [x] Formatted wide sheets import only data columns without losing late headers
+
+Citizens Import Subgroup (Tests\Unit\CitizensImportSubgroup)
+ [x] Each subgroup is matched to itself with data set #0
+ [x] Each subgroup is matched to itself with data set #1
+ [x] Each subgroup is matched to itself with data set #2
+ [x] Each subgroup is matched to itself with data set #3
+ [x] Each subgroup is matched to itself with data set #4
+ [x] Each subgroup is matched to itself with data set #5
+ [x] Each subgroup is matched to itself with data set #6
+ [x] Each subgroup is matched to itself with data set #7
+ [x] Each subgroup is matched to itself with data set #8
+ [x] Database names with other formatting still match
+
+Diagnosis Record Workload Forecaster (Tests\Unit\DiagnosisRecordWorkloadForecaster)
+ [x] It withholds forecasts until twelve months are available
+ [x] It selects the better backtested method and returns three months
+ [x] It uses the last month baseline when smoothing does not improve backtest
+
+Example (Tests\Feature\Example)
+ [x] The application returns a successful response
+
+Example (Tests\Unit\Example)
+ [x] That true is true
+
+Family Code Generator (Tests\Feature\FamilyCodeGenerator)
+ [x] It generates separate sequences from the selected purok subgroup
+ [x] It combines a mother purok with a letter only subgroup
+ [x] Archiving fills the gap only in the same area
+ [x] Restoring a family assigns the next number without duplicates
+ [x] Migration renumbers existing current families and releases archived codes
+ [x] It strips the p prefix from subgroup labels like p1a
+ [x] It uses the mother purok number and only the subgroup letter
+ [x] Migration backfills codes for existing families
+ [x] Normalization migration corrects existing codes and resets each area sequence
+
+Family Registration (Tests\Feature\FamilyRegistration)
+ [x] Add citizen view exposes configuration to its external script
+ [x] Searching a citizen returns their whole family within assigned subgroups
+ [x] It creates family and assigns unique selected members with generated code
+ [x] Archiving and restoring renumbers codes without changing member assignments
+ [x] Family pickers include members of previously archived families within the bhw scope
+ [x] Archived family members can join an existing family and are not reclaimed on restore
+ [x] New family registration accepts citizens linked to an archived family
+ [x] Registration rechecks availability if the old family was restored
+
+Generate Web Push Keys (Tests\Unit\GenerateWebPushKeys)
+ [x] Command generates a valid vapid key pair
+
+Import Heading Preview (Tests\Feature\ImportHeadingPreview)
+ [x] Preview reads only first twenty rows of first sheet
+ [x] Preview preserves late header columns but ignores formatted empty columns
+
+Input Capitalization (Tests\Feature\InputCapitalization)
+ [x] Form names and descriptions are capitalized while technical values are preserved
+ [x] Json and nested dynamic fields are normalized without changing types
+ [x] Search parameters are not rewritten
+
+Medical Terminology Search (Tests\Feature\MedicalTerminologySearch)
+ [x] Bhw can search rxnorm without sending citizen data
+ [x] Rxnorm brand matches are exact and duplicate terms are removed
+ [x] Vaccine suggestions use active cdc codes and local vaccine labels
+ [x] Unmapped cdc vaccine suggestions remain recognized without assumed age eligibility
+ [x] Who icd search uses server credentials and returns codes
+ [x] Provider outage keeps manual medicine entry available
+ [x] Unrelated provider results are not returned
+ [x] Diagnosis uses nlm when who credentials are not configured
+ [x] Search requires a supported type and two characters
+ [x] Superadmin can use shared terminology without accessing patient data
+ [x] Admin inventory can search medicine spelling suggestions
+ [x] Anonymous users cannot search medical terminology
+ [x] Unknown account roles cannot search terminology
+ [x] Medicine spelling never reads inventory or patient records
+ [x] Paracetamol from nlm atc vocabulary is supported
+ [x] Rxnorm spelling endpoint is used when approximate search has no results
+ [x] Nlm fuzzy diagnosis search returns standardized codes
+ [x] Ordinary supply search is category scoped and never calls medicine api
+ [x] Medicine supply search uses verified online terminology only
+ [x] Shared search supports citizens without exposing patient data
+ [x] Supply search requires category and diagnosis outage allows manual entry
+ [x] Duplicate catalog spelling variants are rejected without changing stock
+ [x] Repeated asset includes emit one autocomplete component
+ [x] Published who doh references work without inventory or network
+ [x] Who condition reference survives online diagnosis outage
+ [x] Verified brand generic lookup supports fluimucil exact partial and typo
+ [x] Mesh fallback matches iga vasculitis and multiword typo without unrelated conditions
+
+Pagination Ui (Tests\Feature\PaginationUi)
+ [x] Numbered pagination preserves filters tab and named page parameter
+ [x] First last and single page states
+ [x] Simple paginator and registry compatibility view
+ [x] Out of range page does not generate invalid numbered links
+
+Password Reset Flow (Tests\Feature\PasswordResetFlow)
+ [x] Forgot password page renders and login links to it
+ [x] Reset link is sent and password can be reset
+ [x] Unknown email gets same response and no notification
+ [x] Invalid token is rejected
+
+Public Health Id Summary (Tests\Feature\PublicHealthIdSummary)
+ [x] Guest can get the recorded health summary without private identifiers
+ [x] Public sharing omits inapplicable family planning fields
+ [x] Citizen with no health history receives empty record collections
+ [x] Direct health id url shows the shared record without login
+ [x] Public access is on by default and citizen can turn it off
+ [x] Unknown direct health id token returns not found
+ [x] Linked citizen can enable non expiring sharing and turn it off
+ [x] Bhw cannot grant citizen sharing
+ [x] Unknown uuid does not return a citizen summary
+ [x] Public health routes do not depend on the legacy sharing table
+ [x] Public qr scanner navigation works for guests and authenticated users
+ [x] New citizen sharing is automatic has no expiry and stays off after revocation
+ [x] Migration defaults existing citizens on but preserves explicit off and archived records
+ [x] Turning off without an existing grant is persisted across backfill
+
+Security Controls (Tests\Feature\SecurityControls)
+ [x] Repeated failures lock temporarily and the lock expires on its own
+ [x] Unknown identifiers receive the same messages as real accounts
+ [x] Unlocking does not require a password change and reset does
+ [x] Temporary password from admin reset can log in as the target user
+ [x] Admin cannot reset a superadmin password
+ [x] Changing a role requires the acting users password
+ [x] Exports require password confirmation
+ [x] Admin and superadmin can save a users display name
+ [x] Superadmin user detail renders without disclosing credentials
+ [x] Password reentry can be switched off in system settings
+ [x] Bulk views and exports raise an alert once
+
+Supply Archive (Tests\Feature\SupplyArchive)
+ [x] Bhw can archive a catalog and all its packs without removing other items
+ [x] Empty catalog can be archived from the main row
+ [x] Read only bhw cannot archive a catalog or single pack
+ [x] Single pack archive keeps other packs and catalog
+ [x] Admin uses shared archive routes with supply write permission
+ [x] Failed audit write leaves all packs available
+
+Supply Stock Movement (Tests\Feature\SupplyStockMovement)
+ [x] Excess release is rejected without changing stock or logs
+ [x] Release deducts only the recorded quantity
+ [x] Item withdrawal uses earliest expiring packs and keeps other items
+ [x] Excess item withdrawal keeps every pack unchanged
+ [x] Stock deduction rolls back when its audit log cannot be saved
+ [x] Read only worker cannot release or withdraw stock
+
+Vaccination Eligibility (Tests\Feature\VaccinationEligibility)
+ [x] Routine vaccine age windows are specific and out of range doses are unavailable
+ [x] Multi dose vaccines require the next dose and its routine age window
+ [x] Unknown birth date and unknown vaccines are rejected
+ [x] Vaccine outside its configured age window is not a candidate
+ [x] Historical vaccination eligibility uses age on the administration date
+ [x] Direct submission requires historical path for out of range records
+ [x] Cdc cvx vaccine can be recorded historically with its code and formulation
+ [x] Existing records are preserved and flagged for review when outside routine window
+ [x] Cvx metadata migration adds historical recording fields
+
+Web Push Notifications (Tests\Feature\WebPushNotifications)
+ [x] A user can subscribe and unsubscribe only their own device
+ [x] Subscription endpoint must be a supported push service
+ [x] Users can only list and revoke their own devices
+ [x] New announcement fans out a generic push to active subscriptions
+

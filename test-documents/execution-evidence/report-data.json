@@ -1,0 +1,121 @@
+{
+  "uniqueChecks": 259,
+  "totals": {
+    "passed": 246,
+    "error": 4,
+    "failure": 9
+  },
+  "coverage": {
+    "Passed": 37,
+    "Partial": 123,
+    "Not covered": 502,
+    "Blocked": 3,
+    "Failed": 6
+  },
+  "findings": [
+    [
+      "DEF-01",
+      "Confirmed behavior",
+      "AUS-007",
+      "User display name was not saved. Expected Changed QA Display Name; observed QA User 46.",
+      "Failed"
+    ],
+    [
+      "DEF-02",
+      "Confirmed runtime error",
+      "SUS-006",
+      "User detail returned HTTP 500: View [admin.user-view] not found.",
+      "Failed"
+    ],
+    [
+      "DEF-03",
+      "Confirmed runtime error",
+      "STK-005",
+      "Item withdrawal returned HTTP 500: SupplyController::withdrawItem() undefined.",
+      "Failed"
+    ],
+    [
+      "DEF-04",
+      "Confirmed stock inconsistency",
+      "STK-007",
+      "Request 21 against stock 20 returned HTTP 302, left stock 0, and logged release 21. Confirmed by a focused diagnostic rerun.",
+      "Failed"
+    ],
+    [
+      "REV-01",
+      "Assertion/layout alignment",
+      "RPT-002",
+      "Workbook header checks expected Purok/Name and observed First Name/Citizen ID. Confirm current report specification before changing code or tests.",
+      "2 failed tests"
+    ],
+    [
+      "REV-02",
+      "Report test fixture/layout",
+      "RPT/RPF",
+      "A combined all-section export test called getCell() on null. Its later sections were not established.",
+      "Error"
+    ],
+    [
+      "REV-03",
+      "Exact HTML assertion",
+      "RPF-007",
+      "Filtered report markup lacked the expected class=\"report-graphic\" selector.",
+      "Failed assertion"
+    ],
+    [
+      "REV-04",
+      "Exact HTML assertion",
+      "RPF-002/003/005",
+      "A report test did not find the exact <td>1</td><td>1</td> fragment. This alone does not prove numeric counts are wrong.",
+      "Failed assertion"
+    ],
+    [
+      "ENV-01",
+      "Installed dependency",
+      "Push key generation",
+      "Minishlink\\WebPush\\VAPID was not found by the existing key-pair validation test.",
+      "Error"
+    ],
+    [
+      "FIX-01",
+      "Incomplete view fixture",
+      "ANA-001",
+      "Representative analytics rendering lacked diseaseMonitoringData[trend].",
+      "Error"
+    ],
+    [
+      "FIX-02",
+      "Incomplete database fixture",
+      "CRD-001",
+      "E-card rendering lacked the system_settings table.",
+      "Error"
+    ],
+    [
+      "FIX-03",
+      "Incomplete database fixture",
+      "PUB-001",
+      "The generic homepage test lacked page_views and received HTTP 500.",
+      "Failed test; blocked scenario"
+    ]
+  ],
+  "runs": [
+    {
+      "exitCode": 2,
+      "startedUtc": "2026-11-19T05:18:20.9072666+00:00",
+      "finishedUtc": "2026-11-19T05:19:01.7560330+00:00",
+      "durationSeconds": 40.849,
+      "database": "SQLite :memory:",
+      "storage": "C:\\Users\\HUAWEI\\AppData\\Local\\Temp\\bheams-execution-20261119\\storage",
+      "sourceFilesChecked": 362,
+      "changedSourceFiles": []
+    },
+    {
+      "exitCode": 1,
+      "startedUtc": "2026-11-19T05:23:38.3251758+00:00",
+      "finishedUtc": "2026-11-19T05:23:41.2685832+00:00"
+    }
+  ],
+  "scope": "Local PHP unit/feature/HTTP acceptance tests with synthetic SQLite fixtures. No live/staging browser tests, provider deliveries, or load tests.",
+  "sourceFilesChecked": 362,
+  "sourceFilesChanged": 0
+}

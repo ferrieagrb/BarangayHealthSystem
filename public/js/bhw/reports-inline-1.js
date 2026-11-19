@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function () {
         excelButton.textContent = 'Preparing ' + type.label + '...';
         if (window.showLoader) window.showLoader();
 
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 90000);
         try {
             const requestUrl = new URL(reportForm.action, window.location.href);
             const query = new URLSearchParams(new FormData(reportForm));
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const response = await fetch(requestUrl, {
                 credentials: 'same-origin',
+                signal: controller.signal,
                 headers: { Accept: '*/*' }
             });
             const contentType = response.headers.get('Content-Type') || '';
@@ -59,9 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
             downloadLink.remove();
             window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
         } catch (error) {
-            exportFeedback.textContent = error instanceof Error ? error.message : type.label + ' export failed. Please try again.';
+            exportFeedback.textContent = controller.signal.aborted
+                ? 'The export took too long. Select a smaller date range or a specific Purok or subgroup, then try again.'
+                : error instanceof Error ? error.message : type.label + ' export failed. Please try again.';
             exportFeedback.hidden = false;
         } finally {
+            window.clearTimeout(timeout);
             exportInProgress = false;
             exportButtons.forEach((button) => { button.disabled = false; });
             excelButton.removeAttribute('aria-busy');

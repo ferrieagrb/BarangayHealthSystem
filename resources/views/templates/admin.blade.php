@@ -36,7 +36,7 @@
 
         <div class="top sidebar-header">
             <a class="sidebar-brand" href="/admin/home" aria-label="BHEAMS home">
-                <img src="{{ asset('images/amuyong.png') }}" alt="">
+                <img src="{{ asset('images/barangay-amuyong.png') }}" alt="">
                 <span>BHEAMS</span>
             </a>
             <button type="button" class="topbutton sidebar-toggle" aria-label="Collapse sidebar" aria-controls="adminSidebar" aria-expanded="true">

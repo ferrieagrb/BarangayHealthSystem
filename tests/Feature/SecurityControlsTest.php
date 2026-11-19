@@ -222,6 +222,38 @@ class SecurityControlsTest extends TestCase
         $this->assertNotNull(session('auth.password_confirmed_at'));
     }
 
+    public function test_admin_and_superadmin_can_save_a_users_display_name(): void
+    {
+        foreach (['admin', 'superadmin'] as $role) {
+            $actor = $this->makeUser($role);
+            $target = $this->makeUser('bhw');
+            $prefix = $role === 'superadmin' ? 'superadmin' : 'admin';
+
+            $this->actingAs($actor)->put(route($prefix.'.users.update', $target->id), [
+                'name' => 'Updated Display Name',
+                'email' => $target->email,
+                'username' => $target->username,
+                'role' => $target->role,
+            ])->assertRedirect()->assertSessionHasNoErrors();
+
+            $this->assertSame('Updated Display Name', $target->fresh()->name);
+            $this->assertSame('bhw', $target->fresh()->role);
+        }
+    }
+
+    public function test_superadmin_user_detail_renders_without_disclosing_credentials(): void
+    {
+        $actor = $this->makeUser('superadmin');
+        $target = $this->makeUser('bhw');
+
+        $this->actingAs($actor)->get(route('superadmin.users.view', $target->id))
+            ->assertOk()
+            ->assertSee($target->name)
+            ->assertSee($target->email)
+            ->assertSee('User Details')
+            ->assertDontSee($target->password);
+    }
+
     public function test_password_reentry_can_be_switched_off_in_system_settings(): void
     {
         $admin = $this->makeUser('admin');

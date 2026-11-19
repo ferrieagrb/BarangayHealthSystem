@@ -1,0 +1,26 @@
+.referral-document { color: #20382e; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.3; }
+.referral-document * { font-family: inherit; font-weight: normal; }
+.referral-document table { border-collapse: separate; border-spacing: 6px 6px; table-layout: fixed; margin: 0 -6px; width: calc(100% + 12px); }
+.referral-document td { padding: 0; border: 0; color: inherit; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; }
+.referral-document .document-header { width: 100%; margin: 0; border-spacing: 0; table-layout: auto; border-bottom: 1px solid #c4d3cb; padding-bottom: 12px; }
+.referral-document .document-seal-cell { width: 76px; vertical-align: middle; }
+.referral-document .document-seal { width: 66px; height: 66px; object-fit: contain; }
+.referral-document .document-identity { vertical-align: middle; padding: 0 12px; border-left: 1px solid #c4d3cb; }
+.referral-document .document-country { font-size: 10px; font-weight: bold; color: #4c5e55; }
+.referral-document .document-center-name { font-size: 19px; font-weight: bold; color: #07573e; line-height: 1.2; margin: 3px 0; }
+.referral-document .document-location { font-size: 11px; color: #4c5e55; }
+.referral-document .document-brand { width: 105px; padding-left: 12px; border-left: 1px solid #c4d3cb; vertical-align: middle; font-size: 10px; color: #4c5e55; }
+.referral-document .document-brand strong { display: block; color: #07573e; font-size: 20px; font-weight: bold; margin-bottom: 3px; }
+.referral-document .document-title { font-size: 27px; font-weight: bold; margin: 10px 0 2px; line-height: 1.2; }
+.referral-document .document-subtitle { margin: 0 0 9px; font-size: 12px; color: #4c5e55; }
+.referral-document .document-section { background: #ebf3ef; border-radius: 6px; padding: 8px 10px; margin: 8px 0 3px; font-weight: bold; color: #07573e; font-size: 12px; }
+.referral-document .document-section span { margin-right: 12px; }
+.referral-document .document-field { border: 1px solid #c0d0c7; border-radius: 7px; padding: 6px 9px; height: 42px; }
+.referral-document .document-label { display: block; font-size: 10px; line-height: 1.2; color: #354c40; font-weight: normal; margin-bottom: 3px; }
+.referral-document .document-value { display: block; font-size: 12px; line-height: 1.2; min-height: 14px; white-space: pre-line; }
+.referral-document .document-writing { height: 59px; }
+.referral-document .document-vitals .document-field { height: 39px; padding: 6px; }
+.referral-document .document-priority { margin: 3px 0 2px; border-spacing: 0; width: 100%; font-size: 11px; }
+.referral-document .document-priority td { padding: 5px 0; }
+.referral-document .document-checkbox { display: inline-block; border: 1px solid #bdcec4; width: 11px; height: 11px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.referral-document .document-footer { border-top: 1px solid #c4d3cb; margin-top: 10px; padding-top: 8px; font-size: 9px; color: #4c5e55; }

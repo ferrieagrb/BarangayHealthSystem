@@ -1,0 +1,14 @@
+﻿{
+    "Pages":  48,
+    "FeatureGroups":  59,
+    "Cases":  224,
+    "Columns":  8,
+    "Font":  "Times New Roman 12 pt",
+    "ForcedPageBreaks":  1,
+    "Layout":  "Continuous tables; feature tables share pages; heading rows repeat across pages",
+    "ReportTypesCovered":  12,
+    "SourcePaperModified":  false,
+    "WebsiteCodeModified":  false,
+    "VisualReview":  "Representative pages and final page inspected using Word rendering",
+    "ResultScope":  "Recorded local test evidence; unverified workflows retain Partial or Not covered status"
+}

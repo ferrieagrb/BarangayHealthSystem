@@ -1,6 +1,9 @@
 @extends(request('export_format') === 'pdf' ? 'templates.report-pdf' : 'templates.layout')
 
 @section('CSSown')
+@if(request('export_format') === 'pdf')
+    @include('bhw.partials.report-pdf-styles')
+@else
 <style>
     .reports-page { padding: 24px; color: #172033; font-family: Poppins, sans-serif; }
     .reports-grid { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
@@ -47,7 +50,7 @@
     .report-graphics-toggle[hidden] { display: none; }
     .report-preview { min-width: 0; }
     .report-meta { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 18px; }
-    .report-meta h1 { margin: 0; color: #173b82; font-size: 25px; }
+    body[data-appearance-role] .main-content #printableReport .report-meta h1 { margin: 0; color: #173b82; font-size: 18px; font-weight: 600; line-height: 1.3; }
     .report-meta p { margin: 5px 0 0; color: #64748b; font-size: 13px; }
     .report-section { margin-top: 20px; page-break-inside: avoid; }
     .report-section h3 { margin: 0 0 10px; padding-bottom: 7px; border-bottom: 2px solid #1d4ed8; color: #173b82; font-size: 16px; }
@@ -68,28 +71,6 @@
     .graphic-fill.orange { background: #f97316; }
     .graphic-fill.red { background: #dc2626; }
     .print-only { display: none; }
-    @if(request('export_format') === 'pdf')
-        @page { size: A4 {{ $pdfOrientation ?? 'portrait' }}; margin: 12mm; }
-        body { margin: 0; color: #172033; font-family: DejaVu Sans, sans-serif; font-size: 9pt; }
-        .reports-page { padding: 0; font-family: DejaVu Sans, sans-serif; }
-        .reports-grid { display: block; }
-        .report-builder, .no-print { display: none !important; }
-        .report-panel { padding: 0; border: 0; box-shadow: none; }
-        .report-meta { margin-bottom: 8px; }
-        .report-meta h1 { font-size: 13pt; line-height: 1.2; }
-        .report-meta p { margin-top: 3px; font-size: 9pt; }
-        .report-section { margin-top: 10px; page-break-inside: auto; }
-        .report-section h3 { margin-bottom: 5px; padding-bottom: 4px; font-size: 10pt; }
-        .report-table { width: 100%; font-size: 9pt; line-height: 1.25; page-break-inside: auto; }
-        .report-table th, .report-table td { padding: 4px; overflow-wrap: break-word; }
-        .report-table th { font-size: 9pt; }
-        .report-table-scroll { width: 100%; overflow: visible; }
-        .report-details-table { min-width: 0; font-size: 9pt; }
-        .report-table tr { page-break-inside: avoid; }
-        .report-graphic { display: block; }
-        .graphic-row { display: table; width: 100%; }
-        .print-only { display: block; }
-    @endif
     @media (max-width: 1000px) { .report-config-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 600px) {
         .reports-page { padding: 14px; }
@@ -100,7 +81,7 @@
         .report-meta { flex-direction: column; }
     }
     @media print {
-        @page { size: {{ request('export_format') === 'pdf' ? 'A4 '.($pdfOrientation ?? 'portrait') : 'landscape' }}; margin: {{ request('export_format') === 'pdf' ? '12mm' : '14mm' }}; }
+        @page { size: landscape; margin: 14mm; }
         html, body, .dashboard, .main-content { height: auto !important; min-height: 0 !important; overflow: visible !important; }
         .dashboard { display: block !important; }
         .sidebar, .page-top, .report-builder, .no-print { display: none !important; }
@@ -112,7 +93,7 @@
         .report-preview { display: block !important; }
         .report-table { width: 100%; page-break-inside: auto; }
         .report-table-scroll { width: 100%; overflow: visible !important; }
-        .report-details-table { min-width: 0; font-size: {{ request('export_format') === 'pdf' ? '9pt' : '8px' }}; }
+        .report-details-table { min-width: 0; font-size: 8px; }
         .report-table thead { display: table-header-group; }
         .report-table tr { break-inside: avoid; page-break-inside: avoid; }
         .report-section { break-inside: auto; page-break-inside: auto; }
@@ -120,7 +101,6 @@
         .print-only { display: block; }
     }
 </style>
-@if(request('export_format') !== 'pdf')
     <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 @endif
 @endsection
@@ -131,12 +111,14 @@
 
 @section('content')
 <div class="reports-page">
+    @if(request('export_format') !== 'pdf')
     <div class="page-top no-print">
         <div class="page-title-group">
             <h1>Custom Reports</h1>
             <p>Select the information and filters needed for a printable BHW report.</p>
         </div>
     </div>
+    @endif
 
     <div class="reports-grid">
         @php
@@ -149,6 +131,7 @@
                 'Health Reports' => ['immunization', 'diagnosis_summary', 'diagnosis_by_purok'],
             ];
         @endphp
+        @if(request('export_format') !== 'pdf')
         <form class="report-panel report-builder no-print" method="GET" action="{{ route('bhw.reports') }}" id="reportBuilder">
             <h2>Report Builder</h2>
             <p>Select a report and adjust only the filters that apply to it.</p>
@@ -285,15 +268,6 @@
                             <option value="past" {{ request('event_status') === 'past' ? 'selected' : '' }}>Past</option>
                         </select>
                     </div>
-                    <div class="report-field" data-reports="referrals">
-                        <label for="referralStatus">Referral status</label>
-                        <select id="referralStatus" name="referral_status">
-                            <option value="">All statuses</option>
-                            @foreach(['approved', 'released', 'returned'] as $status)
-                                <option value="{{ $status }}" {{ request('referral_status') === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                     <div class="report-field" data-reports="immunization">
                         <label for="vaccineType">Vaccine type</label>
                         <select id="vaccineType" name="vaccine_type">
@@ -325,8 +299,10 @@
                 <p id="reportExportFeedback" class="report-export-feedback" role="alert" hidden></p>
             </div>
         </form>
+        @endif
 
         <main class="report-panel report-preview" id="printableReport" data-no-motion>
+            @include('bhw.partials.report-letterhead')
             <div class="report-meta">
                 <div>
                     <h1>Barangay Health Report</h1>
@@ -607,10 +583,12 @@
             @endif
 
             @if(in_array('referrals', $selectedSections))
-                <section class="report-section"><h3>Referrals ({{ $referrals->count() }})</h3><table class="report-table"><thead><tr><th>Date</th><th>Name</th><th>Request</th><th>Status</th></tr></thead><tbody>@forelse($referrals as $referral)<tr><td>{{ $referral->date_of_referral }}</td><td>{{ $referral->name }}</td><td>{{ $referral->requests_for }}</td><td>{{ ucfirst($referral->status ?? 'pending') }}</td></tr>@empty<tr><td colspan="4" class="report-empty">No referrals match the selected dates.</td></tr>@endforelse</tbody></table></section>@endif
+                <section class="report-section"><h3>Referrals ({{ $referrals->count() }})</h3><table class="report-table"><thead><tr><th>Date</th><th>Name</th><th>Generated By</th></tr></thead><tbody>@forelse($referrals as $referral)<tr><td>{{ $referral->date_of_referral }}</td><td>{{ $referral->name }}</td><td>{{ $referral->user->name ?? 'Legacy / System' }}</td></tr>@empty<tr><td colspan="3" class="report-empty">No referrals match the selected dates.</td></tr>@endforelse</tbody></table></section>@endif
         </main>
     </div>
 </div>
-<script src="{{ asset('js/bhw/reports-inline-2.js') }}?v={{ filemtime(public_path('js/bhw/reports-inline-2.js')) }}"></script>
-<script src="{{ asset('js/bhw/reports-inline-3.js') }}?v={{ filemtime(public_path('js/bhw/reports-inline-3.js')) }}"></script>
+@if(request('export_format') !== 'pdf')
+    <script src="{{ asset('js/bhw/reports-inline-2.js') }}?v={{ filemtime(public_path('js/bhw/reports-inline-2.js')) }}"></script>
+    <script src="{{ asset('js/bhw/reports-inline-3.js') }}?v={{ filemtime(public_path('js/bhw/reports-inline-3.js')) }}"></script>
+@endif
 @endsection

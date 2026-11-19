@@ -17,7 +17,6 @@ use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
 /**
@@ -48,16 +47,7 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
 
     public function drawings(): array
     {
-        $drawing = new Drawing;
-        $drawing->setName('BHEAMS Logo');
-        $drawing->setDescription('Barangay Amuyong BHEAMS logo');
-        $drawing->setPath(public_path('images/amuyong.png'));
-        $drawing->setCoordinates('A1');
-        $drawing->setHeight(42);
-        $drawing->setOffsetX(6);
-        $drawing->setOffsetY(5);
-
-        return [$drawing];
+        return ReportLetterhead::drawings(count(self::HEADINGS));
     }
 
     public function bindValue(Cell $cell, mixed $value): bool
@@ -80,19 +70,11 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
                 $last = Coordinate::stringFromColumnIndex(count(self::HEADINGS));
                 $lastRow = count($built['rows']);
 
-                $sheet->mergeCells("B1:{$last}1");
-                $sheet->mergeCells("B2:{$last}2");
                 foreach ([3, 4, 5] as $row) {
                     $sheet->mergeCells("A{$row}:{$last}{$row}");
                 }
 
                 $sheet->getStyle("A1:{$last}{$lastRow}")->getFont()->setName('Arial');
-                $sheet->getStyle("A1:{$last}1")->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '173B82']],
-                    'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
-                ]);
-                $sheet->getStyle("B2:{$last}2")->applyFromArray(['font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '173B82']]]);
                 $sheet->getStyle("A3:{$last}3")->applyFromArray(['font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => '173B82']]]);
                 $sheet->getStyle("A4:{$last}5")->applyFromArray(['font' => ['size' => 10, 'color' => ['rgb' => '475569']]]);
                 $sheet->getRowDimension(1)->setRowHeight(34);
@@ -126,8 +108,11 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
                 $sheet->freezePane('A8');
                 $sheet->getPageSetup()
                     ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                    ->setPaperSize(PageSetup::PAPERSIZE_A4)
                     ->setFitToWidth(1)
                     ->setFitToHeight(0);
+                $sheet->getPageSetup()->setPrintArea("A1:{$last}{$lastRow}");
+                ReportLetterhead::format($sheet, count(self::HEADINGS));
                 $sheet->getSheetView()->setZoomScale(100);
             },
         ];
@@ -143,8 +128,8 @@ class HouseholdProfilesSheet extends DefaultValueBinder implements FromArray, Wi
         $last = Coordinate::stringFromColumnIndex($columns);
         $pad = fn (array $row) => array_pad($row, $columns, null);
         $rows = [
-            $pad(['', 'BARANGAY HEALTH MANAGEMENT SYSTEM']),
-            $pad(['', 'BARANGAY AMUYONG | BHEAMS']),
+            $pad(['BARANGAY AMUYONG']),
+            $pad(['Municipality of Alfonso | Province of Cavite']),
             $pad(['Barangay Health Management System - '.$this->reportTitle.' Report']),
             $pad(['Generated: '.$this->generatedAt]),
             $pad(['Filters: '.($this->filterSummary ?: 'None')]),

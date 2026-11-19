@@ -1,0 +1,58 @@
+<?php
+use App\Models\Supply;
+use App\Models\User;
+use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
+
+final class BheamsInventoryExecutionTest extends \Tests\Feature\SupplyArchiveTest
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Schema::table('supplies',function($t){$t->integer('min_stock')->default(5);$t->string('status')->nullable();$t->string('item_number')->nullable();$t->string('serial_number')->nullable();$t->string('unit')->nullable();$t->date('expiration_date')->nullable();$t->string('supplier')->nullable();});
+    }
+    private function actor(): User
+    {
+        $u=new class extends User {public function hasWriteAccess(string $feature): bool{return true;}};
+        $u->forceFill(['id'=>1,'role'=>'bhw','must_change_password'=>false]);return $u;
+    }
+    private function stock(): Supply{return Supply::create(['name'=>'Synthetic QA Supply','category'=>'Medicine','quantity'=>20,'min_stock'=>5,'status'=>'Available']);}
+    public function test_execution_INV_006_deposit_one_batch(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/deposit',['name'=>$s->name,'packs'=>[['quantity'=>10,'unit'=>'tablet','supplier'=>'QA Supplier','serial_number'=>'QA-1','item_number'=>'QA-I','expiration_date'=>'2027-12-31']]])->assertSessionHasNoErrors();
+        $this->assertSame(30,(int)Supply::sum('quantity'));$this->assertDatabaseHas('supply_logs',['action'=>'deposit','quantity'=>10,'user_id'=>1]);
+    }
+    public function test_execution_INV_007_deposit_multiple_packs(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/deposit',['name'=>$s->name,'packs'=>[['quantity'=>4,'expiration_date'=>'2027-12-31'],['quantity'=>6,'expiration_date'=>'2028-12-31']]])->assertSessionHasNoErrors();$this->assertSame(30,(int)Supply::sum('quantity'));$this->assertDatabaseCount('supply_logs',2);
+    }
+    public function test_execution_STK_001_withdraw_four(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/batch/withdraw',['supply_id'=>$s->id,'quantity'=>4])->assertSessionHas('success');$this->assertSame(16,(int)$s->fresh()->quantity);$this->assertDatabaseHas('supply_logs',['action'=>'withdraw','quantity'=>4,'supply_id'=>$s->id]);
+    }
+    public function test_execution_STK_002_withdraw_remaining(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/batch/withdraw',['supply_id'=>$s->id,'quantity'=>20])->assertSessionHas('success');$this->assertSame(0,(int)$s->fresh()->quantity);$this->assertSame('Out of Stock',$s->fresh()->status);$this->assertNotSoftDeleted($s);
+    }
+    public function test_execution_STK_003_excess_withdrawal(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/batch/withdraw',['supply_id'=>$s->id,'quantity'=>21])->assertSessionHasErrors('quantity');$this->assertSame(20,(int)$s->fresh()->quantity);$this->assertDatabaseCount('supply_logs',0);
+    }
+    public static function invalidQuantity():array{return ['zero'=>[0],'negative'=>[-1],'decimal'=>[1.5],'missing'=>[null]];}
+    #[DataProvider('invalidQuantity')]
+    public function test_execution_STK_004_invalid_withdrawal($quantity): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/batch/withdraw',['supply_id'=>$s->id,'quantity'=>$quantity])->assertSessionHasErrors('quantity');$this->assertSame(20,(int)$s->fresh()->quantity);$this->assertDatabaseCount('supply_logs',0);
+    }
+    public function test_execution_STK_005_item_withdraw_handler(): void
+    {
+        $s=$this->stock();$this->actingAs($this->actor())->post('/supplies/item/withdraw',['supply_id'=>$s->id,'name'=>$s->name,'quantity'=>4])->assertRedirect();$this->assertSame(16,(int)$s->fresh()->quantity);
+    }
+    public function test_execution_STK_007_excess_release(): void
+    {
+        $s=$this->stock();$response=$this->actingAs($this->actor())->post('/supplies/release',['id'=>$s->id,'quantity'=>21,'citizen_id'=>1]);
+        $remaining=(int)$s->fresh()->quantity;$logged=(int)\Illuminate\Support\Facades\DB::table('supply_logs')->sum('quantity');
+        $this->assertTrue(session()->has('errors'),sprintf('Expected an excess-quantity rejection. Observed HTTP %d; initial stock=20; requested=21; remaining=%d; logged release quantity=%d.',$response->getStatusCode(),$remaining,$logged));
+        $this->assertSame(20,$remaining);$this->assertDatabaseCount('supply_logs',0);
+    }
+}

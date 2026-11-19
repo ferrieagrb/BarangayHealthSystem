@@ -160,30 +160,17 @@ class SupplyController extends Controller
     {
         $this->requireSupplyWrite();
 
-        $request->validate([
-            'id' => 'required',
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:supplies,id',
             'quantity' => 'required|integer|min:1',
-            'citizen_id' => 'required'
+            'citizen_id' => 'required|integer',
+            'notes' => 'nullable|string',
         ]);
 
-        $supply = Supply::findOrFail($request->id);
-
-        $supply->quantity -= $request->quantity;
-
-        if ($supply->quantity < 0) {
-            $supply->quantity = 0;
-        }
-
-        $supply->save();
-
-        SupplyLog::create([
-            'action' => 'release',
-            'supply_id' => $supply->id,
-            'quantity' => $request->quantity,
-            'user_id' => Auth::id(),
-            'citizen_id' => $request->citizen_id,
-            'notes' => $request->notes ?? null,
-        ]);
+        DB::transaction(function () use ($validated) {
+            $supply = Supply::query()->lockForUpdate()->findOrFail($validated['id']);
+            $this->deductStock($supply, (int) $validated['quantity'], 'release', (int) $validated['citizen_id'], $validated['notes'] ?? null);
+        });
 
         return back();
     }
@@ -237,39 +224,86 @@ class SupplyController extends Controller
     {
         $this->requireSupplyWrite();
 
-        $request->validate([
+        $validated = $request->validate([
             'supply_id' => 'required|exists:supplies,id',
             'quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string'
         ]);
 
-        $supply = Supply::findOrFail($request->supply_id);
-
-        if ($request->quantity > $supply->quantity) {
-            return back()->withErrors(['quantity' => "The withdrawal quantity exceeds the available stock in this specific batch (Max: {$supply->quantity})."]);
-        }
-
-        // Deduct quantity
-        $supply->quantity -= $request->quantity;
-        $supply->save();
-
-        // Log the transaction
-        SupplyLog::create([
-            'action' => 'withdraw',
-            'supply_id' => $supply->id,
-            'quantity' => $request->quantity,
-            'user_id' => Auth::id(),
-            'citizen_id' => null,
-            'notes' => $request->notes ?? 'Specific batch stock withdrawal',
-        ]);
-
-        // Keep zero-stock rows so their withdrawal logs remain available for reporting and forecasting.
-        if ($supply->quantity <= 0) {
-            $supply->status = 'Out of Stock';
-            $supply->save();
-        }
+        DB::transaction(function () use ($validated) {
+            $supply = Supply::query()->lockForUpdate()->findOrFail($validated['supply_id']);
+            $this->deductStock($supply, (int) $validated['quantity'], 'withdraw', null, $validated['notes'] ?? 'Specific batch stock withdrawal');
+        });
 
         return back()->with('success', 'Stock successfully withdrawn from the selected batch.');
+    }
+
+    public function withdrawItem(Request $request)
+    {
+        $this->requireSupplyWrite();
+
+        $validated = $request->validate([
+            'supply_id' => 'nullable|integer|exists:supplies,id|required_without:name',
+            'name' => 'nullable|string|max:255|required_without:supply_id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $item = !empty($validated['supply_id'])
+                ? Supply::findOrFail($validated['supply_id'])
+                : Supply::where('name', $validated['name'])->firstOrFail();
+            $packs = Supply::where('name', $item->name)
+                ->where('category', $item->category)
+                ->where('quantity', '>', 0)
+                ->orderByRaw('expiration_date IS NULL')
+                ->orderBy('expiration_date')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+            $available = (int) $packs->sum('quantity');
+            $remaining = (int) $validated['quantity'];
+
+            if ($remaining > $available) {
+                throw ValidationException::withMessages(['quantity' => "The withdrawal quantity exceeds the available item stock (Max: {$available})."]);
+            }
+
+            foreach ($packs as $pack) {
+                if ($remaining === 0) {
+                    break;
+                }
+                $quantity = min($remaining, (int) $pack->quantity);
+                $this->deductStock($pack, $quantity, 'withdraw', null, $validated['notes'] ?? 'Item stock withdrawal');
+                $remaining -= $quantity;
+            }
+        });
+
+        return back()->with('success', 'Stock successfully withdrawn from the selected item.');
+    }
+
+    private function deductStock(Supply $supply, int $quantity, string $action, ?int $citizenId, ?string $notes): void
+    {
+        $updated = Supply::whereKey($supply->id)
+            ->where('quantity', '>=', $quantity)
+            ->decrement('quantity', $quantity);
+
+        if (!$updated) {
+            throw ValidationException::withMessages(['quantity' => 'The requested quantity exceeds the available stock. Refresh the inventory and try again.']);
+        }
+
+        $supply->refresh();
+        if ((int) $supply->quantity === 0) {
+            $supply->update(['status' => 'Out of Stock']);
+        }
+
+        SupplyLog::create([
+            'action' => $action,
+            'supply_id' => $supply->id,
+            'quantity' => $quantity,
+            'user_id' => Auth::id(),
+            'citizen_id' => $citizenId,
+            'notes' => $notes,
+        ]);
     }
 
     public function archiveItem($id)

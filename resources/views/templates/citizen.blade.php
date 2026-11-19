@@ -874,7 +874,7 @@ body,
 <div class="sidebar" id="citizenSidebar" role="navigation" aria-label="Citizen navigation" aria-hidden="true" tabindex="0">
     <div class="top sidebar-header">
         <a class="sidebar-brand" href="{{ route('citizen.dashboard') }}" aria-label="BHEAMS home">
-            <img src="{{ asset('images/amuyong.png') }}" alt="">
+            <img src="{{ asset('images/barangay-amuyong.png') }}" alt="">
             <span>BHEAMS</span>
         </a>
         <button type="button" class="topbutton sidebar-toggle" id="citizenMenuClose" aria-label="Close navigation menu" aria-expanded="false">
@@ -938,7 +938,7 @@ body,
                 <span>Menu</span>
             </button>
             <a class="c-header-logo" href="{{ route('citizen.dashboard') }}" aria-label="Citizen dashboard">
-                <img src="{{ asset('images/amuyong.png') }}" alt="Barangay Amuyong logo">
+                <img src="{{ asset('images/barangay-amuyong.png') }}" alt="Barangay Amuyong logo">
             </a>
         </div>
         

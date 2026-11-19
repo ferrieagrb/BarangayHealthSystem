@@ -15,6 +15,7 @@
     </style>
 </head>
 <body>
+    @include('partials.document-letterhead')
     <h1>Citizen Records</h1>
     <p>Generated {{ now()->format('F d, Y h:i A') }} · {{ $citizens->count() }} records</p>
     <p><strong>Filters applied:</strong> {{ $filterSummary ? implode(' | ', $filterSummary) : 'None' }}</p>

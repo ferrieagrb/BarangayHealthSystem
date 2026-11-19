@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Referral extends Model
 {
     protected $fillable = [
+        'citizen_id',
+        'birth_date',
+        'contact_number',
+        'referred_at',
         'date_of_referral',
         'name',
         'age',
@@ -23,6 +27,19 @@ class Referral extends Model
         'file_path',
         'user_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+            'referred_at' => 'datetime',
+        ];
+    }
+
+    public function citizen()
+    {
+        return $this->belongsTo(citizens::class)->withTrashed();
+    }
 
     public function user()
     {

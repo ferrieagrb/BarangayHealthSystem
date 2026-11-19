@@ -12,7 +12,7 @@ class PublicAssetController extends Controller
         $path = SystemSetting::value('site_logo');
         $source = ($path && Storage::disk('public')->exists($path))
             ? Storage::disk('public')->get($path)
-            : file_get_contents(public_path('images/amuyong.png'));
+            : file_get_contents(public_path('images/barangay-amuyong.png'));
 
         $image = function_exists('imagecreatefromstring') ? @imagecreatefromstring($source) : false;
         if (!$image) {
@@ -42,7 +42,7 @@ class PublicAssetController extends Controller
         $path = SystemSetting::value('site_logo');
 
         if (!$path || !Storage::disk('public')->exists($path)) {
-            return response()->file(public_path('images/amuyong.png'));
+            return response()->file(public_path('images/barangay-amuyong.png'));
         }
 
         $contents = Storage::disk('public')->get($path);

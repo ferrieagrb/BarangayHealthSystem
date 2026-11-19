@@ -1,0 +1,111 @@
+BHEAMS - EDITORIAL REVIEW NOTES
+Edited copy: BHEAMS-edited.docx
+
+WHAT WAS EDITED
+Grammar, sentence structure, academic tone, repetition, terminology, headings,
+figure/table cross-references, and test-case numbering were revised outside the
+protected sections. Method descriptions distinguish stated testing plans from
+reported results. Conclusions were limited to what the reported evaluation and
+test cases can support. No application code was edited.
+
+PRESERVED
+The Statement of the Problem and Objectives sections were preserved in full.
+The Review of Related Literature and Studies, its synthesis, and the comparison
+of existing/related systems were preserved in full. References were preserved.
+The numerical evaluation tables, scale ranges, and recorded test outcomes were
+not changed. Images, diagrams, equations, tables, and document styles were kept.
+The source file in Documents was not overwritten.
+
+ITEMS REQUIRING AUTHOR VERIFICATION BEFORE SUBMISSION
+
+1. Conflicting standard deviations
+The numerical tables and their discussions report different composite SDs:
+  Functional Suitability: Table 3 = 0.83; discussion/Table 7 = 0.92.
+  Reliability: Table 4 = 0.84; discussion/Table 7 = 0.51.
+  Usability: Table 5 = 0.86; discussion/Table 7 = 0.34.
+  Security: Table 6 = 1.00; discussion/Table 7 = 0.50.
+  Overall: Table 7 = 0.56; discussion = 0.23.
+Check the response-level data and calculation method before choosing the final
+values. Averaging indicator SDs and calculating the SD of composite respondent
+scores are different procedures; identify the procedure actually used. The
+conflicting composite values were retained for author verification.
+
+2. Security and Usability labels in Table 7
+Table 5 reports Usability with a mean of 3.46, while Table 6 reports Security
+with a mean of 3.09. Table 7 instead labels 3.46 as Security and 3.09 as
+Usability. Confirm the intended mapping and its associated SDs against the
+original responses. The edited discussion explicitly identifies these as the
+entries reported in Table 7, rather than silently choosing a replacement.
+
+3. Functional Suitability interpretation
+The composite mean of 3.27 is marked GOOD in Table 3 and EXCELLENT in Table 7.
+Table 2 places 3.26-4.00 in the Excellent range. Confirm the score and apply
+the stated interpretation consistently. Numerical tables were left unchanged.
+The detailed discussion now correctly identifies Calendar Management as
+Excellent, consistent with its indicator entry in Table 3.
+
+4. Item-level Reliability SD
+The dependability-over-time indicator in Table 4 has SD = 0.73; the original
+discussion shortened this to 0.7. The edited item-level discussion follows
+the table (0.73). This is a transcription alignment, not a recalculation.
+
+5. Evaluation coverage and standard edition
+State the exact ISO/IEC 25010 edition used. Align the questionnaire, testing
+headings, reported results, and conclusions with the characteristics actually
+evaluated. The detailed numerical tables supplied cover four characteristics:
+Functional Suitability, Reliability, Usability, and Security. Claims about a
+broader set require corresponding evidence. The protected Objectives section
+was left unchanged.
+
+6. Respondents and completed procedures
+The methodology identifies 5 BHWs, 5 barangay officials, and 20 IT professionals.
+Confirm the actual number of completed questionnaires and use that number in
+the final statistical analysis. Distinguish the sampling plan from achieved
+participation. Supply actual load-test settings and results for the planned
+10-30 simultaneous users and 100 dummy records if these tests were completed.
+The paper should identify the tool that generated concurrent load and include
+measured response times, resource use, and acceptance thresholds where claimed.
+
+7. Roles and access descriptions
+The Scope lists four account roles, while the conceptual/use case descriptions
+refer to secretary and doctor/nurse actors as well. Confirm whether these are
+separate account roles or staff responsibilities assigned to existing roles.
+Make the paper and diagram labels agree after that decision. Confirm the
+intended privacy and authorization requirements for the public QR health
+summary. These implementation questions were not resolved by changing code.
+
+8. Related-system evidence
+The protected related-system discussion describes VHISION as likely local or
+desktop-based, while the protected comparison table marks Online Access.
+The comparison's appointment scheduling terminology should also be reviewed
+against the stated limit to vaccinations and community health activities.
+No changes were made to this material because it falls within the requested
+RRL/related-studies preservation boundary.
+
+9. References and attribution
+Trochim (2020) and Ghimire (2022) are cited outside the RRL but do not appear
+in the supplied reference list. Confirm complete bibliographic details and
+add them only after checking the actual sources. Existing citations and
+references were not independently fact-checked or replaced. The inconsistent
+expanded names for BHEAMS were normalized to the acronym in edited sections;
+confirm the official expansion before using it throughout the final paper.
+
+10. Pagination and final formatting
+Text revisions can change page positions. After resolving the items above,
+update the table of contents and page numbers in Word and check page breaks,
+figure placement, table wrapping, and the readability of diagram labels.
+The existing table of contents and protected headings were preserved.
+Some headings and figure/table references were corrected where the associated
+caption clearly established the intended reference. Test groups were numbered
+sequentially, without changing their recorded outcomes.
+
+FILE VALIDATION
+The edited DOCX retains 1,880 original paragraphs. Preservation checks passed
+for 524 protected paragraphs, including the requested sections and numerical
+evaluation tables. All 161 other DOCX archive parts are byte-for-byte identical
+to the source, including media, styles, relationships, and other document
+assets. Every paragraph outside the explicit edit list was also checked for
+unchanged XML content and formatting. These checks establish preservation;
+they do not replace verification of the research data or source claims.
+An automated Microsoft Word preview could not be opened in this tool session.
+Final visual layout and pagination therefore require review in Word.

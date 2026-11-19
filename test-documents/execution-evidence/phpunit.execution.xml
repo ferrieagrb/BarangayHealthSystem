@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" bootstrap="C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\autoload.php" colors="true">
+  <testsuites>
+    <testsuite name="Unit">
+      <directory>C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Unit</directory>
+    </testsuite>
+    <testsuite name="Feature">
+      <directory>C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Feature</directory>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory>C:\Users\HUAWEI\Desktop\BarangayHealthSystem\app</directory>
+    </include>
+  </source>
+  <php>
+    <env name="APP_ENV" value="testing" force="true" />
+    <env name="APP_MAINTENANCE_DRIVER" value="file" />
+    <env name="BCRYPT_ROUNDS" value="4" />
+    <env name="BROADCAST_CONNECTION" value="null" force="true" />
+    <env name="CACHE_STORE" value="array" force="true" />
+    <env name="DB_CONNECTION" value="sqlite" force="true" />
+    <env name="DB_DATABASE" value=":memory:" force="true" />
+    <env name="DB_URL" value="" force="true" />
+    <env name="MAIL_MAILER" value="array" force="true" />
+    <env name="QUEUE_CONNECTION" value="sync" force="true" />
+    <env name="SESSION_DRIVER" value="array" force="true" />
+    <env name="PULSE_ENABLED" value="false" />
+    <env name="TELESCOPE_ENABLED" value="false" />
+    <env name="NIGHTWATCH_ENABLED" value="false" />
+    <env name="APP_DEBUG" value="false" force="true" />
+    <env name="APP_SERVICES_CACHE" value="../../AppData/Local/Temp/bheams-execution-20261119/cache/services.php" force="true" />
+    <env name="APP_PACKAGES_CACHE" value="../../AppData/Local/Temp/bheams-execution-20261119/cache/packages.php" force="true" />
+    <env name="LOG_CHANNEL" value="null" force="true" />
+    <env name="APP_CONFIG_CACHE" value="../../AppData/Local/Temp/bheams-execution-20261119/cache/config.php" force="true" />
+    <env name="LARAVEL_STORAGE_PATH" value="C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\storage" force="true" />
+    <env name="CACHE_DRIVER" value="array" force="true" />
+    <env name="VIEW_COMPILED_PATH" value="C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\storage\framework\views" force="true" />
+    <env name="APP_ROUTES_CACHE" value="../../AppData/Local/Temp/bheams-execution-20261119/cache/routes.php" force="true" />
+    <env name="APP_KEY" value="base64:YmhlYW1zLXRlc3Qta2V5LWRpc3Bvc2FibGUtMDAwMDA=" force="true" />
+    <env name="BHEAMS_APPEARANCE_FIXTURES" value="C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\browser-fixtures" force="true" />
+    <env name="APP_URL" value="http://127.0.0.1:8765" force="true" />
+  </php>
+</phpunit>

@@ -8,8 +8,8 @@
     "theme_color": "#173b82",
     "icons": [
         {
-            "src": "/images/amuyong.png",
-            "sizes": "500x500",
+            "src": "/images/barangay-amuyong.png",
+            "sizes": "1254x1254",
             "type": "image/png",
             "purpose": "any"
         }
