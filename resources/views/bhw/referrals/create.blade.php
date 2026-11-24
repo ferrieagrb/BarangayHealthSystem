@@ -1,120 +1,68 @@
 @extends('templates.layout')
 
 @section('CSSown')
-<link rel="stylesheet" href="{{ asset('css/bhw/referral_create.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/referral_create.css') }}?v={{ filemtime(public_path('css/bhw/referral_create.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/referral_document.css') }}?v={{ filemtime(public_path('css/bhw/referral_document.css')) }}">
 @endsection
 
 @section('content')
-
-<div class="main">
-
+<div class="main referral-create-page">
     <div class="page-top">
-        <div class="page-title-group">
-            <h1>Create Referral</h1>
-            <p>Create and generate barangay health referral forms.</p>
+        <div>
+            <h1>Generate Referral</h1>
+            <p>Select the citizen visiting the health center to prepare their referral form.</p>
         </div>
+        <a href="{{ route('referrals.index') }}" class="btn-secondary">Back to referrals</a>
     </div>
-
-    @if(session('success'))
-        <div class="alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
 
     @if ($errors->any())
-        <div class="alert-error">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="alert-error" role="alert">
+            @foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach
         </div>
     @endif
 
-    <div class="referral-form-card">
+    <section class="citizen-picker" aria-labelledby="citizen-picker-title">
+        <h2 id="citizen-picker-title">Choose a citizen</h2>
+        <form action="{{ route('referrals.create') }}" method="GET" class="citizen-search" role="search">
+            @if($citizen)<input type="hidden" name="citizen_id" value="{{ $citizen->id }}">@endif
+            <label for="citizen-search">Search by name or citizen ID</label>
+            <div class="citizen-search-controls">
+                <input id="citizen-search" type="search" name="search" value="{{ request('search') }}" placeholder="Enter a citizen's name or ID" maxlength="255">
+                <button type="submit" class="btn-primary">Search</button>
+            </div>
+        </form>
+        <div class="citizen-options">
+            @forelse($citizens as $option)
+                <a href="{{ route('referrals.create', ['citizen_id' => $option->id, 'search' => request('search'), 'page' => request('page')]) }}#referral-preview"
+                    class="citizen-option {{ $citizen?->id === $option->id ? 'is-selected' : '' }}"
+                    @if($citizen?->id === $option->id) aria-current="true" @endif>
+                    <span class="citizen-option-details">
+                        <strong>{{ $option->Citizen_LName }}, {{ $option->Citizen_FName }} {{ $option->Citizen_MName }}</strong>
+                        <small>ID {{ $option->id }} &middot; {{ $option->Citizen_Purok ?: 'Purok not recorded' }} &middot; {{ $option->Citizen_BirthDate ? \Carbon\Carbon::parse($option->Citizen_BirthDate)->format('M d, Y') : 'Birth date not recorded' }}</small>
+                    </span>
+                    <span class="citizen-option-action">{{ $citizen?->id === $option->id ? 'Selected' : 'Select' }}</span>
+                </a>
+            @empty
+                <p class="picker-empty">No citizens found in your accessible records. Try another name or ID.</p>
+            @endforelse
+        </div>
+        {{ $citizens->links('partials.pagination') }}
+    </section>
 
+    <div class="referral-preview-heading" id="referral-preview">
+        <div>
+            <h2>Referral form preview</h2>
+            <p>{{ $citizen ? 'Patient information is filled in from the citizen record.' : 'Select a citizen above to fill in this form.' }} Clinical details and signatures are left blank for healthcare personnel.</p>
+        </div>
         <form action="{{ route('referrals.store') }}" method="POST">
             @csrf
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Date of Referral</label>
-                    <input type="date" name="date_of_referral" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Age</label>
-                    <input type="number" name="age" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Gender</label>
-                    <select name="gender" required>
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-
-                <div class="form-group full">
-                    <label>Address</label>
-                    <textarea name="address" required></textarea>
-                </div>
-
-                <div class="form-group full">
-                    <label>Request/s For</label>
-                    <textarea name="requests_for" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Vital Signs</label>
-                    <textarea name="vital_signs"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Treatment / Intervention Given</label>
-                    <textarea name="treatment_given"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Name of Medication Given</label>
-                    <textarea name="medication_given" data-medical-autocomplete="medicine" data-medical-multiple placeholder="Enter medicine names, separated by commas"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>If Self-Medication</label>
-                    <textarea name="self_medication" data-medical-autocomplete="medicine" data-medical-multiple placeholder="Enter medicine names, separated by commas"></textarea>
-                </div>
-
-                <div class="form-group full">
-                    <label>Maintenance Schedule/s</label>
-                    <textarea name="maintenance_schedule"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Referred By</label>
-                    <input type="text" name="referred_by" required>
-                </div>
-
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn-primary" data-ui-action="primary">
-                    Generate Referral
-                </button>
-            </div>
-
+            <input type="hidden" name="citizen_id" value="{{ $citizen?->id }}">
+            <button type="submit" class="btn-primary" @disabled(!$citizen)>Generate Referral PDF</button>
         </form>
-
     </div>
-
+    <div class="referral-preview-scroll">
+        @include('bhw.referrals.partials.document', ['forPdf' => false])
+    </div>
 </div>
-
 @endsection

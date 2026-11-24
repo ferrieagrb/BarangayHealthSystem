@@ -1,0 +1,69 @@
+Bheams Execution Coverage
+ [x] Execution valid login and dashboard redirect with data set "LOG-001"
+ [x] Execution valid login and dashboard redirect with data set "LOG-002"
+ [x] Execution valid login and dashboard redirect with data set "LOG-003"
+ [x] Execution valid login and dashboard redirect with data set "LOG-004"
+ [x] Execution LOG 005 email identifier
+ [x] Execution invalid or missing login with data set "LOG-006"
+ [x] Execution invalid or missing login with data set "LOG-007"
+ [x] Execution invalid or missing login with data set "LOG-008"
+ [x] Execution invalid or missing login with data set "LOG-009-username"
+ [x] Execution invalid or missing login with data set "LOG-009-password"
+ [x] Execution LOG 010 archived account
+ [x] Execution LOG 012 logout every role with data set "LOG-001"
+ [x] Execution LOG 012 logout every role with data set "LOG-002"
+ [x] Execution LOG 012 logout every role with data set "LOG-003"
+ [x] Execution LOG 012 logout every role with data set "LOG-004"
+ [x] Execution LOG 013 guest protected dashboards with data set "LOG-001"
+ [x] Execution LOG 013 guest protected dashboards with data set "LOG-002"
+ [x] Execution LOG 013 guest protected dashboards with data set "LOG-003"
+ [x] Execution LOG 013 guest protected dashboards with data set "LOG-004"
+ [x] Execution LCK 001 rate limit
+ [x] Execution LCK 005 success clears failures
+ [x] Execution PWD 010 forced change blocks dashboard with data set "LOG-001"
+ [x] Execution PWD 010 forced change blocks dashboard with data set "LOG-002"
+ [x] Execution PWD 010 forced change blocks dashboard with data set "LOG-003"
+ [x] Execution PWD 010 forced change blocks dashboard with data set "LOG-004"
+ [x] Execution PWD 011 complete forced change with data set "LOG-001"
+ [x] Execution PWD 011 complete forced change with data set "LOG-002"
+ [x] Execution PWD 011 complete forced change with data set "LOG-003"
+ [x] Execution PWD 011 complete forced change with data set "LOG-004"
+ [x] Execution PWD 012 invalid forced change with data set "short"
+ [x] Execution PWD 012 invalid forced change with data set "mismatch"
+ [x] Execution PWD 012 invalid forced change with data set "blank"
+ [x] Execution PRF 008 password change and old login denial
+ [x] Execution PRF 009 wrong current password
+ [x] Execution PRF 010 invalid new password with data set "short"
+ [x] Execution PRF 010 invalid new password with data set "mismatch"
+ [x] Execution PRF 010 invalid new password with data set "blank"
+ [x] Execution create assignable user with data set "AUS-002-admin"
+ [x] Execution create assignable user with data set "AUS-002-bhw"
+ [x] Execution create assignable user with data set "AUS-002-citizen"
+ [x] Execution create assignable user with data set "SUS-002"
+ [x] Execution create assignable user with data set "SUS-003"
+ [x] Execution create assignable user with data set "SUS-004"
+ [x] Execution create assignable user with data set "SUS-005"
+ [x] Execution AUS 003 optional username email login
+ [x] Execution AUS 005 admin cannot create superadmin
+ [x] Execution AUS 006 update identity
+ [ ] Execution AUS 007 display name persistence
+ [x] Execution AUS 009 cannot change own role
+ [x] Execution AUS 011 archive and login denial
+ [x] Execution AUS 012 cannot archive self
+ [x] Execution AUS 013 restore account forces change
+ [x] Execution AUS 016 cannot reset self
+ [ ] Execution SUS 006 user detail view
+
+Bheams Inventory Execution
+ [x] Execution INV 006 deposit one batch
+ [x] Execution INV 007 deposit multiple packs
+ [x] Execution STK 001 withdraw four
+ [x] Execution STK 002 withdraw remaining
+ [x] Execution STK 003 excess withdrawal
+ [x] Execution STK 004 invalid withdrawal with data set "zero"
+ [x] Execution STK 004 invalid withdrawal with data set "negative"
+ [x] Execution STK 004 invalid withdrawal with data set "decimal"
+ [x] Execution STK 004 invalid withdrawal with data set "missing"
+ [ ] Execution STK 005 item withdraw handler
+ [ ] Execution STK 007 excess release
+

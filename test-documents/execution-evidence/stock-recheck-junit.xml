@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CLI Arguments" tests="1" assertions="1" errors="0" failures="1" skipped="0" time="0.315816">
+    <testsuite name="BheamsInventoryExecutionTest" file="C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\acceptance\BheamsInventoryExecutionTest.php" tests="1" assertions="1" errors="0" failures="1" skipped="0" time="0.315816">
+      <testcase name="test_execution_STK_007_excess_release" file="C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\acceptance\BheamsInventoryExecutionTest.php" line="51" class="BheamsInventoryExecutionTest" classname="BheamsInventoryExecutionTest" assertions="1" time="0.315816">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">BheamsInventoryExecutionTest::test_execution_STK_007_excess_release&#13;
+Expected an excess-quantity rejection. Observed HTTP 302; initial stock=20; requested=21; remaining=0; logged release quantity=21.
+Failed asserting that false is true.
+&#13;
+C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\acceptance\BheamsInventoryExecutionTest.php:55</failure>
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>

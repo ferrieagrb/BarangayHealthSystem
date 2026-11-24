@@ -3,6 +3,11 @@
    REFERRAL MANAGEMENT PAGE
    ========================================== */
 
+.bhw-referrals-table { min-width: 680px; }
+.bhw-referrals-table .citizen-name,
+.bhw-referrals-table .citizen-sub { display: block; }
+.bhw-referrals-table .citizen-sub { margin-top: 4px; color: #64748b; font-size: 13px; }
+
 .page-top {
     display: flex;
     justify-content: space-between;

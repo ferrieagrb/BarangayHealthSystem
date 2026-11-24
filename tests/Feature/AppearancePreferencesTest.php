@@ -230,6 +230,7 @@ class AppearancePreferencesTest extends TestCase
             'availableCitizens' => collect(), 'referrals' => $empty, 'recent' => collect(),
             'announcements' => collect([$announcement]), 'citizen' => $citizen,
             'qrImage' => '', 'healthShare' => null, 'vaccinationSchedulingEnabled' => true,
+            'publicHealthIdEnabled' => false,
             'canEdit' => true, 'vaccinationEligibilityOptions' => [], 'availableMedicines' => $empty,
             'calendarVaccineOptions' => [], 'calendarVaccine' => '', 'calendarPuroks' => collect(),
             'calendarCitizens' => collect(), 'canViewDiseaseAnalytics' => true,
@@ -246,13 +247,16 @@ class AppearancePreferencesTest extends TestCase
             'selectedSections' => ['citizens'], 'categories' => collect(), 'diagnoses' => [],
             'vaccineTypes' => [], 'reportFilterSummary' => 'None', 'citizensReport' => collect(),
             'reportFilterOptions' => [], 'includeGraphics' => false,
+            'includeSummary' => false, 'includeSexList' => false, 'sexCitizenList' => collect(),
+            'includeAgeList' => false, 'ageCitizenList' => collect(),
+            'includePregnancyList' => false, 'pregnancyCitizenList' => collect(),
             'announcement' => $announcement, 'returnUrl' => '/citizen/dashboard', 'source' => 'dashboard',
             'showArchived' => false, 'healthTrend' => [], 'monthLabels' => [], 'purokCounts' => [],
-            'inventoryRisk' => [], 'referralStatusCounts' => [], 'topInventory' => collect(),
+            'inventoryRisk' => [], 'referralMonthlyCounts' => [], 'topInventory' => collect(),
             'recentEvents' => collect(), 'recentSupplyActivity' => collect(),
             'categoryLabels' => [], 'categoryValues' => [], 'popularDisease' => null,
         ];
-        foreach (['totalCitizens', 'totalInventoryUnits', 'totalInventory', 'pendingReferrals',
+        foreach (['totalCitizens', 'totalInventoryUnits', 'totalInventory', 'totalReferrals',
             'upcomingEventsCount', 'totalPosts', 'thisMonth', 'urgentAlerts', 'kids', 'adults',
             'seniors', 'bhwCount', 'lowStockCount', 'writeCount', 'readCount', 'noneCount',
             'activeUserCount', 'failedLoginCount', 'archivedCount', 'totalsupply', 'lowStock',
@@ -269,7 +273,7 @@ class AppearancePreferencesTest extends TestCase
         $data['inventoryRisk'] = collect();
         $data['healthTrend'] = collect();
         $data['monthLabels'] = collect();
-        $data['referralStatusCounts'] = collect();
+        $data['referralMonthlyCounts'] = collect();
         $data['puroks'] = collect([$purok]);
         $data['subgroups'] = collect([$subgroup]);
         $data['bhws'] = collect([$worker]);
@@ -290,12 +294,22 @@ class AppearancePreferencesTest extends TestCase
         $data['periodLabel'] = 'Last 7 days';
         $data['filters'] = [];
         $data['supplyRecommendations'] = collect();
+        $data['forecastAvailable'] = false;
+        $data['forecastStatusLabel'] = 'Waiting for sufficient data';
+        $data['forecastStatusMessage'] = 'No activity records in this fixture.';
+        $data['minimumForecastRecords'] = 10;
         $data['diseaseMonitoringData'] = array_fill_keys(['privacySuppressed', 'previousSuppressed',
             'missingLocationSuppressed', 'missingDateSuppressed'], false) + array_fill_keys([
             'totalRecords', 'uniqueCitizens', 'previousChange', 'previousRecords',
             'missingLocationRecords', 'missingDateRecords'], 0) + array_fill_keys([
             'diagnosisOptions', 'availablePuroks', 'availableSubgroups', 'diagnosisRankings',
             'mapAreas', 'areaRankings'], []);
+        foreach (['diagnosisOptions', 'availablePuroks', 'availableSubgroups', 'diagnosisRankings', 'areaRankings'] as $key) {
+            $data['diseaseMonitoringData'][$key] = collect();
+        }
+        $data['diseaseMonitoringData']['trend'] = [
+            'granularity' => 'day', 'labels' => [], 'recordCounts' => [], 'citizenCounts' => [],
+        ];
         $pages = [
             'bhw' => ['home', 'citizen', 'addcitizen', 'citizen_show', 'healthrecord', 'analytics', 'calendar', 'announcements', 'qr_scanner',
                 'referrals/index', 'referrals/create', 'reports', 'families/show', 'supplies',
@@ -319,8 +333,14 @@ class AppearancePreferencesTest extends TestCase
                 if ($view === 'families/show') {
                     $viewData['families'] = $empty;
                     $viewData['subgroupFilter'] = null;
-                    $viewData['subgroupCounts'] = [];
+                    $viewData['subgroupCounts'] = collect();
                     $viewData['search'] = '';
+                    $viewData['familyOverview'] = [
+                        ['Total Families', 0, 'Registered households'],
+                        ['Family Members', 0, 'Citizens assigned to households'],
+                        ['With Family Head', 0, 'Households with an assigned head'],
+                        ['New Families', 0, 'Registered in the last 14 days'],
+                    ];
                 }
                 if ($view === 'referrals/index') {
                     $viewData['referrals'] = $empty;
@@ -336,6 +356,12 @@ class AppearancePreferencesTest extends TestCase
                 }
                 if ($role === 'admin' && $view === 'admin_analytics') {
                     $viewData['bhwUsers'] = 0;
+                    $viewData['workloadForecast'] = app(\App\Services\DiagnosisRecordWorkloadForecaster::class)->forecast([]);
+                    $viewData['undatedHealthRecordCount'] = 0;
+                    $viewData['workloadForecastLabels'] = [];
+                    $viewData['workloadChartLabels'] = [];
+                    $viewData['workloadRecordedValues'] = [];
+                    $viewData['workloadForecastValues'] = [];
                 }
                 if ($role === 'citizen' && $view === 'supplies') {
                     $viewData['scheduledReleases'] = $empty;

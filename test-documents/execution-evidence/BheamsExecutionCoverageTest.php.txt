@@ -1,0 +1,147 @@
+<?php
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\DataProvider;
+
+final class BheamsExecutionCoverageTest extends \Tests\Feature\SecurityControlsTest
+{
+    private function account(string $role = 'bhw', array $extra = []): User
+    {
+        static $n = 0; $n++;
+        return User::create($extra + ['name'=>'QA User '.$n,'email'=>'qa'.$n.'@example.test','username'=>'qa_'.$n,'password'=>'QA-Only-Password-2026!','role'=>$role,'must_change_password'=>false]);
+    }
+    public static function roles(): array
+    {
+        return ['LOG-001'=>['citizen','/citizen/dashboard'],'LOG-002'=>['bhw','/home'],'LOG-003'=>['admin','/admin/home'],'LOG-004'=>['superadmin','/superadmin/dashboard']];
+    }
+    #[DataProvider('roles')]
+    public function test_execution_valid_login_and_dashboard_redirect(string $role,string $uri): void
+    {
+        $u=$this->account($role);
+        $this->post('/login',['Username'=>$u->username,'Password'=>'QA-Only-Password-2026!'])->assertRedirect($uri);
+        $this->assertAuthenticatedAs($u);
+        $this->get('/dashboard')->assertRedirect($uri);
+    }
+    public function test_execution_LOG_005_email_identifier(): void
+    {
+        $u=$this->account();$this->post('/login',['Username'=>$u->email,'Password'=>'QA-Only-Password-2026!'])->assertRedirect('/home');$this->assertAuthenticatedAs($u);
+    }
+    public static function invalidLogin(): array
+    {
+        return ['LOG-006'=>['known','wrong'],'LOG-007'=>['unknown','wrong'],'LOG-008'=>['',''],'LOG-009-username'=>['','QA-Only-Password-2026!'],'LOG-009-password'=>['known','']];
+    }
+    #[DataProvider('invalidLogin')]
+    public function test_execution_invalid_or_missing_login(string $identifier,string $password): void
+    {
+        $u=$this->account();$id=$identifier==='known'?$u->username:($identifier==='unknown'?'absent@example.test':$identifier);
+        $response=$this->post('/login',['Username'=>$id,'Password'=>$password]);$response->assertRedirect();$this->assertGuest();$this->assertTrue(session()->has('error')||session()->has('errors'));
+    }
+    public function test_execution_LOG_010_archived_account(): void
+    {
+        $u=$this->account();$id=$u->username;$u->delete();$this->post('/login',['Username'=>$id,'Password'=>'QA-Only-Password-2026!'])->assertRedirect();$this->assertGuest();$this->assertSoftDeleted($u);
+    }
+    #[DataProvider('roles')]
+    public function test_execution_LOG_012_logout_every_role(string $role,string $uri): void
+    {
+        $u=$this->account($role);$this->actingAs($u)->post('/logout')->assertRedirect('/login');$this->assertGuest();Auth::forgetGuards();$this->get($uri)->assertRedirect('/login');
+    }
+    #[DataProvider('roles')]
+    public function test_execution_LOG_013_guest_protected_dashboards(string $role,string $uri): void {$this->get($uri)->assertRedirect('/login');}
+    public function test_execution_LCK_001_rate_limit(): void
+    {
+        DB::table('system_settings')->where('key','max_failed_login_attempts')->update(['value'=>'20']);$u=$this->account();
+        for($i=0;$i<5;$i++)$this->post('/login',['Username'=>$u->email,'Password'=>'wrong']);
+        $this->post('/login',['Username'=>$u->email,'Password'=>'wrong'])->assertSessionHas('error',fn($m)=>str_contains($m,'Too many login attempts'));$this->assertGuest();
+    }
+    public function test_execution_LCK_005_success_clears_failures(): void
+    {
+        $u=$this->account();$this->post('/login',['Username'=>$u->username,'Password'=>'wrong']);$this->assertSame(1,(int)$u->fresh()->failed_login_attempts);
+        $this->post('/login',['Username'=>$u->username,'Password'=>'QA-Only-Password-2026!'])->assertRedirect('/home');$this->assertSame(0,(int)$u->fresh()->failed_login_attempts);$this->assertNull($u->fresh()->locked_until);
+    }
+    #[DataProvider('roles')]
+    public function test_execution_PWD_010_forced_change_blocks_dashboard(string $role,string $uri): void
+    {
+        $u=$this->account($role,['must_change_password'=>true]);$this->post('/login',['Username'=>$u->username,'Password'=>'QA-Only-Password-2026!'])->assertRedirect('/force-password-change');$this->get($uri)->assertRedirect('/force-password-change');
+    }
+    #[DataProvider('roles')]
+    public function test_execution_PWD_011_complete_forced_change(string $role,string $uri): void
+    {
+        $u=$this->account($role,['must_change_password'=>true]);$this->actingAs($u)->post('/force-password-change',['password'=>'New-QA-Password-2026!','password_confirmation'=>'New-QA-Password-2026!'])->assertRedirect('/dashboard');
+        $this->assertFalse((bool)$u->fresh()->must_change_password);$this->assertTrue(Hash::check('New-QA-Password-2026!',$u->fresh()->password));$this->get('/dashboard')->assertRedirect($uri);
+    }
+    public static function invalidPasswords(): array{return ['short'=>['1234567','1234567'],'mismatch'=>['New-QA-Password-2026!','different'],'blank'=>['','']];}
+    #[DataProvider('invalidPasswords')]
+    public function test_execution_PWD_012_invalid_forced_change(string $password,string $confirmation): void
+    {
+        $u=$this->account('bhw',['must_change_password'=>true]);$this->actingAs($u)->post('/force-password-change',['password'=>$password,'password_confirmation'=>$confirmation])->assertSessionHasErrors('password');$this->assertTrue((bool)$u->fresh()->must_change_password);$this->assertTrue(Hash::check('QA-Only-Password-2026!',$u->fresh()->password));
+    }
+    public function test_execution_PRF_008_password_change_and_old_login_denial(): void
+    {
+        $u=$this->account();$this->actingAs($u)->put('/settings/password',['current_password'=>'QA-Only-Password-2026!','password'=>'New-QA-Password-2026!','password_confirmation'=>'New-QA-Password-2026!'])->assertSessionHas('password_success');
+        $this->assertTrue(Hash::check('New-QA-Password-2026!',$u->fresh()->password));$this->post('/logout');Auth::forgetGuards();
+        $this->post('/login',['Username'=>$u->username,'Password'=>'QA-Only-Password-2026!']);$this->assertGuest();
+        $this->post('/login',['Username'=>$u->username,'Password'=>'New-QA-Password-2026!'])->assertRedirect('/home');$this->assertAuthenticatedAs($u);
+    }
+    public function test_execution_PRF_009_wrong_current_password(): void
+    {
+        $u=$this->account();$old=$u->password;$this->actingAs($u)->put('/settings/password',['current_password'=>'wrong','password'=>'New-QA-Password-2026!','password_confirmation'=>'New-QA-Password-2026!'])->assertSessionHasErrors('current_password');$this->assertSame($old,$u->fresh()->password);
+    }
+    #[DataProvider('invalidPasswords')]
+    public function test_execution_PRF_010_invalid_new_password(string $password,string $confirmation): void
+    {
+        $u=$this->account();$old=$u->password;$this->actingAs($u)->put('/settings/password',['current_password'=>'QA-Only-Password-2026!','password'=>$password,'password_confirmation'=>$confirmation])->assertSessionHasErrors('password');$this->assertSame($old,$u->fresh()->password);
+    }
+    public static function creationRoles(): array{return ['AUS-002-admin'=>['admin','admin'],'AUS-002-bhw'=>['admin','bhw'],'AUS-002-citizen'=>['admin','citizen'],'SUS-002'=>['superadmin','citizen'],'SUS-003'=>['superadmin','bhw'],'SUS-004'=>['superadmin','admin'],'SUS-005'=>['superadmin','superadmin']];}
+    #[DataProvider('creationRoles')]
+    public function test_execution_create_assignable_user(string $actorRole,string $targetRole): void
+    {
+        $actor=$this->account($actorRole);$prefix=$actorRole==='superadmin'?'/superadmin/users':'/admin/users';
+        $this->actingAs($actor)->post($prefix,['name'=>'Created QA','email'=>'created@example.test','username'=>'created_qa','role'=>$targetRole])->assertRedirect($prefix)->assertSessionHasNoErrors();
+        $target=User::where('email','created@example.test')->firstOrFail();$this->assertSame($targetRole,$target->role);$this->assertTrue((bool)$target->must_change_password);$this->assertNotSame($actor->id,$target->id);
+    }
+    public function test_execution_AUS_003_optional_username_email_login(): void
+    {
+        $actor=$this->account('admin');$r=$this->actingAs($actor)->post('/admin/users',['name'=>'No Username QA','email'=>'created@example.test','role'=>'bhw'])->assertSessionHasNoErrors();
+        $target=User::where('email','created@example.test')->firstOrFail();$this->assertNull($target->username);$message=$r->getSession()->get('success');preg_match('/password is: (.+)$/',$message,$m);$this->assertNotEmpty($m[1]??null);
+        $this->post('/logout');Auth::forgetGuards();$this->post('/login',['Username'=>$target->email,'Password'=>$m[1]])->assertRedirect('/force-password-change');$this->assertAuthenticatedAs($target);
+    }
+    public function test_execution_AUS_005_admin_cannot_create_superadmin(): void
+    {
+        $this->actingAs($this->account('admin'))->post('/admin/users',['name'=>'Elevated QA','email'=>'elevated@example.test','role'=>'superadmin'])->assertSessionHasErrors('role');$this->assertDatabaseMissing('users',['email'=>'elevated@example.test']);
+    }
+    public function test_execution_AUS_006_update_identity(): void
+    {
+        $actor=$this->account('admin');$target=$this->account();$this->actingAs($actor)->put('/admin/users/'.$target->id,['name'=>$target->name,'email'=>'changed@example.test','username'=>'changed_qa','role'=>'bhw'])->assertSessionHasNoErrors();$this->assertDatabaseHas('users',['id'=>$target->id,'email'=>'changed@example.test','username'=>'changed_qa']);
+    }
+    public function test_execution_AUS_007_display_name_persistence(): void
+    {
+        $actor=$this->account('admin');$target=$this->account();$this->actingAs($actor)->put('/admin/users/'.$target->id,['name'=>'Changed QA Display Name','email'=>$target->email,'username'=>$target->username,'role'=>'bhw'])->assertSessionHasNoErrors();$this->assertSame('Changed QA Display Name',$target->fresh()->name);
+    }
+    public function test_execution_AUS_009_cannot_change_own_role(): void
+    {
+        $actor=$this->account('admin');$this->actingAs($actor)->put('/admin/users/'.$actor->id,['name'=>$actor->name,'email'=>$actor->email,'username'=>$actor->username,'role'=>'bhw','confirm_password'=>'QA-Only-Password-2026!'])->assertSessionHasErrors('role');$this->assertSame('admin',$actor->fresh()->role);
+    }
+    public function test_execution_AUS_011_archive_and_login_denial(): void
+    {
+        $actor=$this->account('admin');$target=$this->account();$name=$target->username;$this->actingAs($actor)->delete('/admin/users/'.$target->id)->assertSessionHas('success');$this->assertSoftDeleted($target);
+        $this->post('/logout');Auth::forgetGuards();$this->post('/login',['Username'=>$name,'Password'=>'QA-Only-Password-2026!']);$this->assertGuest();
+    }
+    public function test_execution_AUS_012_cannot_archive_self(): void
+    {
+        $actor=$this->account('admin');$this->actingAs($actor)->delete('/admin/users/'.$actor->id)->assertSessionHasErrors('user');$this->assertNotSoftDeleted($actor);
+    }
+    public function test_execution_AUS_013_restore_account_forces_change(): void
+    {
+        $actor=$this->account('admin');$target=$this->account();$id=$target->id;$target->delete();$this->actingAs($actor)->patch('/admin/users/'.$id.'/restore')->assertSessionHas('success');$restored=User::findOrFail($id);$this->assertFalse($restored->trashed());$this->assertTrue((bool)$restored->must_change_password);
+    }
+    public function test_execution_AUS_016_cannot_reset_self(): void
+    {
+        $actor=$this->account('admin');$old=$actor->password;$this->actingAs($actor)->patch('/admin/users/'.$actor->id.'/reset-password',['confirm_password'=>'QA-Only-Password-2026!'])->assertSessionHasErrors('user');$this->assertSame($old,$actor->fresh()->password);
+    }
+    public function test_execution_SUS_006_user_detail_view(): void
+    {
+        $actor=$this->account('superadmin');$target=$this->account();$this->actingAs($actor)->get('/superadmin/users/'.$target->id)->assertOk()->assertSee($target->email);
+    }
+}

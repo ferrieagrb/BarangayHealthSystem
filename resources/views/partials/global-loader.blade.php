@@ -3,7 +3,7 @@
     <div class="logo-spinner-wrapper">
         <div class="spinner-ring-blue"></div>
         <div class="spinner-ring-white"></div>
-        <img src="{{ asset('images/amuyong.png') }}" alt="" class="spinner-logo">
+        <img src="{{ asset('images/barangay-amuyong.png') }}" alt="" class="spinner-logo">
     </div>
     <span class="loader-status-text">Loading...</span>
 </div>

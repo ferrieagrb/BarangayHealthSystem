@@ -1,0 +1,10 @@
+﻿{
+    "Checks":  267,
+    "Passed":  267,
+    "Failed":  0,
+    "Errors":  0,
+    "Skipped":  0,
+    "Assertions":  2137,
+    "Database":  "SQLite :memory:",
+    "Scope":  "Local unit, feature and HTTP acceptance testing; no live browser or production test execution"
+}

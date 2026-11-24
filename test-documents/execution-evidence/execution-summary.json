@@ -1,0 +1,12 @@
+﻿{
+    "exitCode":  2,
+    "startedUtc":  "2026-11-19T05:18:20.9072666+00:00",
+    "finishedUtc":  "2026-11-19T05:19:01.7560330+00:00",
+    "durationSeconds":  40.849,
+    "database":  "SQLite :memory:",
+    "storage":  "C:\\Users\\HUAWEI\\AppData\\Local\\Temp\\bheams-execution-20261119\\storage",
+    "sourceFilesChecked":  362,
+    "changedSourceFiles":  [
+
+                           ]
+}

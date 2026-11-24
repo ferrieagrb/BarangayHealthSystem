@@ -32,7 +32,7 @@ class AdminAnalytics extends Controller
             ->where('quantity', '>', 0)
             ->count();
         $outOfStockItems = Supply::where('quantity', '<=', 0)->count();
-        $pendingReferrals = Referral::whereIn('status', ['pending', 'approved'])->count();
+        $totalReferrals = Referral::count();
         $upcomingEvents = Event::whereDate('start', '>=', today())->count();
         $scheduledReleases = SupplyRelease::where('status', 'scheduled')->count();
         $claimedReleases = SupplyRelease::where('status', 'claimed')->count();
@@ -124,10 +124,15 @@ class AdminAnalytics extends Controller
             ->orderBy('quantity')
             ->take(8)
             ->get(['name', 'quantity', 'min_stock']);
-        $referralStatusCounts = Referral::select('status')
+        $referralsByMonth = Referral::select('date_of_referral')
+            ->whereDate('date_of_referral', '>=', $monthStart)
+            ->whereDate('date_of_referral', '<=', today())
             ->get()
-            ->groupBy(fn ($referral) => ucfirst($referral->status ?: 'unknown'))
+            ->groupBy(fn ($referral) => Carbon::parse($referral->date_of_referral)->format('M Y'))
             ->map->count();
+        $referralMonthlyCounts = $monthLabels->mapWithKeys(
+            fn ($label) => [$label => $referralsByMonth->get($label, 0)]
+        );
         $recentSupplyActivity = SupplyLog::latest()->with(['supply', 'citizen'])->take(8)->get();
         $recentEvents = Event::whereDate('start', '>=', today()->subWeeks(2))->orderByDesc('start')->take(5)->get();
 
@@ -138,9 +143,9 @@ class AdminAnalytics extends Controller
         return view('admin.admin_analytics', compact(
             'totalCitizens', 'totalUsers', 'bhwUsers', 'totalHealthRecords',
             'activeMaintenance', 'totalInventory', 'lowStockItems', 'outOfStockItems',
-            'pendingReferrals', 'upcomingEvents', 'scheduledReleases', 'claimedReleases',
+            'totalReferrals', 'upcomingEvents', 'scheduledReleases', 'claimedReleases',
             'monthLabels', 'healthTrend', 'purokCounts',
-            'topInventory', 'inventoryRisk', 'referralStatusCounts',
+            'topInventory', 'inventoryRisk', 'referralMonthlyCounts',
             'recentSupplyActivity', 'recentEvents', 'pageViewsToday',
             'workloadChartLabels', 'workloadRecordedValues', 'workloadForecast',
             'workloadForecastLabels', 'workloadForecastValues', 'undatedHealthRecordCount'

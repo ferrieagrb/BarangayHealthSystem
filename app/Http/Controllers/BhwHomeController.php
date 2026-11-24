@@ -47,9 +47,8 @@ class BhwHomeController extends Controller
         $totalInventoryUnits = Supply::sum('quantity');
 
         // Recent referrals (latest 5)
-        $recentReferrals = Referral::latest()->take(5)->get();
-        $recentReferralsCount = Referral::count();
-        $pendingReferrals = Referral::whereIn('status', ['pending', 'approved'])->count();
+        $recentReferrals = Referral::with('user')->latest()->take(5)->get();
+        $totalReferrals = Referral::count();
 
         $latestPeriodStart = now()->subDays(13)->startOfDay();
         $previousPeriodStart = now()->subDays(27)->startOfDay();
@@ -82,8 +81,8 @@ class BhwHomeController extends Controller
                 Supply::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->sum('quantity')
             ),
             'referrals' => $rate(
-                Referral::whereIn('status', ['pending', 'approved'])->whereBetween('created_at', [$latestPeriodStart, now()])->count(),
-                Referral::whereIn('status', ['pending', 'approved'])->whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
+                Referral::whereBetween('created_at', [$latestPeriodStart, now()])->count(),
+                Referral::whereBetween('created_at', [$previousPeriodStart, $previousPeriodEnd])->count()
             ),
             'diagnoses' => $rate(
                 HealthRecord::whereBetween('created_at', [$latestPeriodStart, now()])->count(),
@@ -159,9 +158,8 @@ class BhwHomeController extends Controller
             'lowStockSupplies',
             'totalInventory',
             'recentReferrals',
-            'recentReferralsCount'
+            'totalReferrals'
             , 'totalInventoryUnits'
-            , 'pendingReferrals'
             , 'dashboardTrends'
             , 'purokHeatmapData'
         ));

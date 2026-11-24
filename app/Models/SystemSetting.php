@@ -26,7 +26,7 @@ class SystemSetting extends Model
 
     public static function logoUrl(): string
     {
-        $path = static::value('site_logo', 'images/amuyong.png');
+        $path = static::value('site_logo', 'images/barangay-amuyong.png');
 
         if (str_starts_with($path, 'images/')) {
             return asset($path);
@@ -35,5 +35,23 @@ class SystemSetting extends Model
         return app()->runningInConsole()
             ? Storage::disk('public')->url($path)
             : route('site.logo');
+    }
+
+    public static function logoDataUri(): string
+    {
+        $path = static::value('site_logo', 'images/barangay-amuyong.png');
+        $disk = Storage::disk('public');
+        $contents = str_starts_with($path, 'images/') && is_file(public_path($path))
+            ? file_get_contents(public_path($path))
+            : ($disk->exists($path) ? $disk->get($path) : false);
+        $image = $contents !== false ? @getimagesizefromstring($contents) : false;
+
+        if ($image === false) {
+            $contents = file_get_contents(public_path('images/barangay-amuyong.png'));
+            $image = getimagesizefromstring($contents);
+        }
+
+        // Embed the current image bytes so PDFs do not reuse a URL or filesystem image cache.
+        return 'data:'.$image['mime'].';base64,'.base64_encode($contents);
     }
 }

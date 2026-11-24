@@ -1,0 +1,360 @@
+﻿"Evidence ID","Run","Class","Method / Dataset","Status","Assertions","Seconds","Message"
+"AUTO-001","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #0","passed","1","0.517784",""
+"AUTO-002","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #1","passed","1","0.039379",""
+"AUTO-003","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #2","passed","1","0.037315",""
+"AUTO-004","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #3","passed","1","0.038299",""
+"AUTO-005","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #4","passed","1","0.035077",""
+"AUTO-006","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #5","passed","1","0.037697",""
+"AUTO-007","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #6","passed","1","0.039146",""
+"AUTO-008","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #7","passed","1","0.039466",""
+"AUTO-009","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_each_subgroup_is_matched_to_itself with data set #8","passed","1","0.035997",""
+"AUTO-010","Existing suite","Tests\Unit\CitizensImportSubgroupTest","test_database_names_with_other_formatting_still_match","passed","4","0.078541",""
+"AUTO-011","Existing suite","Tests\Unit\DiagnosisRecordWorkloadForecasterTest","test_it_withholds_forecasts_until_twelve_months_are_available","passed","3","0.000983",""
+"AUTO-012","Existing suite","Tests\Unit\DiagnosisRecordWorkloadForecasterTest","test_it_selects_the_better_backtested_method_and_returns_three_months","passed","5","0.000601",""
+"AUTO-013","Existing suite","Tests\Unit\DiagnosisRecordWorkloadForecasterTest","test_it_uses_the_last_month_baseline_when_smoothing_does_not_improve_backtest","passed","4","0.000101",""
+"AUTO-014","Existing suite","Tests\Unit\ExampleTest","test_that_true_is_true","passed","1","0.000078",""
+"AUTO-015","Existing suite","Tests\Unit\GenerateWebPushKeysTest","test_command_generates_a_valid_vapid_key_pair","error","3","1.293696","Tests\Unit\GenerateWebPushKeysTest::test_command_generates_a_valid_vapid_key_pair
+Error: Class ""Minishlink\WebPush\VAPID"" not found
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Unit\GenerateWebPushKeysTest.php:22"
+"AUTO-016","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_applying_one_bhw_assignment_persists_after_reload_and_preserves_other_workers","passed","18","8.089683",""
+"AUTO-017","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_admin_can_delete_a_purok_boundary_without_changing_other_puroks","passed","4","0.367453",""
+"AUTO-018","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_admin_password_is_required_to_delete_puroks_and_subgroups","passed","16","0.208871",""
+"AUTO-019","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_admin_can_archive_citizens_and_citizen_accounts_in_a_purok_only","passed","23","0.366659",""
+"AUTO-020","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_subgroup_purge_uses_family_membership_and_requires_an_exact_confirmation","passed","15","0.099444",""
+"AUTO-021","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_non_admin_cannot_access_the_citizen_purge_route","passed","1","0.07768",""
+"AUTO-022","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_admin_can_delete_subgroup_after_its_citizens_are_removed_and_empty_families_are_cleaned_up","passed","11","0.038861",""
+"AUTO-023","Existing suite","Tests\Feature\AdminCitizenPurgeTest","test_archiving_an_empty_subgroup_requires_exact_confirmation_and_preserves_bhw_assignments","passed","12","0.044775",""
+"AUTO-024","Existing suite","Tests\Feature\AppearancePreferencesTest","test_every_role_can_preview_without_persisting_and_save_only_its_own_preferences","passed","144","1.946431",""
+"AUTO-025","Existing suite","Tests\Feature\AppearancePreferencesTest","test_invalid_preferences_and_anonymous_requests_cannot_change_saved_values","passed","7","0.073033",""
+"AUTO-026","Existing suite","Tests\Feature\AppearancePreferencesTest","test_shared_sidebar_scroll_styles_cover_every_role_and_keep_navigation_scrollable","passed","65","0.10756",""
+"AUTO-027","Existing suite","Tests\Feature\AppearancePreferencesTest","test_shared_assets_cover_representative_role_sections","error","35","3.328314","Tests\Feature\AppearancePreferencesTest::test_shared_assets_cover_representative_role_sections
+Illuminate\View\ViewException: Undefined array key ""trend"" (View: C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views\bhw\analytics.blade.php)
+
+C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\storage\framework\views\ee9ac06bd54868d25ad57ddebcb6b907.php:142
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\Engines\PhpEngine.php:59
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\Engines\CompilerEngine.php:76
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:208
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:191
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:160
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Http\Response.php:78"
+"AUTO-028","Existing suite","Tests\Feature\BhwAssignmentsTest","test_bulk_selection_preserves_other_workers_and_supports_shared_coverage","passed","3","0.091291",""
+"AUTO-029","Existing suite","Tests\Feature\BhwAssignmentsTest","test_non_bhw_selection_is_rejected_without_changes","passed","1","0.089818",""
+"AUTO-030","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_monitoring_uses_record_date_assigned_subgroups_and_distinct_citizens","passed","13","0.082668",""
+"AUTO-031","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_unassigned_citizens_are_accessible_only_to_bhws_in_the_same_mother_purok","passed","10","0.053858",""
+"AUTO-032","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_bhw_can_assign_an_unassigned_citizen_within_the_same_purok_but_not_across_puroks","passed","15","0.205905",""
+"AUTO-033","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_small_results_are_suppressed_from_aggregate_details","passed","4","0.047658",""
+"AUTO-034","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_monthly_trend_counts_records_and_masks_buckets_with_fewer_than_three_citizens","passed","6","0.043894",""
+"AUTO-035","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_reports_page_loads_when_vaccine_filter_is_active","passed","1","1.584583",""
+"AUTO-036","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_custom_report_can_be_downloaded_as_a_filtered_excel_workbook","failure","11","4.911916","Tests\Feature\BhwDiseaseMonitoringTest::test_custom_report_can_be_downloaded_as_a_filtered_excel_workbook
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'Purok'
++'First Name'
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Feature\BhwDiseaseMonitoringTest.php:585"
+"AUTO-037","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_all_report_sections_render_and_export_the_same_filtered_data","error","22","0.620155","Tests\Feature\BhwDiseaseMonitoringTest::test_all_report_sections_render_and_export_the_same_filtered_data
+Error: Call to a member function getCell() on null
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Feature\BhwDiseaseMonitoringTest.php:729"
+"AUTO-038","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_household_profiles_report_is_ordered_by_purok_and_filterable","passed","10","0.26307",""
+"AUTO-039","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_report_purok_filter_includes_bhw_pivot_assigned_subgroups","failure","9","0.080739","Tests\Feature\BhwDiseaseMonitoringTest::test_report_purok_filter_includes_bhw_pivot_assigned_subgroups
+Failed asserting that '<!DOCTYPE html>\n
+<html lang=""en"" class=""theme-light"" data-theme=""light"" data-font=""normal"">\n
+<head>\n
+    <meta charset=""UTF-8"">\n
+    <title>Dashboard</title>\n
+\n
+    <link rel=""stylesheet"" href=""http://127.0.0.1:8765/css/layout.css?v=1794328027"">\n
+    <link rel=""stylesheet"" href=""http://127.0.0.1:8765/css/bhw/home.css"">\n
+    <script src=""http://127.0.0.1:8765/js/ui-motion.js"" defer></script>\n"
+"AUTO-040","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_report_filters_validate_ranges_and_ignore_inapplicable_sex_filter","failure","2","0.070876","Tests\Feature\BhwDiseaseMonitoringTest::test_report_filters_validate_ranges_and_ignore_inapplicable_sex_filter
+Failed asserting that '<!DOCTYPE html>\n
+<html lang=""en"" class=""theme-light"" data-theme=""light"" data-font=""normal"">\n
+<head>\n
+    <meta charset=""UTF-8"">\n
+    <title>Dashboard</title>\n
+\n
+    <link rel=""stylesheet"" href=""http://127.0.0.1:8765/css/layout.css?v=1794328027"">\n
+    <link rel=""stylesheet"" href=""http://127.0.0.1:8765/css/bhw/home.css"">\n
+    <script src=""http://127.0.0.1:8765/js/ui-motion.js"" defer></script>\n"
+"AUTO-041","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_health_history_reports_apply_citizen_name_and_id_search","passed","6","0.067464",""
+"AUTO-042","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_all_puroks_citizen_profiles_match_in_preview_and_excel","failure","11","0.150658","Tests\Feature\BhwDiseaseMonitoringTest::test_all_puroks_citizen_profiles_match_in_preview_and_excel
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'Name'
++'Citizen ID'
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Feature\BhwDiseaseMonitoringTest.php:1056"
+"AUTO-043","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_health_and_immunization_reports_preserve_individual_history_and_schedule_status","passed","84","0.380394",""
+"AUTO-044","Existing suite","Tests\Feature\BhwDiseaseMonitoringTest","test_diagnosis_summary_also_includes_individual_history_in_preview_and_excel","passed","13","0.202598",""
+"AUTO-045","Existing suite","Tests\Feature\BhwRouteConnectionsTest","test_citizen_show_name_resolves_to_the_bhw_only_route","passed","3","0.027549",""
+"AUTO-046","Existing suite","Tests\Feature\BhwRouteConnectionsTest","test_calendar_event_edit_route_calls_the_update_action","passed","2","0.026681",""
+"AUTO-047","Existing suite","Tests\Feature\BhwRouteConnectionsTest","test_family_routes_are_limited_to_bhw_users","passed","10","0.023428",""
+"AUTO-048","Existing suite","Tests\Feature\BhwRouteConnectionsTest","test_qr_checker_diagnosis_route_has_a_controller_action","passed","3","0.023018",""
+"AUTO-049","Existing suite","Tests\Feature\BhwRouteConnectionsTest","test_qr_lookup_accepts_legacy_health_card_ids","passed","4","0.022344",""
+"AUTO-050","Existing suite","Tests\Feature\CitizenAnnouncementReturnNavigationTest","test_dashboard_entry_returns_to_dashboard_and_restores_scroll","passed","3","0.11401",""
+"AUTO-051","Existing suite","Tests\Feature\CitizenAnnouncementReturnNavigationTest","test_announcement_list_entry_returns_to_list_and_restores_scroll","passed","3","0.037429",""
+"AUTO-052","Existing suite","Tests\Feature\CitizenAnnouncementReturnNavigationTest","test_missing_or_invalid_source_falls_back_to_dashboard","passed","12","0.050025",""
+"AUTO-053","Existing suite","Tests\Feature\CitizenAnnouncementReturnNavigationTest","test_announcement_list_cards_open_the_full_detail_with_list_source","passed","4","0.100917",""
+"AUTO-054","Existing suite","Tests\Feature\CitizenBirthDateMigrationTest","test_migration_allows_unknown_birth_dates_and_ages_without_losing_existing_data","passed","3","0.113982",""
+"AUTO-055","Existing suite","Tests\Feature\CitizenFamilyPlanningEligibilityTest","test_male_citizens_cannot_retain_pregnancy_or_pills_statuses","passed","2","0.026648",""
+"AUTO-056","Existing suite","Tests\Feature\CitizenFamilyPlanningEligibilityTest","test_female_pills_status_requires_age_sixteen_and_pregnancy_remains_available","passed","4","0.028863",""
+"AUTO-057","Existing suite","Tests\Feature\CitizenFamilyPlanningEligibilityTest","test_changing_sex_or_age_clears_newly_ineligible_statuses","passed","4","0.024841",""
+"AUTO-058","Existing suite","Tests\Feature\CitizenFamilyPlanningEligibilityTest","test_migration_clears_ineligible_statuses_from_existing_records","passed","3","0.025438",""
+"AUTO-059","Existing suite","Tests\Feature\CitizenFamilyPlanningEligibilityTest","test_ecards_hide_family_planning_statuses_for_males_and_pills_for_minors","error","0","0.616717","Tests\Feature\CitizenFamilyPlanningEligibilityTest::test_ecards_hide_family_planning_statuses_for_males_and_pills_for_minors
+Illuminate\View\ViewException: SQLSTATE[HY000]: General error: 1 no such table: system_settings (Connection: sqlite, Database: :memory:, SQL: select ""value"" from ""system_settings"" where ""key"" = site_logo limit 1) (View: C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views\partials\favicon.blade.php) (View: C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views\partials\favicon.blade.php) (View: C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views\partials\favicon.blade.php)
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Database\Connection.php:838
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\Engines\PhpEngine.php:59
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\Engines\CompilerEngine.php:76
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:208
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:191
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\View.php:160
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\tests\Feature\CitizenFamilyPlanningEligibilityTest.php:189"
+"AUTO-060","Existing suite","Tests\Feature\CitizenPhotoTest","test_bhw_can_create_citizens_without_contact_number_or_email","passed","16","0.680815",""
+"AUTO-061","Existing suite","Tests\Feature\CitizenPhotoTest","test_bhw_can_create_a_citizen_with_a_private_photo","passed","9","0.900074",""
+"AUTO-062","Existing suite","Tests\Feature\CitizenPhotoTest","test_citizen_can_replace_photo_and_only_their_own_record_changes","passed","18","0.164169",""
+"AUTO-063","Existing suite","Tests\Feature\CitizenPhotoTest","test_photo_validation_and_access_are_enforced","passed","12","0.138315",""
+"AUTO-064","Existing suite","Tests\Feature\CitizenPhotoTest","test_citizen_can_add_a_first_photo_and_replace_a_legacy_public_photo","passed","14","0.151714",""
+"AUTO-065","Existing suite","Tests\Feature\CitizenPhotoTest","test_guests_cannot_change_photos","passed","2","0.034683",""
+"AUTO-066","Existing suite","Tests\Feature\CitizenPhotoTest","test_assigned_bhw_can_add_and_replace_photo_without_changing_citizen_details","passed","14","0.066591",""
+"AUTO-067","Existing suite","Tests\Feature\CitizenPhotoTest","test_bhw_photo_permissions_and_deceased_record_lock_are_enforced","passed","8","0.063544",""
+"AUTO-068","Existing suite","Tests\Feature\CitizenPhotoTest","test_bhw_photo_controls_are_shown_only_for_editable_living_citizens","passed","6","0.034057",""
+"AUTO-069","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_import_saves_capitalized_names_and_allows_blank_middle_name","passed","6","0.108063",""
+"AUTO-070","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_import_preserves_unknown_birth_date_and_does_not_invent_a_username with data set #0","passed","6","0.039706",""
+"AUTO-071","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_import_preserves_unknown_birth_date_and_does_not_invent_a_username with data set #1","passed","6","0.039165",""
+"AUTO-072","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_import_preserves_unknown_birth_date_and_does_not_invent_a_username with data set #2","passed","6","0.03911",""
+"AUTO-073","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #0","passed","4","0.076817",""
+"AUTO-074","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #1","passed","4","0.045547",""
+"AUTO-075","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #2","passed","4","0.039468",""
+"AUTO-076","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #3","passed","4","0.040738",""
+"AUTO-077","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #4","passed","4","0.040004",""
+"AUTO-078","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #5","passed","4","0.04041",""
+"AUTO-079","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_required_name_skips_row with data set #6","passed","4","0.040442",""
+"AUTO-080","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_invalid_optional_middle_name_and_contact_are_left_blank","passed","5","0.042376",""
+"AUTO-081","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #0","passed","4","0.042333",""
+"AUTO-082","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #1","passed","4","0.042824",""
+"AUTO-083","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #2","passed","4","0.042042",""
+"AUTO-084","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #3","passed","4","0.042031",""
+"AUTO-085","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #4","passed","4","0.042171",""
+"AUTO-086","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #5","passed","4","0.047418",""
+"AUTO-087","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #6","passed","4","0.058144",""
+"AUTO-088","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #7","passed","4","0.043623",""
+"AUTO-089","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #8","passed","4","0.042427",""
+"AUTO-090","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_contact_formats_are_normalized_or_reported with data set #9","passed","4","0.041905",""
+"AUTO-091","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_header_preview_reads_only_the_first_twenty_rows_of_a_large_csv","passed","2","0.455867",""
+"AUTO-092","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_header_preview_and_chunked_import_preserve_later_rows with data set #0","passed","6","0.648115",""
+"AUTO-093","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_header_preview_and_chunked_import_preserve_later_rows with data set #1","passed","6","0.220239",""
+"AUTO-094","Existing suite","Tests\Feature\CitizensImportFormattingTest","test_formatted_wide_sheets_import_only_data_columns_without_losing_late_headers","passed","7","0.091196",""
+"AUTO-095","Existing suite","Tests\Feature\ExampleTest","test_the_application_returns_a_successful_response","failure","1","0.188596","Tests\Feature\ExampleTest::test_the_application_returns_a_successful_response
+Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+PDOException: SQLSTATE[HY000]: General error: 1 no such table: page_views in C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Database\Connection.php:578
+Stack trace:
+#0 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Database\Connection.php(578): PDO->prepare('insert into ""pa...')
+#1 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Database\Connection.php(827): Illuminate\Database\Connection->Illuminate\Database\{closure}('insert into ""pa...', Array)"
+"AUTO-096","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_it_generates_separate_sequences_from_the_selected_purok_subgroup","passed","3","0.033974",""
+"AUTO-097","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_it_combines_a_mother_purok_with_a_letter_only_subgroup","passed","1","0.021361",""
+"AUTO-098","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_archiving_fills_the_gap_only_in_the_same_area","passed","6","0.027217",""
+"AUTO-099","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_restoring_a_family_assigns_the_next_number_without_duplicates","passed","6","0.028232",""
+"AUTO-100","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_migration_renumbers_existing_current_families_and_releases_archived_codes","passed","4","0.032571",""
+"AUTO-101","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_it_strips_the_p_prefix_from_subgroup_labels_like_p1a","passed","1","0.027237",""
+"AUTO-102","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_it_uses_the_mother_purok_number_and_only_the_subgroup_letter","passed","1","0.022714",""
+"AUTO-103","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_migration_backfills_codes_for_existing_families","passed","1","0.024341",""
+"AUTO-104","Existing suite","Tests\Feature\FamilyCodeGeneratorTest","test_normalization_migration_corrects_existing_codes_and_resets_each_area_sequence","passed","1","0.023564",""
+"AUTO-105","Existing suite","Tests\Feature\FamilyRegistrationTest","test_add_citizen_view_exposes_configuration_to_its_external_script","passed","6","0.033025",""
+"AUTO-106","Existing suite","Tests\Feature\FamilyRegistrationTest","test_searching_a_citizen_returns_their_whole_family_within_assigned_subgroups","passed","4","0.03647",""
+"AUTO-107","Existing suite","Tests\Feature\FamilyRegistrationTest","test_it_creates_family_and_assigns_unique_selected_members_with_generated_code","passed","7","0.03747",""
+"AUTO-108","Existing suite","Tests\Feature\FamilyRegistrationTest","test_archiving_and_restoring_renumbers_codes_without_changing_member_assignments","passed","8","0.040303",""
+"AUTO-109","Existing suite","Tests\Feature\FamilyRegistrationTest","test_family_pickers_include_members_of_previously_archived_families_within_the_bhw_scope","passed","3","0.04635",""
+"AUTO-110","Existing suite","Tests\Feature\FamilyRegistrationTest","test_archived_family_members_can_join_an_existing_family_and_are_not_reclaimed_on_restore","passed","8","0.048013",""
+"AUTO-111","Existing suite","Tests\Feature\FamilyRegistrationTest","test_new_family_registration_accepts_citizens_linked_to_an_archived_family","passed","5","0.039388",""
+"AUTO-112","Existing suite","Tests\Feature\FamilyRegistrationTest","test_registration_rechecks_availability_if_the_old_family_was_restored","passed","3","0.122575",""
+"AUTO-113","Existing suite","Tests\Feature\ImportHeadingPreviewTest","test_preview_reads_only_first_twenty_rows_of_first_sheet","passed","3","0.051377",""
+"AUTO-114","Existing suite","Tests\Feature\ImportHeadingPreviewTest","test_preview_preserves_late_header_columns_but_ignores_formatted_empty_columns","passed","4","0.047731",""
+"AUTO-115","Existing suite","Tests\Feature\InputCapitalizationTest","test_form_names_and_descriptions_are_capitalized_while_technical_values_are_preserved","passed","28","0.031908",""
+"AUTO-116","Existing suite","Tests\Feature\InputCapitalizationTest","test_json_and_nested_dynamic_fields_are_normalized_without_changing_types","passed","11","0.025191",""
+"AUTO-117","Existing suite","Tests\Feature\InputCapitalizationTest","test_search_parameters_are_not_rewritten","passed","6","0.032922",""
+"AUTO-118","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_bhw_can_search_rxnorm_without_sending_citizen_data","passed","6","2.201444",""
+"AUTO-119","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_rxnorm_brand_matches_are_exact_and_duplicate_terms_are_removed","passed","4","0.030698",""
+"AUTO-120","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_vaccine_suggestions_use_active_cdc_codes_and_local_vaccine_labels","passed","8","0.0286",""
+"AUTO-121","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_unmapped_cdc_vaccine_suggestions_remain_recognized_without_assumed_age_eligibility","passed","15","0.036872",""
+"AUTO-122","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_who_icd_search_uses_server_credentials_and_returns_codes","passed","6","0.032146",""
+"AUTO-123","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_provider_outage_keeps_manual_medicine_entry_available","passed","4","0.131545",""
+"AUTO-124","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_unrelated_provider_results_are_not_returned","passed","3","0.031531",""
+"AUTO-125","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_diagnosis_uses_nlm_when_who_credentials_are_not_configured","passed","6","0.027554",""
+"AUTO-126","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_search_requires_a_supported_type_and_two_characters","passed","4","0.035837",""
+"AUTO-127","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_superadmin_can_use_shared_terminology_without_accessing_patient_data","passed","2","0.026065",""
+"AUTO-128","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_admin_inventory_can_search_medicine_spelling_suggestions","passed","3","0.024644",""
+"AUTO-129","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_anonymous_users_cannot_search_medical_terminology","passed","2","0.023732",""
+"AUTO-130","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_unknown_account_roles_cannot_search_terminology","passed","2","0.027968",""
+"AUTO-131","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_medicine_spelling_never_reads_inventory_or_patient_records","passed","3","0.027379",""
+"AUTO-132","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_paracetamol_from_nlm_atc_vocabulary_is_supported","passed","4","0.028106",""
+"AUTO-133","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_rxnorm_spelling_endpoint_is_used_when_approximate_search_has_no_results","passed","4","0.027032",""
+"AUTO-134","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_nlm_fuzzy_diagnosis_search_returns_standardized_codes","passed","5","0.026593",""
+"AUTO-135","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_ordinary_supply_search_is_category_scoped_and_never_calls_medicine_api","passed","5","0.02761",""
+"AUTO-136","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_medicine_supply_search_uses_verified_online_terminology_only","passed","3","0.027224",""
+"AUTO-137","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_shared_search_supports_citizens_without_exposing_patient_data","passed","2","0.031198",""
+"AUTO-138","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_supply_search_requires_category_and_diagnosis_outage_allows_manual_entry","passed","6","0.033811",""
+"AUTO-139","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_duplicate_catalog_spelling_variants_are_rejected_without_changing_stock","passed","5","0.032425",""
+"AUTO-140","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_repeated_asset_includes_emit_one_autocomplete_component","passed","2","0.06213",""
+"AUTO-141","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_published_who_doh_references_work_without_inventory_or_network","passed","10","0.077931",""
+"AUTO-142","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_who_condition_reference_survives_online_diagnosis_outage","passed","4","0.03744",""
+"AUTO-143","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_verified_brand_generic_lookup_supports_fluimucil_exact_partial_and_typo","passed","20","0.041943",""
+"AUTO-144","Existing suite","Tests\Feature\MedicalTerminologySearchTest","test_mesh_fallback_matches_iga_vasculitis_and_multiword_typo_without_unrelated_conditions","passed","18","0.038",""
+"AUTO-145","Existing suite","Tests\Feature\PaginationUiTest","test_numbered_pagination_preserves_filters_tab_and_named_page_parameter","passed","33","0.024425",""
+"AUTO-146","Existing suite","Tests\Feature\PaginationUiTest","test_first_last_and_single_page_states","passed","3","0.023817",""
+"AUTO-147","Existing suite","Tests\Feature\PaginationUiTest","test_simple_paginator_and_registry_compatibility_view","passed","3","0.02434",""
+"AUTO-148","Existing suite","Tests\Feature\PaginationUiTest","test_out_of_range_page_does_not_generate_invalid_numbered_links","passed","2","0.029",""
+"AUTO-149","Existing suite","Tests\Feature\PasswordResetFlowTest","test_forgot_password_page_renders_and_login_links_to_it","passed","4","0.180358",""
+"AUTO-150","Existing suite","Tests\Feature\PasswordResetFlowTest","test_reset_link_is_sent_and_password_can_be_reset","passed","7","0.664086",""
+"AUTO-151","Existing suite","Tests\Feature\PasswordResetFlowTest","test_unknown_email_gets_same_response_and_no_notification","passed","2","0.245423",""
+"AUTO-152","Existing suite","Tests\Feature\PasswordResetFlowTest","test_invalid_token_is_rejected","passed","2","0.248409",""
+"AUTO-153","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_guest_can_get_the_recorded_health_summary_without_private_identifiers","passed","30","0.039268",""
+"AUTO-154","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_public_sharing_omits_inapplicable_family_planning_fields","passed","18","0.390553",""
+"AUTO-155","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_citizen_with_no_health_history_receives_empty_record_collections","passed","5","0.037674",""
+"AUTO-156","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_direct_health_id_url_shows_the_shared_record_without_login","passed","9","0.036577",""
+"AUTO-157","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_public_access_is_on_by_default_and_citizen_can_turn_it_off","passed","12","0.057778",""
+"AUTO-158","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_unknown_direct_health_id_token_returns_not_found","passed","2","0.033615",""
+"AUTO-159","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_linked_citizen_can_enable_non_expiring_sharing_and_turn_it_off","passed","12","0.056195",""
+"AUTO-160","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_bhw_cannot_grant_citizen_sharing","passed","2","0.038743",""
+"AUTO-161","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_unknown_uuid_does_not_return_a_citizen_summary","passed","3","0.04279",""
+"AUTO-162","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_public_health_routes_do_not_depend_on_the_legacy_sharing_table","passed","3","0.041931",""
+"AUTO-163","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_public_qr_scanner_navigation_works_for_guests_and_authenticated_users","passed","9","0.325392",""
+"AUTO-164","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_new_citizen_sharing_is_automatic_has_no_expiry_and_stays_off_after_revocation","passed","13","0.124308",""
+"AUTO-165","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_migration_defaults_existing_citizens_on_but_preserves_explicit_off_and_archived_records","passed","8","0.029916",""
+"AUTO-166","Existing suite","Tests\Feature\PublicHealthIdSummaryTest","test_turning_off_without_an_existing_grant_is_persisted_across_backfill","passed","3","0.041058",""
+"AUTO-167","Existing suite","Tests\Feature\SecurityControlsTest","test_repeated_failures_lock_temporarily_and_the_lock_expires_on_its_own","passed","8","0.100344",""
+"AUTO-168","Existing suite","Tests\Feature\SecurityControlsTest","test_unknown_identifiers_receive_the_same_messages_as_real_accounts","passed","2","0.037274",""
+"AUTO-169","Existing suite","Tests\Feature\SecurityControlsTest","test_unlocking_does_not_require_a_password_change_and_reset_does","passed","12","0.044448",""
+"AUTO-170","Existing suite","Tests\Feature\SecurityControlsTest","test_temporary_password_from_admin_reset_can_log_in_as_the_target_user","passed","8","0.038007",""
+"AUTO-171","Existing suite","Tests\Feature\SecurityControlsTest","test_admin_cannot_reset_a_superadmin_password","passed","2","0.035718",""
+"AUTO-172","Existing suite","Tests\Feature\SecurityControlsTest","test_changing_a_role_requires_the_acting_users_password","passed","5","0.038008",""
+"AUTO-173","Existing suite","Tests\Feature\SecurityControlsTest","test_exports_require_password_confirmation","passed","7","0.04748",""
+"AUTO-174","Existing suite","Tests\Feature\SecurityControlsTest","test_password_reentry_can_be_switched_off_in_system_settings","passed","3","0.034504",""
+"AUTO-175","Existing suite","Tests\Feature\SecurityControlsTest","test_bulk_views_and_exports_raise_an_alert_once","passed","4","0.030608",""
+"AUTO-176","Existing suite","Tests\Feature\SupplyArchiveTest","test_bhw_can_archive_a_catalog_and_all_its_packs_without_removing_other_items","passed","9","0.033027",""
+"AUTO-177","Existing suite","Tests\Feature\SupplyArchiveTest","test_empty_catalog_can_be_archived_from_the_main_row","passed","2","0.025056",""
+"AUTO-178","Existing suite","Tests\Feature\SupplyArchiveTest","test_read_only_bhw_cannot_archive_a_catalog_or_single_pack","passed","4","0.025504",""
+"AUTO-179","Existing suite","Tests\Feature\SupplyArchiveTest","test_single_pack_archive_keeps_other_packs_and_catalog","passed","4","0.024801",""
+"AUTO-180","Existing suite","Tests\Feature\SupplyArchiveTest","test_admin_uses_shared_archive_routes_with_supply_write_permission","passed","4","0.027348",""
+"AUTO-181","Existing suite","Tests\Feature\SupplyArchiveTest","test_failed_audit_write_leaves_all_packs_available","passed","3","0.026875",""
+"AUTO-182","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_routine_vaccine_age_windows_are_specific_and_out_of_range_doses_are_unavailable","passed","5","0.033409",""
+"AUTO-183","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_multi_dose_vaccines_require_the_next_dose_and_its_routine_age_window","passed","3","0.029679",""
+"AUTO-184","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_unknown_birth_date_and_unknown_vaccines_are_rejected","passed","3","0.026174",""
+"AUTO-185","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_vaccine_outside_its_configured_age_window_is_not_a_candidate","passed","4","0.039229",""
+"AUTO-186","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_historical_vaccination_eligibility_uses_age_on_the_administration_date","passed","2","0.033388",""
+"AUTO-187","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_direct_submission_requires_historical_path_for_out_of_range_records","passed","10","0.04205",""
+"AUTO-188","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_cdc_cvx_vaccine_can_be_recorded_historically_with_its_code_and_formulation","passed","12","0.03929",""
+"AUTO-189","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_existing_records_are_preserved_and_flagged_for_review_when_outside_routine_window","passed","4","0.092854",""
+"AUTO-190","Existing suite","Tests\Feature\VaccinationEligibilityTest","test_cvx_metadata_migration_adds_historical_recording_fields","passed","3","0.026764",""
+"AUTO-191","Existing suite","Tests\Feature\WebPushNotificationsTest","test_a_user_can_subscribe_and_unsubscribe_only_their_own_device","passed","9","0.072389",""
+"AUTO-192","Existing suite","Tests\Feature\WebPushNotificationsTest","test_subscription_endpoint_must_be_a_supported_push_service","passed","2","0.030965",""
+"AUTO-193","Existing suite","Tests\Feature\WebPushNotificationsTest","test_users_can_only_list_and_revoke_their_own_devices","passed","10","0.037324",""
+"AUTO-194","Existing suite","Tests\Feature\WebPushNotificationsTest","test_new_announcement_fans_out_a_generic_push_to_active_subscriptions","passed","2","0.442534",""
+"AUTO-195","Focused acceptance","BheamsExecutionCoverageTest","test_execution_valid_login_and_dashboard_redirect with data set ""LOG-001""","passed","7","0.316175",""
+"AUTO-196","Focused acceptance","BheamsExecutionCoverageTest","test_execution_valid_login_and_dashboard_redirect with data set ""LOG-002""","passed","7","0.033083",""
+"AUTO-197","Focused acceptance","BheamsExecutionCoverageTest","test_execution_valid_login_and_dashboard_redirect with data set ""LOG-003""","passed","7","0.034988",""
+"AUTO-198","Focused acceptance","BheamsExecutionCoverageTest","test_execution_valid_login_and_dashboard_redirect with data set ""LOG-004""","passed","7","0.033768",""
+"AUTO-199","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_005_email_identifier","passed","5","0.032034",""
+"AUTO-200","Focused acceptance","BheamsExecutionCoverageTest","test_execution_invalid_or_missing_login with data set ""LOG-006""","passed","3","0.03273",""
+"AUTO-201","Focused acceptance","BheamsExecutionCoverageTest","test_execution_invalid_or_missing_login with data set ""LOG-007""","passed","3","0.034025",""
+"AUTO-202","Focused acceptance","BheamsExecutionCoverageTest","test_execution_invalid_or_missing_login with data set ""LOG-008""","passed","3","0.030011",""
+"AUTO-203","Focused acceptance","BheamsExecutionCoverageTest","test_execution_invalid_or_missing_login with data set ""LOG-009-username""","passed","3","0.032207",""
+"AUTO-204","Focused acceptance","BheamsExecutionCoverageTest","test_execution_invalid_or_missing_login with data set ""LOG-009-password""","passed","3","0.028446",""
+"AUTO-205","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_010_archived_account","passed","3","0.031595",""
+"AUTO-206","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_012_logout_every_role with data set ""LOG-001""","passed","5","0.030722",""
+"AUTO-207","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_012_logout_every_role with data set ""LOG-002""","passed","5","0.031343",""
+"AUTO-208","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_012_logout_every_role with data set ""LOG-003""","passed","5","0.031982",""
+"AUTO-209","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_012_logout_every_role with data set ""LOG-004""","passed","5","0.031232",""
+"AUTO-210","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_013_guest_protected_dashboards with data set ""LOG-001""","passed","2","0.029533",""
+"AUTO-211","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_013_guest_protected_dashboards with data set ""LOG-002""","passed","2","0.027113",""
+"AUTO-212","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_013_guest_protected_dashboards with data set ""LOG-003""","passed","2","0.034471",""
+"AUTO-213","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LOG_013_guest_protected_dashboards with data set ""LOG-004""","passed","2","0.027234",""
+"AUTO-214","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LCK_001_rate_limit","passed","2","0.045967",""
+"AUTO-215","Focused acceptance","BheamsExecutionCoverageTest","test_execution_LCK_005_success_clears_failures","passed","5","0.032806",""
+"AUTO-216","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_010_forced_change_blocks_dashboard with data set ""LOG-001""","passed","4","0.028892",""
+"AUTO-217","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_010_forced_change_blocks_dashboard with data set ""LOG-002""","passed","4","0.029222",""
+"AUTO-218","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_010_forced_change_blocks_dashboard with data set ""LOG-003""","passed","4","0.029566",""
+"AUTO-219","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_010_forced_change_blocks_dashboard with data set ""LOG-004""","passed","4","0.02975",""
+"AUTO-220","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_011_complete_forced_change with data set ""LOG-001""","passed","6","0.154709",""
+"AUTO-221","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_011_complete_forced_change with data set ""LOG-002""","passed","6","0.039725",""
+"AUTO-222","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_011_complete_forced_change with data set ""LOG-003""","passed","6","0.043125",""
+"AUTO-223","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_011_complete_forced_change with data set ""LOG-004""","passed","6","0.040267",""
+"AUTO-224","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_012_invalid_forced_change with data set ""short""","passed","4","0.033929",""
+"AUTO-225","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_012_invalid_forced_change with data set ""mismatch""","passed","4","0.033899",""
+"AUTO-226","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PWD_012_invalid_forced_change with data set ""blank""","passed","4","0.033725",""
+"AUTO-227","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PRF_008_password_change_and_old_login_denial","passed","8","0.045644",""
+"AUTO-228","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PRF_009_wrong_current_password","passed","3","0.033592",""
+"AUTO-229","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PRF_010_invalid_new_password with data set ""short""","passed","3","0.046035",""
+"AUTO-230","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PRF_010_invalid_new_password with data set ""mismatch""","passed","3","0.042376",""
+"AUTO-231","Focused acceptance","BheamsExecutionCoverageTest","test_execution_PRF_010_invalid_new_password with data set ""blank""","passed","3","0.042719",""
+"AUTO-232","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""AUS-002-admin""","passed","6","0.047551",""
+"AUTO-233","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""AUS-002-bhw""","passed","6","0.032254",""
+"AUTO-234","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""AUS-002-citizen""","passed","6","0.032037",""
+"AUTO-235","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""SUS-002""","passed","6","0.031948",""
+"AUTO-236","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""SUS-003""","passed","6","0.032733",""
+"AUTO-237","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""SUS-004""","passed","6","0.032066",""
+"AUTO-238","Focused acceptance","BheamsExecutionCoverageTest","test_execution_create_assignable_user with data set ""SUS-005""","passed","6","0.03201",""
+"AUTO-239","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_003_optional_username_email_login","passed","8","0.042216",""
+"AUTO-240","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_005_admin_cannot_create_superadmin","passed","3","0.033425",""
+"AUTO-241","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_006_update_identity","passed","2","0.032337",""
+"AUTO-242","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_007_display_name_persistence","failure","2","0.046989","BheamsExecutionCoverageTest::test_execution_AUS_007_display_name_persistence
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'Changed QA Display Name'
++'QA User 46'
+
+C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\acceptance\BheamsExecutionCoverageTest.php:120"
+"AUTO-243","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_009_cannot_change_own_role","passed","3","0.030462",""
+"AUTO-244","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_011_archive_and_login_denial","passed","3","0.036312",""
+"AUTO-245","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_012_cannot_archive_self","passed","3","0.029834",""
+"AUTO-246","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_013_restore_account_forces_change","passed","3","0.031613",""
+"AUTO-247","Focused acceptance","BheamsExecutionCoverageTest","test_execution_AUS_016_cannot_reset_self","passed","3","0.03189",""
+"AUTO-248","Focused acceptance","BheamsExecutionCoverageTest","test_execution_SUS_006_user_detail_view","failure","1","0.046638","BheamsExecutionCoverageTest::test_execution_SUS_006_user_detail_view
+Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+InvalidArgumentException: View [admin.user-view] not found. in C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\FileViewFinder.php:138
+Stack trace:
+#0 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\FileViewFinder.php(78): Illuminate\View\FileViewFinder->findInPaths('admin.user-view', Array)
+#1 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\View\Factory.php(150): Illuminate\View\FileViewFinder->find('admin.user-view')"
+"AUTO-249","Focused acceptance","BheamsInventoryExecutionTest","test_execution_INV_006_deposit_one_batch","passed","3","0.036989",""
+"AUTO-250","Focused acceptance","BheamsInventoryExecutionTest","test_execution_INV_007_deposit_multiple_packs","passed","3","0.026721",""
+"AUTO-251","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_001_withdraw_four","passed","3","0.025699",""
+"AUTO-252","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_002_withdraw_remaining","passed","4","0.026336",""
+"AUTO-253","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_003_excess_withdrawal","passed","4","0.024757",""
+"AUTO-254","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_004_invalid_withdrawal with data set ""zero""","passed","4","0.026048",""
+"AUTO-255","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_004_invalid_withdrawal with data set ""negative""","passed","4","0.02772",""
+"AUTO-256","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_004_invalid_withdrawal with data set ""decimal""","passed","4","0.027101",""
+"AUTO-257","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_004_invalid_withdrawal with data set ""missing""","passed","4","0.025787",""
+"AUTO-258","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_005_item_withdraw_handler","failure","1","0.027737","BheamsInventoryExecutionTest::test_execution_STK_005_item_withdraw_handler
+Expected response status code [201, 301, 302, 303, 307, 308] but received 500.
+Failed asserting that false is true.
+
+The following exception occurred during the last request:
+
+Error: Call to undefined method App\Http\Controllers\SupplyController::withdrawItem() in C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Routing\ControllerDispatcher.php:46
+Stack trace:
+#0 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Routing\Route.php(265): Illuminate\Routing\ControllerDispatcher->dispatch(Object(Illuminate\Routing\Route), Object(App\Http\Controllers\SupplyController), 'withdrawItem')
+#1 C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Routing\Route.php(211): Illuminate\Routing\Route->runController()"
+"AUTO-259","Focused acceptance","BheamsInventoryExecutionTest","test_execution_STK_007_excess_release","failure","1","0.030357","BheamsInventoryExecutionTest::test_execution_STK_007_excess_release
+Session is missing expected key [errors].
+Failed asserting that false is true.
+
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1547
+C:\Users\HUAWEI\Desktop\BarangayHealthSystem\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1634
+C:\Users\HUAWEI\AppData\Local\Temp\bheams-execution-20261119\acceptance\BheamsInventoryExecutionTest.php:53"

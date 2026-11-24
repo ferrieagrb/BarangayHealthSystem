@@ -16,7 +16,6 @@ use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
 class CustomReportSheet extends DefaultValueBinder implements FromArray, WithColumnFormatting, WithCustomValueBinder, WithDrawings, WithEvents, WithStrictNullComparison, WithTitle
@@ -31,8 +30,8 @@ class CustomReportSheet extends DefaultValueBinder implements FromArray, WithCol
     public function array(): array
     {
         $rows = [
-            ['', 'BARANGAY HEALTH MANAGEMENT SYSTEM'],
-            ['', 'BARANGAY AMUYONG | BHEAMS'],
+            ['BARANGAY AMUYONG'],
+            ['Municipality of Alfonso | Province of Cavite'],
             ['Barangay Health Management System - '.$this->reportTitle.' Report'],
             ['Generated: '.$this->generatedAt],
             ['Filters: '.($this->filterSummary ?: 'None')],
@@ -54,16 +53,7 @@ class CustomReportSheet extends DefaultValueBinder implements FromArray, WithCol
 
     public function drawings(): array
     {
-        $drawing = new Drawing;
-        $drawing->setName('BHEAMS Logo');
-        $drawing->setDescription('Barangay Amuyong BHEAMS logo');
-        $drawing->setPath(public_path('images/amuyong.png'));
-        $drawing->setCoordinates('A1');
-        $drawing->setHeight(42);
-        $drawing->setOffsetX(6);
-        $drawing->setOffsetY(5);
-
-        return [$drawing];
+        return ReportLetterhead::drawings(count($this->section['headings']));
     }
 
     public function bindValue(Cell $cell, mixed $value): bool
@@ -101,27 +91,13 @@ class CustomReportSheet extends DefaultValueBinder implements FromArray, WithCol
                 $sheet = $event->sheet->getDelegate();
                 $columnCount = count($this->section['headings']);
                 $lastColumn = $this->columnLetter($columnCount);
-                $headerLastColumn = $columnCount > 1 ? $lastColumn : 'B';
+                $headerLastColumn = $this->columnLetter(max(4, $columnCount));
                 $lastRow = max(7, 7 + count($this->section['rows']));
 
-                $sheet->mergeCells("B1:{$headerLastColumn}1");
-                $sheet->mergeCells("B2:{$headerLastColumn}2");
                 foreach (range(3, 5) as $row) {
                     $sheet->mergeCells("A{$row}:{$headerLastColumn}{$row}");
                 }
 
-                $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '173B82']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-                ]);
-                $sheet->getStyle('A1')->applyFromArray([
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '173B82']],
-                ]);
-                $sheet->getStyle("B2:{$headerLastColumn}2")->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '173B82']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-                ]);
                 $sheet->getStyle("A3:{$headerLastColumn}3")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => '173B82']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
@@ -208,6 +184,7 @@ class CustomReportSheet extends DefaultValueBinder implements FromArray, WithCol
                     ->setHeader(0.15)
                     ->setFooter(0.2);
                 $sheet->getPageSetup()->setPrintArea("A1:{$headerLastColumn}{$lastRow}");
+                ReportLetterhead::format($sheet, $columnCount);
             },
         ];
     }

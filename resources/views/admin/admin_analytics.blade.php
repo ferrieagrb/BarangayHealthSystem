@@ -22,7 +22,7 @@
 
     <div class="reports-grid">
         <div class="report-card"><span>System Users</span><strong class="report-counter" data-count="{{ $totalUsers }}">0</strong><small><span class="report-counter" data-count="{{ $bhwUsers }}">0</span> BHW accounts</small></div>
-        <div class="report-card"><span>Referral Workload</span><strong class="report-counter" data-count="{{ $pendingReferrals }}">0</strong><small>Pending or approved referrals</small></div>
+        <div class="report-card"><span>Total Referrals</span><strong class="report-counter" data-count="{{ $totalReferrals }}">0</strong><small>Recorded referral forms</small></div>
         <div class="report-card"><span>Upcoming Events</span><strong class="report-counter" data-count="{{ $upcomingEvents }}">0</strong><small>From today onward</small></div>
         <div class="report-card"><span>Supply Releases</span><strong class="report-counter" data-count="{{ $scheduledReleases }}">0</strong><small><span class="report-counter" data-count="{{ $claimedReleases }}">0</span> claimed</small></div>
     </div>
@@ -79,8 +79,8 @@
         </section>
 
         <section class="report-panel chart-panel">
-            <h2>Referral Workload</h2>
-            <p>Current referral status distribution to help prioritize follow-up.</p>
+            <h2>Referrals per Month</h2>
+            <p>Referral forms recorded over the last six months.</p>
             <div id="referralWorkloadChart" class="chart-container"></div>
         </section>
     </div>
@@ -230,9 +230,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }).render();
 
     new ApexCharts(document.querySelector('#referralWorkloadChart'), {
-        chart: { type: 'donut', height: 280 },
-        series: @json($referralStatusCounts->values()),
-        labels: @json($referralStatusCounts->keys()->values()),
+        chart: { type: 'bar', height: 280, toolbar: { show: false } },
+        series: [{ name: 'Referrals', data: @json($referralMonthlyCounts->values()) }],
+        xaxis: { categories: @json($referralMonthlyCounts->keys()->values()) },
         colors: ['#f59e0b', '#2563eb', '#10b981', '#ef4444', '#64748b'],
         legend: { position: 'bottom' },
         dataLabels: { enabled: true }

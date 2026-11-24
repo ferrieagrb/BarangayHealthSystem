@@ -18,6 +18,13 @@ class CitizenFamilyPlanningEligibilityTest extends TestCase
         Schema::dropIfExists('user_permissions');
         Schema::dropIfExists('users');
         Schema::dropIfExists('citizens');
+        Schema::dropIfExists('system_settings');
+        Schema::create('system_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -180,6 +187,8 @@ class CitizenFamilyPlanningEligibilityTest extends TestCase
         $citizen->setRelation('subgroup', null);
         $citizen->setRelation('healthRecords', collect());
         $citizen->setRelation('vaccinations', collect());
+        $citizen->setRelation('vaccinationSchedules', collect());
+        $citizen->setRelation('medications', collect());
         $citizen->setRelation('maintenanceRecords', collect());
 
         return view($template, [

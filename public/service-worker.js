@@ -11,8 +11,8 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(self.registration.showNotification(payload.title || 'Barangay Health Update', {
         body: payload.body || 'A new announcement is available. Sign in to view it.',
-        icon: '/images/amuyong.png',
-        badge: '/images/amuyong.png',
+        icon: '/images/barangay-amuyong.png',
+        badge: '/images/barangay-amuyong.png',
         tag: payload.tag || 'barangay-health-update',
         data: { url: payload.url || '/' },
     }));

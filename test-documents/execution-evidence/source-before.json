@@ -1,0 +1,1450 @@
+﻿[
+    {
+        "path":  "bootstrap\\providers.php",
+        "hash":  "F720E185207A343D4C19FC99DBB317A4187EFBCD7D38A303A695BBDD77FFB943"
+    },
+    {
+        "path":  "routes\\web.php",
+        "hash":  "1CE5680113135F91857AC107AC13B21F180A3E7B3C33DF6628B2E976AD320A1C"
+    },
+    {
+        "path":  "routes\\console.php",
+        "hash":  "052354F319EA7281508E58C2B61E0820B4EDDB2ACA718AF22A96910C13A9B1D3"
+    },
+    {
+        "path":  "routes\\channels.php",
+        "hash":  "5C776998675A7C7D3303B3CD0517E314755CD9D582C17B18238C3686B17D76AC"
+    },
+    {
+        "path":  "routes\\api.php",
+        "hash":  "F3E64EC9A04580AEAD4CE123710A888166535B7909EBF2962C9EB9E792B90097"
+    },
+    {
+        "path":  "config\\webpush.php",
+        "hash":  "E8C4F5DFB6774A6950D63B74C6788F702EF3A48B000FE53F9A61F6C38E8E6816"
+    },
+    {
+        "path":  "config\\view.php",
+        "hash":  "31296429FEA0B7BC8392BDF63C5A664524C84634CDCD8D54C51D73D762C4B2EF"
+    },
+    {
+        "path":  "config\\vaccination.php",
+        "hash":  "145C93B6AA5E95AE24E6361A20E734E098AA06C6FD8885395274DDB73042C736"
+    },
+    {
+        "path":  "config\\session.php",
+        "hash":  "F2E75E189021597E29940C0859C00C3088EC591E403768FFF5143C5687A80F59"
+    },
+    {
+        "path":  "config\\services.php",
+        "hash":  "25FC69AD51175BE8E3FC0173D16A9F095AD61C039D4047E56002320A51086ABA"
+    },
+    {
+        "path":  "config\\sanctum.php",
+        "hash":  "2D0C59F68CAAD6A6A8E59A297BF3EF3B9FB51AD26080BA2763DF815376EB3D6D"
+    },
+    {
+        "path":  "config\\queue.php",
+        "hash":  "6101774DA7C8B79AF46D0028F2B8B31A484C3F7EDA10B76E5B27B6093AD364A4"
+    },
+    {
+        "path":  "config\\medical_terminology.php",
+        "hash":  "A8E483A9C2C4D3508E18E51524BFBEE975DFAE2E258F0E214F545D311F457B06"
+    },
+    {
+        "path":  "config\\mail.php",
+        "hash":  "C43FF49A31C5F32CE21EB7159F2A4B3CD2F4074EAED5838D265646DBFEDD3474"
+    },
+    {
+        "path":  "config\\logging.php",
+        "hash":  "299EC1BA5B5A803C8E20F666AE7628E442E856CC2FF7AC9E2ADB17B97E8AD63B"
+    },
+    {
+        "path":  "config\\input_capitalization.php",
+        "hash":  "3B59B34F5949BCC868DC22879582A6F8E38CCC9E478A2F7D7E7DAA92ABB16859"
+    },
+    {
+        "path":  "config\\health_sharing.php",
+        "hash":  "D6C4E65ABB2E1CAD0748A78EE28C4D188346EF5F9FD033EBEF7C46D65EF434C9"
+    },
+    {
+        "path":  "config\\hashing.php",
+        "hash":  "6179FBF205A72D2DB2F19B4787DC416811013CD05C82FB919B4D012832421CE8"
+    },
+    {
+        "path":  "config\\filesystems.php",
+        "hash":  "4DD99F0E912A4035D3F77D21142AE535CBCAE19F6DE6E6F9DACCD256E48D3CAC"
+    },
+    {
+        "path":  "config\\database.php",
+        "hash":  "06759B7B36B8641E9025FE03DD728970C4CB02D5B58FF709CBB0649987B4BFC2"
+    },
+    {
+        "path":  "config\\cors.php",
+        "hash":  "7A1B9AF42B73B20126219ECA484EA7EB02C25A5D179EAB1AC00251779D808C49"
+    },
+    {
+        "path":  "config\\cache.php",
+        "hash":  "B8BCF382283330B94C0A602FF06452DE819041EA709E28EEA5065D51D1D7D085"
+    },
+    {
+        "path":  "config\\broadcasting.php",
+        "hash":  "551CEF9D06710CF34FD54DA3DCDABAAFBF4B764E9382229B8538231884835519"
+    },
+    {
+        "path":  "config\\auth.php",
+        "hash":  "C7E204E9785C9F596D66FB884B493F658F2327F157646BDB4088EFD6B3A7773F"
+    },
+    {
+        "path":  "config\\app.php",
+        "hash":  "B5FF68873F30EB3DC15D57FA223C692354E67E8E47C0F3760EF418BC769F9727"
+    },
+    {
+        "path":  "app\\Imports\\RawSheetImport.php",
+        "hash":  "5494ED44D92542DF588838C6BD60D5ED0BD3863C39875578F63D165A48C3FB05"
+    },
+    {
+        "path":  "app\\Traits\\LogsActivity.php",
+        "hash":  "E9D4DF0DB9233B9B93BB4382F42C6DC2E50D8907F01EBD5DC35DD73DB0791EF7"
+    },
+    {
+        "path":  "app\\Imports\\CitizensImport.php",
+        "hash":  "B71BB509BC328D30958E9507C05D80078044BBA04EB7DDEE022E406D00D92FA1"
+    },
+    {
+        "path":  "tests\\Unit\\GenerateWebPushKeysTest.php",
+        "hash":  "4BBBBFBE61A763A9A876666E23502CB09C133C37C25A9541917CD89913032671"
+    },
+    {
+        "path":  "tests\\Unit\\ExampleTest.php",
+        "hash":  "FFACAE5C1A2A44C809420AF5B3B404910DA1B12167D58764DAC6D10B8BA8CFAF"
+    },
+    {
+        "path":  "tests\\Unit\\DiagnosisRecordWorkloadForecasterTest.php",
+        "hash":  "B6F7529D75D28A564E1B5065702AFE644B4115C4BE8E083665F8C24C42B47752"
+    },
+    {
+        "path":  "tests\\Unit\\CitizensImportSubgroupTest.php",
+        "hash":  "8C7A6C5A59F4C368568C1A20D5C458DAD23D382A18363E36BF2ADC24866D4A0A"
+    },
+    {
+        "path":  "tests\\TestCase.php",
+        "hash":  "C7C209F5579C42647C1F7B2A79AC828E8B54AC62A98442045A6E94FA2C0D0EBC"
+    },
+    {
+        "path":  "app\\Support\\InputCapitalization.php",
+        "hash":  "B9C6C751580B0DCBB421F23EF441CA42DC2E6FEF3DD3ACA1D0E97D6EA900BADB"
+    },
+    {
+        "path":  "app\\Support\\FamilyCode.php",
+        "hash":  "9B4DDB8D37EE72104F2B5D87AF98422E6EFAB9EA7B9CD25D83B1F81ED5148D2C"
+    },
+    {
+        "path":  "resources\\views\\welcome.blade.php",
+        "hash":  "CF87DC82E4C0AF0E2EF89135E24E33E6580825F15CC544927879BB0119E1D6F1"
+    },
+    {
+        "path":  "resources\\data\\medical-terminology\\verified-brands.json",
+        "hash":  "B444974F7D93902F1EF04E492C668C88478E738FDEA2D148F85F9E2FF87BED08"
+    },
+    {
+        "path":  "resources\\data\\medical-terminology\\official-references.json",
+        "hash":  "62ACFBFD27D6404C39546FDF14E424FF9E2CE68B6B5B06F923E429504D578841"
+    },
+    {
+        "path":  "bootstrap\\app.php",
+        "hash":  "08A82ED320D9E45B22BACEBC27B59358C1BC21B813A2111581BA14845143679B"
+    },
+    {
+        "path":  "tests\\CreatesApplication.php",
+        "hash":  "63E92D10F62118215F6A4EE20036E86A26D6867175365429E65DE33D0C60BA21"
+    },
+    {
+        "path":  "app\\Services\\VaccinationRecording.php",
+        "hash":  "B6F12163016F1A8FF4D3DBC6F8CEDEFE895204B8AD8C0E8C36B01CE58F0A3654"
+    },
+    {
+        "path":  "app\\Services\\VaccinationEligibility.php",
+        "hash":  "C935D46F3DEB94423FD930187D27FCC5CA0F42893E4AC1BAF8345F4B56FA4E9A"
+    },
+    {
+        "path":  "app\\Services\\MedicalTerminologySearch.php",
+        "hash":  "3EC0A5A684F9F0E56E2C52752344B6123C506365AB5D15A7474092E84EA53479"
+    },
+    {
+        "path":  "app\\Services\\FamilyCodeGenerator.php",
+        "hash":  "305A1E6BCC1A9CADFC6A282C412318A82139FA9DD91D98AAA9EF331427564334"
+    },
+    {
+        "path":  "app\\Services\\DiagnosisRecordWorkloadForecaster.php",
+        "hash":  "4F2F18E3D4716674D81416B16129110DC658E2D7974A618FCEF78EFF9320729C"
+    },
+    {
+        "path":  "app\\Services\\CitizenAccessAuditor.php",
+        "hash":  "6B8CA892B9AF56CF88E78B9E3E94FF00E1A7422ECC0B83AE5A870CB8FFF26A4D"
+    },
+    {
+        "path":  "app\\Services\\BhwDiseaseMonitoringService.php",
+        "hash":  "B599770D64512609C3D3C6A2DC22BDDF56D727E72E1FD1E6042E04030712168C"
+    },
+    {
+        "path":  "app\\Services\\BhwCitizenAccess.php",
+        "hash":  "54AAA6C042B47EEC69A9996E111EDF92899CA5636549E82BAD4DDB346F82B6D3"
+    },
+    {
+        "path":  "resources\\views\\templates\\superadmin.blade.php",
+        "hash":  "C9C449779EF4716A7799BE49B9DE5A5A3F53B3107C5304CCBBA6878D4422DFCD"
+    },
+    {
+        "path":  "resources\\views\\templates\\report-pdf.blade.php",
+        "hash":  "C2C7A969732E801C7373B0138C05727B459F4A6E156F9F684018950C633C8BA4"
+    },
+    {
+        "path":  "resources\\css\\app.css",
+        "hash":  "9F49ED837FDC773B89A294D1E86DC68828EF2F774D7E797BA5F89C2A08C84760"
+    },
+    {
+        "path":  "resources\\views\\citizenhome.blade.php",
+        "hash":  "7F5392C02969CA65AC8F90DC3CC96C524C0C5A14B85B8095A20AAAB06B31CD86"
+    },
+    {
+        "path":  "resources\\views\\citizencontactdirectory.blade.php",
+        "hash":  "30E6D1710217CF25B69B3D03E8954952672A08C04801C60C018F33D184C42524"
+    },
+    {
+        "path":  "resources\\views\\citizencalendar.blade.php",
+        "hash":  "F341BA677A6C620392312235F6174F8ABA6D084846447092E67472410B132F33"
+    },
+    {
+        "path":  "resources\\views\\citizenannouncement_show.blade.php",
+        "hash":  "7D6637F2A1E3E20D173E8B108F41231439B098E63A567F649AC2AF65599FD5CD"
+    },
+    {
+        "path":  "resources\\views\\citizenannouncements.blade.php",
+        "hash":  "B9BA19F52BD6D6939236C549E5799F4D8C414D865441AA9531C4F1AA15D6926E"
+    },
+    {
+        "path":  "tests\\Feature\\WebPushNotificationsTest.php",
+        "hash":  "972E87404D5C3FB4798A551C8D50B3199D4FE80C868CBC584FBD2D7483B32FD1"
+    },
+    {
+        "path":  "tests\\Feature\\VaccinationEligibilityTest.php",
+        "hash":  "0553042B1101EB1A72FFC12D9E00057B1A51D9A5BFCF85FA2C44E7E1EEB1955F"
+    },
+    {
+        "path":  "tests\\Feature\\SupplyArchiveTest.php",
+        "hash":  "0F306FD1365F2AF3446D0F07320DA9BAC5C13C085D5F98B86095B0A810A25EB5"
+    },
+    {
+        "path":  "tests\\Feature\\SecurityControlsTest.php",
+        "hash":  "B264E488EB208418B11F67FE444CFB9DDD2CBA961966EB21CC5698B2A2B619D9"
+    },
+    {
+        "path":  "tests\\Feature\\PublicHealthIdSummaryTest.php",
+        "hash":  "865FE5891B1FBF21996E199B05B3EABEF389BA2BAC8CE08B9433257D87A47515"
+    },
+    {
+        "path":  "tests\\Feature\\PasswordResetFlowTest.php",
+        "hash":  "30442B934597341A36D140412BB6651114677E64691C3B8D864683287C013903"
+    },
+    {
+        "path":  "tests\\Feature\\PaginationUiTest.php",
+        "hash":  "0ACA0506DA98C75B5830C79BB8FB23A8A8657D9DD77131FD2300B4B13E1A542A"
+    },
+    {
+        "path":  "tests\\Feature\\MedicalTerminologySearchTest.php",
+        "hash":  "B050A73F62233A3F82BF9F1693CA77BBEC13F1A014967C5DFF370CCAD454B0E1"
+    },
+    {
+        "path":  "tests\\Feature\\InputCapitalizationTest.php",
+        "hash":  "589A08F34D8783B5BD876CBD490239F53FF87F71F2CE2F5754DF378EADB5193E"
+    },
+    {
+        "path":  "tests\\Feature\\ImportHeadingPreviewTest.php",
+        "hash":  "8F98567F678EFF982DCAD774DB3BA46C09A0F1C079DE543FD0E4A0C8FB48B34C"
+    },
+    {
+        "path":  "tests\\Feature\\FamilyRegistrationTest.php",
+        "hash":  "81092988B56FABF99E17B2BB8A69F38E20A86C78F47F34AC8D71884F34046380"
+    },
+    {
+        "path":  "tests\\Feature\\FamilyCodeGeneratorTest.php",
+        "hash":  "581EFC2B499942D355C0FF70A837C7E906E525FF9E031D9E4440EAC00CFFC096"
+    },
+    {
+        "path":  "tests\\Feature\\ExampleTest.php",
+        "hash":  "AAA4A192FB4AA96D4E81EDA06A29968DA3D9A73B71026B87A67297E66DD985B8"
+    },
+    {
+        "path":  "tests\\Feature\\CitizensImportFormattingTest.php",
+        "hash":  "BD24508B9D84DE6F1833D811438E80D6CDC1DDB1410C6955BA94BD8C5DA41C8F"
+    },
+    {
+        "path":  "tests\\Feature\\CitizenPhotoTest.php",
+        "hash":  "A5342754DA8A297BFE118ECB7C0AF1235E5E9A6EEE6F11EA12543F54F57207D0"
+    },
+    {
+        "path":  "tests\\Feature\\CitizenFamilyPlanningEligibilityTest.php",
+        "hash":  "54B63E23A6AFC5FD696AA142325D58193E0CAF72524F0FE08129AF7858F745FA"
+    },
+    {
+        "path":  "tests\\Feature\\CitizenBirthDateMigrationTest.php",
+        "hash":  "2943128567B5ECBE17BBEA2903D085FBDB3BF47230DC00738D46953BC3698B6C"
+    },
+    {
+        "path":  "tests\\Feature\\CitizenAnnouncementReturnNavigationTest.php",
+        "hash":  "68DB21026BCD18FD1C259DB2D4EF55ADE50F4B5262A11A2A8D5413B3DCC750D7"
+    },
+    {
+        "path":  "tests\\Feature\\BhwRouteConnectionsTest.php",
+        "hash":  "ED566FE1AE3173B2D5914F73B7EEFECEC27A858D0747E3F4FF0CFF5EBA20C172"
+    },
+    {
+        "path":  "tests\\Feature\\BhwDiseaseMonitoringTest.php",
+        "hash":  "3BA534D5C9CA08107C06A87898273E7EA12D7B2F3ABEEB862CE55D63720E930C"
+    },
+    {
+        "path":  "tests\\Feature\\BhwAssignmentsTest.php",
+        "hash":  "D20D915CBA288147CAA01D17012E4EFEE2C9DD94635D1BFF20FB1E8C12C8C680"
+    },
+    {
+        "path":  "tests\\Feature\\AppearancePreferencesTest.php",
+        "hash":  "5BD449F01FB4AB1C94876607E587100FF5934A07005C04ADDD84B68C9F8F2CFF"
+    },
+    {
+        "path":  "tests\\Feature\\AdminCitizenPurgeTest.php",
+        "hash":  "D97A31A58EB87E3E62CD5080946D30E32D7ADAB5328E487603AF5A13C16B89A9"
+    },
+    {
+        "path":  "tests\\browser\\pagination.cjs",
+        "hash":  "EFDA942A3DCC902851AA1077A624019ECAAD23C2F7E3F2CE76A2322DB9D8952A"
+    },
+    {
+        "path":  "tests\\browser\\medical-live-bridge.php",
+        "hash":  "C20FF6A11E253A8D04C3F38D99020E0001E2C03B6202E303772CB01BA39F71F3"
+    },
+    {
+        "path":  "tests\\browser\\medical-autocomplete.cjs",
+        "hash":  "3165C990DC04F2FA8394A4B7ED4779F184E4684745D5AAFAD73F17E760DC6A13"
+    },
+    {
+        "path":  "tests\\browser\\medical-actual-pages.cjs",
+        "hash":  "C6AFD37211AB40361C51FD848CC29CFA23466465B9EFE801A07DD74339ADCBD2"
+    },
+    {
+        "path":  "tests\\browser\\demographics-layout.cjs",
+        "hash":  "CD6F754D583CB647532E7970CB99A8A54557811B2CE0146E2ACDEA8AF2469EEE"
+    },
+    {
+        "path":  "tests\\browser\\bhw-mobile-audit.cjs",
+        "hash":  "E312F4F7DDF0C3E89941107EB48EA2B969C3CE86D23D903C70F3CCDA321D42B9"
+    },
+    {
+        "path":  "tests\\browser\\appearance.cjs",
+        "hash":  "BCDAF8104427A416CBAB7165504CC4BF163CAA6FA94B3634C7BA87A0E5037020"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\VerifyCsrfToken.php",
+        "hash":  "4CF686438284E60066D1851141AFB196540DF76BB0C923DD761D6FEA82558F40"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\ValidateSignature.php",
+        "hash":  "B63174BF5AC6FBB47DC97CC29E243D68500C27FA1845961A789DF1587B8A35D4"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\TrustProxies.php",
+        "hash":  "9BA084335E120F472F21CED3E062E07DCA6333E8BA91029E44DFEC485F9C6485"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\TrustHosts.php",
+        "hash":  "1C6E9A1B0D698038BD2E54598B144275B56E9838D78BB833CBEE12E567B33761"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\TrimStrings.php",
+        "hash":  "107BF2DC8B970B2956548AB63221B350587F1FB94792F786F047723DA5E2C615"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\TrackPageViews.php",
+        "hash":  "7DD63EBCC9D4FB58BAF2110573297D0E4D096BCC370C5689F2290E04CC9C89AA"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\SystemMaintenance.php",
+        "hash":  "94FA669FE33B10D8BF51E764DD19CA54F63F5B0C994F866792439451CB7688AF"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\SecurityHeaders.php",
+        "hash":  "DCE5EF48F62F627D85CC4183478EB4EB06C02C85A7EC1F0EBB16623D5AAB51AD"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\RequirePasswordWhenEnabled.php",
+        "hash":  "BBED84BB815ED07EB390367EA06547B6B3AC842F6C55645AF293CF8BCD1586A8"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\RedirectIfAuthenticated.php",
+        "hash":  "B5D645F77C2790F685477797FA10FB915E6564D42846A20C362ED5042789A536"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\PreventRequestsDuringMaintenance.php",
+        "hash":  "63A907517BEED52BE7DAD5DBDA73E9ECD504B1CECE86A80C007526998E146974"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\EnsurePasswordIsChanged.php",
+        "hash":  "6F6C3205ADB304FDFC82770C8FF2BB54F02A083E9DA296B0E8542BE969C6ED82"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\EnsureBHW.php",
+        "hash":  "F2ECF467CD6029CF0B46E38374EEE477BDFB720D442627A1F98310F9DF9A871D"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\EnsureAdmin.php",
+        "hash":  "9D33B68D817E3C5EA633D885A6228660C828D5905FB4A5817673F2EF4E143083"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\EncryptCookies.php",
+        "hash":  "958E86E38AFD4321B443B8C4AAEF17FC956BBAC93410D54AF2F74213C52E9B87"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\CheckRole.php",
+        "hash":  "846F30F8AEC69C42EDFBA69AF448A1232885707E7F0501FC26360325986A9EBA"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\CheckFeaturePermission.php",
+        "hash":  "3C37A9336BE06C75A7D98D20F3E6B5A77F989B5A8C6C0AFF6886905C1283AEB6"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\CapitalizeTextInputs.php",
+        "hash":  "1D10588116208183008EAF3669DF743EBEA1D0AECBEA68995D27CA94E9B9DC9A"
+    },
+    {
+        "path":  "app\\Http\\Middleware\\Authenticate.php",
+        "hash":  "2C0BE9F631263BBAE2D83531CBB0F2068AAA0C53A000D5CC2605BF291D7DAFC1"
+    },
+    {
+        "path":  "app\\Http\\Kernel.php",
+        "hash":  "A817F1540D26E4ADE16472ACAD09FE2FDE5506B409AF41A09D19980BA3840A7F"
+    },
+    {
+        "path":  "resources\\views\\templates\\partials\\sidebar-account.blade.php",
+        "hash":  "F61B48AB7EBE74014FD7FC24EC2BA4DA3D46D58CB45AC7CE26A495CB21358C2E"
+    },
+    {
+        "path":  "resources\\views\\templates\\partials\\logout-modal.blade.php",
+        "hash":  "84F570F7B506C6612F42B620A6920A03975B566933C758A1E2125A567672D9D0"
+    },
+    {
+        "path":  "resources\\views\\templates\\layout.blade.php",
+        "hash":  "B06C2EF122D365D932FC3AD42EBC41DE65C55FC97DC5B0A4E27D239E68258191"
+    },
+    {
+        "path":  "resources\\views\\templates\\citizen.blade.php",
+        "hash":  "F801F62762DD31C7BB17B9A0DB290F5E8983E2B16808A9EED724CBF9918327FC"
+    },
+    {
+        "path":  "resources\\views\\templates\\admin.blade.php",
+        "hash":  "05C6659329D6B1D2A5DC115B92D120DDD2464C7AD954813654E5E4743AE338D2"
+    },
+    {
+        "path":  "resources\\views\\archive\\index.blade.php",
+        "hash":  "B098CA49EB2C881168DC1F260E04C1560148E8A55E9EB4A43C9E779F64175281"
+    },
+    {
+        "path":  "app\\Providers\\RouteServiceProvider.php",
+        "hash":  "AC3FEAC96A4FEF80C555D6E064BA2BDE9471E121AD296AC8B8B71D9468EA52BE"
+    },
+    {
+        "path":  "app\\Providers\\EventServiceProvider.php",
+        "hash":  "CA762BF87E69EC98B7324942FB4062A245CECFE7D4D04C5CB91C1BCDE4496BE6"
+    },
+    {
+        "path":  "app\\Providers\\BroadcastServiceProvider.php",
+        "hash":  "6DADE8C1CE5B4F91204E5C56F821F658F3E24D3D5BBAE1A625C6914995AD81D2"
+    },
+    {
+        "path":  "app\\Providers\\AuthServiceProvider.php",
+        "hash":  "2E31C79707E8D342F4AEC2ADD14CD327FC90E2114F8BB60173FC1E3BF394A163"
+    },
+    {
+        "path":  "app\\Providers\\AppServiceProvider.php",
+        "hash":  "2FBF916480AFC0DD047519C9F323DF24FD5AE749F12C86C6AC173FF6A7E3930D"
+    },
+    {
+        "path":  "resources\\views\\citizen\\supplies.blade.php",
+        "hash":  "BC3C84AF7D7D39CB6636E4B4DB89EE0D529F5B347EABCCE699DDFFC3A8363893"
+    },
+    {
+        "path":  "database\\seeders\\UserSeeder.php",
+        "hash":  "7092078DEF0C5EA8AA66FB089B36751218C253E8D0074649FD2F1D74C9E58E59"
+    },
+    {
+        "path":  "resources\\views\\citizen\\settings.blade.php",
+        "hash":  "4906FC7C8C7B2F9723B6019642F123BFE648AA7BCADE7E85FA08360B96D62C89"
+    },
+    {
+        "path":  "database\\seeders\\SuperAdminSeeder.php",
+        "hash":  "8B9C05CC075C6865E5CF90B536355DDA23F45CD9B4B176FE07270434C1421DE7"
+    },
+    {
+        "path":  "database\\seeders\\PurokSeeder.php",
+        "hash":  "6CEE7CD481326F8D25563118B7D356973959B665D558B5A526A4BE11D8BA8861"
+    },
+    {
+        "path":  "database\\seeders\\DatabaseSeeder.php",
+        "hash":  "BA861AD5C62BD505B2A2C8E81A9DCD7C3A643383208F0B810AF1D40D06EF9E94"
+    },
+    {
+        "path":  "resources\\js\\bootstrap.js",
+        "hash":  "6FD9FC82E68FA915A882F4E227B9FAACBE7BFD66CB953C628840E83BDA6B72F4"
+    },
+    {
+        "path":  "resources\\js\\app.js",
+        "hash":  "CF6DAB196C721F6911FF99CC4F910897F978599A2D289971A316A5FC33091F94"
+    },
+    {
+        "path":  "resources\\views\\citizen\\announcements.blade.php",
+        "hash":  "531DD1AA4A8C2A174D45F7B91B98A5AE5064CF3C6C3105CCBCADD834588A90C8"
+    },
+    {
+        "path":  "resources\\views\\citizen\\announcement-detail.blade.php",
+        "hash":  "51BF731964DD339BA4579E3A8E824CBE373B3A4614BA5B1A11D23A04D8382553"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\users.blade.php",
+        "hash":  "97EC790F2B732E43A2882778FC0F20E5E28D6C915EC9BCDEBB2D1BA910826B90"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\system-connections.blade.php",
+        "hash":  "377F22F194CCDD33C705AB68497715647FDCEBAE710BF7A4F00A4D48187F8E3A"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\system-analytics.blade.php",
+        "hash":  "73FF4D215DED4310A40335B48CD1E20E7BAAC9FA1F12003F2E92D7B9553346CD"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\settings.blade.php",
+        "hash":  "BDBBF7447786E25B016F2D8AC844130A14BABEC4876F88D66D3A3D1A71048CD5"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\dashboard.blade.php",
+        "hash":  "28042B9F4BC975A8F2D5A9BB92C262CFB7143D5C6A0CC966E3B1F7E75699F013"
+    },
+    {
+        "path":  "resources\\views\\superadmin\\audit-logs.blade.php",
+        "hash":  "431DBC2D40A3C01D0AF0082F9DD9502E98C65BBBE899A34628C30BB47CADE973"
+    },
+    {
+        "path":  "resources\\views\\settings.blade.php",
+        "hash":  "F3C64776F3BB1DC5BA3E55E4B23D5A83BA1254A6B57670BD8180F11D6D702A77"
+    },
+    {
+        "path":  "resources\\views\\citizen\\partials\\announcement_modal.blade.php",
+        "hash":  "1516E811D6D3E896CD3E74F0C6D346A4D138807ACEA75152CB8C1CD034FD13D5"
+    },
+    {
+        "path":  "resources\\views\\citizen\\ecard.blade.php",
+        "hash":  "3D0B4514D54B5BF3916908C403CE939DB88D984520D917F918361241DB9D6E1B"
+    },
+    {
+        "path":  "resources\\views\\citizen\\dashboard.blade.php",
+        "hash":  "5CAAA60C0029E10870FCEC7EA1566541AA508F8BB51ED0C57BA532ABDD9260BE"
+    },
+    {
+        "path":  "resources\\views\\citizen\\calendar.blade.php",
+        "hash":  "2EB6C72928A5EC5EA2788098BA3952A92EFBBADFF496A3564B409EA64ABEEA22"
+    },
+    {
+        "path":  "resources\\views\\admin\\user_create.blade.php",
+        "hash":  "9C074DEBAC6F1B6D72DD05B6F8894D682D1E5F9004377174BD826DECF7342553"
+    },
+    {
+        "path":  "resources\\views\\admin\\permissions.blade.php",
+        "hash":  "96A77EFCC73078081F322771D36FEEE0FCBF6F01D4C8E7B22611A9EF4FC347AB"
+    },
+    {
+        "path":  "resources\\views\\admin\\demographics.blade.php",
+        "hash":  "AE8FA5A64E495E8AEC8AB06745B76511AD1EE03FCCC213445A016537B9D57E49"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_users.blade.php",
+        "hash":  "320FC6D01C508B0E0464862BBF214935332AFF2CA3FC350D6782297F3C6EA231"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_supplies.blade.php",
+        "hash":  "66C801A3EB9127F4907A5B84F0ADC5E5217365BF8F585830B8E3221444975E62"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_settings.blade.php",
+        "hash":  "5905CAE4241B6EA82E75CAD7B46934D8146D128DBB27A78DDCDBD40E63AA0363"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_logs.blade.php",
+        "hash":  "DBF1FA8A4B0F8DC6318DE17538DC21695FD061945AEE6E33FD695480F252AE58"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_home.blade.php",
+        "hash":  "BF9FB5AB06B225ABB9B45EB192AB998C17E6FBE2B433CD9947FC97C5D193C76A"
+    },
+    {
+        "path":  "resources\\views\\admin\\admin_analytics.blade.php",
+        "hash":  "3D52CF19C617E5798029C35BDE238C4CCCB2045F16DA8391412A1131525982B8"
+    },
+    {
+        "path":  "resources\\views\\public\\qr-scanner.blade.php",
+        "hash":  "A6079136F35BEB8E248AC988686BCB16081BD80AD254BB738323CD2097BEB9B0"
+    },
+    {
+        "path":  "resources\\views\\health-id\\public.blade.php",
+        "hash":  "BDB17214384C5066EEF1DBB43E179DB273FD5153153B46D54BB07938A8AE6FF7"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\VehicleLogController.php",
+        "hash":  "FFF9AF4A8221D7765CA5191ED3571AFF3F9799139DD78EB81352B8FCA00F82BC"
+    },
+    {
+        "path":  "resources\\views\\bhw\\supply_create.blade.php",
+        "hash":  "F08F3DC8D3B967E1FE94AF1636BD2199F6B15AD0283D52D1F160A319FFB133F6"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\UserPreferenceController.php",
+        "hash":  "B6F60215565E1EC2D82CED1B7457C05F0BA7C7B7A9F93FE88801C1BE8BADE86A"
+    },
+    {
+        "path":  "resources\\views\\bhw\\supplies.blade.php",
+        "hash":  "825D00174D8DCAB5E897C09AACB9D50A25ADDAB6028229C89D2B8CFCBF45F6AD"
+    },
+    {
+        "path":  "resources\\views\\bhw\\reports_result.blade.php",
+        "hash":  "36E90F324CD06F4813BE4E56F143AD179065E84D6773B0E85E68927E98B63FC7"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\UserController.php",
+        "hash":  "167EBE3F6081229C794882E93F10EED6F50B65E2C91AD4DAB887283D2AF2D3E3"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SupplyController.php",
+        "hash":  "7536BDA95D3CA3986F89DB4071CB68BCD1750A69F87A4B0165AF0CDDEB483732"
+    },
+    {
+        "path":  "resources\\views\\bhw\\reports.blade.php",
+        "hash":  "C281F59AC8B6D706D301DEC713839A87384E41CDC7F8FA7D251D32177AA3E658"
+    },
+    {
+        "path":  "resources\\views\\errors\\maintenance.blade.php",
+        "hash":  "B97070C9BC368894D7BA7743CF95D138487CF0931FBE2873977E41EC377416A3"
+    },
+    {
+        "path":  "resources\\views\\public\\partials\\header.blade.php",
+        "hash":  "A93A855DACED659503D22AE97986088AA04DC108D07BEA928F737340449BCFA3"
+    },
+    {
+        "path":  "resources\\views\\public\\partials\\footer.blade.php",
+        "hash":  "6A72B739D8CD9DC06AD14D5B2D8D85A162AC0CC1EFEB302F05A50C7B7600222A"
+    },
+    {
+        "path":  "resources\\views\\login.blade.php",
+        "hash":  "E0378C70ACBCF02D8DCD6D2EAE422F2C5BE28FCA68EC9C7D9FF7FAF38EC1B46D"
+    },
+    {
+        "path":  "resources\\views\\exports\\citizens-pdf.blade.php",
+        "hash":  "632007498321559E3854C3569CDEB1AE3D38AFDB328810BF4FF976176920C767"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\CitizenHealthShareController.php",
+        "hash":  "027426A0C7F4C28891FC2830D72ADB707C4FA32D70F7A6CE01DB7ED33B1BDC45"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\CitizenController.php",
+        "hash":  "9A483DD8178BC3B1C4EFFE6E559BF5A14B67F3B66610599513E961677EFD644E"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\BhwReportController.php",
+        "hash":  "0BF9CD3A776FFB37773B2489015D60D7D405CA15ACAC06A06E226B05AF042101"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\BhwHomeController.php",
+        "hash":  "E35E79CB4F41C51A88DAE77D2688341C1EE607C6E1410747C20DA4A0FAE2E30F"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\BhwAnalyticsController.php",
+        "hash":  "24CC55A790B5573F529239F55DF37D221B81F6C4F8F48D1451FCDBB7150075E9"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\MedicalTerminologyController.php",
+        "hash":  "B3DAFE3673B0EADB367844319D6040A907792235E400362B0EEA206AE5049581"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\LogController.php",
+        "hash":  "85B2C736003D1DDDA46AE2B97A87960FF59860D2738DE46C51DE36675168B8E6"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\HealthRecordController.php",
+        "hash":  "870D46CB33F85115A8267B16E2E708839C228EA99F8F832717B4894D8EF201AB"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\FamilyController.php",
+        "hash":  "703A65C41A3E45B7702645D371C0B1F59160B70A19E9BFE6E0E38CC953278DC6"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\EventController.php",
+        "hash":  "19C8A792C9E319151DDF86FC42DA551B7FE486FCB41C17263F080F63EFD28D41"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\Controller.php",
+        "hash":  "869A9AD0F81662EEA73C396949CF90B9D403C9FC5BD1D83812A98BCBB5414D7D"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\ConfirmPasswordController.php",
+        "hash":  "F02F1039916651DC3859AEE76C0C545E201B9A088E0FB8A8A5362A137BC6D9B3"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\CitizenSupplyController.php",
+        "hash":  "F09EC6988354855F0699CFF66DB3FBF079B23C2110A06E86B6704EF968C36B15"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\QRScannerController.php",
+        "hash":  "EAA12D151050055D1A662DE1F8736F90F8575B22D1ADAD06CCB09A1A5732FD9E"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\PushSubscriptionController.php",
+        "hash":  "63743756FFF757F95F53437E5C0F8FA87CF9A083ADA769E5D9C946F996C87560"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\PublicAssetController.php",
+        "hash":  "CCDF36063961713180396C7AE67BA6D9CF2E5FC21E22F937B5EA68ADB2840911"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\PasswordResetController.php",
+        "hash":  "26703BAA128DBD89E03D0A2F7F92A1A9537E589B76ADDBB2C3E549572652AA01"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\ReportController.php",
+        "hash":  "1B7566C2CE25B6044786DA90CE883AB1DA98012EF67EBD186A9FD7B839FA0EF5"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\ReferralController.php",
+        "hash":  "E444802073731F853B3A13C8E834693A2E355476CC12067C0CB91D8D31DC02CC"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\signedURL.php",
+        "hash":  "0100A35F5A44972040D40C65DDDC0B4EDC9F0E91C244B864401B4A6C0BFCA9EB"
+    },
+    {
+        "path":  "app\\Models\\MaintenanceRecord.php",
+        "hash":  "863D1171E308C74A36EC8E6A18F9B370866B9421DAB3FFB15E1ABA1083676EEA"
+    },
+    {
+        "path":  "app\\Models\\Log.php",
+        "hash":  "1BF971221CB607E3BE51BAEF71FC7C325EBAE7B80D4B5FF67AF071824185262A"
+    },
+    {
+        "path":  "app\\Models\\HealthRecordActivityLog.php",
+        "hash":  "99A5900E310B7AFA180E61FE7D551FC017A45B4753138A882E07FD4A65D686D2"
+    },
+    {
+        "path":  "app\\Models\\HealthRecord.php",
+        "hash":  "AABC6D00E80313BA050137279471F8C5EA858F1AD5689421AF69BC608956C75E"
+    },
+    {
+        "path":  "app\\Models\\Family.php",
+        "hash":  "8D7325B0476BC4FB8C6E0A0C4DE167B8CEB1B8F5A7393410E7F507F47070D17A"
+    },
+    {
+        "path":  "app\\Models\\Category.php",
+        "hash":  "36F90AB4B6404E219F2E49F8E4B009B28DB73FD6F3DA03C46A199A43A3254571"
+    },
+    {
+        "path":  "app\\Models\\Event.php",
+        "hash":  "BEF24F983BA9BC8368E6D194A33E32E20BF4659377235FF8FF3530BD9D9843D9"
+    },
+    {
+        "path":  "app\\Models\\citizens.php",
+        "hash":  "699E133DB5B15C606752B6CC46823A105B2ED1E7F41E0518F5732CB67789BFD0"
+    },
+    {
+        "path":  "app\\Models\\AnnouncementImage.php",
+        "hash":  "5E52E8E5E074B07DB23BAB56A80835AAB12489C3BA0842F99EC06D8CC8A886A0"
+    },
+    {
+        "path":  "app\\Models\\CitizenHealthShare.php",
+        "hash":  "B6231405D907B90D4406315EB238B11E9800D2CE7669F32648D2D6628751AB48"
+    },
+    {
+        "path":  "app\\Models\\Announcement.php",
+        "hash":  "CE2A4D650F58C14337193C6C809002FC79A572809782FD639754D67BFEB7F732"
+    },
+    {
+        "path":  "app\\Models\\CitizenActivityLog.php",
+        "hash":  "717E9481238E0604CD322950721C6AAEC59C984B57BAFD3FD746FF94ACBE5EA2"
+    },
+    {
+        "path":  "app\\Models\\ActivityLog.php",
+        "hash":  "2568A99198215B392920BAD798FF685967A91419BCB17958AD2616C9A2161EA6"
+    },
+    {
+        "path":  "app\\Models\\SupplyLog.php",
+        "hash":  "0CFAEF49080F4B469C0221B2199190EEDD804985A5D67DBE0D80A02056DB5786"
+    },
+    {
+        "path":  "app\\Models\\Supply.php",
+        "hash":  "241812A21BEECD95752935394F80A8EDEA6BA0757F60C7CE8BF91DC9AC497CCB"
+    },
+    {
+        "path":  "app\\Models\\Referral.php",
+        "hash":  "8E76182E59EFC45D648AE27DE82A21449B2D2077721007F9F26089F166887E47"
+    },
+    {
+        "path":  "app\\Models\\PushSubscription.php",
+        "hash":  "30779021554FEB1E67E6FA23619F621F3FAA3D934DB843E9E6CD5FA12082D665"
+    },
+    {
+        "path":  "app\\Models\\PurokSubgroup.php",
+        "hash":  "4515840AB4C9901E72A5D0EE4A385B30B7C53FAEF5CDDED0A2C9BDD95E6133DC"
+    },
+    {
+        "path":  "app\\Models\\Purok.php",
+        "hash":  "E038D60DF10DBE942E076BC7E405561AE0673B34E097FA55804BEAB0B23F4D8C"
+    },
+    {
+        "path":  "app\\Models\\MedicationRecord.php",
+        "hash":  "6C5A05AB1B5CD1838A85CAC4386A5C987E7919A456CBC58B69A94C5C993940D6"
+    },
+    {
+        "path":  "app\\Models\\UserPermission.php",
+        "hash":  "E3A85234AAA936F7FD297DC9A994BCFA74DA8DE63B24EFC0B198E60CD3B9DCEF"
+    },
+    {
+        "path":  "app\\Models\\User.php",
+        "hash":  "ADDCB5408484EE0C2F1557C9AD448C177198DFA310BC92B3B4C51E847D6318E8"
+    },
+    {
+        "path":  "app\\Models\\SystemSetting.php",
+        "hash":  "DD8329DC8A7EAF7E28EA9CFEC4E1D0573BF88EC2152A6133DB12670B50E222DB"
+    },
+    {
+        "path":  "app\\Models\\SupplyRelease.php",
+        "hash":  "6B452AAA5725DDB40EEA462D3B60784E9D93CCB290039D2C82B1FD106F67AC3D"
+    },
+    {
+        "path":  "app\\Models\\VaccinationRecord.php",
+        "hash":  "F65369DD447A109DEEE652C6898703F13934E3922B0A32B2C4E4B4ABE4614F44"
+    },
+    {
+        "path":  "app\\Models\\Vaccination.php",
+        "hash":  "EEFB45266A2629AE32EB9BD1E682C5E58912FCE59247C8ED9B9F6CDCBD18A56F"
+    },
+    {
+        "path":  "app\\Models\\VehicleLog.php",
+        "hash":  "2329D70E6BAB4187425EF7653B988156971E217AFDB4D0401B69DFB2FE6DA55C"
+    },
+    {
+        "path":  "app\\Models\\VaccinationSchedule.php",
+        "hash":  "1F54BD31A4FFD3B2B6EDBA7BC31A0243DB2DFDB4F734704FDEA304B109338BF9"
+    },
+    {
+        "path":  "database\\migrations\\0001_01_01_000002_create_jobs_table.php",
+        "hash":  "7C9C712ADF4091C87BF2612F4D0DCCDFA1DF4501553E4AC068B83D7BD5462FA5"
+    },
+    {
+        "path":  "database\\migrations\\0001_01_01_000001_create_cache_table.php",
+        "hash":  "2CA8398390ECEF8EAF72AEAC7FEFCE67F7DE631B6F2EC7B7081C8DB8953215DC"
+    },
+    {
+        "path":  "database\\migrations\\0001_01_01_000000_create_users_table.php",
+        "hash":  "10D79883BC08CE46510F9AD8B1830B4D06D586DC56AE2C8BAC3B3E491F69A90F"
+    },
+    {
+        "path":  "resources\\views\\bhw\\citizendetails.blade.php",
+        "hash":  "EACF27EB74DD373FFB3EF1DF13748C898C45395026D2239CE02FE378D965E888"
+    },
+    {
+        "path":  "resources\\views\\bhw\\citizen.blade.php",
+        "hash":  "506359EE53B77C850D61468686AC7DB18EAF0DEC719803788EF9A213D0C0E7C1"
+    },
+    {
+        "path":  "resources\\views\\bhw\\calendar.blade.php",
+        "hash":  "69C98294A267EF4CBB0689F62E99E57529FB7DF03DFFFAE918FE1A20A84D4215"
+    },
+    {
+        "path":  "resources\\views\\bhw\\batch_release_show.blade.php",
+        "hash":  "DC5E7753CEAF7C0E1F56BBC20E5E37FD8D1B47B1520A798103247882AC4730B7"
+    },
+    {
+        "path":  "resources\\views\\bhw\\announcement_create.blade.php",
+        "hash":  "F34953FDC507CF56C1F03B69E8C21C3B6360DCB0C9E8A2C520CFCFEF8689CE55"
+    },
+    {
+        "path":  "resources\\views\\bhw\\announcements.blade.php",
+        "hash":  "A2ED019EE07DF9E7321D2CC5E1BC79DEC129FABF60E50268113E405D77AD909D"
+    },
+    {
+        "path":  "resources\\views\\bhw\\analytics.blade.php",
+        "hash":  "91A920062D16B30FC1C138069AF83DC8F0E9A9B20392279F278012FC6DC1C89B"
+    },
+    {
+        "path":  "resources\\views\\bhw\\addcitizen.blade.php",
+        "hash":  "198FADFD440B97872B144BA51CA9A3D7F5F0C04F56B0D4A09BC4824267E4AC92"
+    },
+    {
+        "path":  "resources\\views\\bhw\\referrals\\pdf.blade.php",
+        "hash":  "234961B0A906379C78E12FDA41CA8399E47AE1568363A78099AFCE1A51BA2020"
+    },
+    {
+        "path":  "resources\\views\\bhw\\referrals\\index.blade.php",
+        "hash":  "3D202D8CF52B9059A59B3ACE160E4A1FCF7293E8274EB1A6BC5E9FAE84293F6F"
+    },
+    {
+        "path":  "resources\\views\\bhw\\referrals\\create.blade.php",
+        "hash":  "141A9AE24B6367DBD53511ACF0332C6CE93E9906A53F61C1D0F8D05F90F13788"
+    },
+    {
+        "path":  "resources\\views\\bhw\\referral.blade.php",
+        "hash":  "0CD7FD522AFCE71DE6B0A7B8840BF51D6C580EF28B19526451668E0E8413EDC1"
+    },
+    {
+        "path":  "resources\\views\\bhw\\qr_scanner.blade.php",
+        "hash":  "323952895CC357A0EB18AAC7E82980106666A2600036124E5A8589002A4DE0CF"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\Auth\\ForcePasswordChangeController.php",
+        "hash":  "E7BA98F3F79A1280918CFD828122AB3F3F67C27E33B7001FB3C39C219300D47E"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\ArchiveController.php",
+        "hash":  "0E891FFC903DA7EBCA8FC49BA126DEA9F7B471DE369DD2137B9E189D5C9E5546"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AnnouncementController.php",
+        "hash":  "9106DFB16157E7578A82274FD7E188F62F601E8D78980D6B882544C782A5B8A2"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AdminUserManagementController.php",
+        "hash":  "DC139D0F799F3949FA7ADF12CF425F70CBA809529CB4CA57922E8C4235BE6C4B"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AdminSettings.php",
+        "hash":  "758BC502237DF68B263B06A2C9DA291B3D6E7B8671A7F1F91D62D8B81CE344E6"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AdminPermissionController.php",
+        "hash":  "D282B77A0F0A410F2ADE238696ED5A2B022113B22AC80F3AE777143A05EFFF4D"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AdminLogController.php",
+        "hash":  "3C653D916EAF9783B1B0F8B819557029E3041230C1EBA12C6ACE170F363B9403"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\AdminAnalytics.php",
+        "hash":  "B2B516976FF5A09CAE3404F097EC800F51DCF9E18CE4152FBF65AE450CFB1011"
+    },
+    {
+        "path":  "app\\Jobs\\SendWebPushNotification.php",
+        "hash":  "6B0105665C8125D9B1A95A5089A8B1F403A10D87B8110D4F89DCCE5E3511B993"
+    },
+    {
+        "path":  "app\\Jobs\\DispatchAnnouncementPush.php",
+        "hash":  "0DE018107C1A8CEA570ED11AC29300FD56E1E24E53D1C5353929BC7F9A47FCFF"
+    },
+    {
+        "path":  "resources\\views\\partials\\favicon.blade.php",
+        "hash":  "E781477486238A1FEE6C33FD313297B7B5822E7EA31B25101274C66F1DFAED5C"
+    },
+    {
+        "path":  "resources\\views\\partials\\citizen-pagination.blade.php",
+        "hash":  "D0463094AB3D8A7C76C4D42C9BBF62865A898D0FFCCAEBE35B6173D58F8AA520"
+    },
+    {
+        "path":  "resources\\views\\partials\\button-action-assets.blade.php",
+        "hash":  "CDA8B100A14744AE535A175E2FA32DF8487B401DEBE14BAC5CBBF3CC8F143C9C"
+    },
+    {
+        "path":  "resources\\views\\partials\\appearance-settings.blade.php",
+        "hash":  "8543A6D63DB9D7EAA2A2637899EC025800B2EBEF9A8DF46996C42760C17EA3E9"
+    },
+    {
+        "path":  "resources\\views\\partials\\appearance-assets.blade.php",
+        "hash":  "CD0B8B07D6ED2348B0D30118AE2EC580A62DCD28B38A77D6005A38BC261AA4E1"
+    },
+    {
+        "path":  "resources\\views\\partials\\input-autocomplete-assets.blade.php",
+        "hash":  "854CF20A39CE0D852026D76109B732B58A29FC0CAC5678ECA6022750ED2285B0"
+    },
+    {
+        "path":  "resources\\views\\partials\\health-card.blade.php",
+        "hash":  "0582D3992C1B75F80C155F54E5FCB5B754E3664CE5D697269CC858268A53ED7A"
+    },
+    {
+        "path":  "resources\\views\\partials\\global-loader.blade.php",
+        "hash":  "0BA3172AC1AA34EC79DDF8E7BE9217BBA8DCCAE32EDA366A173ECAD50A961149"
+    },
+    {
+        "path":  "resources\\views\\partials\\medical-autocomplete-assets.blade.php",
+        "hash":  "8F5C4CC725B5DAE1B7664F82C8459DAD2F9767FB64A48B0086F8A197415DD4EE"
+    },
+    {
+        "path":  "resources\\views\\partials\\pagination.blade.php",
+        "hash":  "8466A83D8E3DB35BED683CD9DBD5F8A2B6EA371ADC03AAA3CD5946CF2F68ACC2"
+    },
+    {
+        "path":  "database\\factories\\UserFactory.php",
+        "hash":  "50BDC543F1B09D1A57260BE55AD0E1A68AEE4B34F63E1109DC94D9BCD3080526"
+    },
+    {
+        "path":  "resources\\views\\partials\\push-notification-settings.blade.php",
+        "hash":  "3FB3B82BE8F3B9984BFDCA3CBF5426E09B0CC1D34676D9ECBBD4A64214268735"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_084806_create_activity_logs_table.php",
+        "hash":  "C724AE2166FFF68A19433884076D4E3AA5B11A38F048744239505F6CD881B731"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_073016_create_supply_logs_table.php",
+        "hash":  "FB600D223A2C0B06C4B3C846D0C4BD1F6E5C70264680300774C899AEBAFBA3C8"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_071106_create_logs_table.php",
+        "hash":  "3983820C45079A41C0BCFA8B9679A5171D259C7E662F3CE56BCD5EAA9028F2DA"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_114133_add_details_to_events_table.php",
+        "hash":  "24D1F488C75436AC1D225794EDECAFF67570106C52DBB4639AB8F8EA9A5E0CD8"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_30_071903_create_announcements_table.php",
+        "hash":  "B62167FEE67341E2950BB69D3E11FF6F207F697E6FE5AFC7A3B84B4A374761C0"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_111429_create_events_table.php",
+        "hash":  "52BDD09AF7BDBE8106983BCB875A15697504CD5FCF9B077F28E0BC5E4D2AD5C9"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_30_060040_add_fields_to_health_records_table.php",
+        "hash":  "B092B862CF4C6905832F6618AF29947EC5B1974913D63314138CB0851BAAC2F8"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_093108_add_user_id_to_health_record_activity_logs.php",
+        "hash":  "ECC17ECDEB00D904FC5DE4312355300439B2B2ABBF7649671E0D73934A168749"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_093047_add_user_id_to_citizen_activity_logs.php",
+        "hash":  "C6D2BB2CF0E64C1F9DDACA51CE881C7D637B7D3BF90606E0A217DE0328A2C850"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_28_021743_create_health_records_table.php",
+        "hash":  "F39E94FE5A5E84774D16C6C7BADFF22B9D093EB6734918C41103EC899A3BE36C"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_090543_create_health_record_activity_logs_table.php",
+        "hash":  "ED163320F95C624705342985943932DF094575B30028F9F44EE7B6005599E73A"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_27_182204_create_supplies_table.php",
+        "hash":  "9290BB907BC0012C39349BBC1D2CE338E3BD50C5B8F2E1664624D656F0DE2119"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_085644_create_citizen_activity_logs_table.php",
+        "hash":  "A7ED43E6B9D0B113E0BD57DDA32A2F7ED934EBCB20F4FF55B91D9BB799F5CB3B"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_27_061947_add_purok_to_citizens_table.php",
+        "hash":  "EC69D2DF545D16BEB44FD3FFB128B46AEE490E72B78A8A85A48BDE69A292E14D"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_14_203925_create_referrals_table.php",
+        "hash":  "6C87B451067B8AE49B657D8A555ED9339694F939A1B5B6DDA2678C16ECD81B5C"
+    },
+    {
+        "path":  "database\\migrations\\2026_04_27_024108_create_citizens_table.php",
+        "hash":  "6B686B92972A383B2DD708E15BB354BA7606472BD844CE8E4B0C4B4A3CD2DDB8"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_05_142150_create_vehicle_logs_table.php",
+        "hash":  "7E3AE675AF3915EAE571B2A66EE594298C5274B71DC6BC1E29F6AE0030613524"
+    },
+    {
+        "path":  "database\\migrations\\2019_12_14_000001_create_personal_access_tokens_table.php",
+        "hash":  "5DDAB635A1AB9E278BB9C828E840B5E4C38E3321565D0C494E8ACFC5B78502A9"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_01_205858_add_role_to_users_table.php",
+        "hash":  "DF9DDF53CEEA200C20E87534D6D8FC486AE23CF0C36FDCA474EB920016031B3E"
+    },
+    {
+        "path":  "database\\migrations\\2014_10_12_100000_create_password_resets_table.php",
+        "hash":  "789AA6B04B29E8CF9EE88B151BB35EE8DD04EE0921D83002EC34A03177D17186"
+    },
+    {
+        "path":  "database\\migrations\\2026_05_15_055124_create_vaccinations_table.php",
+        "hash":  "5C2DA0D443A5F1C029D2C8BEFA9292673AA865021459CEDF13EFD8D6B9F1E627"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_16_020533_add_details_to_supplies_table.php",
+        "hash":  "76271A4748D755B3FF9E28F77709C66353D59C8C989B577A3B49FBEB89DD0B1E"
+    },
+    {
+        "path":  "resources\\views\\partials\\pwa-meta.blade.php",
+        "hash":  "0BCC7E40C8AD35816ABA9B2A6A0989F292E10C81DBAC96038351649A4997566A"
+    },
+    {
+        "path":  "resources\\views\\bhw\\citizen_show.blade.php",
+        "hash":  "5910287D00744B94C4043DDF605CBC34E372B9E418529F85C253C2558FAA32CF"
+    },
+    {
+        "path":  "resources\\views\\bhw\\ecard.blade.php",
+        "hash":  "46366249A88CF7BF79F6CCD474AE5A382086B63630CD5CC0012D632E264653B0"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_22_035232_create_audit_logs_table.php",
+        "hash":  "084CC727B7FA00F2C2C89DA763273C9F540C79AFC7499B8A897A8BF876B8DEF6"
+    },
+    {
+        "path":  "resources\\views\\bhw\\home.blade.php",
+        "hash":  "D34DD11BDB54E2F5B76F50B2F0E88E4E3D0D6452BB221EC5250510F453EBBB96"
+    },
+    {
+        "path":  "resources\\views\\bhw\\healthrecord.blade.php",
+        "hash":  "D7C9093A8A6DFE9AEAD8ABD4B3CB65AF9DB9481899977BA798854DF13A84D388"
+    },
+    {
+        "path":  "resources\\views\\bhw\\logs.blade.php",
+        "hash":  "EE6095388032C02E433D5B5787A658D0DDB3AF99CFFD42ED542FADDF8FBC8CE0"
+    },
+    {
+        "path":  "resources\\views\\bhw\\partials\\report-citizen-list.blade.php",
+        "hash":  "15579A68700828DAC32930FDE1A67C61C87C2DA625E845876F8BFBC438CBB16D"
+    },
+    {
+        "path":  "resources\\views\\bhw\\partials\\citizen-photo.blade.php",
+        "hash":  "2590C8B2443C3F9BF16367E18BA7FC42E0BBC1A21691D47FAB5065278CA1E950"
+    },
+    {
+        "path":  "resources\\views\\bhw\\partials\\citizen-photo-form.blade.php",
+        "hash":  "D6F082D48CACC10520375BB2535346042622EA63C1931F9FEE4C48983E5EFC8C"
+    },
+    {
+        "path":  "app\\Exports\\CitizensExport.php",
+        "hash":  "67286328E313782E988A9B346D97896FDDCDF0C73E268A7D314AFFC242F2D3A3"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_23_215124_create_medication_records_table.php",
+        "hash":  "17385720BC283F785C282F2A42346387681715CFF6D7D7D1C1267C27413520F1"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_23_215103_create_vaccination_records_table.php",
+        "hash":  "52BC45BBDB73F527607991369BCA97CBAFD39ECDB5197B6C8ABC9B0E26E87252"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_22_195755_create_admin_activity_logs_table.php",
+        "hash":  "CC5005FB4F1195C8B5AEFA3BA387AFF60D0E202B4863620811FBAC7DCE473AC5"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_22_193214_add_browser_to_page_views_table.php",
+        "hash":  "D36DE49A9FC929DDB41AE5219F73F5FDA740464E36E2C12001D5EB76245B78A2"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_22_185353_create_page_views_table.php",
+        "hash":  "2A3181ECDB83CC5C7E89A325FA1DE3BA3C17ACD1D820D5459FD5E702A0A3DA83"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_30_165858_add_user_id_to_puroks_table.php",
+        "hash":  "BE79A6A8BA7F05A94AFFDFFD936A7305988FC4D1DE9552381F9A111E27FF58D0"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_24_011703_create_puroks_table.php",
+        "hash":  "EC1D838B5EB04BF7CDE80788A396B5113250C8C637E9A39214326CCD45DF784C"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_23_220115_add_citizen_id_to_users_table.php",
+        "hash":  "18885C50A1DB0EC65639E622ED1255E0D49547FEF0B9E180FDA847E907D61B0F"
+    },
+    {
+        "path":  "app\\Exports\\CustomReportExport.php",
+        "hash":  "9009D4DF436B291F12D34A52203CA9DF8A84B760AA458208073D2A0A6B84639A"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_30_172146_create_families_table.php",
+        "hash":  "484FABE28F373132FFD1A9371DA4114E70145A0DF1AB87C378CBC7B3FF6B13B4"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_30_172141_create_purok_subgroups_table.php",
+        "hash":  "2C2C65E521D37469B3AB526F1B5D47F76CEC1EB40D07D5A610EE99E9A4E30687"
+    },
+    {
+        "path":  "database\\migrations\\2026_09_30_172151_add_family_and_subgroup_to_citizens_table.php",
+        "hash":  "D74938BB3351C83301202DBF3115649E967809EEDEFABF4CB879D942AB1B3735"
+    },
+    {
+        "path":  "app\\Exports\\HouseholdProfilesSheet.php",
+        "hash":  "72DA4F2D2B9081DC08330A228119600C3C14EC1E4B968CD7101EDFF78BA4394D"
+    },
+    {
+        "path":  "app\\Exports\\CustomReportSheet.php",
+        "hash":  "911F0BE9EEF707E94ECC0A470D40DB8E09795424CC7597358C15BF0508946425"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_01_025115_create_categories_table.php",
+        "hash":  "44340300B04F28F20110CC57F46D7DDC6FFC2A2169AB6C31C715A09F683170F6"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_01_031457_create_user_permissions_table.php",
+        "hash":  "84D56825C5FF236E1022CE00637C0CB5F48FC78CFD4B6703C19CA8B0300DCC9D"
+    },
+    {
+        "path":  "resources\\views\\bhw\\families\\show.blade.php",
+        "hash":  "448AF7ADC6D3CE112D2B458575615CB3431D2CB7A9D973CB7B85F79944A3B873"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_08_070803_add_must_change_password_to_users_table.php",
+        "hash":  "DDB19B1FE2FA04AA50249BC36794246783DE3CADCD76D0720A0BC1A250E98550"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_08_080151_add_preferences_to_users_table.php",
+        "hash":  "C37B40AB772E8495F07ABCC0DEF5BBFB0F90E9CAFD412B4D7FEEC12FAC2DE30E"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_08_083749_add_lockout_columns_to_users_table.php",
+        "hash":  "B0DC660D192308D69C6CC231EF1D44C8D102EAD502F42997BB21492566634889"
+    },
+    {
+        "path":  "app\\Console\\Kernel.php",
+        "hash":  "E8C92E1BB36510F8A59C5CFFF6645D09FEC070C6905D5A28039CCB52E7C033E8"
+    },
+    {
+        "path":  "app\\Exceptions\\Handler.php",
+        "hash":  "0BD824FDAF928EC8707AAE64E43C6A78AFDFE5A1539CE12B68C57094ECB4C805"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_10_154723_update_purok_subgroups_for_bhw_assignment.php",
+        "hash":  "B160AA3AC6BFF22A89F7C017AC33C925409F8545A04B23DE2352A1DE084BAA31"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_10_174720_add_can_view_all_citizens_to_user_permissions_table.php",
+        "hash":  "95E96F6166032C3C6A46AC9B24A0D205DA123DCA232BFC0E130EBF636EF8AFAA"
+    },
+    {
+        "path":  "resources\\views\\auth\\reset-password.blade.php",
+        "hash":  "DAD1102056BA1D1573C0D86AA7310BD71486A9DC5D85F7CFB9AF1AA9CCCD4A01"
+    },
+    {
+        "path":  "resources\\views\\auth\\forgot-password.blade.php",
+        "hash":  "2F20C172E08F4DAF399977D15EE8CA966629923A9228EA85F3D82BB3E766449A"
+    },
+    {
+        "path":  "resources\\views\\auth\\force-password-change.blade.php",
+        "hash":  "021332326599EC2EF8335F8C543386B67F00651D93F2C2B3036E1E9A879486DB"
+    },
+    {
+        "path":  "resources\\views\\auth\\confirm-password.blade.php",
+        "hash":  "11841C5C1A94BF09EF006AFE75A766BA8D840E2AEE6CB5A98CC15A1B54713058"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_16_020000_create_supply_releases_table.php",
+        "hash":  "FAE0F2C000A876D835A9F2BB548E08FA6A9B04FD16A59B987213796DEE027819"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_16_010000_create_maintenance_records_table.php",
+        "hash":  "601F79D3DA6D037B0178B220C7C53E71FD7F3A109F079D8DEAC6616740A00FE8"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_16_000000_drop_supply_requests_table.php",
+        "hash":  "A4F959E263203CD10AFCCCD79FC86BDBE1681A81803A00ABFD19659D35235249"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_15_003438_add_physical_and_status_fields_to_citizens_table.php",
+        "hash":  "D45D34500C36741404292846AD68D9BE9AFF9F5E39A6A9FEC6D68C9BD649E909"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_10_211455_add_qr_token_and_photo_path_to_citizens_table.php",
+        "hash":  "00ADF9CE1394EED6E67EA555428AC86D63C8AAF80E9EA9BBE40644535851E9EA"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_17_000000_add_user_id_to_feature_logs.php",
+        "hash":  "CA531CA7E712E538C7B3B96F011AB91E1A870D3115C40780A13E8D31452A3926"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_16_031000_mark_legacy_supply_releases_claimed.php",
+        "hash":  "E43817BEA481E1128CFBEE1933E6EC2BCF67A0F912415B73002DD985088F4E0C"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_16_030000_add_claim_status_to_supply_releases_table.php",
+        "hash":  "257E5870B05999C42318ADF2FE990F81C6A92A1224242AAFB5F4FDCC5ED30C4E"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_18_000000_create_announcement_images_table.php",
+        "hash":  "7157B4DC56DC43F13DA8D832339DF97DBCF6409989F78A87BEFB692FE53816D1"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_000000_add_coordinates_to_puroks_table.php",
+        "hash":  "4A252FF37C7CC7F4682D1DC19ABBD089736AF146056FA9109FA30C96821E86CA"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\SuperAdminController.php",
+        "hash":  "FC79A0D9E4A7AE6CDBC1DDBEDFC8A1DB9FE65A4458C7F81DB017B8A084336EED"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\AdminAuditLogController.php",
+        "hash":  "825F9FA29A6F0F0F24098E0A545CD42F20F1FA0EF9996B0AF153C1212729EDE0"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\SystemAnalyticsController.php",
+        "hash":  "3ABFF7B8B8E84D79F6EA5613F205A10575EFDBE8BA26A9198358B37B4E2CAA73"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\SystemConnectionsController.php",
+        "hash":  "A60982C8AD1CAA86D71E66DE0AAD4993A22B6D8FF33793835B8EEDB1FD6A4F3A"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_010000_add_subgroup_id_to_citizens_table.php",
+        "hash":  "8C48293300029784FB98CE0B487FBE246A56BD35C1E427A18A9300B0121E4C3B"
+    },
+    {
+        "path":  "app\\Console\\Commands\\GenerateWebPushKeys.php",
+        "hash":  "166CF914CA81E885807BA277816578BA079FA97F9D46CC31EAEF995951856303"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\WebsitePerformanceController.php",
+        "hash":  "A33573C8C6000AECBC482D98CA5FF665EA5A4FCE0397084123C9D0D373DBCFB3"
+    },
+    {
+        "path":  "app\\Http\\Controllers\\SuperAdmin\\UserAnalyticsController.php",
+        "hash":  "8817320A2CF1238AB86B8FF3280F7957F36A6818C9056561BA50C496FE7729B7"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_020000_add_livelihood_fields_to_citizens_table.php",
+        "hash":  "995B3460E51BE2FCD1C879BDECE56D4EB7143650213D35FFBAF694FB8A73C38E"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_030000_add_contraceptive_method_to_citizens_table.php",
+        "hash":  "84530BE9C34FCD1E740D3ACA23C72ACCC1C0A4F1437B10B66E92D77D2748D676"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_18_000002_make_citizen_birth_date_and_age_optional.php",
+        "hash":  "6D618FAB7DD38D6C80C884836262929FDCA50EE99CE2BE0578A8BA4363BD8CFC"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_18_000001_renumber_active_family_codes.php",
+        "hash":  "0871C0F046FE990C91EB1CD498B6285834CC933BD5BF79CB67588357DB8F3E4C"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_12_000002_make_citizen_contact_number_optional.php",
+        "hash":  "14E576110E1C3D7B051BD220A2C4B75C4CA0B193FE1FB6EEA9BF88C629FD3D87"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_12_000001_make_user_email_optional.php",
+        "hash":  "8ECC6808597A6A5C9BF7FBA85CDBA76D8DFD341AB5D405BAB13F8A32AD8950B2"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_08_020000_enable_public_health_id_visibility_for_existing_citizens.php",
+        "hash":  "D95906B776323C8728AD7A04243A34D748FC114CC6F71FA275D260BCBDFD506E"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_08_010000_add_public_health_id_visibility_to_citizens.php",
+        "hash":  "9626DFE73C6646691BC7A43F6006AD5D0DD6D0E385879E99ADB6F22602AE7852"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_08_000000_add_device_details_to_push_subscriptions.php",
+        "hash":  "A34B020E431A9F01DCEA339E6393601E635AB5C36E02F45FBAAFCBC3B4A5A369"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_07_200000_make_health_sharing_non_expiring.php",
+        "hash":  "9C67138F957E859305AFE5145AB0E9692829076312D800B1DFA150762C40D9FF"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_07_000000_create_push_subscriptions_table.php",
+        "hash":  "D586E2C346DB5B783C2FAC7B8CB9B1C54C810EABFEF8B95C8A20167B8D3F2B62"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_04_000003_add_head_id_to_families_table.php",
+        "hash":  "53EF6E705E2CE0DD8195C3E0F5B0943562F01D17EDA58AB8D3FB6306F9238494"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_04_000002_normalize_family_codes.php",
+        "hash":  "C5E4112775E0A26F4BDF8C47793A16BD1BCA8CE220DB96B1E617FF7C1B1739F3"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_04_000001_add_family_code_to_families_table.php",
+        "hash":  "496EF124EE53D9819A6A01694A2C19D2C67200B4AD0547FB99F17C44AF207EF9"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_03_000001_add_cvx_historical_fields_to_vaccination_records.php",
+        "hash":  "8F758211B5CA394A4E6053D975B2B1778F213E138C082A6CC164D29A9AE3F3F0"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_03_000000_add_locked_until_to_users_table.php",
+        "hash":  "FDEB583E3ACF6D5F3AA40F3EEDA1D0078E72C147E731F63B5EA6854F4BFD2AFE"
+    },
+    {
+        "path":  "database\\migrations\\2026_11_01_000000_move_sensitive_files_to_private_storage.php",
+        "hash":  "E0E856CE7DD9EF13F9F176EA3D9F55DE54A429218BDF5B2B452A120293CFB9DF"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_29_020000_backfill_citizen_usernames.php",
+        "hash":  "B539FF8EFA08F7C1600BEB3A0F883DB6874EB33FB8F5314329DFB5959AC6A749"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_29_010000_add_username_to_users_table.php",
+        "hash":  "1FCCAACBBAC5815745F09D97EA262147F55A7C9A0A4610704A35538A0DBF0E43"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_29_000000_add_soft_deletes_for_archiving.php",
+        "hash":  "CCBCF6CFECDF0306EA74D545744AD842FC841A671EDF3D8D0EB4980D93467147"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_28_220000_create_citizen_health_shares_table.php",
+        "hash":  "BB87543A2A93CF2722FE6305C8D123C29AB8C7031259D3E3ED76A1CABDF59124"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_28_000002_add_purok_bhw_assignments.php",
+        "hash":  "11DFF20FE3C176C2FBAE971E446B0054EA39BC49A106D9CE5EE03FA2E0691428"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_28_000001_add_vaccination_eligibility_review.php",
+        "hash":  "A3B75AFF8994560805210D369DCCBA2BA43868C270E97AE6FB7FD0B64C1003DE"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_27_000001_normalize_citizen_family_planning_eligibility.php",
+        "hash":  "881CACD7AF5F0014B90EFA96274F6E10B1ECA16222F5F5A6AE2824CEECAE5E02"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_26_000000_add_boundaries_and_subgroup_bhw_assignments.php",
+        "hash":  "673D22682EEC74122BF7A28840BBD05E8852A4F18ADCFBE3EE63A5035B08B9F1"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_24_000001_add_vitals_to_health_records_table.php",
+        "hash":  "9AB1F00C34E1AD9323B43BF1643B44205D208A2EA363032EDF51795458F1D06A"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_23_000000_create_vaccination_schedules_table.php",
+        "hash":  "B90CFEA5AF5B9421068B9054FDDE48EDCCFE1690DB5BE8851726E772EC13AB4D"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_22_000000_add_facebook_post_id_to_announcements.php",
+        "hash":  "123ECCFF475FF5914C6BB2966812C75A4A04A38CD55AEF4E532DC05255BBFEFA"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_21_000000_add_quantity_dispensed_to_maintenance_records.php",
+        "hash":  "CCAAF36D3E23D7D616C3534F63A75261D1610111DCB5E01A1D8EE048C2F22E54"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_20_030000_add_middle_name_to_citizens_table.php",
+        "hash":  "7285D4057860C926C56F8022F110D09F942B4C113926E7393BC3BF6C9CF52A90"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_20_020000_repair_vaccination_records_id.php",
+        "hash":  "D35830C390C0FC7F02608B5F2CC6B83FE93406F0951CD06717B08F952FD6FE0B"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_20_010000_create_system_settings_table.php",
+        "hash":  "65AAA2300CD223662DBDFE7EC5ED4006AFBCEE03C8077BDB6E39F2E86DA687B2"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_20_000000_sync_family_citizen_assignments.php",
+        "hash":  "69A2A22ED5846DB249AC26AC00D5915BA96DEC562409CCBF68FC8044C8E957CD"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_050000_change_page_views_url_to_text.php",
+        "hash":  "00D0643924C6344F04ADB849F9E20A4F17DFE4F1E54E083770DE2D2C4C6E6CD5"
+    },
+    {
+        "path":  "database\\migrations\\2026_10_19_040000_remove_unused_report_fields_from_citizens_table.php",
+        "hash":  "2FAEC1B8A1D0B576E2CBCB3FB776AB6AC6FA924476EE7C65DDD236B6311C3D71"
+    }
+]

@@ -3,7 +3,7 @@
 
     <div class="bheams-id-header">
         <div class="bheams-seal">
-            <img src="{{ asset('images/amuyong.png') }}" alt="BHEAMS Logo" class="bheams-logo">
+            <img src="{{ asset('images/barangay-amuyong.png') }}" alt="BHEAMS Logo" class="bheams-logo">
         </div>
         <div class="bheams-brand">
             <h2>BHEAMS</h2>

@@ -167,6 +167,7 @@ public function update(Request $request, $id)
     }
 
     $user->update([
+        'name' => $data['name'],
         'email' => $data['email'],
         'username' => !empty($data['username']) ? trim($data['username']) : null,
         'role' => $data['role'],
