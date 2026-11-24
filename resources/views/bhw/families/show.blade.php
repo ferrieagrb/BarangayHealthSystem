@@ -3,6 +3,7 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/families.css') }}?v={{ filemtime(public_path('css/bhw/families.css')) }}">
+@include('bhw.partials.management-overview-assets')
 @endsection
 
 @section('content')
@@ -29,7 +30,7 @@
         </div>
     @endif
 
-    <header class="family-page-header">
+    <header class="family-page-header management-page-header">
         <div>
             <h1>Family Management</h1>
             <p>Manage barangay family records, citizen associations, and purok subgroup assignments.</p>
@@ -39,30 +40,30 @@
         @endif
     </header>
 
-    <section class="family-overview" aria-label="Family overview">
-        <div class="family-summary-grid">
+    <section class="family-overview management-overview" aria-label="Family overview">
+        <div class="family-summary-grid summary-cards">
             @foreach($familyOverview as [$label, $value, $description])
-            <article class="family-summary-card">
+            <article class="family-summary-card summary-card">
                 <span>{{ $label }}</span>
                 <strong>{{ number_format($value) }}</strong>
                 <small>{{ $description }}</small>
             </article>
             @endforeach
         </div>
-        <article class="family-chart-card">
-            <h2>Families by subgroup</h2>
-            <p>All households in your assigned areas &middot; independent of list filters</p>
-            <div class="family-bar-chart" role="list" aria-label="Families by subgroup">
-                @forelse($puroks->flatMap->subgroups->filter(fn ($subgroup) => $subgroupCounts->has($subgroup->id)) as $subgroup)
-                <div class="family-chart-column" role="listitem" aria-label="{{ $subgroup->name }}: {{ $subgroupCounts[$subgroup->id] }} families">
-                    <div class="family-chart-track">
-                        <div class="family-chart-bar" style="height: {{ max(2, $subgroupCounts[$subgroup->id] / max(1, $subgroupCounts->max()) * 100) }}%"><span>{{ $subgroupCounts[$subgroup->id] }}</span></div>
-                    </div>
-                    <span class="family-chart-label">{{ $puroks->firstWhere('id', $subgroup->purok_id)?->name }} / {{ $subgroup->name }}</span>
+        <article class="family-chart-card chart-card">
+            <div class="chart-header">
+                <h3>Families by subgroup</h3>
+                <p>All households in your assigned areas &middot; independent of list filters</p>
+            </div>
+            @php
+                $chartSubgroups = $puroks->flatMap->subgroups->filter(fn ($subgroup) => $subgroupCounts->has($subgroup->id))->values();
+                $chartLabels = $chartSubgroups->map(fn ($subgroup) => ($puroks->firstWhere('id', $subgroup->purok_id)?->name ?? 'Unassigned').' / '.$subgroup->name)->all();
+                $chartValues = $chartSubgroups->map(fn ($subgroup) => (int) $subgroupCounts[$subgroup->id])->all();
+            @endphp
+            <div class="management-chart-scroll">
+                <div id="familiesApexChart" data-overview-chart data-chart-labels="{{ json_encode($chartLabels) }}" data-chart-values="{{ json_encode($chartValues) }}" role="img" aria-label="Families by subgroup">
+                    @if(!$chartValues)<p class="management-chart-empty">No registered families yet.</p>@endif
                 </div>
-                @empty
-                <p class="family-chart-empty">No registered families yet.</p>
-                @endforelse
             </div>
         </article>
     </section>

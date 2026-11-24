@@ -1,0 +1,453 @@
+<?php $__env->startSection('CSSown'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/bhw/shared-ui.css')); ?>">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+    .analytics-period { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 18px; color: #334155; font-size: 13px; font-weight: 600; }
+    .analytics-period span { color: #64748b; font-weight: 400; }
+    .analytics-scope { color: #64748b; font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
+    .analytics-activity { margin-bottom: 18px; }
+    .analytics-activity-totals { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 16px; color: #64748b; font-size: 13px; }
+    .analytics-activity-totals strong { margin-left: 8px; color: #173b82; }
+    .disease-kpi small { display: block; color: #64748b; line-height: 1.5; margin-top: 8px; }
+    .analytics-table tbody tr:hover { background: #f8fafc; }
+    .analytics-table td { line-height: 1.5; }
+    .analytics-table a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
+    .analytics-page { width: 100%; padding: 0; color: #172033; }
+    .analytics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .analytics-card, .analytics-panel { min-width: 0; padding: 20px; border: 1px solid #dce4ee; border-radius: 12px; background: #fff; box-shadow: 0 4px 18px rgba(20,42,76,.06); }
+    .analytics-card span, .analytics-panel p { color: #64748b; font-size: 13px; }
+    .analytics-card strong { display: block; margin: 8px 0 4px; color: #173b82; font-size: 28px; line-height: 1.1; }
+    .analytics-card small { color: #64748b; }
+    .analytics-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 18px; margin-bottom: 18px; }
+    .analytics-panel h2 { margin: 0 0 6px; color: #173b82; font-size: 19px; }
+    .analytics-demand-panel { grid-column: 1 / -1; }
+    .analytics-supply-panel { grid-column: 1 / -1; }
+    .analytics-panel p { margin: 0 0 16px; line-height: 1.5; }
+    .analytics-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .analytics-table th, .analytics-table td { padding: 10px 8px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+    .analytics-table th { color: #64748b; font-size: 11px; text-transform: uppercase; }
+    .analytics-badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; }
+    .analytics-badge.stable { background: #dcfce7; color: #166534; }
+    .analytics-note { padding: 12px; border-left: 3px solid #2563eb; background: #eff6ff; color: #334155; font-size: 12px; line-height: 1.5; }
+    .analytics-chart { width: 100%; min-height: 260px; }
+    .analytics-type-heading { margin: 28px 0 14px; color: #173b82; font-size: 22px; }
+    .analytics-type-heading:first-of-type { margin-top: 0; }
+    .disease-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: end; margin-bottom: 16px; }
+    .disease-filters label { display: grid; gap: 5px; color: #475569; font-size: 12px; font-weight: 600; }
+    .disease-filters select, .disease-filters input { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #172033; }
+    .disease-filter-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .disease-filter-actions .btn { min-height: 40px; }
+    .disease-date-range { display: contents; }
+    .disease-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+    .disease-kpi { padding: 15px; border: 1px solid #dce4ee; border-radius: 10px; background: #f8fafc; }
+    .disease-kpi span { display: block; color: #64748b; font-size: 12px; }
+    .disease-kpi strong { display: block; margin-top: 6px; color: #173b82; font-size: 24px; }
+    .disease-map { width: 100%; height: 420px; border: 1px solid #dce4ee; border-radius: 10px; background: #eef4f7; }
+    .disease-map-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; color: #475569; font-size: 12px; }
+    .disease-map-legend span { display: inline-flex; gap: 6px; align-items: center; }
+    .disease-map-legend i { width: 12px; height: 12px; border: 2px solid #1d4ed8; border-radius: 50%; background: rgba(37,99,235,.25); }
+    .disease-map-legend i.boundary { border-radius: 2px; background: rgba(37,99,235,.12); }
+    .disease-empty { display: grid; min-height: 140px; place-items: center; padding: 20px; color: #64748b; text-align: center; }
+    .disease-chart { min-height: 280px; width: 100%; }
+    .disease-note { margin: 12px 0 0; padding: 11px 12px; border-left: 3px solid #2563eb; background: #eff6ff; color: #334155; font-size: 12px; line-height: 1.5; }
+    .disease-suppressed { color: #64748b; font-style: italic; }
+    .leaflet-popup-content { margin: 10px 12px; }
+    @media (max-width: 900px) { .disease-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px) { .disease-filters, .disease-kpi-grid { grid-template-columns: 1fr; } .disease-map { height: 330px; } }
+    @media (max-width: 900px) { .analytics-grid, .analytics-layout { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 620px) { .analytics-grid, .analytics-layout { grid-template-columns: 1fr; } .analytics-table { min-width: 560px; } .analytics-panel { overflow-x: auto; } }
+</style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="analytics-page">
+    <div class="page-top">
+        <div class="page-title-group">
+            <h1>BHW Analytics</h1>
+            <p>Explore recorded diagnoses across your authorized areas and reporting periods.</p>
+        </div>
+    </div>
+
+    <h2 class="analytics-type-heading">Disease Monitoring</h2>
+    <section class="analytics-panel" aria-labelledby="diseaseMonitoringHeading">
+        <h2 id="diseaseMonitoringHeading">Diagnosis records by illness and area</h2>
+        <p>Aggregates use diagnosis text and the recorded diagnosis date. Filters apply to the disease summaries, diagnosis chart, area table, and map only.</p>
+        <form class="disease-filters" method="GET" action="<?php echo e(route('bhw.analytics')); ?>" id="diseaseFilters">
+            <label>
+                Reporting period
+                <select name="disease_period" id="diseasePeriod">
+                    <option value="today" <?php if($period === 'today'): echo 'selected'; endif; ?>>Today</option>
+                    <option value="last7" <?php if($period === 'last7'): echo 'selected'; endif; ?>>Last 7 days</option>
+                    <option value="last30" <?php if($period === 'last30'): echo 'selected'; endif; ?>>Last 30 days</option>
+                    <option value="this_month" <?php if($period === 'this_month'): echo 'selected'; endif; ?>>This month</option>
+                    <option value="previous_month" <?php if($period === 'previous_month'): echo 'selected'; endif; ?>>Previous month</option>
+                    <option value="this_year" <?php if($period === 'this_year'): echo 'selected'; endif; ?>>This year</option>
+                    <option value="custom" <?php if($period === 'custom'): echo 'selected'; endif; ?>>Custom range</option>
+                </select>
+            </label>
+            <div class="disease-date-range" id="diseaseDateRange">
+                <label>From <input type="date" name="disease_start" value="<?php echo e($periodStart->toDateString()); ?>" id="diseaseStart"></label>
+                <label>To <input type="date" name="disease_end" value="<?php echo e($periodEnd->toDateString()); ?>" id="diseaseEnd"></label>
+            </div>
+            <label>
+                Diagnosis
+                <select name="disease_name">
+                    <option value="">All diagnoses</option>
+                    <?php $__currentLoopData = $diseaseMonitoringData['diagnosisOptions']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($option->diagnosis_key); ?>" <?php if(($filters['disease_name'] ?? '') === $option->diagnosis_key): echo 'selected'; endif; ?>><?php echo e($option->diagnosis); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </label>
+            <label>
+                Purok
+                <select name="disease_purok" id="diseasePurok">
+                    <option value="">All accessible Puroks</option>
+                    <?php $__currentLoopData = $diseaseMonitoringData['availablePuroks']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $purok): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($purok->id); ?>" <?php if((string) ($filters['disease_purok'] ?? '') === (string) $purok->id): echo 'selected'; endif; ?>><?php echo e($purok->name); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </label>
+            <label>
+                Subgroup
+                <select name="disease_subgroup">
+                    <option value="">All accessible subgroups</option>
+                    <?php $__currentLoopData = $diseaseMonitoringData['availableSubgroups']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $subgroup): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($subgroup->id); ?>" <?php if((string) ($filters['disease_subgroup'] ?? '') === (string) $subgroup->id): echo 'selected'; endif; ?>><?php echo e($subgroup->name); ?> — <?php echo e($subgroup->purok?->name); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </label>
+            <div class="disease-filter-actions">
+                <button type="submit" class="btn btn-primary" data-ui-action="primary">Apply filters</button>
+                <a class="btn btn-secondary" href="<?php echo e(route('bhw.analytics')); ?>" data-ui-action="reset">Reset filters</a>
+            </div>
+        </form>
+
+        <div class="analytics-period"><?php echo e($periodStart->format('M j, Y')); ?> – <?php echo e($periodEnd->format('M j, Y')); ?> <span>Accessible citizens only</span></div>
+        <div class="disease-kpi-grid">
+            <div class="disease-kpi"><span>Diagnosis records · <?php echo e($periodLabel); ?></span><strong><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Suppressed' : number_format($diseaseMonitoringData['totalRecords'])); ?></strong></div>
+            <div class="disease-kpi"><span>Distinct citizens recorded</span><strong><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Fewer than 3' : number_format($diseaseMonitoringData['uniqueCitizens'])); ?></strong></div>
+            <div class="disease-kpi"><span>Change vs previous equal-length period</span><strong><?php echo e($diseaseMonitoringData['privacySuppressed'] || $diseaseMonitoringData['previousSuppressed'] ? 'Suppressed' : ($diseaseMonitoringData['previousChange'] === null ? '—' : ($diseaseMonitoringData['previousChange'] > 0 ? '+' : '') . $diseaseMonitoringData['previousChange'] . '%')); ?></strong><small><?php echo e($diseaseMonitoringData['privacySuppressed'] || $diseaseMonitoringData['previousSuppressed'] ? 'Previous-period details withheld for privacy' : number_format($diseaseMonitoringData['previousRecords']) . ' previous-period records'); ?></small></div>
+            <div class="disease-kpi"><span>Records excluded from map</span><strong><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Suppressed' : ($diseaseMonitoringData['missingLocationSuppressed'] ? 'Suppressed (<3)' : number_format($diseaseMonitoringData['missingLocationRecords']))); ?></strong><small><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Fewer than 3 distinct citizens in this result' : 'Missing map location or privacy threshold · ' . ($diseaseMonitoringData['missingDateSuppressed'] ? 'missing-date total withheld' : number_format($diseaseMonitoringData['missingDateRecords']) . ' records have no diagnosis date')); ?></small></div>
+        </div>
+
+        <p class="disease-note">Counts are diagnosis-record entries, not confirmed new cases. One citizen may have multiple visits or repeated diagnoses. The schema has no episode identifier or separate case-status field; “Resolved” is a severity value and is not treated as a case status. Small results and map areas with fewer than three distinct citizens are withheld to reduce disclosure risk. This is a review aid, not an outbreak determination.</p>
+    </section>
+
+    <div class="analytics-layout">
+        <section class="analytics-panel analytics-demand-panel">
+            <h2>Diagnosis records over time</h2>
+            <p>Counts follow the selected date, diagnosis, Purok, and subgroup filters. Records and distinct citizens are separate measures; buckets with fewer than three citizens are hidden.</p>
+            <?php if($diseaseMonitoringData['privacySuppressed']): ?>
+                <div class="disease-empty">Trend details are withheld because fewer than three distinct citizens match these filters.</div>
+            <?php elseif(!collect($diseaseMonitoringData['trend']['recordCounts'])->contains(fn ($count) => $count > 0)): ?>
+                <div class="disease-empty">No dated diagnosis records match these filters.</div>
+            <?php else: ?>
+                <div id="diagnosisTrendChart" class="disease-chart" role="img" aria-label="Diagnosis records and distinct citizens by <?php echo e($diseaseMonitoringData['trend']['granularity']); ?>"></div>
+            <?php endif; ?>
+        </section>
+
+        <section class="analytics-panel">
+            <h2>Most recorded diagnoses</h2>
+            <p>Diagnosis names are grouped by case and outer-whitespace normalization only; clinically distinct terms are not automatically merged.</p>
+            <?php if($diseaseMonitoringData['diagnosisRankings']->isNotEmpty()): ?>
+                <div id="diagnosisRankingChart" class="analytics-chart" role="img" aria-label="Top diagnoses by record count; values are listed in the table below"></div>
+            <?php endif; ?>
+            <p>Up to 10 diagnoses are shown. Each must include at least three distinct citizens; displayed shares may not total 100%.</p>
+            <table class="analytics-table">
+                <thead><tr><th>Diagnosis</th><th>Records</th><th>Distinct citizens</th><th>Share of all filtered records</th></tr></thead>
+                <tbody>
+                    <?php $__empty_1 = true; $__currentLoopData = $diseaseMonitoringData['diagnosisRankings']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><a href="<?php echo e(route('bhw.analytics', array_merge(request()->query(), ['disease_name' => $row->diagnosis_key]))); ?>"><?php echo e($row->diagnosis); ?></a></td>
+                            <td><?php echo e(number_format($row->record_count)); ?></td>
+                            <td><?php echo e(number_format($row->citizen_count)); ?></td>
+                            <td><?php echo e($diseaseMonitoringData['totalRecords'] ? number_format($row->record_count / $diseaseMonitoringData['totalRecords'] * 100, 1) : '0.0'); ?>%</td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="4"><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Details are withheld because fewer than three distinct citizens match these filters.' : 'No diagnoses meet the minimum of three distinct citizens for display.'); ?></td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </section>
+        <section class="analytics-panel">
+            <h2>Geographic distribution</h2>
+            <p>Only saved Purok or subgroup coordinates and boundaries are used. Map values are aggregated and do not identify citizens.</p>
+            <?php if(count($diseaseMonitoringData['mapAreas'])): ?>
+                <div id="diseaseMonitoringMap" class="disease-map" role="img" aria-label="Aggregated diagnosis records by mapped Purok and subgroup"></div>
+                <div class="disease-map-legend"><span><i></i> Records by area (larger circle = more records)</span><span><i class="boundary"></i> Saved boundary</span><span>Areas with fewer than three distinct citizens are not displayed</span></div>
+            <?php else: ?>
+                <div class="disease-empty"><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Map details are withheld because fewer than three distinct citizens match these filters.' : 'No mapped areas match these filters. Check saved Purok/subgroup locations and the selected period.'); ?></div>
+            <?php endif; ?>
+            <?php if($diseaseMonitoringData['areaRankings']->isNotEmpty()): ?>
+                <div id="diagnosisAreaChart" class="disease-chart" role="img" aria-label="Diagnosis record counts by area"></div>
+            <?php else: ?>
+                <div class="disease-empty"><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Area comparison is withheld because fewer than three distinct citizens match these filters.' : 'No area totals are available for this selection.'); ?></div>
+            <?php endif; ?>
+            <table class="analytics-table">
+                <thead><tr><th>Area</th><th>Records</th><th>Most recorded diagnosis</th></tr></thead>
+                <tbody>
+                    <?php $__empty_1 = true; $__currentLoopData = $diseaseMonitoringData['areaRankings']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td>
+                                <?php if($row['area_id'] && $row['area_type']): ?>
+                                    <a href="<?php echo e(route('bhw.analytics', array_merge(request()->query(), [
+                                        'disease_purok' => $row['purok_id'],
+                                        'disease_subgroup' => $row['area_type'] === 'subgroup' ? $row['area_id'] : '',
+                                    ]))); ?>"><?php echo e($row['area']); ?></a>
+                                <?php else: ?>
+                                    <?php echo e($row['area']); ?>
+
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo e(number_format($row['records_count'])); ?></td>
+                            <td><?php echo e($row['top_diagnosis']); ?></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="3"><?php echo e($diseaseMonitoringData['privacySuppressed'] ? 'Area details are withheld because fewer than three distinct citizens match these filters.' : 'No area-level data matches these filters.'); ?></td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <h2 class="analytics-type-heading">Operational Planning</h2>
+
+    <div class="analytics-grid">
+        <div class="analytics-card"><span>Projected health-service activity · next 14 days</span><strong><?php echo e(number_format($forecast)); ?></strong><small>Simple extrapolation across diagnoses, maintenance, and vaccinations; not a disease forecast.</small></div>
+        <div class="analytics-card"><span>New citizen records · last 14 days</span><strong><?php echo e(number_format($citizenAdditions)); ?></strong><small>Observed registrations and imports</small></div>
+        <div class="analytics-card"><span>Citizen detail updates · last 14 days</span><strong><?php echo e(number_format($citizenDetailEdits)); ?></strong><small>Observed profile edits</small></div>
+    </div>
+
+    <div class="analytics-layout">
+        <section class="analytics-panel analytics-demand-panel">
+            <h2>Recent service activity and simple projection</h2>
+            <p>The projection carries the difference between the previous and current 14-day totals forward once. It combines different activity types and should not be interpreted as disease incidence or a validated forecast.</p>
+            <div id="healthDemandChart" class="analytics-chart"></div>
+            <table class="analytics-table">
+                <thead><tr><th>Activity type</th><th>Records in current 14 days</th></tr></thead>
+                <tbody>
+                    <tr><td>Diagnosis</td><td><?php echo e(number_format($currentDiagnosisCount)); ?></td></tr>
+                    <tr><td>Maintenance</td><td><?php echo e(number_format($currentMaintenanceCount)); ?></td></tr>
+                    <tr><td>Immunization / vaccine</td><td><?php echo e(number_format($currentVaccinationCount)); ?></td></tr>
+                    <tr><th>Total activity</th><th><?php echo e(number_format($currentCount)); ?></th></tr>
+                </tbody>
+            </table>
+            <div class="analytics-note">Use this signal to prepare BHW schedules, screening activities, immunization sessions, maintenance follow-ups, and commonly needed supplies. Investigate sudden increases before taking action.</div>
+        </section>
+
+        <section class="analytics-panel analytics-supply-panel">
+            <h2>Supply stock &amp; usage</h2>
+            <p>This forecast answers two questions: how much was withdrawn recently, and how much may be withdrawn during the next 14 days if the same usage continues.</p>
+            <div class="analytics-note">The next 14-day projection matches the current 14-day withdrawal quantity. “Days remaining” compares current stock with the recent daily withdrawal rate. All barangay inventory is shown, independent of citizen filters. Restocking and future changes in usage are not included. Quantities use each item’s recorded inventory unit.</div>
+            <div id="supplyPlanningChart" class="analytics-chart" role="img" aria-label="Current stock and next 14-day estimated withdrawals by supply"></div>
+            <table class="analytics-table">
+                <thead><tr><th>Medicine / supply</th><th>Stock review</th><th>Withdrawn recently<br><small>Current 14-day window</small></th><th>Expected withdrawal<br><small>Next 14 days</small></th><th>Current stock</th><th>Estimated days remaining</th></tr></thead>
+                <tbody>
+                    <?php $__empty_1 = true; $__currentLoopData = $supplyRecommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $supply): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <tr>
+                            <td><?php echo e($supply['name']); ?></td>
+                            <td><span class="analytics-badge <?php echo e($supply['priority'] === 'Stable' ? 'stable' : ''); ?>"><?php echo e($supply['priority']); ?></span><br><small>Minimum: <?php echo e(number_format($supply['min_stock'])); ?></small></td>
+                            <td><strong><?php echo e($supply['withdrawn_quantity']); ?> units</strong><br><small><?php echo e($supply['withdrawal_count']); ?> withdrawal activities</small></td>
+                            <td><?php echo e($supply['forecast_quantity']); ?> units</td>
+                            <td><?php echo e($supply['quantity']); ?> units</td>
+                            <td><?php echo e($supply['days_remaining'] === null ? 'No recent usage' : $supply['days_remaining'] . ' days'); ?></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <tr><td colspan="6">No supplies available for forecasting.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const periodSelect = document.getElementById('diseasePeriod');
+    const dateRange = document.getElementById('diseaseDateRange');
+    const startDate = document.getElementById('diseaseStart');
+    const endDate = document.getElementById('diseaseEnd');
+    const updateDateRange = () => {
+        const custom = periodSelect.value === 'custom';
+        dateRange.style.display = custom ? 'contents' : 'none';
+        startDate.disabled = !custom;
+        endDate.disabled = !custom;
+        startDate.required = custom;
+        endDate.required = custom;
+    };
+    periodSelect.addEventListener('change', updateDateRange);
+    updateDateRange();
+
+    if (typeof L !== 'undefined') {
+        const mapElement = document.getElementById('diseaseMonitoringMap');
+        const mapAreas = <?php echo json_encode($diseaseMonitoringData['mapAreas'], 15, 512) ?>;
+        if (mapElement && mapAreas.length) {
+            const map = L.map(mapElement).setView([14.0668, 120.8531], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            const layers = [];
+            mapAreas.forEach((area) => {
+                const color = '#2563eb';
+                const popup = document.createElement('div');
+                const heading = document.createElement('strong');
+                heading.textContent = area.type === 'subgroup' ? `${area.name} — ${area.purok}` : area.name;
+                const details = document.createElement('div');
+                details.textContent = `${area.records_count} diagnosis records · ${area.citizens_count} distinct citizens`;
+                const areaLink = document.createElement('a');
+                const filterParams = new URLSearchParams(new FormData(document.getElementById('diseaseFilters')));
+                filterParams.set('disease_purok', area.purok_id);
+                filterParams.set('disease_subgroup', area.type === 'subgroup' ? area.id : '');
+                areaLink.href = `${document.getElementById('diseaseFilters').action}?${filterParams.toString()}`;
+                areaLink.textContent = 'Filter to this area';
+                popup.append(heading, details, areaLink);
+                if (area.boundary) {
+                    const boundary = L.geoJSON(area.boundary, {
+                        style: { color, weight: 2, fillColor: color, fillOpacity: 0.18 }
+                    }).addTo(map).bindPopup(popup);
+                    layers.push(boundary);
+                }
+                if (area.location) {
+                    const marker = L.circleMarker([area.location.lat, area.location.lng], {
+                        radius: Math.min(18, 7 + Math.sqrt(area.records_count)),
+                        color,
+                        fillColor: color,
+                        fillOpacity: 0.65,
+                        weight: 2
+                    }).addTo(map).bindPopup(popup);
+                    layers.push(marker);
+                }
+            });
+            if (layers.length) {
+                map.fitBounds(L.featureGroup(layers).getBounds().pad(0.15), { maxZoom: 15 });
+            }
+        }
+    }
+
+    if (typeof ApexCharts === 'undefined') return;
+    const activityCounts = <?php echo json_encode([$currentDiagnosisCount, $currentMaintenanceCount, $currentVaccinationCount]) ?>;
+    new ApexCharts(document.querySelector('#activityMixChart'), {
+        chart: { type: 'bar', height: 230, toolbar: { show: false } },
+        series: [{ name: 'Record entries', data: activityCounts }],
+        xaxis: { categories: ['Diagnosis', 'Maintenance', 'Vaccination'] },
+        yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0 },
+        colors: ['#2563eb', '#0d9488', '#7c3aed'],
+        plotOptions: { bar: { distributed: true, borderRadius: 5, columnWidth: '40%' } },
+        legend: { show: false }, dataLabels: { enabled: true },
+        noData: { text: 'No activity recorded' }
+    }).render();
+    const supplies = <?php echo json_encode($supplyRecommendations, 15, 512) ?>;
+    if (supplies.length) {
+        new ApexCharts(document.querySelector('#supplyPlanningChart'), {
+            chart: { type: 'bar', height: Math.max(260, supplies.length * 65), toolbar: { show: false } },
+            series: [
+                { name: 'Current stock', data: supplies.map(s => s.quantity) },
+                { name: 'Next 14-day withdrawal estimate', data: supplies.map(s => s.forecast_quantity) }
+            ],
+            xaxis: { categories: supplies.map(s => s.name), decimalsInFloat: 0 },
+            colors: ['#2563eb', '#f59e0b'],
+            plotOptions: { bar: { horizontal: true, borderRadius: 3 } },
+            dataLabels: { enabled: false }, legend: { position: 'top' },
+            tooltip: { shared: true, intersect: false }
+        }).render();
+    }
+    const demandChart = document.querySelector('#healthDemandChart');
+
+    if (demandChart && <?php echo json_encode($forecastAvailable, 15, 512) ?>) {
+        new ApexCharts(demandChart, {
+            chart: { type: 'bar', height: 260, toolbar: { show: false } },
+            series: [{ name: 'All health activities', data: <?php echo json_encode([$previousCount, $currentCount, $forecast]) ?> }],
+            xaxis: { categories: ['Previous 14 days (observed)', 'Current 14 days (observed)', 'Next 14 days (estimate)'] },
+            colors: ['#94a3b8', '#2563eb', '#0d9488'],
+            plotOptions: { bar: { borderRadius: 5, distributed: true } },
+            dataLabels: { enabled: true },
+            legend: { show: false },
+            grid: { borderColor: '#e2e8f0' }
+        }).render();
+    }
+
+    const diagnosisChart = document.querySelector('#diagnosisRankingChart');
+    const diagnosisRows = <?php echo json_encode($diseaseMonitoringData['diagnosisRankings'], 15, 512) ?>;
+    if (diagnosisChart && diagnosisRows.length) {
+        new ApexCharts(diagnosisChart, 
+            series: [{ name: 'Diagnosis records', data: diagnosisRows.map((row) => Number(row.record_count)) }],
+            chart: {
+                type: 'bar',
+                height: Math.max(260, diagnosisRows.length * 38),
+                toolbar: { show: false },
+                events: {
+                    dataPointSelection: (_event, _chart, options) => {
+                        const selected = diagnosisRows[options.dataPointIndex];
+                        if (!selected) return;
+                        const params = new URLSearchParams(new FormData(document.getElementById('diseaseFilters')));
+                        params.set('disease_name', selected.diagnosis_key);
+                        window.location.href = `${document.getElementById('diseaseFilters').action}?${params.toString()}`;
+                    }
+                }
+            },
+            xaxis: { categories: diagnosisRows.map((row) => row.diagnosis), labels: { trim: true } },
+            colors: ['#2563eb'],
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            dataLabels: { enabled: true },
+            grid: { borderColor: '#e2e8f0' }
+        }).render();
+    }
+
+    const trendElement = document.querySelector('#diagnosisTrendChart');
+    const trendData = <?php echo json_encode($diseaseMonitoringData['trend'], 15, 512) ?>;
+    if (trendElement) {
+        new ApexCharts(trendElement, {
+            series: [
+                { name: 'Diagnosis records', data: trendData.recordCounts },
+                { name: 'Distinct citizens', data: trendData.citizenCounts }
+            ],
+            chart: { type: 'line', height: 300, toolbar: { show: false } },
+            colors: ['#2563eb', '#0f766e'],
+            stroke: { curve: 'straight', width: 3 },
+            markers: { size: 3, hover: { size: 5 } },
+            xaxis: { categories: trendData.labels, tickAmount: 8, labels: { rotate: -35 } },
+            yaxis: { min: 0, forceNiceScale: true, decimalsInFloat: 0 },
+            dataLabels: { enabled: false },
+            tooltip: { shared: true, intersect: false },
+            legend: { position: 'top', horizontalAlign: 'right' },
+            grid: { borderColor: '#e2e8f0' },
+            noData: { text: 'No dated records for this selection' }
+        }).render();
+    }
+
+    const areaChart = document.querySelector('#diagnosisAreaChart');
+    const areaRows = <?php echo json_encode($diseaseMonitoringData['areaRankings'], 15, 512) ?>;
+    if (areaChart && areaRows.length) {
+        new ApexCharts(areaChart, {
+            series: [{ name: 'Diagnosis records', data: areaRows.map((row) => Number(row.records_count)) }],
+            chart: {
+                type: 'bar',
+                height: Math.max(260, areaRows.length * 38),
+                toolbar: { show: false },
+                events: {
+                    dataPointSelection: (_event, _chart, options) => {
+                        const selected = areaRows[options.dataPointIndex];
+                        if (!selected) return;
+                        const form = document.getElementById('diseaseFilters');
+                        const params = new URLSearchParams(new FormData(form));
+                        params.set('disease_purok', selected.purok_id || '');
+                        params.set('disease_subgroup', selected.area_type === 'subgroup' ? selected.area_id : '');
+                        window.location.href = `${form.action}?${params.toString()}`;
+                    }
+                }
+            },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+            xaxis: { categories: areaRows.map((row) => row.area), min: 0, forceNiceScale: true },
+            colors: ['#0f766e'],
+            dataLabels: { enabled: true },
+            tooltip: { y: { formatter: (value) => `${value} diagnosis records` } },
+            grid: { borderColor: '#e2e8f0' }
+        }).render();
+    }
+});
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('templates.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views/bhw/analytics.blade.php ENDPATH**/ ?>

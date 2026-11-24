@@ -29,15 +29,32 @@ class SystemSetting extends Model
         $path = static::value('site_logo', 'images/barangay-amuyong.png');
 
         if (str_starts_with($path, 'images/')) {
-            return asset($path);
+            return asset($path).'?v='.static::logoVersion();
         }
 
-        return app()->runningInConsole()
+        $url = app()->runningInConsole()
             ? Storage::disk('public')->url($path)
             : route('site.logo');
+
+        return $url.'?v='.static::logoVersion();
+    }
+
+    public static function logoVersion(): string
+    {
+        // A replacement at the same path must also invalidate image and favicon caches.
+        return substr(hash('sha256', static::logoContents()), 0, 16);
     }
 
     public static function logoDataUri(): string
+    {
+        $contents = static::logoContents();
+        $image = getimagesizefromstring($contents);
+
+        // Embed the current image bytes so PDFs do not reuse a URL or filesystem image cache.
+        return 'data:'.$image['mime'].';base64,'.base64_encode($contents);
+    }
+
+    private static function logoContents(): string
     {
         $path = static::value('site_logo', 'images/barangay-amuyong.png');
         $disk = Storage::disk('public');
@@ -48,10 +65,8 @@ class SystemSetting extends Model
 
         if ($image === false) {
             $contents = file_get_contents(public_path('images/barangay-amuyong.png'));
-            $image = getimagesizefromstring($contents);
         }
 
-        // Embed the current image bytes so PDFs do not reuse a URL or filesystem image cache.
-        return 'data:'.$image['mime'].';base64,'.base64_encode($contents);
+        return $contents;
     }
 }

@@ -37,6 +37,7 @@ use App\Models\UserPermission;
 use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
 use App\Services\CitizenAccessAuditor;
+use App\Services\CitizenRecordReview;
 use App\Services\VaccinationEligibility;
 use App\Services\VaccinationRecording;
 use App\Traits\LogsActivity;
@@ -180,6 +181,10 @@ class CitizenController extends Controller
     {
         $query = citizens::query();
         $summaryQuery = clone $query;
+
+        if ($request->boolean('filter_needs_review')) {
+            app(CitizenRecordReview::class)->apply($query);
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -1194,6 +1199,9 @@ class CitizenController extends Controller
     private function exportCitizenQuery(Request $request)
     {
         $query = citizens::query();
+        if ($request->boolean('filter_needs_review')) {
+            app(CitizenRecordReview::class)->apply($query);
+        }
         $requestedFields = (array) $request->input('fields', []);
         if (collect($requestedFields)->contains(
             fn ($field) => is_string($field) && str_starts_with($field, 'immunization_')
@@ -1344,6 +1352,10 @@ class CitizenController extends Controller
         $filters[] = $request->boolean('filter_deceased')
             ? 'Deceased citizens only'
             : 'Excludes deceased citizens';
+
+        if ($request->boolean('filter_needs_review')) {
+            $filters[] = 'Records needing review';
+        }
 
         return $filters;
     }

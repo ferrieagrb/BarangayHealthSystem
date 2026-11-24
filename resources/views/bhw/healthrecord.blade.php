@@ -131,6 +131,9 @@
                     @if(request()->boolean('filter_deceased'))
                         <input type="hidden" name="filter_deceased" value="1">
                     @endif
+                    @if(request()->boolean('filter_needs_review'))
+                        <input type="hidden" name="filter_needs_review" value="1">
+                    @endif
                     <input
                         type="text"
                         name="search"
@@ -443,6 +446,7 @@
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
             </section>
+            @include('bhw.partials.record-review-filter')
             <section class="citizen-status-section">
                 <h3>Vital Status</h3>
                 <label class="citizen-status-option"><input type="checkbox" id="healthFilterIncludeDeceased" value="1"><span>Show Deceased Residents Only</span></label>

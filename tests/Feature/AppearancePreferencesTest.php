@@ -323,6 +323,9 @@ class AppearancePreferencesTest extends TestCase
             if (getenv('BHEAMS_SUPPLY_FIXTURES') && in_array($role, ['bhw', 'admin'], true)) {
                 DB::table('user_permissions')->insert(['user_id' => $user->id, 'feature' => 'supplies', 'access' => 'write']);
             }
+            if (getenv('BHEAMS_MANAGEMENT_FIXTURES') && $role === 'bhw') {
+                DB::table('user_permissions')->insert(['user_id' => $user->id, 'feature' => 'family', 'access' => 'write']);
+            }
             $user->update(['theme' => 'dark', 'font_size' => 'normal']);
             foreach ($views as $view) {
                 if (($onlyPages = getenv('BHEAMS_APPEARANCE_PAGES'))
@@ -341,9 +344,34 @@ class AppearancePreferencesTest extends TestCase
                         ['With Family Head', 0, 'Households with an assigned head'],
                         ['New Families', 0, 'Registered in the last 14 days'],
                     ];
+                    if (getenv('BHEAMS_MANAGEMENT_FIXTURES')) {
+                        $family = new \App\Models\Family(['family_name' => 'Sample Household', 'head_id' => $citizen->id]);
+                        $family->id = 1;
+                        $family->family_code = 'F1A-0001';
+                        $family->setRelation('purok', $purok)->setRelation('subgroup', $subgroup)
+                            ->setRelation('members', collect([$citizen]))->setRelation('head', $citizen);
+                        $viewData['families'] = new LengthAwarePaginator([$family], 1, 10);
+                        $viewData['puroks'] = collect([$purok]);
+                        $viewData['subgroupCounts'] = collect([$subgroup->id => 65]);
+                        $viewData['familyOverview'] = [
+                            ['Total Families', 65, 'Registered households'],
+                            ['Family Members', 254, 'Citizens assigned to households'],
+                            ['With Family Head', 64, 'Households with an assigned head'],
+                            ['New Families', 65, 'Registered in the last 14 days'],
+                        ];
+                    }
+                }
+                if ($view === 'citizen' && getenv('BHEAMS_MANAGEMENT_FIXTURES')) {
+                    $viewData['totalCitizens'] = 2399;
+                    $viewData['kids'] = 684;
+                    $viewData['adults'] = 1465;
+                    $viewData['seniors'] = 244;
                 }
                 if ($view === 'referrals/index') {
                     $viewData['referrals'] = $empty;
+                }
+                if ($view === 'referrals/create') {
+                    $viewData['referral'] = new \App\Models\Referral(['referred_at' => now()]);
                 }
                 if (getenv('BHEAMS_SUPPLY_FIXTURES') && in_array($view, ['supplies', 'admin_supplies'], true)) {
                     $viewData['supplies'] = collect([

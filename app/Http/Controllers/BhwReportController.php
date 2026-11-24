@@ -273,6 +273,7 @@ class BhwReportController extends Controller
                 'unknown_age' => $group->filter(fn ($citizen) => ! $validAge($citizen->ageForEligibility()))->count(),
             ];
         });
+        $ageByPurok = $ageByPurok->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
         $ageTotals = collect($ageByPurok->first() ? array_fill_keys(array_keys($ageByPurok->first()), 0) : [
             'infants' => 0, 'toddlers' => 0, 'children' => 0, 'teenagers' => 0,
             'working_adults' => 0, 'seniors' => 0, 'unknown_age' => 0,
@@ -501,6 +502,7 @@ class BhwReportController extends Controller
                 'other' => $group->whereNotIn('Citizen_Sex', ['Male', 'Female'])->count(),
             ];
         });
+        $sexByPurok = $sexByPurok->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
         $sexTotals = [
             'male' => $sexByPurok->sum('male'),
             'female' => $sexByPurok->sum('female'),
@@ -530,7 +532,9 @@ class BhwReportController extends Controller
                 ->values();
         }
 
-        $pregnancyByPurok = $citizensReport->groupBy(fn ($citizen) => $this->purokNameForCitizen($citizen))->map(fn ($group) => $group->where('Citizen_Pregnant', true)->count());
+        $pregnancyByPurok = $citizensReport->groupBy(fn ($citizen) => $this->purokNameForCitizen($citizen))
+            ->map(fn ($group) => $group->where('Citizen_Pregnant', true)->count())
+            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
         $pregnancyTotal = $pregnancyByPurok->sum();
 
         $ageBrackets = [
@@ -593,7 +597,7 @@ class BhwReportController extends Controller
             $diagnosisSummary = $diagnosisRecords->groupBy(fn ($record) => $record->diagnosis ?: 'Unspecified')->map->count()->sortDesc();
             $diagnosisByPurok = $diagnosisRecords->groupBy(function ($record) {
                 return $this->purokNameForCitizen($record->citizen).'|'.($record->diagnosis ?: 'Unspecified');
-            })->map->count()->sortDesc();
+            })->map->count()->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
         }
 
         $medicationRecords = collect();
@@ -717,7 +721,7 @@ class BhwReportController extends Controller
                 });
         }
 
-        $puroks = Purok::with('subgroups')->orderBy('name')->get();
+        $puroks = Purok::orderedWithSubgroups();
         $categories = Supply::query()->select('category')->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
         $diagnoses = HealthRecord::query()
             ->whereIn('citizen_id', $citizenIds)

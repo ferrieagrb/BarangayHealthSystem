@@ -316,7 +316,18 @@
                 <section class="report-section">
                     <h3>Citizen Profiles ({{ $citizensReport->count() }})</h3>
                     @if($citizensReport->isEmpty()) <div class="report-empty">No citizens match the selected filters.</div>
-                    @else <table class="report-table"><thead><tr><th>Citizen ID</th><th>First Name</th><th>Middle Name</th><th>Last Name</th><th>Birthdate</th><th>Age</th><th>Sex</th><th>Contact No.</th><th>Purok</th><th>Family / Subgroup</th></tr></thead><tbody>
+                    @else <table class="report-table"><thead><tr>
+                        <th style="width: 8%;">Citizen ID</th>
+                        <th style="width: 14%;">First Name</th>
+                        <th style="width: 11%;">Middle Name</th>
+                        <th style="width: 11%;">Last Name</th>
+                        <th style="width: 11%;">Birthdate</th>
+                        <th style="width: 4%;">Age</th>
+                        <th style="width: 6%;">Sex</th>
+                        <th style="width: 11%;">Contact No.</th>
+                        <th style="width: 7%;">Purok</th>
+                        <th style="width: 17%;">Family / Subgroup</th>
+                    </tr></thead><tbody>
                         @foreach($citizensReport as $citizen)
                             <tr><td>C-{{ str_pad($citizen->id, 4, '0', STR_PAD_LEFT) }}</td><td>{{ $citizen->Citizen_FName }}</td><td>{{ $citizen->Citizen_MName }}</td><td>{{ $citizen->Citizen_LName }}</td><td>{{ $citizen->Citizen_BirthDate ? \Illuminate\Support\Carbon::parse($citizen->Citizen_BirthDate)->format('M d, Y') : 'Not recorded' }}</td><td>{{ $citizen->ageForEligibility() ?? 'Not recorded' }}</td><td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td><td>{{ $citizen->Citizen_ContactNo ?: 'Not recorded' }}</td><td>{{ $citizen->subgroup?->purok?->name ?? $citizen->family?->subgroup?->purok?->name ?? $citizen->family?->purok?->name ?? ($citizen->Citizen_Purok ?: 'Unassigned') }}</td><td>{{ $citizen->family->family_name ?? 'No family' }} / {{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Not assigned' }}</td></tr>
                         @endforeach

@@ -1,0 +1,242 @@
+<?php $__env->startSection('CSSown'); ?>
+<style>
+    .settings-container {
+        padding: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .settings-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 25px;
+        transition: background 0.3s, border-color 0.3s;
+    }
+    .settings-header {
+        background: #2563eb;
+        color: white;
+        padding: 18px 25px;
+        font-size: 1.15rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .settings-body {
+        padding: 25px 30px;
+    }
+    .form-group-custom {
+        margin-bottom: 20px;
+    }
+    .form-group-custom label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        transition: color 0.3s;
+    }
+    .form-group-custom select,
+    .form-group-custom input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background-color: #f9fafb;
+        color: #1f2937;
+        transition: all 0.2s ease;
+    }
+    .form-group-custom select:focus,
+    .form-group-custom input:focus {
+        border-color: #2563eb;
+        background-color: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-hint {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 6px;
+        transition: color 0.3s;
+    }
+    .btn-save {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-save:hover {
+        background: #1d4ed8;
+    }
+    .alert-custom {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+    .alert-success-custom {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    .alert-danger-custom {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    /* ==========================================
+       DARK MODE OVERRIDES FOR SETTINGS
+       ========================================== */
+    body.theme-dark .settings-card {
+        background: #1e1e1e !important;
+        border-color: #333333 !important;
+    }
+    body.theme-dark .form-group-custom label {
+        color: #e5e7eb !important;
+    }
+    body.theme-dark .form-group-custom select,
+    body.theme-dark .form-group-custom input {
+        background-color: #2d2d2d !important;
+        border-color: #404040 !important;
+        color: #ffffff !important;
+    }
+    body.theme-dark .form-hint {
+        color: #9ca3af !important;
+    }
+
+    body.theme-dark .security-row {
+        border-color: #333333 !important;
+    }
+    body.theme-dark .security-label {
+        color: #e5e7eb !important;
+    }
+    body.theme-dark .security-hint {
+        color: #9ca3af !important;
+    }
+</style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="settings-container">
+    
+    <?php echo $__env->make('partials.appearance-settings', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+    <?php echo $__env->make('partials.push-notification-settings', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+    
+    <div class="settings-card">
+        <div class="settings-header" style="background: #0f172a;">
+            <i class='bx bx-lock-alt'></i> Security & Password Management
+        </div>
+        
+        <div class="settings-body">
+            <?php if(session('password_success')): ?>
+                <div class="alert-custom alert-success-custom">
+                    <?php echo e(session('password_success')); ?>
+
+                </div>
+            <?php endif; ?>
+
+            <?php if($errors->any()): ?>
+                <div class="alert-custom alert-danger-custom">
+                    <ul class="mb-0" style="padding-left: 15px;">
+                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <li><?php echo e($error); ?></li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?php echo e(route('user.password.update')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('PUT'); ?>
+
+                <div class="form-group-custom">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" name="current_password" id="current_password" autocomplete="current-password" required placeholder="Enter current password">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="password">New Password</label>
+                    <input type="password" name="password" id="password" autocomplete="new-password" required placeholder="At least 8 characters">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="password_confirmation">Confirm New Password</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password" required placeholder="Re-enter new password">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
+                    <button type="submit" class="btn-save" style="background: #0f172a;">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="settings-card">
+        <div class="settings-header" style="background: #047857;">
+            <i class='bx bx-shield-quarter'></i> Account Status & Two-Factor Authentication
+        </div>
+        
+        <div class="settings-body">
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;" class="security-row">
+                    <div>
+                        <strong style="display: block; color: #374151;" class="security-label">Email Address Verification</strong>
+                        <span style="font-size: 0.85rem; color: #6b7280;" class="security-hint"><?php echo e(auth()->user()->email); ?></span>
+                    </div>
+                    <div>
+                        <?php if(auth()->user()->hasVerifiedEmail()): ?>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #a7f3d0;">
+                                <i class='bx bx-check-circle'></i> Verified
+                            </span>
+                        <?php else: ?>
+                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+                                <span style="background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #fecaca;">
+                                    <i class='bx bx-error-circle'></i> Unverified
+                                </span>
+                                <form method="POST" action="<?php echo e(route('verification.send')); ?>">
+                                    <?php echo csrf_field(); ?>
+                                    <button type="submit" class="btn-save" style="padding: 7px 12px; font-size: 0.85rem;">Send Verification Email</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="display: block; color: #374151;" class="security-label">Google Authenticator (2FA)</strong>
+                        <span style="font-size: 0.85rem; color: #6b7280;" class="security-hint">Protects your account with time-based verification codes.</span>
+                    </div>
+                    <div>
+                        
+                        <?php if(!empty(auth()->user()->google2fa_secret)): ?>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #a7f3d0;">
+                                <i class='bx bx-shield-alt-2'></i> Active
+                            </span>
+                        <?php else: ?>
+                            <span style="background: #f3f4f6; color: #4b5563; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #d1d5db;">
+                                <i class='bx bx-shield-x'></i> Inactive
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make(auth()->user()->isSuperAdmin() ? 'templates.superadmin' : (auth()->user()->role === 'admin' ? 'templates.admin' : 'templates.layout'), array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views/settings.blade.php ENDPATH**/ ?>
