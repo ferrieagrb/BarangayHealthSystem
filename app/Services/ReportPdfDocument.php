@@ -45,8 +45,7 @@ class ReportPdfDocument
                 continue;
             }
 
-            // Long tables make Dompdf repeatedly copy the remaining rows at page breaks.
-            // Keep each table small, repeating its headings without splitting rowspans.
+            // Bound Dompdf's memory usage without splitting household rowspans.
             $chunks = [];
             $chunk = [];
             $spanRemaining = 0;
@@ -67,6 +66,14 @@ class ReportPdfDocument
 
             foreach ($chunks as $index => $chunk) {
                 $part = $table->cloneNode(false);
+                // Identical headings determine column widths for every continuation,
+                // rather than each chunk's different patient names and other values.
+                $style = rtrim($table->getAttribute('style'), ';').'; width: 100%; table-layout: fixed;';
+                if ($index > 0) {
+                    // A repeated heading belongs at the top of a page, never mid-table.
+                    $style .= ' page-break-before: always;';
+                }
+                $part->setAttribute('style', $style);
                 foreach ($xpath->query('./caption | ./colgroup | ./thead', $table) as $header) {
                     $part->appendChild($header->cloneNode(true));
                 }

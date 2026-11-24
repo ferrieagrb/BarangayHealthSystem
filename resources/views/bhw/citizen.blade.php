@@ -3,6 +3,7 @@
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/citizen.css') }}?v={{ filemtime(public_path('css/bhw/citizen.css')) }}">
+@include('bhw.partials.management-overview-assets')
 
     <style>
         .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
@@ -74,7 +75,7 @@
 @endif
 
 {{-- PAGE HEADER --}}
-<div class="page-top">
+<div class="page-top management-page-header">
     <div class="page-title-group">
         <h1>Citizen Management</h1>
         <p>Manage resident profiles, monitor status, and update citizen health-related information.</p>
@@ -90,7 +91,7 @@
 </div>
 
 {{-- CITIZEN OVERVIEW --}}
-<div class="citizen-overview">
+<div class="citizen-overview management-overview">
     <div class="summary-cards">
         <div class="summary-card">
             <span>Total Citizens</span>
@@ -133,7 +134,9 @@
         <div class="chart-header">
             <h3>Residents by age group</h3><p>All registered residents · independent of list filters</p>
         </div>
-        <div id="demographicsApexChart" role="img" aria-label="Residents by age group; counts shown in the summary cards"></div>
+        <div class="management-chart-scroll">
+            <div id="demographicsApexChart" data-overview-chart data-chart-labels='["Children (0–17)","Adults (18–59)","Seniors (60+)"]' data-chart-values="{{ json_encode([$kids, $adults, $seniors]) }}" role="img" aria-label="Residents by age group; counts shown in the summary cards"></div>
+        </div>
     </div>
 </div>
 
@@ -142,6 +145,9 @@
     <div class="toolbar-left">
         <form method="GET" action="{{ route('citizenlist') }}"
               class="citizen-filter-form" id="citizenFilterForm">
+            @if(request()->boolean('filter_needs_review'))
+                <input type="hidden" name="filter_needs_review" value="1">
+            @endif
 
             {{-- SEARCH --}}
             <div class="search-box citizen-filter-field">
@@ -350,6 +356,8 @@
                 <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
             </section>
 
+            @include('bhw.partials.record-review-filter')
+
             <section class="citizen-status-section">
                 <h3>Vital Status</h3>
                 <label class="citizen-status-option">
@@ -417,6 +425,9 @@
 
             if (request()->boolean('filter_deceased')) {
                 $activeFilters[] = 'Deceased Residents Only';
+            }
+            if (request()->boolean('filter_needs_review')) {
+                $activeFilters[] = 'Records needing review';
             }
         @endphp
 
@@ -543,7 +554,6 @@
 </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 {{-- SUCCESS POPUP --}}
 <script src="{{ asset('js/bhw/citizen-inline-1.js') }}?v={{ filemtime(public_path('js/bhw/citizen-inline-1.js')) }}"></script>
@@ -689,79 +699,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 {{-- DELETE CONFIRMATION --}}
 <script src="{{ asset('js/bhw/citizen-inline-4.js') }}?v={{ filemtime(public_path('js/bhw/citizen-inline-4.js')) }}"></script>
-
-{{-- DEMOGRAPHICS CHART --}}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const chartElement = document.querySelector('#demographicsApexChart');
-    if (!chartElement || typeof ApexCharts === 'undefined') return;
-
-    const options = {
-        series: [{
-            name: 'Count',
-            data: [
-                {{ $kids }},
-                {{ $adults }},
-                {{ $seniors }}
-            ]
-        }],
-        chart: {
-            type: 'bar',
-            height: 280,
-            width: '100%',
-            parentHeightOffset: 0,
-            toolbar: { show: false }
-        },
-        responsive: [{
-            breakpoint: 600,
-            options: { chart: { height: 240 } }
-        }],
-        plotOptions: {
-            bar: {
-                borderRadius: 4,
-                distributed: true,
-                columnWidth: '45%'
-            }
-        },
-        colors: ['#3b82f6', '#14b8a6', '#f97316'],
-        dataLabels: {
-            enabled: true,
-            formatter: value => Math.floor(value),
-            style: {
-                fontSize: '15px',
-                fontWeight: 600,
-                colors: ['#0f172a']
-            },
-            offsetY: -4
-        },
-        legend: { show: false },
-        xaxis: {
-            categories: ['Children (0–17)', 'Adults (18–59)', 'Seniors (60+)'],
-            axisBorder: { show: false },
-            axisTicks: { show: false },
-            labels: {
-                style: {
-                    fontSize: '13px',
-                    colors: ['#334155', '#334155', '#334155']
-                }
-            }
-        },
-        yaxis: {
-            tickAmount: 3,
-            labels: {
-                style: { fontSize: '12px', colors: ['#475569'] },
-                formatter: value => Math.floor(value)
-            }
-        },
-        grid: {
-            strokeDashArray: 4,
-            xaxis: { lines: { show: false } }
-        }
-    };
-
-    new ApexCharts(chartElement, options).render();
-});
-</script>
 
 {{-- GROUPED PUROK / SUBGROUP FILTER --}}
 <script src="{{ asset('js/bhw/citizen-inline-6.js') }}?v={{ filemtime(public_path('js/bhw/citizen-inline-6.js')) }}"></script>

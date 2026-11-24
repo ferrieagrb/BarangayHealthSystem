@@ -74,9 +74,25 @@ class ReportPdfRenderingTest extends TestCase
         $this->assertSame(5, $pdf->getDomPDF()->getDom()->getElementsByTagName('table')->length);
         $this->assertStringContainsString('Peña 125', $pdf->getDomPDF()->getDom()->textContent);
         $positions = [];
-        $pdf->getDomPDF()->setCallbacks([['event' => 'end_frame', 'f' => function ($frame) use (&$positions): void {
+        $headersByPage = [];
+        $columnsByPage = [];
+        $pdf->getDomPDF()->setCallbacks([['event' => 'end_frame', 'f' => function ($frame, $canvas) use (&$positions, &$headersByPage, &$columnsByPage): void {
             if ($frame->get_node()->nodeName === 'img') {
                 $positions[] = $frame->get_position();
+            }
+            $node = $frame->get_node();
+            if ($node->nodeName !== 'tr' || $node->parentNode?->parentNode?->getAttribute('class') !== 'report-table') {
+                return;
+            }
+            $page = $canvas->get_page_number();
+            if ($node->parentNode->nodeName === 'thead') {
+                $headersByPage[$page] = ($headersByPage[$page] ?? 0) + 1;
+            } else {
+                $columns = [];
+                foreach ($frame->get_children() as $cell) {
+                    $columns[] = $cell->get_position()['x'];
+                }
+                $columnsByPage[$page][] = $columns;
             }
         }]]);
         $content = $pdf->output();
@@ -88,6 +104,15 @@ class ReportPdfRenderingTest extends TestCase
         $this->assertGreaterThan($pdf->getDomPDF()->getCanvas()->get_width() / 2, $positions[1]['x']);
         $this->assertEqualsWithDelta($positions[0]['y'], $positions[1]['y'], 1);
         $this->assertGreaterThan(1, $pdf->getDomPDF()->getCanvas()->get_page_count());
+        $this->assertSame(125, array_sum(array_map('count', $columnsByPage)));
+        foreach ($columnsByPage as $page => $rows) {
+            $this->assertSame(1, $headersByPage[$page] ?? 0, 'Column headings must appear only once on each PDF page.');
+            foreach ($rows as $columns) {
+                foreach ($columns as $index => $x) {
+                    $this->assertEqualsWithDelta($columnsByPage[1][0][$index], $x, 0.1, 'Column positions must match across every page.');
+                }
+            }
+        }
     }
 
     public function test_citizen_records_pdf_embeds_the_current_logo(): void

@@ -1,0 +1,980 @@
+<?php
+    $user = auth()->user();
+    // Get theme preference, default to 'light' if not set
+    $currentTheme = ($user && $user->theme === 'dark') ? 'dark' : 'light';
+    // Get font size preference, default to 'normal'
+    $currentFontSize = ($user && $user->font_size) ? $user->font_size : 'normal';
+?>
+<!DOCTYPE html>
+<html lang="en" class="theme-<?php echo e($currentTheme); ?>" data-theme="<?php echo e($currentTheme); ?>" data-font="<?php echo e($currentFontSize); ?>">
+    <head>
+        <meta charset="UTF-8">
+        <title>Citizen Dashboard</title>
+        <link rel="stylesheet" href="<?php echo e(asset('css/layout.css')); ?>?v=<?php echo e(filemtime(public_path('css/layout.css'))); ?>">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <?php echo $__env->make('partials.favicon', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php echo $__env->make('partials.pwa-meta', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        <?php echo $__env->yieldContent('CSSown'); ?><style>
+html { scroll-behavior: smooth; scroll-padding-top: 165px; }
+.c-header-section-nav a { font-size: 14px; min-height: 44px; }
+.c-header-section-nav { gap: 7px; }
+@media (max-width: 600px) { html { scroll-padding-top: 150px; } .c-header-section-nav a { padding: 0 12px; font-size: 13px; } }
+/* Citizen-only layout: full-width content and an off-canvas menu */ html, body {
+    width:100%;
+    min-width:0;
+    margin:0;
+}
+body {
+    overflow-x:hidden;
+}
+.dashboard {
+    display:block !important;
+    width:100%;
+    min-height:100vh;
+}
+.main-content {
+    margin:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    min-height:100vh;
+    height:auto !important;
+    padding:0 !important;
+    overflow:visible !important;
+    background:#f3f6fb;
+}
+
+/* Dashboard header styled like the requested reference */
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: grid !important;
+    grid-template-columns: minmax(100px, 1fr) auto minmax(170px, 1fr);
+    align-items: center;
+    gap: 18px;
+    min-height: 76px;
+    padding: 8px clamp(16px, 2vw, 30px);
+    background: #d9d9d9;
+    border-top: 7px solid #075078;
+    border-bottom: 1px solid #c8cdd4;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+}
+.c-header-logo {
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    min-width: 0;
+}
+.c-header-logo img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+.c-header-section-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-width: 0;
+}
+.c-header-section-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: #182230;
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.c-header-section-nav a:hover {
+    background: #e8eefe;
+    color: #1d4ed8;
+}
+.c-header-section-nav a.active {
+    background: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(29, 78, 216, .18);
+}
+.c-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+.c-settings-link {
+    color: #172033;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 8px;
+}
+.c-settings-link:hover { color: #1d4ed8; }
+.top-bar .citizen-menu-button {
+    min-height: 42px;
+    min-width: 44px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    font-size: 14px;
+}
+.top-bar .citizen-menu-button i { font-size: 23px; }
+.top-bar .btn-logout {
+    min-height: 42px;
+    padding: 9px 15px !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+}
+@media (max-width: 900px) {
+    .top-bar {
+        grid-template-columns: auto 1fr;
+        gap: 8px;
+    }
+    .c-header-logo { grid-column: 1; grid-row: 1; }
+    .c-header-actions { grid-column: 2; grid-row: 1; }
+    .c-header-section-nav {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 2px 0 4px;
+        scrollbar-width: none;
+    }
+    .c-header-section-nav::-webkit-scrollbar { display: none; }
+    .top-bar { padding: 8px 14px; }
+}
+@media (max-width: 480px) {
+    .c-header-logo img { width: 40px; height: 40px; }
+    .c-header-section-nav a { min-height: 36px; padding: 0 10px; font-size: 12px; }
+    .c-settings-link { font-size: 12px; padding: 8px 3px; }
+    .top-bar .citizen-menu-button span { display: none; }
+    .top-bar .btn-logout { padding: 8px 10px !important; }
+}
+
+.citizen-menu-button {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-width:54px;
+    min-height:50px;
+    padding:10px 16px;
+    border:2px solid #1e3a8a;
+    border-radius:12px;
+    background:#1e3a8a;
+    color:#fff;
+    font-size:17px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:0 3px 8px #1e3a8a22;
+}
+.citizen-menu-button i {
+    font-size:28px;
+    line-height:1;
+}
+.citizen-menu-button:focus-visible, .sidebar a:focus-visible, .sidebar .topbutton:focus-visible {
+    outline:3px solid #f59e0b;
+    outline-offset:3px;
+}
+.sidebar, .sidebar.collapsed {
+    position:fixed !important;
+    inset:0 auto 0 0 !important;
+    width:min(320px,86vw) !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:100vh !important;
+    height:100dvh !important;
+    padding:14px 12px !important;
+    transform:translateX(-105%);
+    visibility:hidden;
+    box-shadow:8px 0 30px rgba(15,23,42,.22);
+    transition:transform .25s ease, visibility .25s ease;
+    z-index:1200 !important;
+    overflow-y:auto;
+}
+.sidebar.menu-open, .sidebar.collapsed.menu-open {
+    transform:translateX(0);
+    visibility:visible;
+}
+.sidebar .top {
+    margin-top:0 !important;
+    justify-content:flex-end !important;
+    padding:0 8px 12px !important;
+}
+.sidebar .topbutton {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width:48px;
+    min-height:48px;
+    border-radius:10px;
+    cursor:pointer;
+}
+.sidebar .topbutton i {
+    font-size:30px !important;
+}
+.sidebar ul {
+    margin-top:10px !important;
+}
+.sidebar ul li {
+    min-height:58px;
+    height:auto !important;
+}
+.sidebar ul li a {
+    min-height:58px;
+    padding:10px 16px !important;
+    gap:15px !important;
+    border-radius:10px;
+    font-size:16px;
+}
+.sidebar ul li a i {
+    font-size:25px !important;
+    min-width:30px !important;
+    width:30px !important;
+}
+.sidebar ul li a span {
+    opacity:1 !important;
+    width:auto !important;
+    position:static !important;
+    overflow:visible !important;
+    white-space:normal;
+}
+.sidebar.collapsed ul li a {
+    justify-content:flex-start !important;
+    padding-left:16px !important;
+}
+.sidebar.collapsed ul li a i {
+    width:30px !important;
+}
+.sidebar-backdrop {
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.48);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .25s ease, visibility .25s ease;
+    z-index:1100;
+}
+.sidebar-backdrop.visible {
+    opacity:1;
+    visibility:visible;
+}
+.btn-logout {
+    min-height:48px;
+    padding:11px 18px !important;
+    font-size:16px !important;
+    border-radius:10px !important;
+    font-weight:700 !important;
+}
+@media(max-width:600px) {
+    .top-bar {
+        min-height:68px;
+        padding:10px 14px;
+    }
+    .citizen-menu-button {
+        min-height:48px;
+    }
+}
+@media(prefers-reduced-motion:reduce) {
+    .sidebar,.sidebar-backdrop {
+        transition:none !important;
+    }
+}
+
+/* ANNOUNCEMENT CARD DESIGN */ .c-ann-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+.c-ann-card {
+    position: relative;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 18px rgba(15,23,42,.07);
+    transition: transform .2s, box-shadow .2s;
+}
+.c-ann-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15,23,42,.12);
+}
+.c-ann-cover {
+    min-height: 150px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: white;
+    background: linear-gradient(135deg, #173b82, #2563eb);
+}
+.c-ann-card:nth-child(4n+2) .c-ann-cover {
+    background: linear-gradient(135deg, #047857, #34a853);
+}
+.c-ann-card:nth-child(4n+3) .c-ann-cover {
+    background: linear-gradient(135deg, #9a3412, #f97316);
+}
+.c-ann-card:nth-child(4n+4) .c-ann-cover {
+    background: linear-gradient(135deg, #6b21a8, #a855f7);
+}
+.c-ann-label {
+    display: inline-block;
+    width: fit-content;
+    padding: 5px 9px;
+    border-radius: 5px;
+    background: rgba(255,255,255,.2);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+.c-ann-cover h3 {
+    margin: 18px 0 0;
+    color: white;
+    font-size: clamp(17px, 1.5vw, 22px);
+    line-height: 1.3;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+.c-ann-body {
+    padding: 17px;
+}
+.c-ann-body p {
+    margin: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+.c-ann-date {
+    display: block;
+    margin-top: 14px;
+    color: #64748b;
+    font-size: 11px;
+}
+.c-ann-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+}
+@media (max-width: 600px) {
+    .c-ann-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive citizen header and navigation */
+.top-bar {
+    grid-template-columns: minmax(56px, 1fr) auto minmax(150px, 1fr);
+    border-top: 5px solid #075078;
+}
+@media (max-width: 900px) {
+    .top-bar {
+        display: grid !important;
+        grid-template-columns: 48px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        align-items: center;
+        gap: 8px 12px;
+        min-height: 0;
+        padding: 10px 14px 8px;
+    }
+
+    .c-header-logo {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .c-header-actions {
+        grid-column: 2;
+        grid-row: 1;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .c-header-section-nav {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        justify-content: stretch;
+        gap: 3px;
+        width: 100%;
+        min-width: 0;
+        padding: 3px 0 2px;
+        overflow: visible;
+    }
+
+    .c-header-section-nav a {
+        min-width: 0;
+        min-height: 38px;
+        padding: 2px 1px;
+        border-radius: 9px;
+        font-size: clamp(8px, 2.5vw, 10px);
+        line-height: 1.15;
+        text-align: center;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
+    .top-bar .citizen-menu-button {
+        min-height: 40px;
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
+
+    .top-bar .btn-logout {
+        min-height: 40px;
+        padding: 8px 12px !important;
+    }
+
+    .c-settings-link {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 520px) {
+    .top-bar {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 7px 9px;
+        padding: 9px 10px 7px;
+    }
+
+    .c-header-logo img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .c-header-actions {
+        gap: 6px;
+    }
+
+    .top-bar .citizen-menu-button {
+        min-width: 40px;
+        min-height: 38px;
+        padding: 6px 8px;
+        gap: 5px;
+    }
+
+    .top-bar .citizen-menu-button i {
+        font-size: 20px;
+    }
+
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
+
+    .c-settings-link {
+        font-size: 11px;
+        padding: 7px 2px;
+    }
+
+    .top-bar .btn-logout {
+        min-height: 38px;
+        padding: 7px 9px !important;
+        font-size: 12px !important;
+    }
+
+    .c-header-section-nav a {
+        min-height: 36px;
+        padding: 0 11px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 360px) {
+    .top-bar .citizen-menu-button span {
+        display: none;
+    }
+    .c-header-actions {
+        gap: 5px;
+    }
+    .c-header-section-nav a {
+        padding: 0 9px;
+        font-size: 10px;
+    }
+}
+
+
+/* FINAL MOBILE HEADER FIX: keep all tabs visible and the blue strip full width */
+html,
+body,
+.dashboard,
+.main-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.top-bar {
+    width: 100%;
+    box-sizing: border-box;
+    border-top: 5px solid #075078 !important;
+    background: #d9d9d9;
+}
+
+@media (max-width: 520px) {
+    .top-bar {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        width: 100%;
+        gap: 8px;
+        padding: 9px 10px 8px;
+        border-top-width: 5px !important;
+    }
+
+    .c-header-logo {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .c-header-actions {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: clamp(4px, 1.5vw, 8px);
+        min-width: 0;
+        width: 100%;
+    }
+
+    .c-header-logo img {
+        display: block;
+        width: 38px;
+        height: 38px;
+    }
+
+    .top-bar .citizen-menu-button {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 5px 7px;
+        gap: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .top-bar .citizen-menu-button i {
+        font-size: 19px;
+    }
+
+    .top-bar .citizen-menu-button .citizen-menu-label { display: none; }
+
+    .c-settings-link {
+        padding: 6px 2px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .top-bar .btn-logout {
+        min-height: 36px;
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+        white-space: nowrap;
+    }
+
+    .c-header-section-nav {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 2px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 3px 0 2px;
+        overflow: visible;
+    }
+
+    .c-header-section-nav a {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 38px;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 3px 0;
+        position: relative;
+        transform: none;
+        border-radius: 8px;
+        font-size: clamp(7px, 2.3vw, 10px);
+        line-height: 1.1;
+        letter-spacing: -.2px;
+        text-align: center;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
+    .c-header-section-nav a.active {
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 370px) {
+    .top-bar {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .c-header-actions {
+        gap: 4px;
+    }
+
+    .top-bar .citizen-menu-button {
+        padding: 5px 6px;
+    }
+
+    .c-settings-link {
+        font-size: 10px;
+    }
+
+    .top-bar .btn-logout {
+        padding: 6px 7px !important;
+        font-size: 10px !important;
+    }
+
+    .c-header-section-nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .c-header-section-nav a {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 38px;
+        padding: 3px 0;
+        font-size: 7px;
+        letter-spacing: -.2px;
+        white-space: nowrap;
+    }
+
+    .c-header-section-nav a.active {
+        box-shadow: none;
+    }
+}
+/* FIX BLUE TOP BAR */
+.top-bar {
+    position: sticky !important;
+    top: 0;
+    left: auto;
+    right: auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-top: 15px solid #075078 !important;
+    overflow: visible !important;
+}
+
+.top-bar::before {
+    content: none !important;
+    display: none !important;
+}
+
+.top-bar > * {
+    position: static;
+}
+
+/* Keep the complete Citizen header fixed while scrolling on mobile and tablet. */
+@media (max-width: 900px) {
+    .top-bar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 2000 !important;
+        box-sizing: border-box;
+    }
+
+    .main-content {
+        padding-top: var(--citizen-header-height, 150px) !important;
+    }
+
+    .c-home {
+        padding-top: 16px !important;
+    }
+
+    .c-section {
+        scroll-margin-top: calc(var(--citizen-header-height, 150px) + 12px) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .c-header-section-nav {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+        align-items: stretch;
+        gap: 5px;
+        overflow: visible;
+    }
+
+    .c-header-section-nav a {
+        min-width: 0;
+        min-height: 40px;
+        padding: 5px 8px;
+        font-size: clamp(10px, 1.7vw, 13px);
+        line-height: 1.25;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 520px) {
+    .c-header-section-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Keep the citizen menu at the far left while the section navigation stays centered. */
+.top-bar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+.c-header-brand {
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    align-items: center;
+    justify-self: start;
+    gap: 12px;
+    min-width: 0;
+}
+.c-header-brand .c-header-logo {
+    grid-column: auto;
+}
+.c-header-section-nav,
+.c-header-page-spacer {
+    grid-column: 2;
+    grid-row: 1;
+}
+.c-header-section-nav {
+    justify-self: center;
+}
+.top-bar .citizen-menu-button {
+    flex-shrink: 0;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 7px 10px;
+}
+.top-bar .citizen-menu-button i {
+    font-size: 23px;
+}
+@media (max-width: 900px) {
+    .top-bar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .c-header-brand {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .c-header-section-nav,
+    .c-header-page-spacer {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .c-header-section-nav {
+        justify-self: stretch;
+    }
+}
+@media (max-width: 480px) {
+    .c-header-brand {
+        gap: 9px;
+    }
+    .top-bar .citizen-menu-button {
+        min-width: 40px;
+        min-height: 40px;
+    }
+}
+
+.c-header-section-nav {
+    display: block !important;
+    position: relative;
+    width: clamp(270px, 42vw, 460px);
+    max-width: calc(100vw - 250px);
+    min-width: 0;
+    height: 52px;
+    padding: 0;
+    overflow: hidden;
+    justify-self: center;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.c-header-section-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    height: 100%;
+    will-change: transform;
+}
+.c-header-section-nav.is-ready .c-header-section-track {
+    transition: transform .42s cubic-bezier(.22, .61, .36, 1);
+}
+.c-header-section-nav a {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.c-header-section-nav a.active {
+    background: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(29, 78, 216, .18);
+}
+@media (max-width: 900px) {
+    .c-header-section-nav {
+        grid-column: 1;
+        grid-row: 2;
+        width: min(460px, 100%);
+        max-width: calc(100vw - 28px);
+        height: 48px;
+        margin-inline: auto;
+    }
+}
+@media (max-width: 480px) {
+    .c-header-section-nav a {
+        min-height: 38px;
+        padding: 0 11px;
+        font-size: 12px;
+    }
+}
+
+</style>
+        <link rel="stylesheet" href="<?php echo e(asset('css/citizen/citizen-theme.css')); ?>">
+    <?php echo $__env->make('partials.appearance-assets', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <link rel="stylesheet" href="<?php echo e(asset('css/typography.css')); ?>">
+        <link rel="stylesheet" href="<?php echo e(asset('css/sidebar-scroll.css')); ?>?v=<?php echo e(filemtime(public_path('css/sidebar-scroll.css'))); ?>">
+</head>
+<body data-appearance-role="<?php echo e(auth()->user()->role); ?>" class="theme-<?php echo e($currentTheme); ?> font-<?php echo e($currentFontSize); ?>" data-font="<?php echo e($currentFontSize); ?>">
+<?php echo $__env->make('partials.global-loader', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->yieldContent('scripts'); ?>
+
+    <div class="dashboard">
+        <!-- SIDEBAR -->
+<div class="sidebar" id="citizenSidebar" role="navigation" aria-label="Citizen navigation" aria-hidden="true" tabindex="0">
+    <div class="top sidebar-header">
+        <a class="sidebar-brand" href="<?php echo e(route('citizen.dashboard')); ?>" aria-label="BHEAMS home">
+            <img src="<?php echo e(asset('images/amuyong.png')); ?>" alt="">
+            <span>BHEAMS</span>
+        </a>
+        <button type="button" class="topbutton sidebar-toggle" id="citizenMenuClose" aria-label="Close navigation menu" aria-expanded="false">
+            <i class="bx bx-chevron-left" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="sidebar-nav" tabindex="0" aria-label="Navigation links">
+    <ul>
+        <!-- Dashboard announcement section -->
+        <li>
+            <a href="<?php echo e(request()->routeIs('citizen.dashboard') ? '#announcements' : route('citizen.dashboard') . '#announcements'); ?>" class="<?php if(request()->routeIs('citizen.dashboard')): ?> active <?php endif; ?>" <?php if(request()->routeIs('citizen.dashboard')): ?> aria-current="page" <?php endif; ?>>
+                <svg class="citizen-announcement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M3 10v4h4l5 4V6l-5 4H3Z"></path>
+                    <path d="M16 9a5 5 0 0 1 0 6"></path>
+                    <path d="M18 5a9 9 0 0 1 0 14"></path>
+                    <path d="m7 14 1.5 6H5l-1.5-6"></path>
+                </svg>
+                <span class="nav-item">Announcement</span>
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo e(request()->routeIs('citizen.dashboard') ? '#citizen-card' : route('citizen.dashboard') . '#citizen-card'); ?>">
+                <i class="bx bx-id-card" aria-hidden="true"></i>
+                <span class="nav-item">Healthcard</span>
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo e(request()->routeIs('citizen.dashboard') ? '#health-information' : route('citizen.dashboard') . '#health-information'); ?>">
+                <i class="bx bx-heart" aria-hidden="true"></i>
+                <span class="nav-item">Health Information</span>
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo e(request()->routeIs('citizen.dashboard') ? '#request-referral' : route('citizen.dashboard') . '#request-referral'); ?>">
+                <i class="bx bx-share-alt" aria-hidden="true"></i>
+                <span class="nav-item">Referral</span>
+            </a>
+        </li>
+    </ul>
+    </div>
+    <div class="sidebar-bottom" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li>
+                <a href="<?php echo e(auth()->user()->isCitizen() ? route('citizen.settings') : route('settings')); ?>" class="<?php if(request()->routeIs('citizen.settings')): ?> active <?php endif; ?>" <?php if(request()->routeIs('citizen.settings')): ?> aria-current="page" <?php endif; ?>>
+                    <i class="bx bx-cog" aria-hidden="true"></i>
+                    <span class="nav-item">Settings</span>
+                </a>
+            </li>
+        </ul>
+        <?php echo $__env->make('templates.partials.sidebar-account', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    </div>
+</div>
+<div class="sidebar-backdrop" id="citizenSidebarBackdrop" aria-hidden="true">
+</div>
+<!-- MAIN -->
+<div class="main-content">
+    <div class="top-bar">
+        <div class="c-header-brand">
+            <button type="button" class="citizen-menu-button" id="citizenMenuOpen" aria-expanded="false" aria-label="Open citizen navigation menu">
+                <i class="bx bx-menu" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
+            <a class="c-header-logo" href="<?php echo e(route('citizen.dashboard')); ?>" aria-label="Citizen dashboard">
+                <img src="<?php echo e(asset('images/amuyong.png')); ?>" alt="Barangay Amuyong logo">
+            </a>
+        </div>
+        
+
+        <?php if(request()->routeIs('citizen.dashboard')): ?>
+            <nav class="c-header-section-nav" id="citizenSectionNav" aria-label="Citizen page sections">
+                <div class="c-header-section-track">
+                    <a href="#announcements" class="active">Announcement</a>
+                    <a href="#citizen-card">HealthCard</a>
+                    <a href="#health-information">Health Information</a>
+                    <a href="#request-referral">Referral</a>
+                </div>
+            </nav>
+        <?php else: ?>
+            <div class="c-header-page-spacer" aria-hidden="true"></div>
+        <?php endif; ?>
+
+    </div>
+    <?php echo $__env->yieldContent('content'); ?>
+</div>
+</div>
+
+<?php echo $__env->make('templates.partials.logout-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php if(auth()->guard()->check()): ?>
+    <div id="session-timeout-modal" data-session-lifetime="<?php echo e(config('session.lifetime', 120)); ?>" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(3px);">
+        <div style="background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div style="font-size: 40px; margin-bottom: 10px;">⏰</div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 10px;">Session Expired</h2>
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Your session has timed out due to inactivity or expiration. Please log back in to continue.</p>
+            <a href="<?php echo e(route('login')); ?>" style="display: block; width: 100%; padding: 12px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-sizing: border-box;">Log Back In</a>
+        </div>
+    </div>
+<?php endif; ?>
+<!-- Citizen navigation menu --><script src="<?php echo e(asset('js/templates/citizen-inline-1.js')); ?>?v=<?php echo e(filemtime(public_path('js/templates/citizen-inline-1.js'))); ?>"></script><?php if(auth()->guard()->check()): ?><script src="<?php echo e(asset('js/templates/session-timeout.js')); ?>?v=<?php echo e(filemtime(public_path('js/templates/session-timeout.js'))); ?>"></script><?php endif; ?>
+
+<script src="<?php echo e(asset('js/password-toggle.js') . '?v=1793722773'); ?>"></script>
+</body>
+</html>
+<?php /**PATH C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views/templates/citizen.blade.php ENDPATH**/ ?>

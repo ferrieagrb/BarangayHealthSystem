@@ -1,0 +1,779 @@
+<?php $__env->startSection('CSSown'); ?>
+<link rel="stylesheet" href="<?php echo e(asset('css/bhw/shared-ui.css')); ?>">
+<link rel="stylesheet" href="<?php echo e(asset('css/bhw/citizen.css')); ?>?v=<?php echo e(filemtime(public_path('css/bhw/citizen.css'))); ?>">
+
+    <style>
+        .citizen-password-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-password-modal.is-open { display: flex; }
+        .citizen-password-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-password-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-password-dialog p { margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-password-dialog label { display: block; margin: 12px 0 6px; color: #334155; font-size: 12px; font-weight: 700; }
+        .citizen-password-dialog input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .citizen-password-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+        .citizen-export-modal { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .55); }
+        .citizen-export-modal.is-open { display: flex; }
+        .citizen-export-dialog { width: min(100%, 420px); padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 18px 50px rgba(15, 23, 42, .24); }
+        .citizen-export-dialog h2 { margin: 0 0 8px; color: #173b82; font-size: 20px; }
+        .citizen-export-dialog p { margin: 0 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        .citizen-export-options { display: grid; gap: 10px; }
+        .citizen-export-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid #dbe3ed; border-radius: 8px; background: #f8fafc; color: #172033; text-align: left; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+        .citizen-export-option:hover { border-color: #2563eb; background: #eff6ff; }
+        .citizen-export-option strong { display: block; color: #173b82; }
+        .citizen-export-option small { display: block; margin-top: 3px; color: #64748b; }
+        .citizen-export-close { display: flex; justify-content: flex-end; margin-top: 18px; }
+        .citizen-export-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
+        .citizen-export-field { display: flex; align-items: center; gap: 8px; color: #334155; font-size: 13px; }
+        .citizen-export-field input { width: 16px; height: 16px; }
+        .citizen-export-format { display: flex; justify-content: center; gap: 0; margin-top: 20px; }
+        .citizen-export-format button { padding: 10px 18px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; cursor: pointer; }
+        .citizen-export-format button:first-child { border-radius: 7px 0 0 7px; }
+        .citizen-export-format button:last-child { border-radius: 0 7px 7px 0; }
+        .citizen-export-format button.active { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
+        .citizen-export-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    </style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="bhw-citizen-page">
+
+
+<?php if($errors->any() || session('error')): ?>
+<div role="alert" aria-live="assertive" style="margin:0 0 14px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;">
+    <?php if(session('error')): ?>
+        <div><?php echo e(session('error')); ?></div>
+    <?php endif; ?>
+    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <div><?php echo e($error); ?></div>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+</div>
+<?php endif; ?>
+<?php if(session('success')): ?>
+<div id="citizen-success-popup"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;">
+    <div style="background:#fff;width:100%;max-width:400px;padding:30px;border-radius:14px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.2);">
+        <div style="width:58px;height:58px;margin:0 auto 15px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;">✓</div>
+        <h2 style="color:#166534;font-size:22px;font-weight:bold;margin-bottom:10px;">Success!</h2>
+        <p style="color:#4b5563;margin-bottom:22px;"><?php echo e(session('success')); ?></p>
+        <?php if(session('import_issues')): ?>
+            <div style="text-align:left;max-height:180px;overflow:auto;margin:-8px 0 20px;padding:10px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:12px;line-height:1.5;">
+                <strong>Import notes:</strong>
+                <ul style="margin:6px 0 0;padding-left:18px;">
+                    <?php $__currentLoopData = session('import_issues'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $issue): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($issue); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+        <button type="button" onclick="closeCitizenSuccessPopup()"
+                style="background:#1646bd;color:#fff;border:none;border-radius:7px;padding:10px 30px;cursor:pointer;font-weight:bold;" data-ui-action="secondary">OK</button>
+    </div>
+</div>
+<?php endif; ?>
+
+
+<div class="page-top">
+    <div class="page-title-group">
+        <h1>Citizen Management</h1>
+        <p>Manage resident profiles, monitor status, and update citizen health-related information.</p>
+    </div>
+
+    <div class="page-header-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <a href="<?php echo e(route('citizen.add')); ?>" class="btn-primary" data-ui-action="primary">+ Add Citizen</a>
+        <button type="button" class="btn-secondary"
+                onclick="document.getElementById('excelFileInput').click();" data-ui-action="secondary">
+            Import List
+        </button>
+    </div>
+</div>
+
+
+<div class="citizen-overview">
+    <div class="summary-cards">
+        <div class="summary-card">
+            <span>Total Citizens</span>
+            <strong><?php echo e(number_format($totalCitizens)); ?></strong>
+            <div class="summary-card-trend trend-<?php echo e($citizenTrends['total']['state']); ?>">
+                <span><?php echo e($citizenTrends['total']['icon']); ?> <?php echo e($citizenTrends['total']['value']); ?></span>
+                <small>new records vs prior 14 days</small>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <span>Children <small>0–17 years</small></span>
+            <strong><?php echo e(number_format($kids)); ?></strong>
+            <div class="summary-card-trend trend-<?php echo e($citizenTrends['kids']['state']); ?>">
+                <span><?php echo e($citizenTrends['kids']['icon']); ?> <?php echo e($citizenTrends['kids']['value']); ?></span>
+                <small>new records vs prior 14 days</small>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <span>Adults <small>18–59 years</small></span>
+            <strong><?php echo e(number_format($adults)); ?></strong>
+            <div class="summary-card-trend trend-<?php echo e($citizenTrends['adults']['state']); ?>">
+                <span><?php echo e($citizenTrends['adults']['icon']); ?> <?php echo e($citizenTrends['adults']['value']); ?></span>
+                <small>new records vs prior 14 days</small>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <span>Seniors <small>60+ years</small></span>
+            <strong><?php echo e(number_format($seniors)); ?></strong>
+            <div class="summary-card-trend trend-<?php echo e($citizenTrends['seniors']['state']); ?>">
+                <span><?php echo e($citizenTrends['seniors']['icon']); ?> <?php echo e($citizenTrends['seniors']['value']); ?></span>
+                <small>new records vs prior 14 days</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3>Residents by age group</h3><p>All registered residents · independent of list filters</p>
+        </div>
+        <div id="demographicsApexChart" role="img" aria-label="Residents by age group; counts shown in the summary cards"></div>
+    </div>
+</div>
+
+
+<div class="toolbar">
+    <div class="toolbar-left">
+        <form method="GET" action="<?php echo e(route('citizenlist')); ?>"
+              class="citizen-filter-form" id="citizenFilterForm">
+
+            
+            <div class="search-box citizen-filter-field">
+                <label for="citizenSearchInput" class="citizen-control-label">Search residents</label>
+                <input type="search" name="search" id="citizenSearchInput"
+                       value="<?php echo e(request('search')); ?>"
+                       placeholder="Search citizen name or ID"
+                       aria-label="Search citizens by name or ID"
+                       autocomplete="off">
+            </div>
+
+            
+            <div class="filter-box purok-filter-box citizen-filter-field">
+                <label for="purokFilter" class="citizen-control-label">Purok / subgroup</label>
+                <select id="purokFilter" aria-label="Filter by Purok or Subgroup">
+                    <option value="">All Puroks</option>
+
+                    <?php $__currentLoopData = $puroks ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $purok): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <optgroup label="<?php echo e($purok->name); ?>">
+                            <option value="purok:<?php echo e($purok->id); ?>"
+                                <?php echo e((string) request('purok') === (string) $purok->id && !request()->filled('subgroup') ? 'selected' : ''); ?>>
+                                All of <?php echo e($purok->name); ?>
+
+                            </option>
+
+                            <?php $__currentLoopData = $purok->subgroups ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $subgroup): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="subgroup:<?php echo e($subgroup->id); ?>"
+                                    <?php echo e((string) request('subgroup') === (string) $subgroup->id ? 'selected' : ''); ?>>
+                                    └ <?php echo e($subgroup->name); ?>
+
+                                </option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </optgroup>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+
+                <input type="hidden" name="purok" id="purokFilterValue"
+                       value="<?php echo e(request('purok')); ?>">
+                <input type="hidden" name="subgroup" id="subgroupFilterValue"
+                       value="<?php echo e(request('subgroup')); ?>">
+            </div>
+
+            
+            <div class="filter-box citizen-filter-field">
+                <label for="citizenAgeFilter" class="citizen-control-label">Age or age range</label>
+                <input type="text" name="age" id="citizenAgeFilter"
+                       value="<?php echo e(request('age')); ?>"
+                       placeholder="e.g. 8 or 4-10">
+            </div>
+
+            
+            <div class="filter-box citizen-filter-field">
+                <label for="openCitizenStatusFilter" class="citizen-control-label">Additional filters</label>
+                <button type="button" id="openCitizenStatusFilter"
+                        class="citizen-status-filter-btn" data-ui-action="secondary">
+                    <span>Status & Filters</span>
+                    <span class="status-filter-arrow" aria-hidden="true">⌄</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="toolbar-actions">
+        
+
+        <form action="<?php echo e(route('citizen.import')); ?>" method="POST"
+              enctype="multipart/form-data" id="importForm" style="display:none;">
+            <?php echo csrf_field(); ?>
+            <input type="file" name="file" id="excelFileInput"
+                   accept=".csv,.txt,.xlsx,.xls"
+                   onchange="document.getElementById('importForm').requestSubmit();">
+        </form>
+    </div>
+</div>
+
+
+<div id="citizenExportModal" class="citizen-export-modal" aria-hidden="true">
+    <div class="citizen-export-dialog" role="dialog" aria-modal="true" aria-labelledby="citizenExportTitle">
+        <div class="citizen-export-header">
+            <div>
+                <h2 id="citizenExportTitle">Export Citizen Records</h2>
+                <p>Choose the exact details to include in your export.</p>
+            </div>
+            <button type="button" id="closeCitizenExportHeader" class="citizen-export-close" aria-label="Close export options" data-ui-action="secondary">&times;</button>
+        </div>
+
+        <form id="citizenExportForm" data-no-loader="true">
+            <?php
+                $defaultExportFields = [
+                    'Citizen_FName',
+                    'Citizen_MName',
+                    'Citizen_LName',
+                    'Citizen_BirthDate',
+                    'Citizen_ContactNo',
+                    'Citizen_Purok',
+                    'Citizen_Sex',
+                    'Citizen_Age',
+                    'Citizen_HousingStatus',
+                ];
+                $exportFieldGroups = [
+                    'Personal Details' => ['id', 'Citizen_FName', 'Citizen_MName', 'Citizen_LName', 'Citizen_BirthDate', 'Citizen_Age', 'Citizen_Sex'],
+                    'Contact & Location' => ['Citizen_ContactNo', 'Citizen_Purok', 'family_id', 'subgroup_id'],
+                    'Health & Status' => ['Citizen_Height', 'Citizen_Weight', 'Citizen_HousingStatus', 'Citizen_Pregnant', 'Citizen_InPills', 'Citizen_IsDeceased'],
+                    'Immunization' => ['immunization_bcg', 'immunization_hepb', 'immunization_penta', 'immunization_opv', 'immunization_ipv', 'immunization_pcv', 'immunization_mmr', 'immunization_mr', 'immunization_td', 'immunization_hpv'],
+                ];
+            ?>
+
+            <div class="citizen-export-body">
+                <div class="citizen-export-selection-bar">
+                    <span><strong id="citizenExportSelectedCount">0</strong> fields selected</span>
+                    <div>
+                        <button type="button" id="selectAllCitizenExportFields" data-ui-action="secondary">Select all</button>
+                        <button type="button" id="clearCitizenExportFields" data-ui-action="reset">Clear</button>
+                    </div>
+                </div>
+
+                <?php $__currentLoopData = $exportFieldGroups; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $groupName => $groupFields): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <section class="citizen-export-section">
+                        <h3><?php echo e($groupName); ?></h3>
+                        <div class="citizen-export-fields">
+                            <?php $__currentLoopData = $groupFields; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $field): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(isset($exportFieldDefinitions[$field])): ?>
+                                    <label class="citizen-export-field">
+                                        <input type="checkbox" name="fields[]" value="<?php echo e($field); ?>"
+                                            <?php echo e(in_array($field, $defaultExportFields, true) ? 'checked' : ''); ?>>
+                                        <span><?php echo e($exportFieldDefinitions[$field]); ?></span>
+                                    </label>
+                                <?php endif; ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+                    </section>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+
+            <div class="citizen-export-footer">
+                <div class="citizen-export-format">
+                    <span>File format</span>
+                    <div role="group" aria-label="Export format">
+                        <button type="button" class="active" aria-pressed="true" data-export-format="xlsx" data-ui-action="secondary">Excel (.xlsx)</button>
+                        <button type="button" aria-pressed="false" data-export-format="pdf" data-ui-action="secondary">PDF (.pdf)</button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="format" id="citizenExportFormat" value="xlsx">
+
+                <div class="citizen-export-actions">
+                    <button type="button" id="closeCitizenExportModal" class="btn-secondary" data-ui-action="secondary">Cancel</button>
+                    <button type="submit" class="btn-primary" id="downloadCitizenExport" data-ui-action="secondary">Download</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div id="citizenStatusFilterModal" class="citizen-status-overlay" aria-hidden="true">
+    <div class="citizen-status-modal" role="dialog" aria-modal="true"
+         aria-labelledby="citizenStatusFilterTitle">
+
+        <div class="citizen-status-header">
+            <h2 id="citizenStatusFilterTitle">Filter Citizen Records</h2>
+            <button type="button" id="closeCitizenStatusFilter"
+                    class="citizen-status-close" aria-label="Close filter" data-ui-action="secondary">&times;</button>
+        </div>
+
+        <div class="citizen-status-body">
+            <section class="citizen-status-section">
+                <h3>Sorting / Order</h3>
+                <div class="citizen-status-radio-group">
+                    <label><input type="radio" name="sort" value="Alphabetical" checked><span>Alphabetical</span></label>
+                    <label><input type="radio" name="sort" value="Youngest to Oldest"><span>Youngest to Oldest</span></label>
+                    <label><input type="radio" name="sort" value="Oldest to Youngest"><span>Oldest to Youngest</span></label>
+                </div>
+            </section>
+
+            <section class="citizen-status-section">
+                <h3>Sex</h3>
+                <div class="citizen-status-radio-group">
+                    <label><input type="radio" name="filter_sex" value="all" checked><span>All</span></label>
+                    <label><input type="radio" name="filter_sex" value="Male"><span>Male</span></label>
+                    <label><input type="radio" name="filter_sex" value="Female"><span>Female</span></label>
+                </div>
+            </section>
+
+            <section class="citizen-status-section">
+                <h3>Housing Status</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_housing[]" value="Permanent Resident"><span>Permanent Resident</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_housing[]" value="Renter"><span>Renter</span></label>
+            </section>
+
+            <section class="citizen-status-section">
+                <h3>Health &amp; Family Planning</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="pregnant"><span>Pregnant</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="filter_health[]" value="in_pills"><span>In-Pills</span></label>
+            </section>
+
+            <section class="citizen-status-section">
+                <h3>Immunization Vaccines</h3>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="bcg"><span>BCG</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hepb"><span>Hepatitis B (HepB)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="penta"><span>Pentavalent (Penta)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="opv"><span>Oral Polio Vaccine (OPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="ipv"><span>Inactivated Polio Vaccine (IPV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="pcv"><span>Pneumococcal Conjugate Vaccine (PCV)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mmr"><span>Measles, Mumps, Rubella (MMR)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="mr"><span>Measles-Rubella (MR)</span></label>
+                <label class="citizen-status-option"> <input type="checkbox" name="health_filter_vaccine" value="td"><span>Tetanus-Diphtheria (Td)</span></label>
+                <label class="citizen-status-option"><input type="checkbox" name="health_filter_vaccine" value="hpv"><span>Human Papillomavirus (HPV)</span></label>
+            </section>
+
+            <section class="citizen-status-section">
+                <h3>Vital Status</h3>
+                <label class="citizen-status-option">
+                    <input type="checkbox" id="filterIncludeDeceased" name="filter_deceased" value="1">
+                    <span>Show Deceased Residents Only</span>
+                </label>
+            </section>
+        </div>
+
+        <div class="citizen-status-footer">
+            <button type="button" id="clearCitizenStatusFilters" class="citizen-status-clear" data-ui-action="reset">Clear All</button>
+            <button type="button" id="applyCitizenStatusFilters" class="citizen-status-apply" data-ui-action="secondary">Apply Filters</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="table-container">
+    <div class="card-header" style="margin-bottom:20px;">
+        <h2>Citizen Records</h2>
+        <p>Showing registered barangay residents and their current profile status.</p>
+    </div>
+
+    <div id="citizen-results">
+        <?php
+            $activeFilters = [];
+
+            if (request()->filled('search')) {
+                $activeFilters[] = 'Search: ' . request('search');
+            }
+
+            if (request()->filled('purok')) {
+                $purokObj = \App\Models\Purok::find(request('purok'));
+                $activeFilters[] = 'Purok: ' . ($purokObj?->name ?? request('purok'));
+            }
+
+            if (request()->filled('subgroup')) {
+                $subgroupObj = \App\Models\PurokSubgroup::find(request('subgroup'));
+                $activeFilters[] = 'Subgroup: ' . ($subgroupObj?->name ?? request('subgroup'));
+            }
+
+            if (request()->filled('age')) {
+                $activeFilters[] = 'Age: ' . request('age');
+            }
+
+            if (request()->filled('sort') && request('sort') !== 'Alphabetical') {
+                $activeFilters[] = 'Sort: ' . request('sort');
+            }
+
+            if (request()->filled('filter_sex') && request('filter_sex') !== 'all') {
+                $activeFilters[] = 'Sex: ' . request('filter_sex');
+            }
+
+            if (request()->has('filter_housing')) {
+                $activeFilters[] = 'Housing: ' . implode(', ', (array) request('filter_housing'));
+            }
+
+            if (request()->has('filter_health')) {
+                $activeFilters[] = 'Health: ' . implode(', ', (array) request('filter_health'));
+            }
+
+            if (request()->has('health_filter_vaccine')) {
+                $activeFilters[] = 'Vaccines: ' . implode(', ', (array) request('health_filter_vaccine'));
+            }
+
+            if (request()->boolean('filter_deceased')) {
+                $activeFilters[] = 'Deceased Residents Only';
+            }
+        ?>
+
+        <div id="citizen-results-summary" class="citizen-results-highlight" role="status" aria-live="polite">
+            <strong><?php echo e(number_format($citizens->total())); ?> <?php echo e($citizens->total() === 1 ? 'resident' : 'residents'); ?> found</strong>
+            <?php if(count($activeFilters) > 0): ?>
+                <span id="active-citizen-filters"><?php echo e(implode(' · ', $activeFilters)); ?></span>
+                <a href="<?php echo e(route('citizenlist')); ?>" class="citizen-clear-filters">Clear filters</a>
+            <?php endif; ?>
+        </div>
+
+        <div class="citizen-table-scroll" role="region" aria-label="Citizen records table" tabindex="0">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name / ID</th>
+                    <th>Age</th>
+                    <th>Birth Date</th>
+                    <th>Contact</th>
+                    <th>Purok</th>
+                    <th>Subgroup</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php $__empty_1 = true; $__currentLoopData = $citizens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $citizen): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <tr>
+                        <td>
+                            <span class="record-name"><?php echo e($citizen->Citizen_FName); ?> <?php echo e($citizen->Citizen_MName); ?> <?php echo e($citizen->Citizen_LName); ?></span>
+                            <span class="record-sub">ID: <?php echo e($citizenDisplayIds[$citizen->id] ?? 'Unassigned'); ?></span>
+                        </td>
+
+                        <td><?php echo e($citizen->Citizen_Age); ?></td>
+                        <td><?php echo e($citizen->Citizen_BirthDate); ?></td>
+                        <td><?php echo e($citizen->Citizen_ContactNo); ?></td>
+                        <td><?php echo e($citizen->Citizen_Purok); ?></td>
+                        <td><?php echo e($citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Unassigned'); ?></td>
+
+                        <td>
+                            <?php
+                                $user = auth()->user();
+                                $canManage = $user->role !== 'bhw' ||
+                                    app(\App\Services\BhwCitizenAccess::class)->canAccessCitizen($user, $citizen);
+                            ?>
+
+                            <div class="action-group">
+                                <a href="<?php echo e(route('citizendetails', $citizen->id)); ?>" class="btn-primary" data-ui-action="secondary">View</a>
+
+                                <?php if($canManage): ?>
+                                    <a href="<?php echo e(route('bhw.citizen.ecard', $citizen->id)); ?>" class="btn-primary" data-ui-action="primary">E-Card</a>
+
+                                    <?php if(auth()->user()->hasWriteAccess('citizen_password_reset')): ?>
+                                        <button type="button" class="btn-secondary resetCitizenPasswordBtn"
+                                                data-citizen-id="<?php echo e($citizen->id); ?>"
+                                                data-citizen-name="<?php echo e($citizen->Citizen_FName); ?> <?php echo e($citizen->Citizen_LName); ?>" data-ui-action="reset">
+                                            Reset Password
+                                        </button>
+                                    <?php endif; ?>
+
+                                    <form action="<?php echo e(route('citizen.delete', $citizen->id)); ?>"
+                                          method="POST" class="deleteCitizenForm" data-no-loader="true"
+                                          data-citizen-name="<?php echo e($citizen->Citizen_FName); ?> <?php echo e($citizen->Citizen_LName); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
+                                        <button type="submit" class="btn-danger" data-ui-action="danger">Archive</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="text-muted" style="font-size:11px;">View Only (Restricted)</span>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <tr>
+                        <td colspan="7" class="empty-text" style="text-align:center;padding:20px;">
+                            No residents match your search or filters. Try a different name, ID, or age range.
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="citizen-pagination">
+            <?php echo e($citizens->appends(request()->query())->links('partials.citizen-pagination')); ?>
+
+        </div>
+    </div>
+</div>
+
+
+<div id="citizenDeleteConfirmModal" class="citizen-delete-confirm-overlay">
+    <div class="citizen-delete-confirm-modal">
+        <h2>Archive Citizen?</h2>
+        <p>
+            Are you sure you want to archive <strong id="confirmCitizenName"></strong>?
+            <br>You can restore them later from the archive.
+        </p>
+        <div class="citizen-delete-confirm-buttons">
+            <button type="button" id="cancelCitizenDelete" class="citizen-delete-cancel" data-ui-action="secondary">Cancel</button>
+            <button type="button" id="confirmCitizenDelete" class="citizen-delete-save" data-ui-action="danger">Yes, Archive</button>
+        </div>
+    </div>
+</div>
+
+
+<div id="citizenPasswordResetModal" class="citizen-password-modal"
+     role="dialog" aria-modal="true" aria-labelledby="citizenPasswordResetTitle">
+    <div class="citizen-password-dialog">
+        <h2 id="citizenPasswordResetTitle">Reset Citizen Password</h2>
+        <p>This resets the password of <strong id="resetCitizenName"></strong> to the default password (<strong>Barangay123!</strong>). The citizen will be required to change it at the next login.</p>
+
+        <form method="POST" id="citizenPasswordResetForm">
+            <?php echo csrf_field(); ?>
+            <label for="resetCitizenOwnPassword">Your password (to confirm this action)</label>
+            <input type="password" id="resetCitizenOwnPassword" name="confirm_password" required autocomplete="current-password">
+
+            <div class="citizen-password-dialog-actions">
+                <button type="button" class="btn-secondary" id="cancelCitizenPasswordReset" data-ui-action="secondary">Cancel</button>
+                <button type="submit" class="btn-primary" data-ui-action="reset">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+<script src="<?php echo e(asset('js/bhw/citizen-inline-1.js')); ?>?v=<?php echo e(filemtime(public_path('js/bhw/citizen-inline-1.js'))); ?>"></script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('citizenExportModal');
+    const openButton = document.getElementById('openCitizenExportModal');
+    const closeButton = document.getElementById('closeCitizenExportModal');
+    const headerCloseButton = document.getElementById('closeCitizenExportHeader');
+    const form = document.getElementById('citizenExportForm');
+    const formatInput = document.getElementById('citizenExportFormat');
+    const selectedCount = document.getElementById('citizenExportSelectedCount');
+    const downloadButton = document.getElementById('downloadCitizenExport');
+    const selectAllButton = document.getElementById('selectAllCitizenExportFields');
+    const clearButton = document.getElementById('clearCitizenExportFields');
+
+    if (!modal || !openButton || !closeButton || !headerCloseButton || !form || !formatInput) return;
+
+    const formatButtons = modal.querySelectorAll('[data-export-format]');
+    const fieldInputs = Array.from(form.querySelectorAll('input[name="fields[]"]'));
+
+    function updateSelection() {
+        const count = fieldInputs.filter(input => input.checked).length;
+        fieldInputs.forEach(input => {
+            input.closest('.citizen-export-field').classList.toggle('selected', input.checked);
+        });
+        selectedCount.textContent = count;
+        downloadButton.disabled = count === 0;
+        downloadButton.setAttribute('aria-disabled', String(count === 0));
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        openButton.focus();
+    }
+
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        headerCloseButton.focus();
+    }
+
+    openButton.addEventListener('click', openModal);
+    closeButton.addEventListener('click', closeModal);
+    headerCloseButton.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+
+    fieldInputs.forEach(input => input.addEventListener('change', updateSelection));
+    selectAllButton.addEventListener('click', function () {
+        fieldInputs.forEach(input => { input.checked = true; });
+        updateSelection();
+    });
+    clearButton.addEventListener('click', function () {
+        fieldInputs.forEach(input => { input.checked = false; });
+        updateSelection();
+    });
+
+    formatButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            formatInput.value = button.dataset.exportFormat;
+            formatButtons.forEach(item => {
+                const isActive = item === button;
+                item.classList.toggle('active', isActive);
+                item.setAttribute('aria-pressed', String(isActive));
+            });
+        });
+    });
+
+    updateSelection();
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const params = new URLSearchParams(window.location.search);
+        const formData = new FormData(form);
+        const fields = formData.getAll('fields[]');
+
+        if (!fields.length) {
+            alert('Select at least one citizen detail to export.');
+            return;
+        }
+
+        params.delete('fields[]');
+        fields.forEach(field => params.append('fields[]', field));
+
+        const exportPath = formatInput.value === 'pdf'
+            ? <?php echo json_encode(route('citizen.export.pdf'), 15, 512) ?>
+            : <?php echo json_encode(route('citizen.export'), 15, 512) ?>;
+
+        window.loaderSuppress(1500);
+        window.location.href = exportPath + '?' + params.toString();
+        closeModal();
+    });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('citizenPasswordResetModal');
+    const form = document.getElementById('citizenPasswordResetForm');
+    const nameElement = document.getElementById('resetCitizenName');
+    const passwordInput = document.getElementById('resetCitizenOwnPassword');
+    const cancelButton = document.getElementById('cancelCitizenPasswordReset');
+
+    if (!modal || !form || !nameElement || !passwordInput || !cancelButton) return;
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.resetCitizenPasswordBtn');
+        if (!button) return;
+
+            form.action = <?php echo json_encode(url('/citizen'), 15, 512) ?> + '/' + button.dataset.citizenId + '/password-reset';
+            nameElement.textContent = button.dataset.citizenName;
+            form.reset();
+            modal.classList.add('is-open');
+            passwordInput.focus();
+    });
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        form.reset();
+    }
+
+    cancelButton.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+});
+</script>
+
+
+<script src="<?php echo e(asset('js/bhw/citizen-inline-4.js')); ?>?v=<?php echo e(filemtime(public_path('js/bhw/citizen-inline-4.js'))); ?>"></script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const chartElement = document.querySelector('#demographicsApexChart');
+    if (!chartElement || typeof ApexCharts === 'undefined') return;
+
+    const options = {
+        series: [{
+            name: 'Count',
+            data: [
+                <?php echo e($kids); ?>,
+                <?php echo e($adults); ?>,
+                <?php echo e($seniors); ?>
+
+            ]
+        }],
+        chart: {
+            type: 'bar',
+            height: 280,
+            width: '100%',
+            parentHeightOffset: 0,
+            toolbar: { show: false }
+        },
+        responsive: [{
+            breakpoint: 600,
+            options: { chart: { height: 240 } }
+        }],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                distributed: true,
+                columnWidth: '45%'
+            }
+        },
+        colors: ['#3b82f6', '#14b8a6', '#f97316'],
+        dataLabels: {
+            enabled: true,
+            formatter: value => Math.floor(value),
+            style: {
+                fontSize: '15px',
+                fontWeight: 600,
+                colors: ['#0f172a']
+            },
+            offsetY: -4
+        },
+        legend: { show: false },
+        xaxis: {
+            categories: ['Children (0–17)', 'Adults (18–59)', 'Seniors (60+)'],
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: {
+                style: {
+                    fontSize: '13px',
+                    colors: ['#334155', '#334155', '#334155']
+                }
+            }
+        },
+        yaxis: {
+            tickAmount: 3,
+            labels: {
+                style: { fontSize: '12px', colors: ['#475569'] },
+                formatter: value => Math.floor(value)
+            }
+        },
+        grid: {
+            strokeDashArray: 4,
+            xaxis: { lines: { show: false } }
+        }
+    };
+
+    new ApexCharts(chartElement, options).render();
+});
+</script>
+
+
+<script src="<?php echo e(asset('js/bhw/citizen-inline-6.js')); ?>?v=<?php echo e(filemtime(public_path('js/bhw/citizen-inline-6.js'))); ?>"></script>
+
+
+<script src="<?php echo e(asset('js/bhw/citizen-inline-7.js')); ?>?v=<?php echo e(filemtime(public_path('js/bhw/citizen-inline-7.js'))); ?>"></script>
+
+
+<script src="<?php echo e(asset('js/bhw/citizen-inline-8.js')); ?>?v=<?php echo e(filemtime(public_path('js/bhw/citizen-inline-8.js'))); ?>"></script>
+
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('templates.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views/bhw/citizen.blade.php ENDPATH**/ ?>

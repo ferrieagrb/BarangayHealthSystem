@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deceased = document.getElementById('filterIncludeDeceased');
     if (deceased) deceased.checked = params.get('filter_deceased') === '1';
+    const needsReview = document.getElementById('filterNeedsReview');
+    if (needsReview) needsReview.checked = params.get('filter_needs_review') === '1';
 
     clearButton.addEventListener('click', function () {
         const defaultSort = modal.querySelector('input[name="sort"][value="Alphabetical"]');
@@ -89,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'health_filter_vaccine',
             'health_filter_vaccine[]',
             'filter_deceased',
+            'filter_needs_review',
             'page'
         ].forEach(key => query.delete(key));
 
@@ -116,6 +119,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (deceased && deceased.checked) {
             query.set('filter_deceased', '1');
+        }
+        if (needsReview && needsReview.checked) {
+            query.set('filter_needs_review', '1');
         }
 
         window.location.href = url.toString();

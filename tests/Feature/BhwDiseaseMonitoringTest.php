@@ -1409,6 +1409,74 @@ class BhwDiseaseMonitoringTest extends TestCase
         $this->assertStringContainsString('bhwHeatmapRadius', $html);
     }
 
+    public function test_report_builder_orders_purok_summaries_in_preview_and_exports(): void
+    {
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'reports', 'access' => 'read']);
+        $purokIds = [];
+        foreach ([1, 3, 4, 2, 10] as $number) {
+            $purok = Purok::create(['name' => 'Purok '.$number]);
+            $purokIds[$number] = $purok->id;
+            $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'Group '.$number]);
+            $bhw->assignedSubgroups()->attach($subgroup->id);
+            $citizen = $this->createCitizen($purok, $subgroup, 'Resident '.$number);
+            $citizen->update(['Citizen_Sex' => 'Female', 'Citizen_Pregnant' => true]);
+            $this->createDiagnosis($citizen->id, 'Research condition', today()->toDateString());
+        }
+        $expected = ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 10'];
+        $purokColumn = function (string $html): array {
+            $document = new \DOMDocument;
+            @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+            $values = [];
+            foreach ((new \DOMXPath($document))->query('//table[contains(@class,"report-table")]/tbody/tr/td[1]') as $cell) {
+                if (preg_match('/^Purok \d+$/', trim($cell->textContent))) {
+                    $values[] = trim($cell->textContent);
+                }
+            }
+
+            return $values;
+        };
+        $pdf = \Mockery::mock(\Barryvdh\DomPDF\PDF::class);
+        $pdf->shouldReceive('setOption')->times(4)->with('isFontSubsettingEnabled', true)->andReturnSelf();
+        $pdf->shouldReceive('setPaper')->times(4)->with('a4', \Mockery::type('string'))->andReturnSelf();
+        $pdf->shouldReceive('download')->times(4)->andReturn(response('Verified PDF report HTML'));
+        \Barryvdh\DomPDF\Facade\Pdf::shouldReceive('loadHTML')->times(4)
+            ->with(\Mockery::on(fn ($html) => $purokColumn($html) === $expected))
+            ->andReturn($pdf);
+
+        foreach ([
+            'age_by_purok' => ['ageByPurok', 'F'],
+            'sex_by_purok' => ['sexByPurok', 'C'],
+            'pregnancy_by_purok' => ['pregnancyByPurok', 'B'],
+            'diagnosis_by_purok' => ['diagnosisByPurok', 'C'],
+        ] as $type => [$viewKey, $countColumn]) {
+            $parameters = ['report_type' => $type, 'count_mode_only' => 1];
+            $response = $this->actingAs($bhw)->get(route('bhw.reports', $parameters))->assertOk();
+            $this->assertSame($expected, $response->viewData($viewKey)->keys()->map(fn ($key) => explode('|', $key, 2)[0])->all());
+            $this->assertSame($expected, $purokColumn($response->getContent()));
+            $this->assertSame($expected, $response->viewData('puroks')->pluck('name')->all());
+
+            $export = $this->get(route('bhw.reports', $parameters + ['export_format' => 'xlsx']))->assertOk();
+            $path = tempnam(sys_get_temp_dir(), 'bhw-purok-order-');
+            file_put_contents($path, $export->streamedContent());
+            try {
+                $workbook = IOFactory::load($path);
+                $sheet = $workbook->getActiveSheet();
+                $this->assertSame($expected, array_map(fn ($row) => $sheet->getCell('A'.$row)->getValue(), range(8, 12)));
+                foreach (range(8, 12) as $row) {
+                    $this->assertSame(1, (int) $sheet->getCell($countColumn.$row)->getValue());
+                }
+                $workbook->disconnectWorksheets();
+            } finally {
+                unlink($path);
+            }
+            $this->get(route('bhw.reports', $parameters + ['export_format' => 'pdf']))->assertOk();
+        }
+
+        $filtered = $this->get(route('bhw.reports', ['report_type' => 'sex_by_purok', 'location' => 'purok:'.$purokIds[2]]))->assertOk();
+        $this->assertSame(['Purok 2'], $filtered->viewData('sexByPurok')->keys()->all());
+    }
+
     private function createBhw(): User
     {
         return User::create([

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const healthInputs = Array.from(modal.querySelectorAll('input[name="health_filter_health"]'));
     const vaccineInputs = Array.from(modal.querySelectorAll('input[name="health_filter_vaccine"]'));
     const deceasedInput = document.getElementById('healthFilterIncludeDeceased');
+    const needsReviewInput = document.getElementById('filterNeedsReview');
     const params = new URLSearchParams(window.location.search);
     const selectedSex = params.get('health_filter_sex') || 'all';
     sexInputs.forEach(input => { input.checked = input.value === selectedSex; });
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         inputs.forEach(input => { input.checked = selected.includes(input.value); });
     });
     deceasedInput.checked = params.get('filter_deceased') === '1';
+    needsReviewInput.checked = params.get('filter_needs_review') === '1';
 
     function openModal() {
         modal.classList.add('active');
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'health_filter_vaccine',
             'health_filter_vaccine[]',
             'filter_deceased',
+            'filter_needs_review',
             'page'
         ].forEach(key => query.delete(key));
 
@@ -65,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (deceasedInput.checked) query.set('filter_deceased', '1');
+        if (needsReviewInput.checked) query.set('filter_needs_review', '1');
         window.location.href = url.toString();
     }
 
@@ -80,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
         healthInputs.forEach(input => { input.checked = false; });
         vaccineInputs.forEach(input => { input.checked = false; });
         deceasedInput.checked = false;
+        needsReviewInput.checked = false;
     });
     applyButton.addEventListener('click', applyFilters);
 });

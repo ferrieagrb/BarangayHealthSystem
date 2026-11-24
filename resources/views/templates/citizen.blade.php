@@ -908,7 +908,7 @@ body,
             </a>
         </li>
         <li>
-            <a href="{{ request()->routeIs('citizen.dashboard') ? '#request-referral' : route('citizen.dashboard') . '#request-referral' }}">
+            <a href="{{ request()->routeIs('citizen.dashboard') ? '#referral-information' : route('citizen.dashboard') . '#referral-information' }}">
                 <i class="bx bx-share-alt" aria-hidden="true"></i>
                 <span class="nav-item">Referral</span>
             </a>
@@ -949,7 +949,7 @@ body,
                     <a href="#announcements" class="active">Announcement</a>
                     <a href="#citizen-card">HealthCard</a>
                     <a href="#health-information">Health Information</a>
-                    <a href="#request-referral">Referral</a>
+                    <a href="#referral-information">Referral</a>
                 </div>
             </nav>
         @else

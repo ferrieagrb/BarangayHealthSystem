@@ -6,7 +6,8 @@
     window.__globalLoaderReady = true;
 
     var textEl = loader.querySelector('.loader-status-text');
-    var DEFAULT_TEXT = 'Processing, please wait...';
+    // Match the initial markup so navigation keeps one consistent loading message.
+    var DEFAULT_TEXT = 'Loading...';
     var MAX_MANUAL_MS = 20000;
 
     var manual = false;

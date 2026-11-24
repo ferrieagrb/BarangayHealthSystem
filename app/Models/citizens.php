@@ -48,11 +48,24 @@ class citizens extends Authenticatable
 
     public function ageForEligibility(): ?int
     {
-        if ($this->Citizen_BirthDate) {
-            return Carbon::parse($this->Citizen_BirthDate)->age;
+        if ($birthDate = $this->validBirthDate()) {
+            return $birthDate->age;
         }
 
         return is_numeric($this->Citizen_Age) ? (int) $this->Citizen_Age : null;
+    }
+
+    public function validBirthDate(): ?Carbon
+    {
+        $value = trim((string) $this->Citizen_BirthDate);
+        if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $parts)
+            || !checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1])) {
+            return null;
+        }
+
+        $date = Carbon::createFromFormat('!Y-m-d', $value);
+
+        return $date->isFuture() ? null : $date;
     }
 
     /**

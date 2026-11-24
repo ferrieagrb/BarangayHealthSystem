@@ -63,9 +63,7 @@ class VaccinationEligibility
         bool $useExplicitVaccineCode = false
     ): array {
         $administeredOn = $date instanceof CarbonInterface ? $date : Carbon::parse($date);
-        $birthDate = $citizen->Citizen_BirthDate
-            ? Carbon::parse($citizen->Citizen_BirthDate)
-            : null;
+        $birthDate = $citizen->validBirthDate();
 
         if (($birthDate && $administeredOn->lt($birthDate)) || (!$allowFutureDate && $administeredOn->isFuture())) {
             return [

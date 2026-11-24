@@ -12,6 +12,7 @@ use App\Models\Supply;
 use App\Models\Purok;
 use App\Models\SystemSetting;
 use App\Services\BhwCitizenAccess;
+use App\Services\CitizenRecordReview;
 use App\Services\VaccinationEligibility;
 use App\Services\VaccinationRecording;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,10 @@ class HealthRecordController extends Controller
             ->get();
 
         $query = $citizenAccess->scopeCitizens(citizens::with('healthRecords'), $user);
+
+        if ($request->boolean('filter_needs_review')) {
+            app(CitizenRecordReview::class)->apply($query);
+        }
 
         if ($purok && $purok !== 'all' && ($selectedPurok = $puroks->firstWhere('id', $purok))) {
             $query->where(function ($builder) use ($selectedPurok) {

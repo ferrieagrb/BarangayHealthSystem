@@ -1,0 +1,3 @@
+<link rel="stylesheet" href="<?php echo e(asset('css/action-controls.css')); ?>">
+<script src="<?php echo e(asset('js/button-actions.js')); ?>?v=<?php echo e(is_file(public_path('js/button-actions.js')) ? filemtime(public_path('js/button-actions.js')) : '1'); ?>" defer></script>
+<?php /**PATH C:\Users\HUAWEI\Desktop\BarangayHealthSystem\resources\views/partials/button-action-assets.blade.php ENDPATH**/ ?>

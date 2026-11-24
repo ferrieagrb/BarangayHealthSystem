@@ -37,7 +37,7 @@
 
 <div class="info-card">
     <div class="card">
-        <form id="vaccinationForm" method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}" data-citizen-birth-date="{{ $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('Y-m-d') : '' }}">
+        <form id="vaccinationForm" method="POST" action="{{ route('citizen.vaccination.store', $citizen->id) }}" data-citizen-birth-date="{{ $citizen->validBirthDate()?->format('Y-m-d') ?? '' }}">
             @csrf
             <input type="hidden" id="vaccineSelectionToken" name="vaccine_selection_token" value="">
         </form>
@@ -125,7 +125,7 @@
 
                    name="Citizen_BirthDate"
 
-                   value="{{ old('Citizen_BirthDate', $citizen->Citizen_BirthDate ? \Carbon\Carbon::parse($citizen->Citizen_BirthDate)->format('Y-m-d') : '') }}"
+                   value="{{ old('Citizen_BirthDate', $citizen->validBirthDate()?->format('Y-m-d') ?? '') }}"
 
                    disabled>
 

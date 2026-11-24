@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class ReportPdfDocumentTest extends TestCase
 {
-    public function test_long_tables_preserve_every_row_and_repeat_headings(): void
+    public function test_long_tables_preserve_rows_and_start_continuations_on_new_pages(): void
     {
         $rows = '';
         for ($i = 1; $i <= 125; $i++) {
@@ -25,6 +25,10 @@ class ReportPdfDocumentTest extends TestCase
         $this->assertSame(125, $xpath->query('//table/tbody/tr')->length);
         $this->assertSame(1, $xpath->query('//table/tfoot')->length);
         $this->assertSame(4, $xpath->query('//table[@class="report-table"]')->length);
+        foreach ($xpath->query('//table') as $index => $table) {
+            $this->assertStringContainsString('table-layout: fixed;', $table->getAttribute('style'));
+            $this->assertSame($index > 0, str_contains($table->getAttribute('style'), 'page-break-before: always;'));
+        }
         $this->assertSame('Peña 125', $xpath->query('(//tbody/tr)[last()]/td[1]')->item(0)->textContent);
         $this->assertStringNotContainsString('<?xml', $result['html']);
         $this->assertSame(range(1, 125), array_map(
