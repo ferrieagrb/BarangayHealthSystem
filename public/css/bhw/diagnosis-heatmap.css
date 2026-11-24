@@ -1,0 +1,14 @@
+.diagnosis-heatmap-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 12px 0; color: #334155; font-size: 14px; }
+.diagnosis-heatmap-controls label { display: inline-flex; align-items: center; gap: 8px; }
+.diagnosis-heatmap-controls input[type="checkbox"] { width: 17px; height: 17px; accent-color: #2563eb; }
+.diagnosis-heatmap-controls input[type="range"] { width: 130px; accent-color: #2563eb; }
+.diagnosis-heatmap-controls output { min-width: 44px; font-variant-numeric: tabular-nums; }
+.diagnosis-heatmap-scale { display: flex; flex: 1 1 230px; max-width: 390px; gap: 9px; align-items: center; }
+.diagnosis-heatmap-scale-bar { flex: 1; min-width: 90px; height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgb(0,55,255), rgb(0,190,255), rgb(0,210,90), rgb(255,225,0), rgb(255,120,0), rgb(225,25,30)); }
+.diagnosis-heatmap-note, .diagnosis-heatmap-status { margin: 8px 0 !important; color: #475569 !important; font-size: 13px !important; line-height: 1.5; }
+.diagnosis-heatmap-status:empty { display: none; }
+.diagnosis-heatmap-canvas { position: absolute; pointer-events: none; }
+@media (max-width: 620px) {
+    .diagnosis-heatmap-scale { flex-basis: 100%; max-width: none; }
+    .diagnosis-heatmap-controls { align-items: flex-start; }
+}

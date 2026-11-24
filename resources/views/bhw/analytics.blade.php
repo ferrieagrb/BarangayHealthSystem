@@ -2,6 +2,7 @@
 
 @section('CSSown')
 <link rel="stylesheet" href="{{ asset('css/bhw/shared-ui.css') }}">
+<link rel="stylesheet" href="{{ asset('css/bhw/diagnosis-heatmap.css') }}?v={{ filemtime(public_path('css/bhw/diagnosis-heatmap.css')) }}">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
     .analytics-period { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 18px; color: #334155; font-size: 13px; font-weight: 600; }
@@ -172,11 +173,12 @@
             </table>
         </section>
         <section class="analytics-panel">
-            <h2>Geographic distribution</h2>
+            <h2>Diagnosis concentration heatmap</h2>
             <p>Only saved Purok or subgroup coordinates and boundaries are used. Map values are aggregated and do not identify citizens.</p>
             @if(count($diseaseMonitoringData['mapAreas']))
-                <div id="diseaseMonitoringMap" class="disease-map" role="img" aria-label="Aggregated diagnosis records by mapped Purok and subgroup"></div>
-                <div class="disease-map-legend"><span><i></i> Records by area (larger circle = more records)</span><span><i class="boundary"></i> Saved boundary</span><span>Areas with fewer than three distinct citizens are not displayed</span></div>
+                <div id="diseaseMonitoringMap" class="disease-map" role="region" aria-label="Diagnosis concentration by mapped Purok and subgroup"></div>
+                @include('bhw.partials.heatmap-controls', ['prefix' => 'diseaseHeatmap'])
+                <div class="disease-map-legend"><span><i class="boundary"></i> Saved boundary</span><span>Areas with fewer than three distinct citizens are not displayed</span></div>
             @else
                 <div class="disease-empty">{{ $diseaseMonitoringData['privacySuppressed'] ? 'Map details are withheld because fewer than three distinct citizens match these filters.' : 'No mapped areas match these filters. Check saved Purok/subgroup locations and the selected period.' }}</div>
             @endif
@@ -264,6 +266,8 @@
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="{{ asset('js/bhw/diagnosis-heatmap.js') }}?v={{ filemtime(public_path('js/bhw/diagnosis-heatmap.js')) }}"></script>
+<script src="{{ asset('js/bhw/analytics-heatmap.js') }}?v={{ filemtime(public_path('js/bhw/analytics-heatmap.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const periodSelect = document.getElementById('diseasePeriod');
@@ -285,14 +289,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const mapElement = document.getElementById('diseaseMonitoringMap');
         const mapAreas = @json($diseaseMonitoringData['mapAreas']);
         if (mapElement && mapAreas.length) {
-            const map = L.map(mapElement).setView([14.0668, 120.8531], 13);
+            const map = L.map(mapElement, { zoomAnimation: false }).setView([14.0668, 120.8531], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
             const layers = [];
+            const boundaries = L.layerGroup().addTo(map);
             mapAreas.forEach((area) => {
-                const color = '#2563eb';
                 const popup = document.createElement('div');
                 const heading = document.createElement('strong');
                 heading.textContent = area.type === 'subgroup' ? `${area.name} — ${area.purok}` : area.name;
@@ -307,17 +311,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 popup.append(heading, details, areaLink);
                 if (area.boundary) {
                     const boundary = L.geoJSON(area.boundary, {
-                        style: { color, weight: 2, fillColor: color, fillOpacity: 0.18 }
-                    }).addTo(map).bindPopup(popup);
+                        style: { color: '#334155', weight: 1.5, fillOpacity: 0.001 }
+                    }).addTo(boundaries).bindPopup(popup);
                     layers.push(boundary);
                 }
-                if (area.location) {
-                    const marker = L.circleMarker([area.location.lat, area.location.lng], {
-                        radius: Math.min(18, 7 + Math.sqrt(area.records_count)),
-                        color,
-                        fillColor: color,
-                        fillOpacity: 0.65,
-                        weight: 2
+                const center = DiagnosisHeatmap.location(area);
+                if (center) {
+                    const marker = L.circle([center.lat, center.lng], {
+                        radius: 70, stroke: false, fillOpacity: 0
                     }).addTo(map).bindPopup(popup);
                     layers.push(marker);
                 }
@@ -325,7 +326,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (layers.length) {
                 map.fitBounds(L.featureGroup(layers).getBounds().pad(0.15), { maxZoom: 15 });
             }
+            DiagnosisHeatmap.addToLeaflet(map, mapAreas, boundaries, 'diseaseHeatmap');
         }
+    } else {
+        const status = document.getElementById('diseaseHeatmapStatus');
+        if (status) status.textContent = 'The heatmap could not load. Check the map connection and reload the page.';
     }
 
     if (typeof ApexCharts === 'undefined') return;

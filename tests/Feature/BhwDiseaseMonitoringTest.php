@@ -1376,6 +1376,39 @@ class BhwDiseaseMonitoringTest extends TestCase
         }
     }
 
+    public function test_dashboard_heat_weights_keep_unmapped_subgroup_cases_at_the_parent_purok(): void
+    {
+        Schema::create('announcements', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+        $boundary = ['type' => 'Polygon', 'coordinates' => [[[120.85, 14.06], [120.86, 14.06], [120.86, 14.07], [120.85, 14.06]]]];
+        $purok = Purok::create(['name' => 'Heatmap Purok', 'boundary' => $boundary]);
+        $mapped = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'Mapped', 'latitude' => 14.065, 'longitude' => 120.855]);
+        $unmapped = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'No pin or boundary']);
+        $first = $this->createCitizen($purok, $mapped, 'Mapped case');
+        $second = $this->createCitizen($purok, $unmapped, 'Fallback case');
+        $third = $this->createCitizen($purok, null, 'Purok case');
+        foreach ([$first, $second, $third] as $citizen) {
+            $this->createDiagnosis($citizen->id, 'Influenza', now()->toDateString());
+        }
+        $this->actingAs($this->createBhw());
+
+        $view = app(\App\Http\Controllers\BhwHomeController::class)->index();
+        $areas = $view->getData()['purokHeatmapData'];
+        $this->assertCount(2, $areas);
+        $this->assertSame(3, $areas->firstWhere('type', 'purok')['count']);
+        $this->assertSame(2, $areas->firstWhere('type', 'purok')['weight']);
+        $this->assertSame(1, $areas->firstWhere('type', 'subgroup')['weight']);
+        $this->assertSame(3, $areas->sum('weight'), 'Each diagnosis contributes to exactly one heat point.');
+        $this->assertSame($boundary, $purok->fresh()->boundary);
+        $html = $view->render();
+        $this->assertStringContainsString('home-heatmap.js', $html);
+        $this->assertStringContainsString('Show saved boundaries', $html);
+        $this->assertStringContainsString('bhwHeatmapRadius', $html);
+    }
+
     private function createBhw(): User
     {
         return User::create([

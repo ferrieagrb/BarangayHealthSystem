@@ -1,0 +1,10 @@
+{
+  "groups": 56,
+  "cases": 375,
+  "unique_case_ids": true,
+  "eight_column_tables": true,
+  "all_cases_not_run": true,
+  "csv_matches_document": true,
+  "source_hashes_unchanged": 132,
+  "report_types": 12
+}

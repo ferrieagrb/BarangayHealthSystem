@@ -2,6 +2,7 @@
 @extends('templates.superadmin')
 
 @section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/audit-action-levels.css') }}?v={{ filemtime(public_path('css/audit-action-levels.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/superadmin/superadmin_audit_trail.css') }}">
 @endsection
 
@@ -170,6 +171,8 @@
             </div>
         </form>
 
+        @include('partials.audit-action-legend')
+
         {{-- Audit Logs Table --}}
         <div class="audit-table-responsive">
             <table class="audit-table">
@@ -210,9 +213,7 @@
                             </td>
 
                             <td>
-                                <span class="audit-action-badge">
-                                    {{ $log->action }}
-                                </span>
+                                <x-audit-action :action="$log->action" />
                             </td>
 
                             <td class="audit-description">
