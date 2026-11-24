@@ -1,0 +1,22 @@
+{
+  "pages": 78,
+  "all_case_ids_visible": true,
+  "missing_case_ids": [],
+  "outside_page_bounds": [],
+  "blank_pages": [],
+  "representative_pages": {
+    "FAM": 26,
+    "REF": 41,
+    "RPT": 45,
+    "UX": 74
+  },
+  "image_previews": [
+    1,
+    5,
+    26,
+    41,
+    45,
+    74,
+    78
+  ]
+}

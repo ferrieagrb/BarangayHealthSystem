@@ -1,6 +1,7 @@
 @extends('templates.layout')
 
 @section('CSSown')
+<link rel="stylesheet" href="{{ asset('css/audit-action-levels.css') }}?v={{ filemtime(public_path('css/audit-action-levels.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/logs.css') }}?v={{ filemtime(public_path('css/bhw/logs.css')) }}">
 <style>
     .logs-page { padding-bottom: 24px; }
@@ -36,6 +37,8 @@
         </div>
     </div>
 
+    @include('partials.audit-action-legend')
+
     <div class="tabs" role="tablist" aria-label="Audit log sections">
         <button class="tab active" data-tab="citizens">Citizens</button>
         <button class="tab" data-tab="supplies">Supplies</button>
@@ -50,21 +53,21 @@
 
     <div id="citizens" class="tab-content active">
         <table class="log-table" role="table"><thead role="rowgroup"><tr role="row"><th scope="col">Date</th><th scope="col">Actor</th><th scope="col">Action</th><th scope="col">Citizen</th><th scope="col">Description</th></tr></thead><tbody role="rowgroup">
-            @forelse($citizenLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><span class="tag">{{ ucfirst($log->action) }}</span></td><td role="cell" data-label="Citizen">{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'N/A' }}</td><td role="cell" data-label="Description">{{ $log->description }}</td></tr>@empty<tr role="row"><td role="cell" colspan="5" class="empty-log">No citizen logs.</td></tr>@endforelse
+            @forelse($citizenLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><x-audit-action :action="ucfirst($log->action)" /></td><td role="cell" data-label="Citizen">{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'N/A' }}</td><td role="cell" data-label="Description">{{ $log->description }}</td></tr>@empty<tr role="row"><td role="cell" colspan="5" class="empty-log">No citizen logs.</td></tr>@endforelse
         </tbody></table>
         <div class="pagination-container">{{ $citizenLogs->appends(array_merge(request()->query(), ['tab' => 'citizens']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="supplies" class="tab-content">
         <table class="log-table" role="table"><thead role="rowgroup"><tr role="row"><th scope="col">Date</th><th scope="col">Actor</th><th scope="col">Action</th><th scope="col">Supply</th><th scope="col">Quantity</th><th scope="col">Citizen</th><th scope="col">Notes</th></tr></thead><tbody role="rowgroup">
-            @forelse($supplyLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><span class="tag">{{ ucfirst($log->action) }}</span></td><td role="cell" data-label="Supply">{{ $log->supply->name ?? 'Removed supply' }}</td><td role="cell" data-label="Quantity">{{ $log->quantity }}</td><td role="cell" data-label="Citizen">{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'General inventory' }}</td><td role="cell" data-label="Notes">{{ $log->notes ?? 'N/A' }}</td></tr>@empty<tr role="row"><td role="cell" colspan="7" class="empty-log">No supply logs.</td></tr>@endforelse
+            @forelse($supplyLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><x-audit-action :action="ucfirst($log->action)" /></td><td role="cell" data-label="Supply">{{ $log->supply->name ?? 'Removed supply' }}</td><td role="cell" data-label="Quantity">{{ $log->quantity }}</td><td role="cell" data-label="Citizen">{{ $log->citizen ? trim($log->citizen->Citizen_FName . ' ' . $log->citizen->Citizen_LName) : 'General inventory' }}</td><td role="cell" data-label="Notes">{{ $log->notes ?? 'N/A' }}</td></tr>@empty<tr role="row"><td role="cell" colspan="7" class="empty-log">No supply logs.</td></tr>@endforelse
         </tbody></table>
         <div class="pagination-container">{{ $supplyLogs->appends(array_merge(request()->query(), ['tab' => 'supplies']))->links('partials.pagination') }}</div>
     </div>
 
     <div id="health" class="tab-content">
         <table class="log-table" role="table"><thead role="rowgroup"><tr role="row"><th scope="col">Date</th><th scope="col">Actor</th><th scope="col">Action</th><th scope="col">Citizen ID</th><th scope="col">Description</th></tr></thead><tbody role="rowgroup">
-            @forelse($healthRecordLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><span class="tag">{{ ucfirst($log->action) }}</span></td><td role="cell" data-label="Citizen ID">{{ $log->citizen_id ?? 'N/A' }}</td><td role="cell" data-label="Description">{{ $log->description }}</td></tr>@empty<tr role="row"><td role="cell" colspan="5" class="empty-log">No health-record logs.</td></tr>@endforelse
+            @forelse($healthRecordLogs as $log)<tr role="row"><td role="cell" data-label="Date">{{ $log->created_at }}</td><td role="cell" data-label="Actor">{{ $log->user->name ?? 'Legacy / System' }}</td><td role="cell" data-label="Action"><x-audit-action :action="ucfirst($log->action)" /></td><td role="cell" data-label="Citizen ID">{{ $log->citizen_id ?? 'N/A' }}</td><td role="cell" data-label="Description">{{ $log->description }}</td></tr>@empty<tr role="row"><td role="cell" colspan="5" class="empty-log">No health-record logs.</td></tr>@endforelse
         </tbody></table>
         <div class="pagination-container">{{ $healthRecordLogs->appends(array_merge(request()->query(), ['tab' => 'health']))->links('partials.pagination') }}</div>
     </div>
