@@ -45,7 +45,7 @@
         @include('bhw.partials.citizen-photo-form')
         <form method="POST"
 
-              action="{{ route('citizen.update', $citizen->id) }}"
+              action="{{ route('citizen.update', ['id' => $citizen->id, 'list' => request()->query('list', [])]) }}"
 
               id="citizenForm">
 
@@ -53,8 +53,10 @@
 
             @method('PUT')
 
-            @if($errors->any() && old('Citizen_FName') !== null)
-                <div class="health-alert health-alert-error" role="alert">
+            <input type="hidden" name="citizen_edit_form" value="1">
+
+            @if($errors->any() && old('citizen_edit_form'))
+                <div class="health-alert health-alert-error citizen-form-error" role="alert">
                     <ul class="health-error-list">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -583,7 +585,7 @@
 
     @endif
 
-    @if($errors->any())
+    @if($errors->any() && !old('citizen_edit_form'))
 
         <div class="health-alert health-alert-error">
 
