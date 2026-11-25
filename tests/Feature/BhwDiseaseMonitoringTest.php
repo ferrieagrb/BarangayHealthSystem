@@ -421,6 +421,8 @@ class BhwDiseaseMonitoringTest extends TestCase
             ->from('/citizendetails/' . $samePurokCitizen->id)
             ->put(route('citizen.update', $samePurokCitizen->id), $payload)
             ->assertRedirect('/citizendetails/' . $samePurokCitizen->id);
+        $this->assertSame('Updated', $samePurokCitizen->fresh()->Citizen_FName);
+        $this->assertSame('Citizen', $samePurokCitizen->fresh()->Citizen_LName);
         $this->assertSame($groupOne->id, $samePurokCitizen->fresh()->subgroup_id);
         $this->assertSame($purokOne->name, $samePurokCitizen->fresh()->Citizen_Purok);
         $this->assertDatabaseHas('citizen_activity_logs', [
