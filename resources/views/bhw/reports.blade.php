@@ -473,7 +473,7 @@
                     <h3>Male and Female Counts by Purok</h3>
                     @if($includeSummary)
                     <table class="report-table">
-                        <thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Other / not recorded</th></tr></thead>
+                        <thead><tr><th>Purok</th><th>Male</th><th>Female</th><th>Not recorded</th></tr></thead>
                         <tbody>
                             @forelse($sexByPurok as $purok => $counts)
                                 <tr><td>{{ $purok }}</td><td>{{ $counts['male'] }}</td><td>{{ $counts['female'] }}</td><td>{{ $counts['other'] }}</td></tr>

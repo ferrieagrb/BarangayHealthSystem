@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\CitizenRecordReview;
 use App\Services\VaccinationEligibility;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -191,6 +192,70 @@ class CitizenRecordReviewTest extends TestCase
             ])->render();
             $this->assertStringContainsString('data-citizen-birth-date=""', $html);
             $this->assertStringContainsString('name="Citizen_BirthDate"', $html);
+        }
+    }
+
+    public function test_view_and_back_keep_list_filters_and_page_while_reset_clears_them(): void
+    {
+        $user = User::create(['name' => 'Review Worker', 'role' => 'bhw']);
+        $this->actingAs($user);
+        for ($index = 1; $index <= 21; $index++) {
+            $this->citizen(['Citizen_FName' => 'Review Resident '.$index, 'Citizen_Sex' => null, 'Citizen_HousingStatus' => 'Renter']);
+        }
+        $this->citizen(['Citizen_FName' => 'Valid Resident']);
+        $filters = [
+            'search' => 'Review', 'filter_needs_review' => '1', 'filter_housing' => ['Renter'],
+            'sort' => 'Oldest to Youngest', 'page' => '2',
+        ];
+        $fixtures = [];
+
+        foreach (['2' => $filters, '1' => array_diff_key($filters, ['page' => true])] as $page => $query) {
+            $response = $this->get(route('citizenlist', $query))->assertOk();
+            $this->assertSame(21, $response->viewData('citizens')->total());
+            $this->assertSame((int) $page, $response->viewData('citizens')->currentPage());
+            $document = new \DOMDocument;
+            @$document->loadHTML($response->getContent());
+            $xpath = new \DOMXPath($document);
+            $this->assertSame(route('citizenlist'), $xpath->query('//*[@id="resetCitizenFilters"]')->item(0)->getAttribute('href'));
+            $this->assertSame(1, $xpath->query('//*[@id="openCitizenStatusFilter"]/parent::*/*[@id="resetCitizenFilters"]')->length);
+            $detailsUrl = $xpath->query('//a[@data-citizen-details-link]')->item(0)->getAttribute('href');
+            parse_str(parse_url($detailsUrl, PHP_URL_QUERY), $detailsQuery);
+            $this->assertSame($query, $detailsQuery['list']);
+
+            $this->app->instance('request', Request::create($detailsUrl));
+            $backLink = view('bhw.partials.citizen-list-back-link')->render();
+            $backDocument = new \DOMDocument;
+            @$backDocument->loadHTML($backLink);
+            $backUrl = $backDocument->getElementsByTagName('a')->item(0)->getAttribute('href');
+            $this->assertSame(route('citizenlist', $query), $backUrl);
+            $this->get($backUrl)->assertOk()->assertViewHas('citizens', fn ($citizens) => $citizens->currentPage() === (int) $page && $citizens->total() === 21);
+
+            $fixtures['list-'.$page.'.html'] = $response->getContent();
+            $fixtures['details-'.$page.'.html'] = '<!doctype html><html><body>'.$backLink.'</body></html>';
+        }
+
+        $reset = $this->get(route('citizenlist'))->assertOk();
+        $this->assertSame(22, $reset->viewData('citizens')->total());
+        $reset->assertDontSee('Records needing review');
+        $fixtures['reset.html'] = $reset->getContent();
+        if ($directory = getenv('BHEAMS_CITIZEN_NAV_FIXTURES')) {
+            if (! is_dir($directory)) {
+                mkdir($directory, 0777, true);
+            }
+            foreach ($fixtures as $name => $contents) {
+                file_put_contents($directory.'/'.$name, $contents);
+            }
+            file_put_contents($directory.'/filters.json', json_encode($filters));
+        }
+    }
+
+    public function test_back_link_uses_the_fixed_citizen_list_route_for_invalid_or_unrelated_return_input(): void
+    {
+        foreach (['https://example.test/other', ['return_to' => 'https://example.test/other']] as $input) {
+            $this->app->instance('request', Request::create('/citizendetails/1', 'GET', ['list' => $input]));
+            $document = new \DOMDocument;
+            @$document->loadHTML(view('bhw.partials.citizen-list-back-link')->render());
+            $this->assertSame(route('citizenlist'), $document->getElementsByTagName('a')->item(0)->getAttribute('href'));
         }
     }
 

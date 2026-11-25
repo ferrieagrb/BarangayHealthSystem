@@ -24,7 +24,7 @@
     </div>
 
     <div class="right">
-        <a href="{{ route('citizenlist') }}" class="btn-secondary" style="text-decoration: none !important;" data-ui-action="secondary">← Back</a>
+        @include('bhw.partials.citizen-list-back-link')
         @if($canEdit && (int) $citizen->Citizen_IsDeceased !== 1)
             <button type="button" class="btn-primary" id="editBtn" onclick="enableEdit()" data-ui-action="secondary">Edit</button>
         @elseif(!$canEdit && !(bool) $citizen->Citizen_IsDeceased)
