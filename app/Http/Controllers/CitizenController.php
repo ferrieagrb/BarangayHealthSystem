@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\SvgWriter;
@@ -1081,7 +1082,7 @@ class CitizenController extends Controller
             'Citizen_FName' => 'required|string|max:255',
             'Citizen_MName' => 'nullable|string|max:255',
             'Citizen_LName' => 'required|string|max:255',
-            'Citizen_BirthDate' => 'required|date|before_or_equal:today',
+            'Citizen_BirthDate' => 'nullable|date|before_or_equal:today',
             'Citizen_ContactNo' => 'nullable|string|max:50',
             'Citizen_Purok' => 'nullable|string|max:255',
             'family_id' => 'nullable|exists:families,id',
@@ -1095,13 +1096,16 @@ class CitizenController extends Controller
             'Citizen_IsDeceased' => 'nullable|boolean',
         ]);
 
-        $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+        if (!empty($validated['Citizen_BirthDate'])) {
+            $validated['Citizen_Age'] = Carbon::parse($validated['Citizen_BirthDate'])->age;
+        }
 
         // Preserve recorded values when a field is read-only for this age.
-        if ($validated['Citizen_Age'] <= 14) {
+        $citizenAge = $validated['Citizen_Age'] ?? $citizen->ageForEligibility();
+        if ($citizenAge !== null && $citizenAge <= 14) {
             unset($validated['Citizen_Pregnant']);
         }
-        if ($validated['Citizen_Age'] < 16) {
+        if ($citizenAge !== null && $citizenAge < 16) {
             unset($validated['Citizen_InPills']);
         }
 
@@ -1162,7 +1166,14 @@ class CitizenController extends Controller
 
         $citizenUser = User::where('citizen_id', $citizen->id)->first();
         if ($citizenUser) {
-            $citizenUser->update(['username' => User::citizenUsername($validated['Citizen_LName'], $validated['Citizen_BirthDate'], $citizenUser->id)]);
+            $username = User::citizenUsername(
+                $validated['Citizen_LName'],
+                $validated['Citizen_BirthDate'] ?? null,
+                $citizenUser->id
+            );
+            if ($username !== null) {
+                $citizenUser->update(['username' => $username]);
+            }
         }
 
         $this->logActivity(
@@ -1172,7 +1183,15 @@ class CitizenController extends Controller
             $assignmentChanged ? 'Updated citizen details and subgroup assignment' : 'Updated citizen details'
         );
 
-        return redirect()->back()->with('success', 'Citizen updated successfully.');
+        $listFilters = $request->query('list', []);
+        $listFilters = is_array($listFilters) ? Arr::only($listFilters, [
+            'search', 'purok', 'subgroup', 'age', 'age_group', 'sort', 'filter_sex',
+            'filter_housing', 'filter_health', 'health_filter_vaccine', 'filter_deceased',
+            'filter_needs_review', 'page',
+        ]) : [];
+
+        return redirect()->route('citizenlist', $listFilters)
+            ->with('success', 'Citizen updated successfully.');
     }
 
     /*

@@ -24,6 +24,7 @@
 #citizenForm { display:grid; grid-template-columns:minmax(100px,.65fr) minmax(0,1.4fr) minmax(100px,.65fr) minmax(0,1.4fr); align-items:center; column-gap:18px; row-gap:14px; width:100%; min-width:0; margin:0; }
 #citizenForm > br { display:none; }
 #citizenForm > h2, #citizenForm > .citizen-section-title, #citizenForm > .citizen-section-divider, #citizenForm > #familyEditContainer, #citizenForm > .citizen-form-actions, #citizenForm > .immunization-section, #citizenForm > .deceased-section-box { grid-column:1 / -1; }
+#citizenForm > .citizen-form-error { grid-column:1 / -1; margin:0; }
 #citizenForm > .citizen-section-divider + .citizen-section-divider, #citizenForm > [hidden] + .citizen-section-divider { display:none; }
 .citizen-section-title { margin:16px 0 4px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; color:#0f172a; font-size:15px; font-weight:600; line-height:1.5; }
 .citizen-section-divider { width:100%; height:1px; margin:12px 0; border:0; background:#e2e8f0; }

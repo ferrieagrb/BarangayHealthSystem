@@ -121,9 +121,9 @@ class BhwDiseaseMonitoringTest extends TestCase
             $table->string('Citizen_FName');
             $table->string('Citizen_MName')->nullable();
             $table->string('Citizen_LName');
-            $table->date('Citizen_BirthDate');
+            $table->date('Citizen_BirthDate')->nullable();
             $table->string('Citizen_ContactNo');
-            $table->integer('Citizen_Age');
+            $table->integer('Citizen_Age')->nullable();
             $table->string('Citizen_Purok')->nullable();
             $table->string('Citizen_Sex')->nullable();
             $table->boolean('Citizen_Pregnant')->default(false);
@@ -404,25 +404,42 @@ class BhwDiseaseMonitoringTest extends TestCase
         $bhw = $this->createBhw();
         $bhw->assignedSubgroups()->attach($groupOne->id);
         $samePurokCitizen = $this->createCitizen($purokOne, null, 'Assign');
+        $samePurokCitizen->update(['Citizen_Sex' => 'Female']);
+        for ($number = 1; $number <= 11; $number++) {
+            $matchingCitizen = $this->createCitizen($purokOne, null, "Assign Resident {$number}");
+            $matchingCitizen->update(['Citizen_Sex' => 'Female']);
+        }
         $otherPurokCitizen = $this->createCitizen($purokOne, null, 'Reject');
         $foreignCitizen = $this->createCitizen($purokTwo, null, 'Foreign');
         $this->assertFalse(app(BhwCitizenAccess::class)->canAccessCitizen($bhw, $foreignCitizen));
 
+        $listFilters = [
+            'search' => 'Assign',
+            'filter_sex' => 'Female',
+            'sort' => 'Oldest to Youngest',
+            'page' => '2',
+        ];
         $payload = [
             'Citizen_FName' => 'Updated',
             'Citizen_LName' => 'Citizen',
-            'Citizen_BirthDate' => '1990-01-01',
+            'Citizen_BirthDate' => '',
             'Citizen_Purok' => $purokTwo->name,
             'subgroup_id' => $groupOne->id,
             'family_id' => null,
         ];
 
         $this->actingAs($bhw)
-            ->from('/citizendetails/' . $samePurokCitizen->id)
-            ->put(route('citizen.update', $samePurokCitizen->id), $payload)
-            ->assertRedirect('/citizendetails/' . $samePurokCitizen->id);
+            ->get(route('citizenlist', $listFilters))
+            ->assertOk()
+            ->assertViewHas('citizens', fn ($citizens) => $citizens->total() === 12 && $citizens->currentPage() === 2);
+
+        $this->actingAs($bhw)
+            ->put(route('citizen.update', ['id' => $samePurokCitizen->id, 'list' => $listFilters]), $payload)
+            ->assertRedirect(route('citizenlist', $listFilters));
         $this->assertSame('Updated', $samePurokCitizen->fresh()->Citizen_FName);
         $this->assertSame('Citizen', $samePurokCitizen->fresh()->Citizen_LName);
+        $this->assertNull($samePurokCitizen->fresh()->Citizen_BirthDate);
+        $this->assertSame(36, $samePurokCitizen->fresh()->Citizen_Age);
         $this->assertSame($groupOne->id, $samePurokCitizen->fresh()->subgroup_id);
         $this->assertSame($purokOne->name, $samePurokCitizen->fresh()->Citizen_Purok);
         $this->assertDatabaseHas('citizen_activity_logs', [
@@ -431,6 +448,10 @@ class BhwDiseaseMonitoringTest extends TestCase
             'module' => 'citizen',
         ]);
         $this->assertTrue(app(BhwCitizenAccess::class)->canAccessCitizen($bhw, $samePurokCitizen->fresh()));
+        $filteredList = $this->actingAs($bhw)->get(route('citizenlist', $listFilters))->assertOk();
+        $this->assertSame(11, $filteredList->viewData('citizens')->total());
+        $this->assertSame(2, $filteredList->viewData('citizens')->currentPage());
+        $this->assertCount(1, $filteredList->viewData('citizens')->items());
 
         $this->actingAs($bhw)
             ->from('/citizendetails/' . $otherPurokCitizen->id)
@@ -445,6 +466,16 @@ class BhwDiseaseMonitoringTest extends TestCase
             ->put(route('citizen.update', $foreignCitizen->id), $payload)
             ->assertRedirect(route('landing'));
         $this->assertNull($foreignCitizen->fresh()->subgroup_id);
+
+        $this->actingAs($bhw)
+            ->post(route('citizen.store'), [
+                'Citizen_FName' => 'Missing',
+                'Citizen_LName' => 'Birthdate',
+                'Citizen_Purok' => $purokOne->name,
+                'subgroup_id' => $groupOne->id,
+                'Citizen_Sex' => 'Female',
+            ])
+            ->assertSessionHasErrors('Citizen_BirthDate');
     }
 
     public function test_small_results_are_suppressed_from_aggregate_details(): void

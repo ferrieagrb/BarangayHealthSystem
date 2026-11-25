@@ -179,11 +179,22 @@ class CitizenRecordReviewTest extends TestCase
         }
         $citizen->setRelation('family', null)->setRelation('subgroup', null);
         $options = app(VaccinationEligibility::class)->optionsFor($citizen);
+        $listFilters = [
+            'search' => 'Review',
+            'filter_needs_review' => '1',
+            'filter_housing' => ['Renter'],
+            'sort' => 'Oldest to Youngest',
+            'page' => '2',
+        ];
         foreach ($options as $option) {
             $this->assertFalse($option['eligible']);
         }
 
         foreach (['bhw.citizendetails', 'bhw.citizen_show'] as $view) {
+            $this->app->instance('request', Request::create(route('citizendetails', [
+                'id' => $citizen->id,
+                'list' => $listFilters,
+            ])));
             $html = view($view, [
                 'citizen' => $citizen, 'canEdit' => false, 'families' => collect(), 'puroks' => collect(),
                 'availableMedicines' => new LengthAwarePaginator([], 0, 10),
@@ -192,6 +203,11 @@ class CitizenRecordReviewTest extends TestCase
             ])->render();
             $this->assertStringContainsString('data-citizen-birth-date=""', $html);
             $this->assertStringContainsString('name="Citizen_BirthDate"', $html);
+            $document = new \DOMDocument;
+            @$document->loadHTML($html);
+            $formAction = (new \DOMXPath($document))->query('//form[@id="citizenForm"]')->item(0)->getAttribute('action');
+            parse_str(parse_url($formAction, PHP_URL_QUERY) ?? '', $actionQuery);
+            $this->assertSame($listFilters, $actionQuery['list']);
         }
     }
 
