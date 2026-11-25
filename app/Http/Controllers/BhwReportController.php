@@ -1147,7 +1147,7 @@ class BhwReportController extends Controller
 
             $summarySection = [
                 'title' => 'Male and Female Counts by Purok',
-                'headings' => ['Purok', 'Male', 'Female', 'Other / not recorded'],
+                'headings' => ['Purok', 'Male', 'Female', 'Not recorded'],
                 'rows' => $sexByPurok->map(fn ($counts, $purok) => [
                     $purok ?: 'Unassigned',
                     $counts['male'],

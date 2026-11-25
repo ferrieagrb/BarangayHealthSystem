@@ -199,11 +199,14 @@
             {{-- STATUS FILTER --}}
             <div class="filter-box citizen-filter-field">
                 <label for="openCitizenStatusFilter" class="citizen-control-label">Additional filters</label>
-                <button type="button" id="openCitizenStatusFilter"
-                        class="citizen-status-filter-btn" data-ui-action="secondary">
-                    <span>Status & Filters</span>
-                    <span class="status-filter-arrow" aria-hidden="true">⌄</span>
-                </button>
+                <div class="citizen-filter-actions">
+                    <button type="button" id="openCitizenStatusFilter"
+                            class="citizen-status-filter-btn" data-ui-action="secondary">
+                        <span>Status & Filters</span>
+                        <span class="status-filter-arrow" aria-hidden="true">⌄</span>
+                    </button>
+                    <a href="{{ route('citizenlist') }}" id="resetCitizenFilters" class="citizen-reset-filters btn-secondary" data-ui-action="reset">Reset Filters</a>
+                </div>
             </div>
         </form>
     </div>
@@ -446,7 +449,7 @@
                     <th>Name / ID</th>
                     <th>Age</th>
                     <th>Birth Date</th>
-                    <th>Contact</th>
+                    <th>Sex</th>
                     <th>Purok</th>
                     <th>Subgroup</th>
                     <th>Actions</th>
@@ -463,7 +466,7 @@
 
                         <td>{{ $citizen->Citizen_Age }}</td>
                         <td>{{ $citizen->Citizen_BirthDate }}</td>
-                        <td>{{ $citizen->Citizen_ContactNo }}</td>
+                        <td>{{ $citizen->Citizen_Sex ?: 'Not recorded' }}</td>
                         <td>{{ $citizen->Citizen_Purok }}</td>
                         <td>{{ $citizen->subgroup->name ?? $citizen->family?->subgroup?->name ?? 'Unassigned' }}</td>
 
@@ -475,7 +478,7 @@
                             @endphp
 
                             <div class="action-group">
-                                <a href="{{ route('citizendetails', $citizen->id) }}" class="btn-primary" data-ui-action="secondary">View</a>
+                                <a href="{{ route('citizendetails', ['id' => $citizen->id, 'list' => request()->query()]) }}" class="btn-primary" data-ui-action="secondary" data-citizen-details-link>View</a>
 
                                 @if($canManage)
                                     <a href="{{ route('bhw.citizen.ecard', $citizen->id) }}" class="btn-primary" data-ui-action="primary">E-Card</a>

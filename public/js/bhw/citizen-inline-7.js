@@ -52,7 +52,11 @@ document.addEventListener('DOMContentLoaded', function () {
         ['filter_health', 'filter_health[]'],
         ['health_filter_vaccine', 'health_filter_vaccine']
     ].forEach(function ([key, inputName]) {
-        const values = [...params.getAll(`${key}[]`), ...params.getAll(key)];
+        // Laravel's Back and pagination URLs use indexed array keys such as
+        // filter_housing[0], while Apply Filters uses filter_housing[].
+        const values = [...params.entries()]
+            .filter(([name]) => name === key || name.startsWith(`${key}[`))
+            .map(([, value]) => value);
         values.forEach(function (value) {
             const input = Array.from(modal.querySelectorAll(`input[name="${inputName}"]`))
                 .find(item => item.value === value);
@@ -81,19 +85,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const url = new URL(window.location.href);
         const query = url.searchParams;
 
-        [
+        const filterKeys = [
             'sort',
             'filter_sex',
             'filter_housing',
-            'filter_housing[]',
             'filter_health',
-            'filter_health[]',
             'health_filter_vaccine',
-            'health_filter_vaccine[]',
             'filter_deceased',
             'filter_needs_review',
             'page'
-        ].forEach(key => query.delete(key));
+        ];
+        [...query.keys()].forEach(name => {
+            if (filterKeys.some(key => name === key || name.startsWith(`${key}[`))) query.delete(name);
+        });
 
         const selectedSort = modal.querySelector('input[name="sort"]:checked');
         if (selectedSort) {
