@@ -49,6 +49,16 @@
 
             @method('PUT')
 
+            @if($errors->any() && old('Citizen_FName') !== null)
+                <div class="health-alert health-alert-error" role="alert">
+                    <ul class="health-error-list">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <h2>
 
                 {{ $citizen->Citizen_FName }} {{ $citizen->Citizen_LName }}
@@ -1059,7 +1069,7 @@ function handlePreSaveCheck() {
 
     } else {
 
-        document.getElementById('citizenForm').submit();
+        document.getElementById('citizenForm').requestSubmit();
 
     }
 
@@ -1073,7 +1083,7 @@ function closeDeceasedModal() {
 
 document.getElementById('confirmDeceasedSaveBtn').addEventListener('click', function() {
 
-    document.getElementById('citizenForm').submit();
+    document.getElementById('citizenForm').requestSubmit();
 
 });
 
