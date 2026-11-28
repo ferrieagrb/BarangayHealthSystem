@@ -239,7 +239,7 @@
                     class="settings-form-control"
                 >
                     <option value="hostinger" {{ $backupDestination === 'hostinger' ? 'selected' : '' }}>
-                        Hostinger SFTP
+                        Remote SFTP storage
                     </option>
                     <option value="local" {{ $backupDestination === 'local' ? 'selected' : '' }}>
                         Application storage

@@ -197,4 +197,4 @@
     <ul class="push-device-list" data-push-device-list></ul>
 </section>
 
-<script src="{{ asset('js/push-notification-settings.js') }}" defer></script>
+<script src="{{ asset('js/push-notification-settings.js') }}?v={{ filemtime(public_path('js/push-notification-settings.js')) }}" defer></script>

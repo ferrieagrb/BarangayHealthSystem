@@ -1,6 +1,7 @@
 @extends('templates.layout')
 
 @section('CSSown')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <link rel="stylesheet" href="{{ asset('css/bhw/home.css') }}">
 <link rel="stylesheet" href="{{ asset('css/bhw/diagnosis-heatmap.css') }}?v={{ filemtime(public_path('css/bhw/diagnosis-heatmap.css')) }}">
 <style>
@@ -47,7 +48,7 @@
     </div>
 
     <section class="home-card home-card-wide" style="margin-bottom: 18px;">
-        <div class="home-card-header"><div><h2>Diagnosis Heatmap</h2><p>Diagnosis concentration in the last 7 days, by Purok and subgroup.</p></div><a href="{{ route('healthrecord') }}">Open health records</a></div>
+        <div class="home-card-header"><div><h2>Geospatial Diagnosis Heatmap</h2><p>Diagnosis hotspots in the last 7 days, by Purok and subgroup.</p></div><a href="{{ route('healthrecord') }}">Open health records</a></div>
         <div id="bhwCitizenHeatmap" class="home-map" role="region" aria-label="Diagnosis concentration heatmap" aria-describedby="bhwHeatmapStatus"></div>
         @include('bhw.partials.heatmap-controls', ['prefix' => 'bhwHeatmap'])
     </section>
@@ -95,10 +96,8 @@
 @section('scripts')
 <script id="bhwHeatmapData" type="application/json">@json($purokHeatmapData)</script>
 <script src="{{ asset('js/bhw/diagnosis-heatmap.js') }}?v={{ filemtime(public_path('js/bhw/diagnosis-heatmap.js')) }}"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ asset('js/bhw/analytics-heatmap.js') }}?v={{ filemtime(public_path('js/bhw/analytics-heatmap.js')) }}"></script>
 <script src="{{ asset('js/bhw/home-heatmap.js') }}?v={{ filemtime(public_path('js/bhw/home-heatmap.js')) }}"></script>
-@if(config('services.google_maps.key'))
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&amp;loading=async&amp;callback=initBhwHomeMap" async defer onerror="bhwHeatmapLoadError()"></script>
-@else
-<script>bhwHeatmapLoadError();</script>
-@endif
+<script>initBhwHomeMap();</script>
 @endsection

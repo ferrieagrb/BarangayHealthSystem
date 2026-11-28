@@ -97,6 +97,8 @@ class BhwHomeController extends Controller
             ->get();
         $subgroupCounts = [];
         $purokCounts = [];
+        $subgroupDiagnoses = [];
+        $purokDiagnoses = [];
         $purokIdByName = Purok::pluck('id', 'name');
         $subgroupPurokIds = PurokSubgroup::pluck('purok_id', 'id');
 
@@ -107,15 +109,18 @@ class BhwHomeController extends Controller
             }
 
             $subgroupId = $citizen->subgroup_id ?? $citizen->family?->subgroup_id;
+            $diagnosis = mb_strtolower(trim($record->diagnosis ?? '')) ?: 'unspecified';
             $purokId = $subgroupId
                 ? ($subgroupPurokIds[$subgroupId] ?? null)
                 : ($citizen->family?->purok_id ?? $purokIdByName[$citizen->Citizen_Purok] ?? null);
 
             if ($subgroupId) {
                 $subgroupCounts[$subgroupId] = ($subgroupCounts[$subgroupId] ?? 0) + 1;
+                $subgroupDiagnoses[$subgroupId][$diagnosis] = ($subgroupDiagnoses[$subgroupId][$diagnosis] ?? 0) + 1;
             }
             if ($purokId) {
                 $purokCounts[$purokId] = ($purokCounts[$purokId] ?? 0) + 1;
+                $purokDiagnoses[$purokId][$diagnosis] = ($purokDiagnoses[$purokId][$diagnosis] ?? 0) + 1;
             }
         }
 
@@ -126,7 +131,14 @@ class BhwHomeController extends Controller
         foreach ($mappedSubgroups as $subgroup) {
             $pid = $subgroup->purok_id;
             $subgroupTotalsByPurok[$pid] = ($subgroupTotalsByPurok[$pid] ?? 0) + ($subgroupCounts[$subgroup->id] ?? 0);
+            foreach ($subgroupDiagnoses[$subgroup->id] ?? [] as $diagnosis => $count) {
+                $purokDiagnoses[$pid][$diagnosis] = max(0, ($purokDiagnoses[$pid][$diagnosis] ?? 0) - $count);
+            }
         }
+        $diagnosisList = fn (array $counts) => collect($counts)
+            ->filter(fn ($count) => $count > 0)
+            ->map(fn ($count, $diagnosis) => ['diagnosis' => ucfirst($diagnosis), 'count' => $count])
+            ->values()->all();
 
         $purokHeatmapData = Purok::all()->map(fn ($purok) => [
             'type' => 'purok',
@@ -135,6 +147,7 @@ class BhwHomeController extends Controller
             'lng' => $purok->longitude,
             'boundary' => $purok->boundary,
             'count' => (int) ($purokCounts[$purok->id] ?? 0),
+            'diagnoses' => $diagnosisList($purokDiagnoses[$purok->id] ?? []),
             // Only subtract mapped subgroups. Others contribute at the Purok's location.
             'weight' => max(0, (int) ($purokCounts[$purok->id] ?? 0) - (int) ($subgroupTotalsByPurok[$purok->id] ?? 0)),
         ])->concat(
@@ -145,6 +158,7 @@ class BhwHomeController extends Controller
                 'lng' => $subgroup->longitude,
                 'boundary' => $subgroup->boundary,
                 'count' => (int) ($subgroupCounts[$subgroup->id] ?? 0),
+                'diagnoses' => $diagnosisList($subgroupDiagnoses[$subgroup->id] ?? []),
                 'weight' => (int) ($subgroupCounts[$subgroup->id] ?? 0),
             ])
         )->filter(fn ($area) => $area['boundary'] || ($area['lat'] !== null && $area['lng'] !== null))

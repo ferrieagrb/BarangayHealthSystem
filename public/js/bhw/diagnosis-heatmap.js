@@ -3,6 +3,16 @@
 
     const colors = [[0, 55, 255], [0, 190, 255], [0, 210, 90], [255, 225, 0], [255, 120, 0], [225, 25, 30]];
 
+    function diagnosisColor(diagnosis) {
+        const key = String(diagnosis).trim().toLowerCase();
+        let hash = 0;
+        for (const character of key) hash = (Math.imul(hash, 31) + character.charCodeAt(0)) | 0;
+        // Derive every color from its diagnosis name so new types work without
+        // a maintained list and retain their color across maps and reloads.
+        const value = hash >>> 0;
+        return `hsl(${value % 360}, ${65 + ((value >>> 9) % 20)}%, ${40 + ((value >>> 17) % 12)}%)`;
+    }
+
     function polygons(boundary) {
         const geometry = boundary?.type === 'Feature' ? boundary.geometry : boundary;
         if (geometry?.type === 'Polygon') return [geometry.coordinates];
@@ -100,5 +110,5 @@
         return state;
     }
 
-    root.DiagnosisHeatmap = { polygons, location, metersPerPixel, density, render, controls };
+    root.DiagnosisHeatmap = { polygons, location, metersPerPixel, density, render, controls, diagnosisColor };
 })(typeof window === 'undefined' ? globalThis : window);

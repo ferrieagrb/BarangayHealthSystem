@@ -306,6 +306,7 @@ class BhwDiseaseMonitoringTest extends TestCase
         $this->assertCount(1, $data['mapAreas']);
         $this->assertSame('subgroup', $data['mapAreas'][0]['type']);
         $this->assertSame(3, $data['mapAreas'][0]['records_count']);
+        $this->assertSame([['diagnosis' => 'Dengue', 'count' => 3]], $data['mapAreas'][0]['diagnoses']);
         $this->assertTrue($data['previousSuppressed']);
 
         $changedRecord = HealthRecord::query()
@@ -1435,11 +1436,42 @@ class BhwDiseaseMonitoringTest extends TestCase
         $this->assertSame(2, $areas->firstWhere('type', 'purok')['weight']);
         $this->assertSame(1, $areas->firstWhere('type', 'subgroup')['weight']);
         $this->assertSame(3, $areas->sum('weight'), 'Each diagnosis contributes to exactly one heat point.');
+        $this->assertSame([['diagnosis' => 'Influenza', 'count' => 2]], $areas->firstWhere('type', 'purok')['diagnoses']);
+        $this->assertSame([['diagnosis' => 'Influenza', 'count' => 1]], $areas->firstWhere('type', 'subgroup')['diagnoses']);
         $this->assertSame($boundary, $purok->fresh()->boundary);
         $html = $view->render();
         $this->assertStringContainsString('home-heatmap.js', $html);
+        $this->assertStringContainsString('leaflet@1.9.4/dist/leaflet.js', $html);
+        $this->assertStringContainsString('analytics-heatmap.js', $html);
+        $this->assertStringNotContainsString('maps.googleapis.com', $html);
         $this->assertStringContainsString('Show saved boundaries', $html);
         $this->assertStringContainsString('bhwHeatmapRadius', $html);
+    }
+
+    public function test_map_diagnosis_dots_combine_fallback_areas_and_suppress_small_diagnosis_groups(): void
+    {
+        $bhw = $this->createBhw();
+        UserPermission::create(['user_id' => $bhw->id, 'feature' => 'view_all_citizens', 'access' => 'read']);
+        $purok = Purok::create(['name' => 'Dot test', 'latitude' => 14.07, 'longitude' => 120.85]);
+        $subgroup = PurokSubgroup::create(['purok_id' => $purok->id, 'name' => 'No coordinates']);
+        foreach (range(1, 3) as $number) {
+            $citizen = $this->createCitizen($purok, $number === 1 ? $subgroup : null, "Dot citizen {$number}");
+            $this->createDiagnosis($citizen->id, $number === 1 ? ' dengue ' : 'Dengue', now()->toDateString());
+            if ($number === 1) {
+                // Three records from one citizen must not expose this diagnosis dot.
+                foreach (range(1, 3) as $unused) {
+                    $this->createDiagnosis($citizen->id, 'Cough', now()->toDateString());
+                }
+            }
+        }
+        $data = app(BhwDiseaseMonitoringService::class)->build(
+            $bhw, Carbon::today(), Carbon::today()->endOfDay(), null, null, null
+        );
+        $this->assertCount(1, $data['mapAreas']);
+        $this->assertSame(6, $data['mapAreas'][0]['records_count']);
+        $this->assertCount(1, $data['mapAreas'][0]['diagnoses']);
+        $this->assertSame('dengue', strtolower(trim($data['mapAreas'][0]['diagnoses'][0]['diagnosis'])));
+        $this->assertSame(3, $data['mapAreas'][0]['diagnoses'][0]['count']);
     }
 
     public function test_report_builder_orders_purok_summaries_in_preview_and_exports(): void

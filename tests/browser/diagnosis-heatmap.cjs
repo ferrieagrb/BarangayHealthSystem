@@ -35,6 +35,12 @@ const areas = [
     { type: 'subgroup', label: 'Purok B', name: 'Purok B', location: { lat: 14.063, lng: 120.854 }, boundary: null, records_count: 7, weight: 7, count: 7 },
     { type: 'purok', label: 'Boundary only', name: 'Boundary only', boundary: { type: 'Feature', geometry: boundary }, records_count: 3, weight: 3, count: 3 }
 ];
+areas[0].diagnoses = [{ diagnosis: 'Dengue', count: 12 }, { diagnosis: 'Cough', count: 8 }];
+areas[1].diagnoses = [{ diagnosis: 'Cough', count: 7 }];
+areas[2].diagnoses = [{ diagnosis: 'Dengue', count: 3 }];
+assert.equal(heat.diagnosisColor('New diagnosis'), heat.diagnosisColor(' NEW DIAGNOSIS '));
+assert.match(heat.diagnosisColor('New diagnosis'), /^hsl\(/);
+assert.notEqual(heat.diagnosisColor('New diagnosis'), heat.diagnosisColor('Another diagnosis'));
 
 function pixels(page) {
     return page.evaluate(() => {
@@ -80,6 +86,14 @@ function pixels(page) {
             const initial = await pixels(page);
             assert.ok(initial.red > 0 && initial.blue > 0, `Continuous color ramp: ${JSON.stringify(initial)}`);
             assert.equal(await page.locator('#testStatus').textContent(), '');
+            assert.equal(await page.locator('.diagnosis-dot').count(), 4);
+            assert.equal(await page.locator('#testDiagnosisLegend span').count(), 2);
+            await page.locator('.diagnosis-dot').first().click();
+            assert.ok((await page.locator('.leaflet-popup-content').textContent()).includes('Cough'));
+            await page.locator('#testDots').uncheck();
+            assert.equal(await page.locator('.diagnosis-dot').count(), 0);
+            await page.locator('#testDots').check();
+            assert.equal(await page.locator('.diagnosis-dot').count(), 4);
             await page.locator('#testBoundaries').uncheck();
             assert.equal(await page.evaluate(() => qaMap.hasLayer(qaBounds)), false);
             await page.locator('#testBoundaries').check();
@@ -107,78 +121,57 @@ function pixels(page) {
             }
             await page.close();
         }
-        // Exercise the Google adapter's DOM-ready lifecycle with the Maps API
-        // contract stubbed, so QA never needs a live API key or patient data.
+        // Test the dashboard with real Leaflet, synthetic totals and no Google API.
         const home = await browser.newPage({ viewport: { width: 1100, height: 800 } });
         const homeErrors = [];
         home.on('pageerror', error => homeErrors.push(error.message));
-        await home.addInitScript(() => {
-            window.qaPolygons = [];
-            class LatLng {
-                constructor(lat, lng) { this.latitude = lat; this.longitude = lng; }
-                lat() { return this.latitude; }
-                lng() { return this.longitude; }
-            }
-            class Bounds {
-                constructor() { this.points = []; }
-                extend(point) { this.points.push(point); }
-                isEmpty() { return !this.points.length; }
-            }
-            class Map {
-                constructor(element) { this.element = element; this.zoom = 15; this.handlers = {}; window.qaHomeMap = this; }
-                getCenter() { return new LatLng(14.062, 120.852); }
-                getZoom() { return this.zoom; }
-                setZoom(zoom) { this.zoom = zoom; }
-                fitBounds() {}
-                addListener(event, handler) { this.handlers[event] = handler; }
-            }
-            class Overlay {
-                setMap(map) { this.map = map; if (map) { this.onAdd(); this.draw(); } else this.onRemove(); }
-                getMap() { return this.map; }
-                getPanes() { return { overlayLayer: this.map.element }; }
-                getProjection() {
-                    const width = this.map.element.clientWidth, height = this.map.element.clientHeight;
-                    return {
-                        fromContainerPixelToLatLng: () => new LatLng(14.062 + height / 48000, 120.852 - width / 48000),
-                        fromLatLngToDivPixel: latLng => ({ x: (latLng.lng() - 120.852) * 24000 + width / 2, y: (14.062 - latLng.lat()) * 24000 + height / 2 })
-                    };
-                }
-            }
-            class Polygon {
-                constructor(options) { Object.assign(this, options); qaPolygons.push(this); }
-                setMap(map) { this.map = map; }
-                addListener(event, handler) { this.handler = handler; }
-            }
-            class Circle { addListener() {} }
-            class InfoWindow {
-                setContent(content) { this.content = content; }
-                setPosition() {}
-                open() { document.getElementById('popup').replaceChildren(this.content); }
-            }
-            window.google = { maps: { Map, LatLng, LatLngBounds: Bounds, OverlayView: Overlay, Polygon, Circle, InfoWindow,
-                Point: class { constructor(x, y) { this.x = x; this.y = y; } },
-                event: { addListenerOnce: (map, event, handler) => queueMicrotask(handler) } } };
-        });
         const core = fs.readFileSync(enginePath, 'utf8');
+        const leafletAdapter = fs.readFileSync(path.join(root, 'public/js/bhw/analytics-heatmap.js'), 'utf8');
         const adapter = fs.readFileSync(path.join(root, 'public/js/bhw/home-heatmap.js'), 'utf8');
         const homeData = areas.map(area => ({ ...area, lat: area.location?.lat ?? null, lng: area.location?.lng ?? null }));
         homeData[0].label = '<img src=x onerror=alert(1)>';
+        const leafletJs = process.env.LEAFLET_SOURCE
+            ? fs.readFileSync(path.join(process.env.LEAFLET_SOURCE, 'leaflet.js'), 'utf8')
+            : await (await fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')).text();
+        const leafletCss = process.env.LEAFLET_SOURCE
+            ? fs.readFileSync(path.join(process.env.LEAFLET_SOURCE, 'leaflet.css'), 'utf8')
+            : await (await fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css')).text();
+        await home.route('https://*.tile.openstreetmap.org/**', route => route.fulfill({
+            contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"></svg>'
+        }));
+        await home.route('https://services.arcgisonline.com/**', route => route.fulfill({
+            contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"></svg>'
+        }));
         await home.route('https://heatmap.test/', route => route.fulfill({ contentType: 'text/html', body:
-            `<script>${core}</script><script>${adapter}</script><script id="bhwHeatmapData" type="application/json">${JSON.stringify(homeData)}</script><script>initBhwHomeMap();</script><style>#bhwCitizenHeatmap{position:relative;height:420px}</style><div id="bhwCitizenHeatmap"></div>${controls('bhwHeatmap')}<div id="popup"></div>` }));
+            '<style>' + leafletCss + '</style><script>' + leafletJs + '</script><script>' + core + '</script><script>' + leafletAdapter + '</script><script>' + adapter + '</script><script id="bhwHeatmapData" type="application/json">' + JSON.stringify(homeData) + '</script><script>initBhwHomeMap();</script><style>#bhwCitizenHeatmap{position:relative;height:420px}</style><div id="bhwCitizenHeatmap"></div>' + controls('bhwHeatmap') }));
         await home.goto('https://heatmap.test/');
+        await home.addStyleTag({ path: path.join(root, 'public/css/bhw/diagnosis-heatmap.css') });
         await home.waitForFunction(() => parseFloat(document.querySelector('canvas')?.style.width) > 0);
         assert.ok((await pixels(home)).colored > 0);
-        assert.equal(await home.evaluate(() => qaPolygons.length), 2);
-        assert.equal(await home.evaluate(() => qaPolygons.every(polygon => polygon.strokeWeight > 0)), true);
+        assert.equal(await home.getByLabel('Satellite', { exact: true }).isChecked(), true);
+        assert.ok(await home.locator('.leaflet-control-scale-line').count());
+        await home.getByLabel('Street map', { exact: true }).check();
+        assert.equal(await home.getByLabel('Satellite', { exact: true }).isChecked(), false);
+        assert.ok((await pixels(home)).colored > 0, 'Heat remains visible when the basemap changes');
+        await home.getByLabel('Satellite', { exact: true }).check();
+        assert.equal(await home.locator('.leaflet-overlay-pane path').count(), 3);
         await home.locator('#bhwHeatmapBoundaries').uncheck();
-        assert.equal(await home.evaluate(() => qaPolygons.every(polygon => polygon.map === null)), true);
+        assert.equal(await home.locator('.leaflet-overlay-pane path').count(), 1);
         await home.locator('#bhwHeatmapBoundaries').check();
-        await home.evaluate(() => qaPolygons[0].handler({ latLng: new google.maps.LatLng(14.062, 120.852) }));
-        assert.equal(await home.locator('#popup img').count(), 0, 'Area names must be rendered as text');
-        assert.ok((await home.locator('#popup').textContent()).includes('<img'));
+        await home.evaluate(() => {
+            document.querySelector('.leaflet-overlay-pane path:nth-child(2)')
+                .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+        assert.equal(await home.locator('.leaflet-popup-content img').count(), 0, 'Area names must be rendered as text');
+        assert.ok((await home.locator('.leaflet-popup-content').textContent()).includes('<img'));
+        await home.locator('#bhwHeatmapRadius').fill('600');
+        await home.locator('#bhwHeatmapRadius').dispatchEvent('input');
+        assert.equal(await home.locator('#bhwHeatmapRadiusValue').textContent(), '600 m');
         assert.equal(await home.locator('#bhwHeatmapStatus').textContent(), '');
+        await home.evaluate(() => initBhwHomeMap());
+        assert.equal(await home.locator('.diagnosis-heatmap-canvas').count(), 1);
         assert.deepEqual(homeErrors, []);
         await home.close();
-        console.log('Heat density, color ramp, controls, pan/zoom, responsive rendering and Google adapter lifecycle passed.');
+        console.log('Heat density, color ramp, controls, pan/zoom, responsive rendering and dashboard lifecycle passed.');
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,242 +1,75 @@
 @extends(auth()->user()->isSuperAdmin() ? 'templates.superadmin' : (auth()->user()->role === 'admin' ? 'templates.admin' : 'templates.layout'))
-
 @section('CSSown')
-<style>
-    .settings-container {
-        padding: 30px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .settings-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-        overflow: hidden;
-        margin-bottom: 25px;
-        transition: background 0.3s, border-color 0.3s;
-    }
-    .settings-header {
-        background: #2563eb;
-        color: white;
-        padding: 18px 25px;
-        font-size: 1.15rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .settings-body {
-        padding: 25px 30px;
-    }
-    .form-group-custom {
-        margin-bottom: 20px;
-    }
-    .form-group-custom label {
-        display: block;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 8px;
-        transition: color 0.3s;
-    }
-    .form-group-custom select,
-    .form-group-custom input {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        background-color: #f9fafb;
-        color: #1f2937;
-        transition: all 0.2s ease;
-    }
-    .form-group-custom select:focus,
-    .form-group-custom input:focus {
-        border-color: #2563eb;
-        background-color: #fff;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-    .form-hint {
-        font-size: 0.85rem;
-        color: #6b7280;
-        margin-top: 6px;
-        transition: color 0.3s;
-    }
-    .btn-save {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .btn-save:hover {
-        background: #1d4ed8;
-    }
-    .alert-custom {
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-    }
-    .alert-success-custom {
-        background: #ecfdf5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-    .alert-danger-custom {
-        background: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-
-    /* ==========================================
-       DARK MODE OVERRIDES FOR SETTINGS
-       ========================================== */
-    body.theme-dark .settings-card {
-        background: #1e1e1e !important;
-        border-color: #333333 !important;
-    }
-    body.theme-dark .form-group-custom label {
-        color: #e5e7eb !important;
-    }
-    body.theme-dark .form-group-custom select,
-    body.theme-dark .form-group-custom input {
-        background-color: #2d2d2d !important;
-        border-color: #404040 !important;
-        color: #ffffff !important;
-    }
-    body.theme-dark .form-hint {
-        color: #9ca3af !important;
-    }
-
-    body.theme-dark .security-row {
-        border-color: #333333 !important;
-    }
-    body.theme-dark .security-label {
-        color: #e5e7eb !important;
-    }
-    body.theme-dark .security-hint {
-        color: #9ca3af !important;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/account-settings.css') }}?v={{ filemtime(public_path('css/account-settings.css')) }}">
 @endsection
-
 @section('content')
-<div class="settings-container">
-    
-    @include('partials.appearance-settings')
-
-    @include('partials.push-notification-settings')
-
-    {{-- CARD 2: SECURITY & PASSWORD SETTINGS --}}
-    <div class="settings-card">
-        <div class="settings-header" style="background: #0f172a;">
-            <i class='bx bx-lock-alt'></i> Security & Password Management
+@php($account = auth()->user())
+<main class="account-settings" aria-labelledby="settingsTitle">
+    <header class="account-settings-heading">
+        <div><p class="settings-eyebrow">YOUR WORKSPACE</p><h1 id="settingsTitle">Account settings</h1><p>Make yourself at home. Manage your display, notifications, and account security.</p></div>
+        <span class="settings-private">@include('partials.settings-icon', ['name' => 'user-circle']) Personal preferences</span>
+    </header>
+    <section class="settings-profile" aria-label="Your account">
+        <div class="settings-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($account->name, 0, 1)) }}</div>
+        <div class="settings-profile-info"><h2>{{ $account->name }}</h2><p>{{ $account->email ?: 'No email address on file' }}</p></div>
+        <span class="settings-badge settings-role">{{ $account->isBhw() ? 'Barangay Health Worker' : ($account->isSuperAdmin() ? 'Super Administrator' : 'Administrator') }}</span>
+    </section>
+    <nav class="settings-navigation" aria-label="Settings sections">
+        <a href="#display-settings">@include('partials.settings-icon', ['name' => 'palette']) Appearance</a>
+        <a href="#notification-settings">@include('partials.settings-icon', ['name' => 'bell']) Notifications &amp; devices</a>
+        <a href="#security-settings">@include('partials.settings-icon', ['name' => 'shield-quarter']) Security</a>
+    </nav>
+    @if(session('success') || session('password_success'))
+        <div class="settings-feedback settings-feedback-success" role="status">{{ session('password_success') ?: session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="settings-feedback settings-feedback-error" role="alert">{{ session('error') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="settings-feedback settings-feedback-error" role="alert"><strong>Please check your changes.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+    @endif
+    <div class="settings-columns">
+        <div class="settings-column">
+            <div id="display-settings" class="settings-anchor">@include('partials.appearance-settings', ['appearanceFeedbackHandled' => true])</div>
+            <div id="notification-settings" class="settings-anchor">@include('partials.push-notification-settings')</div>
         </div>
-        
-        <div class="settings-body">
-            @if(session('password_success'))
-                <div class="alert-custom alert-success-custom">
-                    {{ session('password_success') }}
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert-custom alert-danger-custom">
-                    <ul class="mb-0" style="padding-left: 15px;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('user.password.update') }}" method="POST">
-                @csrf
-                @method('PUT')
-
-                <div class="form-group-custom">
-                    <label for="current_password">Current Password</label>
-                    <input type="password" name="current_password" id="current_password" autocomplete="current-password" required placeholder="Enter current password">
-                </div>
-
-                <div class="form-group-custom">
-                    <label for="password">New Password</label>
-                    <input type="password" name="password" id="password" autocomplete="new-password" required placeholder="At least 8 characters">
-                </div>
-
-                <div class="form-group-custom">
-                    <label for="password_confirmation">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password" required placeholder="Re-enter new password">
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-                    <button type="submit" class="btn-save" style="background: #0f172a;">Update Password</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="settings-card">
-        <div class="settings-header" style="background: #047857;">
-            <i class='bx bx-shield-quarter'></i> Account Status & Two-Factor Authentication
-        </div>
-        
-        <div class="settings-body">
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                
-                {{-- Email Verification Status --}}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;" class="security-row">
-                    <div>
-                        <strong style="display: block; color: #374151;" class="security-label">Email Address Verification</strong>
-                        <span style="font-size: 0.85rem; color: #6b7280;" class="security-hint">{{ auth()->user()->email }}</span>
+        <div class="settings-column settings-anchor" id="security-settings">
+            <section class="settings-card password-card" aria-labelledby="passwordHeading">
+                <div class="settings-card-header"><span class="settings-section-icon" aria-hidden="true">@include('partials.settings-icon', ['name' => 'lock-alt'])</span><div><h2 id="passwordHeading">Password &amp; security</h2><p>Keep your account protected with a strong password.</p></div></div>
+                <form action="{{ route('user.password.update') }}" method="POST" class="settings-password-form">
+                    @csrf
+                    @method('PUT')
+                    <div class="settings-field">
+                        <label for="current_password">Current password</label>
+                        <input type="password" name="current_password" id="current_password" autocomplete="current-password" required placeholder="Enter your current password" @error('current_password') aria-invalid="true" aria-describedby="current-password-error" @enderror>
+                        @error('current_password')<p id="current-password-error" class="settings-field-error">{{ $message }}</p>@enderror
                     </div>
-                    <div>
-                        @if(auth()->user()->hasVerifiedEmail())
-                            <span style="background: #ecfdf5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #a7f3d0;">
-                                <i class='bx bx-check-circle'></i> Verified
-                            </span>
-                        @else
-                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-                                <span style="background: #fef2f2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #fecaca;">
-                                    <i class='bx bx-error-circle'></i> Unverified
-                                </span>
-                                <form method="POST" action="{{ route('verification.send') }}">
-                                    @csrf
-                                    <button type="submit" class="btn-save" style="padding: 7px 12px; font-size: 0.85rem;">Send Verification Email</button>
-                                </form>
-                            </div>
-                        @endif
+                    <div class="settings-field">
+                        <label for="password">New password</label>
+                        <input type="password" name="password" id="password" autocomplete="new-password" minlength="8" required placeholder="Create a new password" aria-describedby="password-hint @error('password') password-error @enderror" @error('password') aria-invalid="true" @enderror>
+                        <p class="settings-hint" id="password-hint">Use at least 8 characters. A mix of words, numbers, and symbols is best.</p>
+                        @error('password')<p id="password-error" class="settings-field-error">{{ $message }}</p>@enderror
                     </div>
+                    <div class="settings-field"><label for="password_confirmation">Confirm new password</label><input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password" minlength="8" required placeholder="Re-enter your new password"></div>
+                    <div class="settings-form-footer"><button type="submit" class="settings-primary">Update Password</button></div>
+                </form>
+            </section>
+            <section class="settings-card" aria-labelledby="accountSecurityHeading">
+                <div class="settings-card-header"><span class="settings-section-icon" aria-hidden="true">@include('partials.settings-icon', ['name' => 'shield-quarter'])</span><div><h2 id="accountSecurityHeading">Sign-in protection</h2><p>Review how your account is verified.</p></div></div>
+                <div class="settings-security-item">
+                    <div class="settings-security-label"><h3>Email address</h3><span class="settings-badge {{ $account->hasVerifiedEmail() ? 'settings-badge-success' : 'settings-badge-warning' }}">{{ $account->hasVerifiedEmail() ? 'Verified' : 'Unverified' }}</span></div>
+                    <p class="settings-email">{{ $account->email ?: 'Ask an administrator to add your email address.' }}</p>
+                    @if(!$account->hasVerifiedEmail() && $account->email)
+                        <form method="POST" action="{{ route('verification.send') }}">@csrf<button type="submit" class="settings-secondary">Send Verification Email</button></form>
+                    @endif
                 </div>
-
-                {{-- Google Authenticator / 2FA Status --}}
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="display: block; color: #374151;" class="security-label">Google Authenticator (2FA)</strong>
-                        <span style="font-size: 0.85rem; color: #6b7280;" class="security-hint">Protects your account with time-based verification codes.</span>
-                    </div>
-                    <div>
-                        {{-- Change 'google2fa_secret' or your specific 2FA column name depending on your database schema --}}
-                        @if(!empty(auth()->user()->google2fa_secret))
-                            <span style="background: #ecfdf5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #a7f3d0;">
-                                <i class='bx bx-shield-alt-2'></i> Active
-                            </span>
-                        @else
-                            <span style="background: #f3f4f6; color: #4b5563; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #d1d5db;">
-                                <i class='bx bx-shield-x'></i> Inactive
-                            </span>
-                        @endif
-                    </div>
+                <div class="settings-security-item">
+                    <div class="settings-security-label"><h3>Email sign-in confirmation</h3><span class="settings-badge {{ $account->email ? 'settings-badge-success' : 'settings-badge-warning' }}">{{ $account->email ? 'Required' : 'Email needed' }}</span></div>
+                    <p>Every sign-in requires your password, a Yes confirmation from your email, and a 6-digit code.</p>
                 </div>
-
-            </div>
+            </section>
+            <p class="settings-footnote">@include('partials.settings-icon', ['name' => 'info-circle']) Changes here apply to your account. Contact an administrator to update your name or email.</p>
         </div>
     </div>
-
-</div>
+</main>
 @endsection

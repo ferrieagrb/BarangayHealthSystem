@@ -3,6 +3,8 @@
 @section('CSSown')
 <style>
     .citizen-settings {
+        --action-success: #087d3a;
+        --action-success-hover: #066331;
         max-width: 900px;
         margin: 0 auto;
         padding: clamp(18px, 3vw, 36px);
@@ -288,6 +290,10 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="cs-alert cs-error" role="alert">{{ session('error') }}</div>
+    @endif
+
     {{-- Validation Errors --}}
     @if ($errors->any())
         <div class="cs-alert cs-error" role="alert">
@@ -548,8 +554,8 @@
             @endunless
 
             <p class="cs-hint" style="margin-top: 16px">
-                This sends a signed verification link. It is email ownership
-                verification, not a second-factor login code (2FA).
+                This link verifies your email address. Every sign-in also requires
+                email confirmation and a 6-digit code.
             </p>
         </div>
     </section>

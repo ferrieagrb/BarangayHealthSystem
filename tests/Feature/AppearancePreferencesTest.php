@@ -5,6 +5,11 @@ namespace Tests\Feature;
 use App\Http\Middleware\SystemMaintenance;
 use App\Http\Middleware\TrackPageViews;
 use App\Models\User;
+use App\Notifications\LoginConfirmation;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +24,9 @@ class AppearancePreferencesTest extends TestCase
     {
         parent::setUp();
         $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
-        foreach (['user_permissions', 'system_settings', 'audit_logs', 'users'] as $table) {
+        Notification::fake();
+        Cache::flush();
+        foreach (['login_challenges', 'user_permissions', 'system_settings', 'audit_logs', 'users'] as $table) {
             Schema::dropIfExists($table);
         }
         Schema::create('users', function (Blueprint $table) {
@@ -60,6 +67,7 @@ class AppearancePreferencesTest extends TestCase
             $table->string('ip_address')->nullable();
             $table->timestamps();
         });
+        (require database_path('migrations/2026_11_28_000001_create_login_challenges_table.php'))->up();
     }
 
     public function test_every_role_can_preview_without_persisting_and_save_only_its_own_preferences(): void
@@ -109,6 +117,11 @@ class AppearancePreferencesTest extends TestCase
             Auth::forgetGuards();
             $this->post(route('login.submit'), ['Username' => $user->email, 'Password' => 'password'])
                 ->assertRedirect()->assertSessionHasNoErrors();
+            $this->assertGuest();
+            $email = Notification::sent($user, LoginConfirmation::class)->last();
+            $this->post($email->reviewUrl(), ['decision' => 'yes'])->assertOk();
+            $this->post(route('login.confirmation.verify'), ['code' => $email->code])
+                ->assertRedirect(route('dashboard'));
             $this->get($this->settingsUrls($role)[0])->assertOk()->assertSee('data-theme="dark"', false);
             $this->put(route('user.preferences.update'), ['theme' => 'light', 'font_size' => 'normal'])
                 ->assertRedirect()->assertSessionHasNoErrors();
@@ -425,6 +438,49 @@ class AppearancePreferencesTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_password_updates_validate_current_password_confirmation_and_length_for_every_role(): void
+    {
+        foreach (['bhw', 'admin', 'superadmin', 'citizen'] as $role) {
+            $user = $this->makeUser($role);
+            $this->actingAs($user);
+            $url = route('user.password.update');
+            foreach ([
+                ['current_password' => 'wrong', 'password' => 'NewPassword123!', 'password_confirmation' => 'NewPassword123!'],
+                ['current_password' => 'password', 'password' => 'NewPassword123!', 'password_confirmation' => 'mismatch'],
+                ['current_password' => 'password', 'password' => 'short', 'password_confirmation' => 'short'],
+            ] as $payload) {
+                $this->put($url, $payload)->assertSessionHasErrors();
+                $this->assertTrue(Hash::check('password', $user->fresh()->password));
+            }
+            $this->put($url, ['current_password' => 'password', 'password' => 'NewPassword123!', 'password_confirmation' => 'NewPassword123!'])
+                ->assertSessionHas('password_success');
+            $this->assertTrue(Hash::check('NewPassword123!', $user->fresh()->password));
+            $this->assertFalse((bool) $user->fresh()->must_change_password);
+            $this->get(route('settings'))->assertOk()->assertSee('Password changed successfully.');
+        }
+    }
+
+    public function test_email_verification_can_be_sent_and_signed_link_marks_email_verified(): void
+    {
+        $user = $this->makeUser('bhw');
+        $this->actingAs($user)->from(route('settings'))->post(route('verification.send'))
+            ->assertRedirect(route('settings'))->assertSessionHas('success');
+        Notification::assertSentTo($user, VerifyEmail::class);
+        $email = Notification::sent($user, VerifyEmail::class)->last();
+        $this->get($email->toMail($user)->actionUrl)->assertRedirect(route('settings'));
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->get(route('settings'))->assertOk()->assertSee('Verified')->assertDontSee('Send Verification Email');
+    }
+
+    public function test_email_delivery_failures_show_a_useful_message_on_settings(): void
+    {
+        $user = $this->makeUser('bhw');
+        Notification::shouldReceive('send')->once()->andThrow(new \RuntimeException('Mail unavailable'));
+        $this->actingAs($user)->from(route('settings'))->post(route('verification.send'))
+            ->assertRedirect(route('settings'))->assertSessionHas('error');
+        $this->get(route('settings'))->assertOk()->assertSee('The verification email could not be sent.');
     }
 
     private function makeUser(string $role): User

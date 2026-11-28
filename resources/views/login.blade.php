@@ -26,11 +26,14 @@
         <div class="welcome-header">
             <img src="{{ \App\Models\SystemSetting::logoUrl() }}" alt="Barangay Amuyong Logo" class="logo" height="100" width="100">
             <h2>Barangay Amuyong<br><span style="font-size: 1.1rem; font-weight: 500; color: #64748b;">Health Information System</span></h2>
-            <p>Please enter your credentials to access your dashboard</p>
+            <p>Sign in with your password, then confirm through your email and verification code.</p>
         </div>
 
         <form action="{{ route('login.submit') }}" method="POST" data-browser-autocomplete="allow">
             @csrf  
+            @if ($errors->any())
+                <div class="alert-error" role="alert">{{ $errors->first() }}</div>
+            @endif
             
             @if (session('error'))
                 <div class="alert-error">

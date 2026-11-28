@@ -1,0 +1,37 @@
+Security header deployment
+
+The application removes PHP/platform response identifiers and the Superadmin
+analytics response no longer includes the PHP version. Apache header rules also
+suppress identifying headers for static files and server-generated responses
+where mod_headers can control them.
+
+Hosting configuration still requires verification after deployment:
+- Set expose_php = Off in the hosting PHP configuration. This is a system-level
+  PHP option; a public/.user.ini entry is not sufficient.
+- Disable detailed server banners at the web server or hosting control panel.
+  For Apache this normally means ServerTokens Prod and ServerSignature Off in
+  server configuration. A proxy or hosting server can still add a Server header
+  after the application response, beyond Laravel's control.
+- Keep APP_DEBUG=false in production. Do not publish phpinfo diagnostic files.
+- Check HTTPS response headers on login, authenticated pages, errors, and static
+  assets using the production domain. Local application tests do not verify the
+  hosting server or proxy configuration.
+
+CSP status
+
+The enforced policy limits base URLs, plugin objects, framing, and form targets.
+Script restrictions are REPORT-ONLY and appear in browser developer tools.
+They do not yet prevent script execution and are not a nonce-based strict CSP.
+There is no central violation collection endpoint in this change.
+
+Before enforcing a strict script policy, replace inline event handlers and
+eval-dependent libraries, assign per-response cryptographic nonces to trusted
+script tags at template rendering time, and verify all routes, charts, maps,
+camera/QR scanning, exports, and CDN dependencies in a real browser. Do not
+blindly add nonces to the final HTML response: that could authorize injected
+scripts. The current inline styles and Tailwind runtime also need compatibility
+review before tightening style-src.
+
+References:
+https://www.php.net/manual/en/ini.core.php
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP

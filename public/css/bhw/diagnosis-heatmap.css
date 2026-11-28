@@ -8,6 +8,13 @@
 .diagnosis-heatmap-note, .diagnosis-heatmap-status { margin: 8px 0 !important; color: #475569 !important; font-size: 13px !important; line-height: 1.5; }
 .diagnosis-heatmap-status:empty { display: none; }
 .diagnosis-heatmap-canvas { position: absolute; pointer-events: none; }
+.diagnosis-dot-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: max-content; max-width: 100px; transform: translate(-50%, -50%); }
+.diagnosis-dot-group .diagnosis-dot { display: block; flex: 0 0 16px; width: 16px; height: 16px; min-width: 0; padding: 0; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 1px 4px #0f172a99; cursor: pointer; }
+.diagnosis-dot:focus-visible { outline: 3px solid #0f172a; outline-offset: 2px; }
+.diagnosis-type-key { padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; color: #334155; font-size: 13px; }
+.diagnosis-type-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; max-height: 150px; overflow-y: auto; margin-top: 8px; }
+.diagnosis-type-legend span { display: inline-flex; align-items: center; gap: 7px; overflow-wrap: anywhere; }
+.diagnosis-type-legend i { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; }
 @media (max-width: 620px) {
     .diagnosis-heatmap-scale { flex-basis: 100%; max-width: none; }
     .diagnosis-heatmap-controls { align-items: flex-start; }

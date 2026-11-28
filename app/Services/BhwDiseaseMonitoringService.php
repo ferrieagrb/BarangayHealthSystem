@@ -146,11 +146,39 @@ class BhwDiseaseMonitoringService
                     'boundary' => $target->boundary,
                     'records_count' => 0,
                     'citizens_count' => 0,
+                    'diagnoses' => [],
                 ];
             }
             $mapAreas[$key]['records_count'] += (int) $row->record_count;
             $mapAreas[$key]['citizens_count'] += (int) $row->citizen_count;
         }
+
+        $diagnosisRows = (clone $recordsQuery)
+            ->selectRaw('COALESCE(csg.id, fsg.id) AS subgroup_id, area_purok.id AS purok_id, LOWER(TRIM(hr.diagnosis)) AS diagnosis_key, MIN(TRIM(hr.diagnosis)) AS diagnosis, COUNT(*) AS record_count, COUNT(DISTINCT hr.citizen_id) AS citizen_count')
+            ->groupByRaw('COALESCE(csg.id, fsg.id), area_purok.id, LOWER(TRIM(hr.diagnosis))')
+            ->get();
+        $mapDiagnoses = [];
+        foreach ($diagnosisRows as $row) {
+            $subgroup = $subgroups->get($row->subgroup_id);
+            $target = $subgroup && $this->hasMapLocation($subgroup) ? $subgroup : $puroks->get($row->purok_id);
+            if (!$target || !$this->hasMapLocation($target)) {
+                continue;
+            }
+            $key = ($target instanceof PurokSubgroup ? 'subgroup-' : 'purok-') . $target->id;
+            $entry = &$mapDiagnoses[$key][$row->diagnosis_key];
+            $entry ??= ['diagnosis' => $row->diagnosis, 'count' => 0, 'citizens_count' => 0];
+            $entry['count'] += (int) $row->record_count;
+            $entry['citizens_count'] += (int) $row->citizen_count;
+            unset($entry);
+        }
+        foreach ($mapAreas as $key => &$area) {
+            // Keep the existing minimum of three citizens for each diagnosis dot.
+            $area['diagnoses'] = collect($mapDiagnoses[$key] ?? [])
+                ->filter(fn ($entry) => $entry['citizens_count'] >= 3)
+                ->map(fn ($entry) => ['diagnosis' => $entry['diagnosis'], 'count' => $entry['count']])
+                ->values()->all();
+        }
+        unset($area);
 
         $visibleMapAreas = array_values(array_filter(
             $mapAreas,

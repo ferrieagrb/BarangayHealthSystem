@@ -32,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['confirm_password']);
+        $exceptions->dontFlash(['confirm_password', 'Password', 'code']);
         $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, \Illuminate\Http\Request $request) {
             if (in_array($response->getStatusCode(), [401, 419], true) && ! $request->expectsJson()) {
                 return redirect()->route('login');

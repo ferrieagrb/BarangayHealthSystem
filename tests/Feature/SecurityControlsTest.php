@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Http\Middleware\SystemMaintenance;
 use App\Http\Middleware\TrackPageViews;
 use App\Models\User;
+use App\Notifications\LoginConfirmation;
+use Illuminate\Support\Facades\Notification;
 use App\Services\CitizenAccessAuditor;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
@@ -21,9 +23,10 @@ class SecurityControlsTest extends TestCase
         parent::setUp();
         $this->withoutMiddleware([SystemMaintenance::class, TrackPageViews::class]);
         Cache::flush();
+        Notification::fake();
         RateLimiter::clear('x');
 
-        foreach (['user_permissions', 'system_settings', 'audit_logs', 'admin_activity_logs', 'users'] as $table) {
+        foreach (['login_challenges', 'user_permissions', 'system_settings', 'audit_logs', 'admin_activity_logs', 'users'] as $table) {
             Schema::dropIfExists($table);
         }
         Schema::create('users', function (Blueprint $table) {
@@ -79,6 +82,7 @@ class SecurityControlsTest extends TestCase
             $table->timestamps();
         });
         DB::table('system_settings')->insert(['key' => 'max_failed_login_attempts', 'value' => '3']);
+        (require database_path('migrations/2026_11_28_000001_create_login_challenges_table.php'))->up();
     }
 
     private function makeUser(string $role, array $overrides = []): User
@@ -114,6 +118,8 @@ class SecurityControlsTest extends TestCase
         RateLimiter::clear(strtolower($user->email) . '|127.0.0.1');
 
         $this->post(route('login.submit'), ['Username' => $user->email, 'Password' => 'password']);
+        $this->assertGuest();
+        $this->completeEmailLogin($user);
         $this->assertAuthenticatedAs($user);
         $this->assertNull($user->fresh()->locked_until);
     }
@@ -173,12 +179,23 @@ class SecurityControlsTest extends TestCase
         preg_match('/Temporary password \(shown once\): ([A-Za-z0-9]+)\./', $successMessage, $matches);
         $this->assertArrayHasKey(1, $matches);
 
+        $this->post(route('logout'));
         $this->post(route('login.submit'), [
             'Username' => $target->username,
             'Password' => $matches[1],
-        ])->assertRedirect(route('password.force-change'));
+        ])->assertRedirect(route('login.confirmation'));
+        $this->assertGuest();
+        $this->completeEmailLogin($target)->assertRedirect(route('password.force-change'));
 
         $this->assertAuthenticatedAs($target);
+    }
+
+    private function completeEmailLogin(User $user)
+    {
+        $email = Notification::sent($user, LoginConfirmation::class)->last();
+        $this->post($email->reviewUrl(), ['decision' => 'yes'])->assertOk();
+
+        return $this->post(route('login.confirmation.verify'), ['code' => $email->code]);
     }
 
     public function test_admin_cannot_reset_a_superadmin_password(): void

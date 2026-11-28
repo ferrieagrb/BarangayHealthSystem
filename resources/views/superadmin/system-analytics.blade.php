@@ -84,7 +84,7 @@
         <div class="infrastructure-grid">
 
             <div class="analytics-card infrastructure-card">
-                <h3 class="analytics-label">Disk Storage (Hostinger)</h3>
+                <h3 class="analytics-label">Disk Storage</h3>
 
                 <div class="analytics-stat-value" id="disk-usage-text">
                     Loading...
@@ -114,20 +114,7 @@
                 </div>
 
                 <p class="analytics-muted-text">
-                    MySQL on Hostinger Server
-                </p>
-            </div>
-
-            <div class="analytics-card infrastructure-card">
-                <h3 class="analytics-label">PHP Environment</h3>
-
-                <div class="analytics-stat-value" id="php-version-text">
-                    Loading...
-                </div>
-
-                <p class="environment-status">
-                    <span class="environment-status-dot"></span>
-                    Active &amp; Running
+                    Application database storage
                 </p>
             </div>
 

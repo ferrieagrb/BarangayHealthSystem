@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Support\AuditActionLevel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
@@ -92,5 +93,6 @@ class AdminAuditLogController extends Controller
         if ($dateTo) {
             $query->whereDate($table . '.created_at', '<=', $dateTo);
         }
+        AuditActionLevel::applyFilter($query, $table . '.action');
     }
 }

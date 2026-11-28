@@ -36,7 +36,6 @@
 
         <section class="report-panel chart-panel">
             <h2>Citizens by Purok</h2>
-            <p>Resident distribution across the barangay.</p>
             <div id="purokChart" class="chart-container"></div>
         </section>
     </div>
@@ -80,21 +79,18 @@
 
         <section class="report-panel chart-panel">
             <h2>Referrals per Month</h2>
-            <p>Referral forms recorded over the last six months.</p>
             <div id="referralWorkloadChart" class="chart-container"></div>
         </section>
     </div>
 
     <section class="report-panel chart-panel" style="margin-bottom: 18px;">
         <h2>Inventory by Category</h2>
-        <p>Total available units grouped by supply category.</p>
         <div id="inventoryCategoryChart" class="chart-container"></div>
     </section>
 
     <div class="report-layout">
         <section class="report-panel">
             <h2>Inventory by Category</h2>
-            <p>Current available units grouped by supply category.</p>
             <table class="report-table">
                 <thead><tr><th>Category</th><th>Total Units</th><th>Risk</th></tr></thead>
                 <tbody>
