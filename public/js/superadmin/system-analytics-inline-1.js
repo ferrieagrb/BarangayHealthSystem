@@ -82,11 +82,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             `${server.db_size_mb ?? 'N/A'} MB`
         );
 
-        setText(
-            'php-version-text',
-            `PHP ${server.php_version ?? 'N/A'}`
-        );
-
         // Section 3: Top Visited Pages
         const topPagesContainer = document.getElementById('top-pages-list');
         const topPages = Array.isArray(data.top_pages)
@@ -212,7 +207,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         setText('total-views-text', 'Unavailable');
         setText('disk-usage-text', 'Unavailable');
         setText('db-size-text', 'Unavailable');
-        setText('php-version-text', 'Unavailable');
 
         const topPagesContainer = document.getElementById('top-pages-list');
         const browserContainer = document.getElementById(

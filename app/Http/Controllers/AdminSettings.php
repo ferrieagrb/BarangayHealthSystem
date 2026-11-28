@@ -20,7 +20,7 @@ class AdminSettings extends Controller
 {
     public function index()
     {
-        return view('admin.admin_settings');
+        return view('settings', ['user' => auth()->user()]);
     }
 
     public function demographicsIndex()

@@ -6,7 +6,7 @@
     @if(session('success') && !($appearanceFeedbackHandled ?? false))
         <p role="status" class="appearance-feedback">{{ session('success') }}</p>
     @endif
-    @if($errors->has('theme') || $errors->has('font_size'))
+    @if(($errors->has('theme') || $errors->has('font_size')) && !($appearanceFeedbackHandled ?? false))
         <p role="alert">{{ $errors->first('theme') ?: $errors->first('font_size') }}</p>
     @endif
     <form action="{{ route('user.preferences.update') }}" method="POST" data-appearance-form>

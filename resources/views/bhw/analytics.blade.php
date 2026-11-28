@@ -133,13 +133,12 @@
             <div class="disease-kpi"><span>Records excluded from map</span><strong>{{ $diseaseMonitoringData['privacySuppressed'] ? 'Suppressed' : ($diseaseMonitoringData['missingLocationSuppressed'] ? 'Suppressed (<3)' : number_format($diseaseMonitoringData['missingLocationRecords'])) }}</strong><small>{{ $diseaseMonitoringData['privacySuppressed'] ? 'Fewer than 3 distinct citizens in this result' : 'Missing map location or privacy threshold · ' . ($diseaseMonitoringData['missingDateSuppressed'] ? 'missing-date total withheld' : number_format($diseaseMonitoringData['missingDateRecords']) . ' records have no diagnosis date') }}</small></div>
         </div>
 
-        <p class="disease-note">Counts are diagnosis-record entries, not confirmed new cases. One citizen may have multiple visits or repeated diagnoses. The schema has no episode identifier or separate case-status field; “Resolved” is a severity value and is not treated as a case status. Small results and map areas with fewer than three distinct citizens are withheld to reduce disclosure risk. This is a review aid, not an outbreak determination.</p>
+        <p class="disease-note">Counts represent diagnosis records, not confirmed new cases. Results with fewer than three distinct citizens are hidden.</p>
     </section>
 
     <div class="analytics-layout">
         <section class="analytics-panel analytics-demand-panel">
             <h2>Diagnosis records over time</h2>
-            <p>Counts follow the selected date, diagnosis, Purok, and subgroup filters. Records and distinct citizens are separate measures; buckets with fewer than three citizens are hidden.</p>
             @if($diseaseMonitoringData['privacySuppressed'])
                 <div class="disease-empty">Trend details are withheld because fewer than three distinct citizens match these filters.</div>
             @elseif(!collect($diseaseMonitoringData['trend']['recordCounts'])->contains(fn ($count) => $count > 0))
@@ -151,11 +150,10 @@
 
         <section class="analytics-panel">
             <h2>Most recorded diagnoses</h2>
-            <p>Diagnosis names are grouped by case and outer-whitespace normalization only; clinically distinct terms are not automatically merged.</p>
             @if($diseaseMonitoringData['diagnosisRankings']->isNotEmpty())
                 <div id="diagnosisRankingChart" class="analytics-chart" role="img" aria-label="Top diagnoses by record count; values are listed in the table below"></div>
             @endif
-            <p>Up to 10 diagnoses are shown. Each must include at least three distinct citizens; displayed shares may not total 100%.</p>
+            <p>Top 10 diagnoses; shares may not total 100%.</p>
             <table class="analytics-table">
                 <thead><tr><th>Diagnosis</th><th>Records</th><th>Distinct citizens</th><th>Share of all filtered records</th></tr></thead>
                 <tbody>
@@ -173,8 +171,8 @@
             </table>
         </section>
         <section class="analytics-panel">
-            <h2>Diagnosis concentration heatmap</h2>
-            <p>Only saved Purok or subgroup coordinates and boundaries are used. Map values are aggregated and do not identify citizens.</p>
+            <h2>Geospatial diagnosis heatmap</h2>
+            <p>Totals by Purok and subgroup.</p>
             @if(count($diseaseMonitoringData['mapAreas']))
                 <div id="diseaseMonitoringMap" class="disease-map" role="region" aria-label="Diagnosis concentration by mapped Purok and subgroup"></div>
                 @include('bhw.partials.heatmap-controls', ['prefix' => 'diseaseHeatmap'])
@@ -224,7 +222,7 @@
     <div class="analytics-layout">
         <section class="analytics-panel analytics-demand-panel">
             <h2>Recent service activity and simple projection</h2>
-            <p>The projection carries the difference between the previous and current 14-day totals forward once. It combines different activity types and should not be interpreted as disease incidence or a validated forecast.</p>
+            <p>Estimated next 14 days based on the recent change in activity.</p>
             <div id="healthDemandChart" class="analytics-chart"></div>
             <table class="analytics-table">
                 <thead><tr><th>Activity type</th><th>Records in current 14 days</th></tr></thead>
@@ -235,13 +233,11 @@
                     <tr><th>Total activity</th><th>{{ number_format($currentCount) }}</th></tr>
                 </tbody>
             </table>
-            <div class="analytics-note">Use this signal to prepare BHW schedules, screening activities, immunization sessions, maintenance follow-ups, and commonly needed supplies. Investigate sudden increases before taking action.</div>
         </section>
 
         <section class="analytics-panel analytics-supply-panel">
             <h2>Supply stock &amp; usage</h2>
-            <p>This forecast answers two questions: how much was withdrawn recently, and how much may be withdrawn during the next 14 days if the same usage continues.</p>
-            <div class="analytics-note">The next 14-day projection matches the current 14-day withdrawal quantity. “Days remaining” compares current stock with the recent daily withdrawal rate. All barangay inventory is shown, independent of citizen filters. Restocking and future changes in usage are not included. Quantities use each item’s recorded inventory unit.</div>
+            <div class="analytics-note">Estimates assume the same withdrawal rate, without restocking. Shows all barangay inventory.</div>
             <div id="supplyPlanningChart" class="analytics-chart" role="img" aria-label="Current stock and next 14-day estimated withdrawals by supply"></div>
             <table class="analytics-table">
                 <thead><tr><th>Medicine / supply</th><th>Stock review</th><th>Withdrawn recently<br><small>Current 14-day window</small></th><th>Expected withdrawal<br><small>Next 14 days</small></th><th>Current stock</th><th>Estimated days remaining</th></tr></thead>
@@ -290,10 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const mapAreas = @json($diseaseMonitoringData['mapAreas']);
         if (mapElement && mapAreas.length) {
             const map = L.map(mapElement, { zoomAnimation: false }).setView([14.0668, 120.8531], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+            DiagnosisHeatmap.addBasemap(map, 'diseaseHeatmap');
             const layers = [];
             const boundaries = L.layerGroup().addTo(map);
             mapAreas.forEach((area) => {

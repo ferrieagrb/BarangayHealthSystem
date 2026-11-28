@@ -117,7 +117,19 @@ Route::get('/announcement-image/{path}', [PublicAssetController::class, 'announc
     ->where('path', '.*')
     ->name('announcement.image');
 
-Route::post('/login', [UserController::class, 'login'])->name('login.submit');
+Route::post('/login', [UserController::class, 'login'])->middleware(['guest', 'throttle:20,1,login-password:'])->name('login.submit');
+
+Route::middleware('guest')->controller(\App\Http\Controllers\LoginConfirmationController::class)->group(function () {
+    Route::get('/login/confirmation', 'show')->name('login.confirmation');
+    Route::post('/login/confirmation', 'verify')->middleware('throttle:10,1,login-code:')->name('login.confirmation.verify');
+    Route::post('/login/confirmation/resend', 'resend')->middleware('throttle:5,1,login-resend:')->name('login.confirmation.resend');
+    Route::post('/login/confirmation/cancel', 'cancel')->name('login.confirmation.cancel');
+});
+// Email review can happen on a different device or in an already signed-in browser.
+Route::get('/login/review/{challenge}', [\App\Http\Controllers\LoginConfirmationController::class, 'review'])
+    ->middleware(['signed', 'throttle:30,1,login-review:'])->name('login.confirmation.review');
+Route::post('/login/review/{challenge}', [\App\Http\Controllers\LoginConfirmationController::class, 'decide'])
+    ->middleware(['signed', 'throttle:10,1,login-decision:'])->name('login.confirmation.decide');
 
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
@@ -539,7 +551,15 @@ Route::middleware(['auth'])->group(function () {
         if ($request->user()->hasVerifiedEmail()) {
             return back()->with('success', 'Your email address is already verified.');
         }
-        $request->user()->sendEmailVerificationNotification();
+        if (! filter_var($request->user()->email, FILTER_VALIDATE_EMAIL)) {
+            return back()->with('error', 'Please ask an Administrator to add a valid email address to your account.');
+        }
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->with('error', 'The verification email could not be sent. Please try again later or contact an Administrator.');
+        }
         return back()->with('success', 'A verification link has been sent to your email address.');
     })->middleware('throttle:6,1')->name('verification.send');
 });

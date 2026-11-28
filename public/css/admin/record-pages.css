@@ -115,6 +115,15 @@
     font-weight: 500;
 }
 
+.admin-logs-page .admin-log-table td:has(> .audit-level-badge) {
+    min-width: 210px;
+}
+
+.admin-logs-page #adminActivity .admin-log-table td:last-child,
+.admin-logs-page #security .admin-log-table td:last-child {
+    overflow-wrap: anywhere;
+}
+
 .admin-logs-page .tag {
     display: inline-block;
     padding: 4px 8px;

@@ -4,6 +4,41 @@ namespace App\Support;
 
 final class AuditActionLevel
 {
+    public const LEVELS = ['high', 'medium', 'low', 'info', 'unclassified'];
+
+    public static function selected(): string
+    {
+        $level = request()->query('action_level', 'all');
+
+        return in_array($level, self::LEVELS, true) ? $level : 'all';
+    }
+
+    public static function applyFilter($query, ?string $column = 'action'): void
+    {
+        $level = self::selected();
+        if ($level === 'all') {
+            return;
+        }
+
+        // Activity records without an action field have no assigned level.
+        if ($column === null) {
+            if ($level !== 'unclassified') {
+                $query->whereRaw('1 = 0');
+            }
+            return;
+        }
+
+        $actions = (clone $query)->reorder()->select($column)->distinct()->pluck($column)
+            ->filter(fn ($action) => self::forAction($action) === $level)->all();
+
+        $query->where(function ($query) use ($column, $actions, $level) {
+            $query->whereIn($column, array_values(array_filter($actions, fn ($action) => $action !== null)));
+            if ($level === 'unclassified') {
+                $query->orWhereNull($column);
+            }
+        });
+    }
+
     public static function forAction(?string $action): string
     {
         $action = strtolower(trim($action ?? ''));

@@ -54,6 +54,7 @@
 
         {{-- Audit Log Filters --}}
         <form method="GET" class="audit-filter-form">
+            <input type="hidden" name="action_level" value="{{ \App\Support\AuditActionLevel::selected() }}">
 
             <div class="audit-filter-grid">
 

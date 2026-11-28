@@ -94,25 +94,11 @@ class UserController extends Controller
             'is_locked' => false,
             'locked_until' => null,
         ]);
-        // Login user
-        Auth::login($user);
-        $request->session()->regenerate();
-        $request->session()->forget('auth.password_confirmed_at');
-        $this->logAuditEvent('login.success', "Successful login for {$user->email}.", $user->id);
+        // Password verification alone never creates an authenticated session.
+        app(\App\Services\LoginVerification::class)->start($request, $user);
+        $this->logAuditEvent('login.confirmation_sent', 'Email sign-in confirmation requested.', $user->id);
 
-        // First-login password reset check
-        if ($user->must_change_password) {
-            return redirect()->route('password.force-change');
-        }
-
-        // Redirect based on role
-        return match ($user->role) {
-            'superadmin' => redirect()->route('superadmin.dashboard'),
-            'admin' => redirect()->route('admin.home'),
-            'bhw' => redirect()->route('home'),
-            'citizen' => redirect()->route('citizen.dashboard'),
-            default => redirect()->route('landing'),
-        };
+        return redirect()->route('login.confirmation');
     }
 
     private function lockedMessage(?int $untilTimestamp): string
@@ -162,9 +148,13 @@ class UserController extends Controller
 
     public function logout()
     {
+        $request = request();
         $userId = Auth::id();
         $this->logAuditEvent('logout', 'User logged out.', $userId);
         auth()->logout();
+        app(\App\Services\LoginVerification::class)->cancel($request);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect('/login');
     }
 }

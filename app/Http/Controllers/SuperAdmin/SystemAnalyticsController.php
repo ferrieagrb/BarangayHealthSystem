@@ -11,9 +11,6 @@ class SystemAnalyticsController extends Controller
 {
     public function index()
     {
-        // 1. PHP Version
-        $phpVersion = phpversion(); // e.g. "8.2.33"
-
         // 2. Hostinger Disk Usage
         $hostingerPlanLimitGb = 100; 
         $totalBytesLimit = $hostingerPlanLimitGb * 1024 * 1024 * 1024;
@@ -95,7 +92,6 @@ class SystemAnalyticsController extends Controller
                 'disk_used_text' => $usedFormatted,
                 'disk_total_text' => $hostingerPlanLimitGb . ' GB',
                 'db_size_mb' => $databaseSizeMb,
-                'php_version' => $phpVersion,
             ],
             'records' => [
                 'total_users' => $totalUsers,

@@ -10,6 +10,15 @@
     const publicKey = panel.dataset.publicKey;
     let registration;
     let subscription;
+    let initializationFailed = false;
+
+    async function refreshDevices() {
+        try {
+            await loadDevices();
+        } catch (error) {
+            deviceStatus.textContent = error.message || 'Could not load your devices.';
+        }
+    }
 
     const setState = (message, buttonText, disabled = false) => {
         status.textContent = message;
@@ -157,10 +166,12 @@
             && 'PushManager' in window
             && 'Notification' in window;
         let initializationError = null;
+        initializationFailed = false;
 
         if (pushSupported) {
             try {
                 registration = await navigator.serviceWorker.register('/service-worker.js');
+                registration = await navigator.serviceWorker.ready;
                 subscription = await registration.pushManager.getSubscription();
                 if (subscription) await saveSubscription(subscription);
             } catch (error) {
@@ -168,17 +179,14 @@
             }
         }
 
-        try {
-            await loadDevices();
-        } catch (error) {
-            deviceStatus.textContent = error.message || 'Could not load your devices.';
-        }
+        await refreshDevices();
 
         if (!pushSupported) {
             setState('Push notifications are not supported by this browser.', 'Unavailable', true);
         } else if (!publicKey) {
             setState('Push notifications are not configured on this server yet.', 'Unavailable', true);
         } else if (initializationError) {
+            initializationFailed = true;
             setState(initializationError.message || 'Could not initialize browser notifications.', 'Try again');
         } else if (subscription) {
             setState('This device is enabled for notifications.', 'Disable on this device');
@@ -192,12 +200,17 @@
     button.addEventListener('click', async () => {
         button.disabled = true;
 
+        if (initializationFailed || !registration) {
+            await initialize();
+            return;
+        }
+
         try {
             if (subscription) {
                 await removeSubscription(subscription);
                 subscription = null;
                 setState('Notifications are off for this device.', 'Enable notifications');
-                await loadDevices();
+                await refreshDevices();
                 return;
             }
 
@@ -206,7 +219,7 @@
                 : Notification.permission;
 
             if (permission !== 'granted') {
-                setState('Allow notifications in your browser settings to enable them.', 'Enable notifications');
+                setState('Allow notifications in your browser settings to enable them.', permission === 'denied' ? 'Blocked' : 'Enable notifications', permission === 'denied');
                 return;
             }
 
@@ -216,10 +229,11 @@
             });
             await saveSubscription(subscription);
             setState('This device is enabled for notifications.', 'Disable on this device');
-            await loadDevices();
+            await refreshDevices();
         } catch (error) {
-            if (subscription) await subscription.unsubscribe().catch(() => {});
-            subscription = null;
+            // Keep a browser subscription if the server is temporarily unreachable.
+            // Retrying must not silently unsubscribe a device that was already enabled.
+            initializationFailed = true;
             setState(error.message || 'Could not update notification settings.', 'Try again');
         }
     });

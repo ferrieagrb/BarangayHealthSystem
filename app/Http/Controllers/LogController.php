@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\AuditActionLevel;
+
 use App\Models\CitizenActivityLog;
 use App\Models\SupplyLog;
 use App\Models\HealthRecordActivityLog;
@@ -16,15 +18,16 @@ class LogController extends Controller
 {
     public function index()
     {
-        $citizenLogs = CitizenActivityLog::with(['user', 'citizen'])->latest()->paginate(20, ['*'], 'citizen_page');
-        $supplyLogs = SupplyLog::with(['user', 'supply', 'citizen'])->latest()->paginate(20, ['*'], 'supply_page');
-        $healthRecordLogs = HealthRecordActivityLog::with('user')->latest()->paginate(20, ['*'], 'health_page');
-        $vehicleLogs = VehicleLog::with('user')->latest()->paginate(20, ['*'], 'vehicle_page');
-        $announcementLogs = Announcement::with('user')->latest()->paginate(20, ['*'], 'announcement_page');
-        $eventLogs = Event::with('user')->latest()->paginate(20, ['*'], 'event_page');
-        $referralLogs = Referral::with('user')->latest()->paginate(20, ['*'], 'referral_page');
-        $maintenanceLogs = MaintenanceRecord::with(['citizen', 'user'])->latest()->paginate(20, ['*'], 'maintenance_page');
+        $citizenLogs = CitizenActivityLog::with(['user', 'citizen'])->tap(fn ($query) => AuditActionLevel::applyFilter($query))->latest()->paginate(20, ['*'], 'citizen_page');
+        $supplyLogs = SupplyLog::with(['user', 'supply', 'citizen'])->tap(fn ($query) => AuditActionLevel::applyFilter($query))->latest()->paginate(20, ['*'], 'supply_page');
+        $healthRecordLogs = HealthRecordActivityLog::with('user')->tap(fn ($query) => AuditActionLevel::applyFilter($query))->latest()->paginate(20, ['*'], 'health_page');
+        $vehicleLogs = VehicleLog::with('user')->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))->latest()->paginate(20, ['*'], 'vehicle_page');
+        $announcementLogs = Announcement::with('user')->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))->latest()->paginate(20, ['*'], 'announcement_page');
+        $eventLogs = Event::with('user')->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))->latest()->paginate(20, ['*'], 'event_page');
+        $referralLogs = Referral::with('user')->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))->latest()->paginate(20, ['*'], 'referral_page');
+        $maintenanceLogs = MaintenanceRecord::with(['citizen', 'user'])->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))->latest()->paginate(20, ['*'], 'maintenance_page');
         $releaseLogs = SupplyRelease::with(['user', 'citizen', 'supply', 'event'])
+            ->tap(fn ($query) => AuditActionLevel::applyFilter($query, null))
             ->latest()
             ->paginate(20, ['*'], 'release_page');
 
